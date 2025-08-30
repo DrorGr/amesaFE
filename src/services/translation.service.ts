@@ -79,7 +79,7 @@ export class TranslationService {
       'footer.termsConditions': 'Terms & Conditions',
       'footer.contactUs': 'Contact Us',
       'footer.winnersGallery': 'Winners Gallery',
-      'footer.copyright': '© 2025 Amesa. All rights reserved.'
+      'footer.copyright': '© 2025 Amesa. All rights reserved.',
       
       // House Data
       'house.1.title': 'Modern Downtown Condo',
@@ -158,7 +158,7 @@ export class TranslationService {
       'footer.termsConditions': 'Regulamin',
       'footer.contactUs': 'Skontaktuj się z nami',
       'footer.winnersGallery': 'Galeria Zwycięzców',
-      'footer.copyright': '© 2025 Amesa. Wszelkie prawa zastrzeżone.'
+      'footer.copyright': '© 2025 Amesa. Wszelkie prawa zastrzeżone.',
       
       // House Data
       'house.1.title': 'Nowoczesne Mieszkanie w Centrum',
