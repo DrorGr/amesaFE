@@ -32,7 +32,7 @@ import { ThemeService } from './services/theme.service';
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <img 
-                src="assets/AmesaWhite.jpg" 
+                src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
                 class="h-8 w-auto mb-4">
               <p class="text-gray-300 leading-relaxed">
