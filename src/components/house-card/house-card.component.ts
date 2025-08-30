@@ -163,10 +163,8 @@ export class HouseCardComponent {
     try {
       const success = await this.lotteryService.purchaseTicket(this.house().id);
       if (success) {
-        // Could show success message here
         console.log('Ticket purchased successfully!');
       } else {
-        // Could show error message here
         console.log('Failed to purchase ticket');
       }
     } catch (error) {
