@@ -17,7 +17,7 @@ import { TranslationService } from '../../services/translation.service';
           <!-- Logo -->
           <div class="flex items-center flex-shrink-0">
             <div class="flex-shrink-0">
-              <h1 class="text-xl md:text-3xl font-bold text-gradient dark:text-white">HomeLotto</h1>
+              <h1 class="text-xl md:text-3xl font-bold text-gradient dark:text-white">Amesa</h1>
             </div>
           </div>
 
