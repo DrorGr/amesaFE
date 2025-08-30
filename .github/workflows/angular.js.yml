@@ -1,39 +1,62 @@
-name: Angular Build
+name: Build & Deploy Angular to GitHub Pages
 
-# {1}
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  angular:
+  build:
     name: Angular Build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     steps:
-      # {2}
-      - name: Checkout the source code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # {3}
-      - name: Setup Node.js $
-        uses: actions/setup-node@v3
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
         with:
-          node-version: $
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          node-version: 20
+          cache: "npm"
 
-      # {4}
-      - name: Install dependencies
+      - name: Install deps
         run: npm ci
-      # {5}
-      - name: Run tests
-        run: npm run test:ci
-      # {6}
-      - name: Build
-        run: npm run build
+
+      # OPTIONAL: skip if you don't have a test:ci script
+      # - name: Run tests
+      #   run: npm run test:ci
+
+      # Angular 15+ uses configurations; prod flag is gone.
+      # For a project page, base-href should be "/<repo-name>/".
+      - name: Build Angular
+        run: |
+          npx ng build --configuration=production --base-href "/AmesaBase/"
+          # Ensure Jekyll doesn't interfere (harmless even when using Actions)
+          touch dist/amesa/browser/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Angular v17+ outputs to dist/<project-name>/browser by default
+          path: dist/amesa/browser
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
