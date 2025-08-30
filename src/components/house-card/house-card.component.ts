@@ -10,7 +10,6 @@ import { LotteryService } from '../../services/lottery.service';
   imports: [CommonModule],
   template: `
     <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-      <!-- Image -->
       <div class="relative h-48 bg-gray-200">
         <img 
           [src]="house().imageUrl" 
@@ -23,12 +22,10 @@ import { LotteryService } from '../../services/lottery.service';
         </div>
       </div>
 
-      <!-- Content -->
       <div class="p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ house().title }}</h3>
         <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ house().description }}</p>
         
-        <!-- Location & Price -->
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center text-gray-500 text-sm">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,14 +39,12 @@ import { LotteryService } from '../../services/lottery.service';
           </div>
         </div>
 
-        <!-- House Details -->
         <div class="flex items-center justify-between text-sm text-gray-600 mb-4">
           <span>{{ house().bedrooms }} bed</span>
           <span>{{ house().bathrooms }} bath</span>
           <span>{{ formatSqft(house().sqft) }} sqft</span>
         </div>
 
-        <!-- Lottery Progress -->
         <div class="mb-4">
           <div class="flex justify-between text-sm text-gray-600 mb-1">
             <span>Tickets Sold</span>
@@ -63,13 +58,11 @@ import { LotteryService } from '../../services/lottery.service';
           </div>
         </div>
 
-        <!-- Countdown -->
         <div class="text-center mb-4">
           <div class="text-sm text-gray-600">Lottery ends in</div>
           <div class="text-lg font-bold text-orange-600">{{ getTimeRemaining() }}</div>
         </div>
 
-        <!-- Action Button -->
         <div class="space-y-2">
           @if (currentUser()) {
             <button
