@@ -41,8 +41,8 @@ import { TranslationService } from '../../services/translation.service';
         </div>
 
         <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-4">
-          <span>{{ house().bedrooms }} {{ translate('house.bed') }}</span>
-          <span>{{ house().bathrooms }} {{ translate('house.bath') }}</span>
+          <span>{{ house().bedrooms }} {{ translate('house.bed') }}{{ house().bedrooms > 1 ? 's' : '' }}</span>
+          <span>{{ house().bathrooms }} {{ translate('house.bath') }}{{ house().bathrooms > 1 ? 's' : '' }}</span>
           <span>{{ formatSqft(house().sqft) }} {{ translate('house.sqft') }}</span>
         </div>
 
@@ -74,14 +74,14 @@ import { TranslationService } from '../../services/translation.service';
                 {{ translate('house.processing') }}
               </ng-container>
               <ng-template #buyTicketBlock>
-                {{ translate('house.buyTicket') }} - {{ house().ticketPrice | currency:'EUR':'symbol':'1.0-0' }}
+                {{ translate('house.buyTicket') }} - €{{ house().ticketPrice }}
               </ng-template>
             </button>
           </ng-container>
           <ng-template #signInBlock>
             <div class="text-center">
               <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ translate('house.signInToParticipate') }}</p>
-              <div class="text-lg font-medium text-blue-600 dark:text-blue-400">{{ house().ticketPrice | currency:'EUR':'symbol':'1.0-0' }} {{ translate('house.perTicket') }}</div>
+              <div class="text-lg font-medium text-blue-600 dark:text-blue-400">€{{ house().ticketPrice }} {{ translate('house.perTicket') }}</div>
             </div>
           </ng-template>
         </div>
