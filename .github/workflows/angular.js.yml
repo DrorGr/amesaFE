@@ -16,41 +16,42 @@ concurrency:
 
 jobs:
   build:
-    name: Angular Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 24
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: "npm"
+          cache: npm
 
       - name: Install deps
         run: npm ci
 
-      # OPTIONAL: skip if you don't have a test:ci script
-      # - name: Run tests
-      #   run: npm run test:ci
-
-      # Angular 15+ uses configurations; prod flag is gone.
-      # For a project page, base-href should be "/<repo-name>/".
       - name: Build Angular
+        run: npx ng build --configuration=production --base-href "/AmesaBase/"
+
+      # 🔎 Resolve the actual dist folder from angular.json
+      - name: Resolve dist path
+        id: dist
         run: |
-          npx ng build --configuration=production --base-href "/AmesaBase/"
-          # Ensure Jekyll doesn't interfere (harmless even when using Actions)
-          touch dist/amesa/browser/.nojekyll
+          node -e "const p=require('./angular.json'); const proj=Object.values(p.projects)[0]; const t=(proj.targets||proj.architect); const out=t.build.options.outputPath; console.log(out)" > distpath.txt
+          echo "DIST_DIR=$(cat distpath.txt)" >> $GITHUB_ENV
+          echo "Resolved DIST_DIR=$DIST_DIR"
+          ls -la "$DIST_DIR"
+
+      # 🚫 Disable Jekyll in the right folder (harmless if not using Jekyll)
+      - name: Add .nojekyll
+        run: touch "$DIST_DIR/.nojekyll"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Angular v17+ outputs to dist/<project-name>/browser by default
-          path: dist/amesa/browser
+          path: ${{ env.DIST_DIR }}
 
   deploy:
-    name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
     environment:
