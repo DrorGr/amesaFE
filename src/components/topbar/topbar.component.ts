@@ -57,14 +57,9 @@ import { TranslationService } from '../../services/translation.service';
               <!-- Guest User -->
               <div class="flex items-center space-x-2 md:space-x-3">
                 <button
-                  (click)="openAuthModal('login')"
+                  (click)="openAuthModal()"
                   class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
                   {{ translate('nav.signIn') }}
-                </button>
-                <button
-                  (click)="openAuthModal('register')"
-                  class="btn-primary text-xs md:text-sm px-3 md:px-6 py-2 md:py-3">
-                  {{ translate('nav.getStarted') }}
                 </button>
               </div>
             }
@@ -98,8 +93,8 @@ export class TopbarComponent {
   
   currentUser = this.authService.getCurrentUser();
 
-  openAuthModal(mode: 'login' | 'register') {
-    this.authMode = mode;
+  openAuthModal() {
+    this.authMode = 'login';
     this.showAuthModal = true;
   }
 
