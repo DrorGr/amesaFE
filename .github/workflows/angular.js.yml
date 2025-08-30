@@ -33,23 +33,38 @@ jobs:
       - name: Build Angular
         run: npx ng build --configuration=production --base-href "/AmesaBase/"
 
-      # 🔎 Resolve the actual dist folder from angular.json
+      # 🔎 Resolve the actual dist folder from angular.json and filesystem
       - name: Resolve dist path
         id: dist
+        shell: bash
         run: |
-          node -e "const p=require('./angular.json'); const proj=Object.values(p.projects)[0]; const t=(proj.targets||proj.architect); const out=t.build.options.outputPath; console.log(out)" > distpath.txt
-          echo "DIST_DIR=$(cat distpath.txt)" >> $GITHUB_ENV
-          echo "Resolved DIST_DIR=$DIST_DIR"
-          ls -la "$DIST_DIR"
+          set -euo pipefail
+          node -e "const fs=require('fs');
+            const p=JSON.parse(fs.readFileSync('angular.json','utf8'));
+            const name=Object.keys(p.projects)[0];
+            const proj=p.projects[name]||{};
+            const t=(proj.targets||proj.architect)||{};
+            const opts=(t.build&&t.build.options)||{};
+            let out=opts.outputPath || `dist/${name}`;
+            console.log(out);" > distpath.txt
 
-      # 🚫 Disable Jekyll in the right folder (harmless if not using Jekyll)
+          DIST_DIR="$(cat distpath.txt)"
+          # If Angular output is under dist/<name>/browser, prefer that when present
+          if [ -d "${DIST_DIR}/browser" ]; then
+            DIST_DIR="${DIST_DIR}/browser"
+          fi
+          echo "dist_dir=${DIST_DIR}" >> "$GITHUB_OUTPUT"
+          echo "Resolved dist: ${DIST_DIR}"
+          ls -la "${DIST_DIR}"
+
+      # 🚫 Disable Jekyll in the resolved folder
       - name: Add .nojekyll
-        run: touch "$DIST_DIR/.nojekyll"
+        run: touch "${{ steps.dist.outputs.dist_dir }}/.nojekyll"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ env.DIST_DIR }}
+          path: ${{ steps.dist.outputs.dist_dir }}
 
   deploy:
     needs: build
