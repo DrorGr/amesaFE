@@ -32,7 +32,10 @@ import { ThemeService } from './services/theme.service';
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 class="text-2xl font-bold mb-4 text-gradient">Amesa</h3>
+              <img 
+                src="/src/assets/AmesaWhite.jpg" 
+                alt="Amesa" 
+                class="h-8 w-auto mb-4">
               <p class="text-gray-300 leading-relaxed">
                 {{ translate('footer.description') }}
               </p>

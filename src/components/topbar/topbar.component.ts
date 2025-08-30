@@ -17,7 +17,14 @@ import { TranslationService } from '../../services/translation.service';
           <!-- Logo -->
           <div class="flex items-center flex-shrink-0">
             <div class="flex-shrink-0">
-              <h1 class="text-xl md:text-3xl font-bold text-gradient dark:text-white">Amesa</h1>
+              <img 
+                src="/src/assets/AmesaDark.jpg" 
+                alt="Amesa" 
+                class="h-8 md:h-10 w-auto dark:hidden">
+              <img 
+                src="/src/assets/AmesaWhite.jpg" 
+                alt="Amesa" 
+                class="h-8 md:h-10 w-auto hidden dark:block">
             </div>
           </div>
 
