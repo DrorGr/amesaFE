@@ -1,0 +1,161 @@
+import { Component, inject, input, output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+
+@Component({
+  selector: 'app-auth-modal',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="onBackdropClick($event)">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 transform transition-all">
+        <div class="p-6">
+          <!-- Header -->
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">
+              {{ mode() === 'login' ? 'Sign In' : 'Create Account' }}
+            </h2>
+            <button 
+              (click)="close.emit()"
+              class="text-gray-400 hover:text-gray-600 transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Form -->
+          <form (ngSubmit)="onSubmit()" class="space-y-4">
+            @if (mode() === 'register') {
+              <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  [(ngModel)]="name"
+                  name="name"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+              </div>
+            }
+            
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                id="email"
+                [(ngModel)]="email"
+                name="email"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+            </div>
+
+            <div>
+              <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                type="password"
+                id="password"
+                [(ngModel)]="password"
+                name="password"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors">
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="isLoading"
+              class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-2 px-4 rounded-lg font-medium transition-colors">
+              @if (isLoading) {
+                <span class="flex items-center justify-center">
+                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              } @else {
+                {{ mode() === 'login' ? 'Sign In' : 'Create Account' }}
+              }
+            </button>
+          </form>
+
+          <!-- Toggle Mode -->
+          <div class="mt-6 text-center">
+            <p class="text-sm text-gray-600">
+              {{ mode() === 'login' ? "Don't have an account?" : "Already have an account?" }}
+              <button
+                type="button"
+                (click)="toggleMode()"
+                class="text-blue-600 hover:text-blue-700 font-medium ml-1 transition-colors">
+                {{ mode() === 'login' ? 'Sign up' : 'Sign in' }}
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    :host {
+      display: block;
+    }
+  `]
+})
+export class AuthModalComponent {
+  private authService = inject(AuthService);
+  
+  mode = input.required<'login' | 'register'>();
+  close = output<void>();
+  success = output<void>();
+
+  name = '';
+  email = '';
+  password = '';
+  isLoading = false;
+
+  async onSubmit() {
+    this.isLoading = true;
+    
+    try {
+      let result: boolean;
+      
+      if (this.mode() === 'login') {
+        result = await this.authService.login(this.email, this.password);
+      } else {
+        result = await this.authService.register(this.name, this.email, this.password);
+      }
+      
+      if (result) {
+        this.success.emit();
+        this.resetForm();
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  toggleMode() {
+    this.resetForm();
+    if (this.mode() === 'login') {
+      // Switch to register - this would need to be handled by parent
+    } else {
+      // Switch to login - this would need to be handled by parent
+    }
+  }
+
+  onBackdropClick(event: Event) {
+    if (event.target === event.currentTarget) {
+      this.close.emit();
+    }
+  }
+
+  private resetForm() {
+    this.name = '';
+    this.email = '';
+    this.password = '';
+    this.isLoading = false;
+  }
+}
