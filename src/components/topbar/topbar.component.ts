@@ -19,7 +19,7 @@ import { TranslationService } from '../../services/translation.service';
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="h-10 md:h-12 w-auto">
+                class="h-8 md:h-10 w-auto">
             </div>
           </div>
 
