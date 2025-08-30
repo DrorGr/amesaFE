@@ -13,11 +13,11 @@ import { TranslationService } from '../../services/translation.service';
   template: `
     <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-18">
+        <div class="flex justify-between items-center h-16 md:h-18">
           <!-- Logo -->
-          <div class="flex items-center">
+          <div class="flex items-center flex-shrink-0">
             <div class="flex-shrink-0">
-              <h1 class="text-3xl font-bold text-gradient dark:text-white">HomeLotto</h1>
+              <h1 class="text-xl md:text-3xl font-bold text-gradient dark:text-white">HomeLotto</h1>
             </div>
           </div>
 
@@ -37,30 +37,33 @@ import { TranslationService } from '../../services/translation.service';
           </div>
 
           <!-- User Actions -->
-          <div class="flex items-center space-x-4">
-            <app-theme-toggle></app-theme-toggle>
-            <app-language-switcher></app-language-switcher>
+          <div class="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
+            <div class="flex items-center space-x-1 md:space-x-2">
+              <app-theme-toggle></app-theme-toggle>
+              <app-language-switcher></app-language-switcher>
+            </div>
             @if (currentUser(); as user) {
               <!-- Authenticated User -->
-              <div class="flex items-center space-x-4">
-                <span class="text-gray-700 dark:text-gray-300 text-sm font-medium">{{ translate('nav.welcome') }}, {{ user.name }}</span>
+              <div class="flex items-center space-x-2 md:space-x-4">
+                <span class="hidden sm:inline text-gray-700 dark:text-gray-300 text-sm font-medium">{{ translate('nav.welcome') }}, {{ user.name }}</span>
+                <span class="sm:hidden text-gray-700 dark:text-gray-300 text-sm font-medium">{{ user.name }}</span>
                 <button
                   (click)="logout()"
-                  class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md">
+                  class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 md:px-5 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-semibold transition-all duration-200 hover:shadow-md">
                   {{ translate('nav.logout') }}
                 </button>
               </div>
             } @else {
               <!-- Guest User -->
-              <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-2 md:space-x-3">
                 <button
                   (click)="openAuthModal('login')"
-                  class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-5 py-2.5 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+                  class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
                   {{ translate('nav.signIn') }}
                 </button>
                 <button
                   (click)="openAuthModal('register')"
-                  class="btn-primary text-sm">
+                  class="btn-primary text-xs md:text-sm px-3 md:px-6 py-2 md:py-3">
                   {{ translate('nav.getStarted') }}
                 </button>
               </div>
