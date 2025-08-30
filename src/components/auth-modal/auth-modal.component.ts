@@ -141,12 +141,12 @@ export class AuthModalComponent {
 
   toggleMode() {
     this.resetForm();
-    if (this.mode() === 'login') {
-      // Switch to register - this would need to be handled by parent
-    } else {
-      // Switch to login - this would need to be handled by parent
-    }
+    // Emit event to parent to toggle mode
+    const newMode = this.mode() === 'login' ? 'register' : 'login';
+    this.modeChange.emit(newMode);
   }
+
+  modeChange = output<'login' | 'register'>();
 
   onBackdropClick(event: Event) {
     if (event.target === event.currentTarget) {

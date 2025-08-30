@@ -78,7 +78,8 @@ import { TranslationService } from '../../services/translation.service';
       <app-auth-modal 
         [mode]="authMode" 
         (close)="closeAuthModal()"
-        (success)="onAuthSuccess()">
+        (success)="onAuthSuccess()"
+        (modeChange)="onModeChange($event)">
       </app-auth-modal>
     }
   `,
@@ -108,6 +109,10 @@ export class TopbarComponent {
 
   onAuthSuccess() {
     this.showAuthModal = false;
+  }
+
+  onModeChange(mode: 'login' | 'register') {
+    this.authMode = mode;
   }
 
   logout() {
