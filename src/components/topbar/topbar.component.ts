@@ -38,8 +38,8 @@ import { TranslationService } from '../../services/translation.service';
           </div>
 
           <div class="flex items-center space-x-3 md:space-x-4 flex-shrink-0 min-w-0">
-            <div class="flex items-center space-x-2 md:space-x-3">
-              <app-theme-toggle></app-theme-toggle>
+            <app-theme-toggle></app-theme-toggle>
+            <div class="w-32 flex justify-end">
               <app-language-switcher></app-language-switcher>
             </div>
             @if (currentUser(); as user) {
