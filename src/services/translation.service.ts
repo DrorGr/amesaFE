@@ -80,6 +80,17 @@ export class TranslationService {
       'footer.contactUs': 'Contact Us',
       'footer.winnersGallery': 'Winners Gallery',
       'footer.copyright': '© 2025 Amesa. All rights reserved.'
+      
+      // House Data
+      'house.1.title': 'Modern Downtown Condo',
+      'house.1.description': 'Stunning 2-bedroom condo in the heart of downtown with city views and modern amenities.',
+      'house.1.location': 'Downtown, City Center',
+      'house.2.title': 'Suburban Family Home',
+      'house.2.description': 'Beautiful 4-bedroom family home with large backyard and garage in quiet neighborhood.',
+      'house.2.location': 'Maple Heights Suburb',
+      'house.3.title': 'Luxury Waterfront Villa',
+      'house.3.description': 'Exclusive waterfront villa with private beach access and panoramic ocean views.',
+      'house.3.location': 'Oceanfront District'
     },
     pl: {
       // Navigation
@@ -148,6 +159,17 @@ export class TranslationService {
       'footer.contactUs': 'Skontaktuj się z nami',
       'footer.winnersGallery': 'Galeria Zwycięzców',
       'footer.copyright': '© 2025 Amesa. Wszelkie prawa zastrzeżone.'
+      
+      // House Data
+      'house.1.title': 'Nowoczesne Mieszkanie w Centrum',
+      'house.1.description': 'Oszałamiające 2-pokojowe mieszkanie w sercu centrum z widokiem na miasto i nowoczesnymi udogodnieniami.',
+      'house.1.location': 'Centrum Miasta',
+      'house.2.title': 'Dom Rodzinny na Przedmieściach',
+      'house.2.description': 'Piękny 4-pokojowy dom rodzinny z dużym podwórkiem i garażem w spokojnej okolicy.',
+      'house.2.location': 'Przedmieścia Maple Heights',
+      'house.3.title': 'Luksusowa Willa nad Wodą',
+      'house.3.description': 'Ekskluzywna willa nad wodą z prywatnym dostępem do plaży i panoramicznym widokiem na ocean.',
+      'house.3.location': 'Dzielnica Nadmorska'
     }
   };
 
