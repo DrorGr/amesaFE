@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LotteryService } from '../../services/lottery.service';
-import { HouseCardComponent } from '../house-card/house-card.component';
+import { HouseCardComponent } from '../../house-card/house-card.component';
 
 @Component({
   selector: 'app-house-grid',
