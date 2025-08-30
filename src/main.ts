@@ -6,6 +6,7 @@ import { HeroSectionComponent } from './components/hero-section/hero-section.com
 import { HouseGridComponent } from './components/house-grid/house-grid.component';
 import { StatsSectionComponent } from './components/stats-section/stats-section.component';
 import { TranslationService } from './services/translation.service';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +19,7 @@ import { TranslationService } from './services/translation.service';
     StatsSectionComponent
   ],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <app-topbar></app-topbar>
       <main>
         <app-hero-section></app-hero-section>
@@ -27,7 +28,7 @@ import { TranslationService } from './services/translation.service';
       </main>
       
       <!-- Footer -->
-      <footer class="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-16">
+      <footer class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
@@ -64,6 +65,7 @@ import { TranslationService } from './services/translation.service';
 })
 export class App {
   private translationService = inject(TranslationService);
+  private themeService = inject(ThemeService);
 
   translate(key: string): string {
     return this.translationService.translate(key);

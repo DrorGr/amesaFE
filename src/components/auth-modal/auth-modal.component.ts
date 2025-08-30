@@ -9,17 +9,17 @@ import { TranslationService } from '../../services/translation.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="modal-backdrop" (click)="onBackdropClick($event)">
-      <div class="modal-content">
+    <div class="modal-backdrop dark:bg-black dark:bg-opacity-60" (click)="onBackdropClick($event)">
+      <div class="modal-content dark:bg-gray-800">
         <div class="p-8">
           <!-- Header -->
           <div class="flex justify-between items-center mb-8">
-            <h2 class="text-3xl font-black text-gray-900">
+            <h2 class="text-3xl font-black text-gray-900 dark:text-white">
               {{ mode() === 'login' ? translate('auth.signIn') : translate('auth.createAccount') }}
             </h2>
             <button 
               (click)="close.emit()"
-              class="text-gray-400 hover:text-gray-600 transition-all duration-200 hover:scale-110 transform p-1">
+              class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all duration-200 hover:scale-110 transform p-1">
               <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
@@ -30,37 +30,37 @@ import { TranslationService } from '../../services/translation.service';
           <form (ngSubmit)="onSubmit()" class="space-y-6">
             @if (mode() === 'register') {
               <div>
-                <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">{{ translate('auth.fullName') }}</label>
+                <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ translate('auth.fullName') }}</label>
                 <input
                   type="text"
                   id="name"
                   [(ngModel)]="name"
                   name="name"
                   required
-                  class="input-field">
+                  class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400">
               </div>
             }
             
             <div>
-              <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">{{ translate('auth.email') }}</label>
+              <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ translate('auth.email') }}</label>
               <input
                 type="email"
                 id="email"
                 [(ngModel)]="email"
                 name="email"
                 required
-                class="input-field">
+                class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400">
             </div>
 
             <div>
-              <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">{{ translate('auth.password') }}</label>
+              <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ translate('auth.password') }}</label>
               <input
                 type="password"
                 id="password"
                 [(ngModel)]="password"
                 name="password"
                 required
-                class="input-field">
+                class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400">
             </div>
 
             <button
@@ -83,12 +83,12 @@ import { TranslationService } from '../../services/translation.service';
 
           <!-- Toggle Mode -->
           <div class="mt-8 text-center">
-            <p class="text-sm text-gray-600">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
               {{ mode() === 'login' ? translate('auth.dontHaveAccount') : translate('auth.alreadyHaveAccount') }}
               <button
                 type="button"
                 (click)="toggleMode()"
-                class="text-blue-600 hover:text-blue-700 font-semibold ml-1 transition-colors duration-200">
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold ml-1 transition-colors duration-200">
                 {{ mode() === 'login' ? translate('auth.signUp') : translate('auth.signIn') }}
               </button>
             </p>

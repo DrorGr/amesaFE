@@ -8,15 +8,15 @@ import { inject } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="bg-gradient-to-r from-blue-50 to-indigo-50 py-20">
+    <section class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-20 transition-colors duration-300">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
           @for (stat of stats; track stat.labelKey) {
-            <div class="text-center p-6 bg-white rounded-xl shadow-soft hover:shadow-medium transition-all duration-300 hover:-translate-y-1 transform">
+            <div class="text-center p-6 bg-white dark:bg-gray-800 rounded-xl shadow-soft hover:shadow-medium transition-all duration-300 hover:-translate-y-1 transform">
               <div class="text-4xl md:text-5xl font-black text-gradient mb-3">
                 {{ stat.value }}
               </div>
-              <div class="text-gray-700 font-semibold text-sm md:text-base">
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-sm md:text-base">
                 {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>

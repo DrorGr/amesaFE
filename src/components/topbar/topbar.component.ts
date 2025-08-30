@@ -3,33 +3,34 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { AuthModalComponent } from '../auth-modal/auth-modal.component';
 import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
+import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, AuthModalComponent, LanguageSwitcherComponent],
+  imports: [CommonModule, AuthModalComponent, LanguageSwitcherComponent, ThemeToggleComponent],
   template: `
-    <nav class="bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100 sticky top-0 z-50">
+    <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-18">
           <!-- Logo -->
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <h1 class="text-3xl font-bold text-gradient">HomeLotto</h1>
+              <h1 class="text-3xl font-bold text-gradient dark:text-white">HomeLotto</h1>
             </div>
           </div>
 
           <!-- Navigation -->
           <div class="hidden md:block">
             <div class="ml-10 flex items-baseline space-x-10">
-              <a href="#" class="text-gray-700 hover:text-blue-600 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+              <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
                 {{ translate('nav.lotteries') }}
               </a>
-              <a href="#" class="text-gray-700 hover:text-blue-600 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+              <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
                 {{ translate('nav.howItWorks') }}
               </a>
-              <a href="#" class="text-gray-700 hover:text-blue-600 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+              <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
                 {{ translate('nav.winners') }}
               </a>
             </div>
@@ -37,14 +38,15 @@ import { TranslationService } from '../../services/translation.service';
 
           <!-- User Actions -->
           <div class="flex items-center space-x-4">
+            <app-theme-toggle></app-theme-toggle>
             <app-language-switcher></app-language-switcher>
             @if (currentUser(); as user) {
               <!-- Authenticated User -->
               <div class="flex items-center space-x-4">
-                <span class="text-gray-700 text-sm font-medium">{{ translate('nav.welcome') }}, {{ user.name }}</span>
+                <span class="text-gray-700 dark:text-gray-300 text-sm font-medium">{{ translate('nav.welcome') }}, {{ user.name }}</span>
                 <button
                   (click)="logout()"
-                  class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md">
+                  class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md">
                   {{ translate('nav.logout') }}
                 </button>
               </div>
@@ -53,7 +55,7 @@ import { TranslationService } from '../../services/translation.service';
               <div class="flex items-center space-x-3">
                 <button
                   (click)="openAuthModal('login')"
-                  class="text-blue-600 hover:text-blue-700 px-5 py-2.5 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+                  class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-5 py-2.5 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
                   {{ translate('nav.signIn') }}
                 </button>
                 <button

@@ -20,6 +20,17 @@ body {
   background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode styles */
+.dark body {
+  color: #f9fafb;
+  background-color: #111827;
+}
+
+.dark {
+  color-scheme: dark;
 }
 
 /* Smooth scrolling */
@@ -29,20 +40,20 @@ html {
 
 /* Enhanced button styles */
 .btn-primary {
-  @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
+  @apply bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
 }
 
 .btn-secondary {
-  @apply bg-white hover:bg-gray-50 text-blue-600 font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl border-2 border-blue-600 transform hover:-translate-y-0.5;
+  @apply bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl border-2 border-blue-600 dark:border-blue-400 transform hover:-translate-y-0.5;
 }
 
 .btn-outline {
-  @apply border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5;
+  @apply border-2 border-white text-white hover:bg-white hover:text-blue-600 dark:hover:text-blue-400 font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5;
 }
 
 /* Card enhancements */
 .card {
-  @apply bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden;
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden;
 }
 
 .card-image {
@@ -51,7 +62,7 @@ html {
 
 /* Progress bar animations */
 .progress-bar {
-  @apply bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500 ease-out;
+  @apply bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 h-2 rounded-full transition-all duration-500 ease-out;
 }
 
 /* Gradient backgrounds */
@@ -112,7 +123,7 @@ html {
 
 /* Input styling */
 .input-field {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white;
+  @apply w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white;
 }
 
 .input-field:focus {
@@ -150,11 +161,11 @@ html {
 
 /* Modal backdrop */
 .modal-backdrop {
-  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn;
+  @apply fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 animate-fadeIn;
 }
 
 .modal-content {
-  @apply bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300;
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300;
 }
 
 /* Custom utilities */
