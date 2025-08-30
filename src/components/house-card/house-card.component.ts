@@ -35,7 +35,7 @@ import { LotteryService } from '../../services/lottery.service';
             {{ house().location }}
           </div>
           <div class="text-lg font-bold text-blue-600">
-            ${{ formatPrice(house().price) }}
+            {{ formatPrice(house().price) }}
           </div>
         </div>
 
@@ -64,23 +64,25 @@ import { LotteryService } from '../../services/lottery.service';
         </div>
 
         <div class="space-y-2">
-          @if (currentUser()) {
+          <ng-container *ngIf="currentUser(); else signInBlock">
             <button
               (click)="purchaseTicket()"
               [disabled]="isPurchasing || house().status !== 'active'"
               class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-lg font-medium transition-colors">
-              @if (isPurchasing) {
+              <ng-container *ngIf="isPurchasing; else buyTicketBlock">
                 Processing...
-              } @else {
-                Buy Ticket - ${{ house().ticketPrice }}
-              }
+              </ng-container>
+              <ng-template #buyTicketBlock>
+                Buy Ticket - {{ house().ticketPrice | currency:'USD':'symbol':'1.0-0' }}
+              </ng-template>
             </button>
-          } @else {
+          </ng-container>
+          <ng-template #signInBlock>
             <div class="text-center">
               <p class="text-sm text-gray-600 mb-2">Sign in to participate</p>
-              <div class="text-lg font-medium text-blue-600">${{ house().ticketPrice }} per ticket</div>
+              <div class="text-lg font-medium text-blue-600">{{ house().ticketPrice | currency:'USD':'symbol':'1.0-0' }} per ticket</div>
             </div>
-          }
+          </ng-template>
         </div>
       </div>
     </div>
