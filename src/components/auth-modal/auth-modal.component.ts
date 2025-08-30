@@ -12,7 +12,6 @@ import { TranslationService } from '../../services/translation.service';
     <div class="modal-backdrop dark:bg-black dark:bg-opacity-60" (click)="onBackdropClick($event)">
       <div class="modal-content dark:bg-gray-800">
         <div class="p-8">
-          <!-- Header -->
           <div class="flex justify-between items-center mb-8">
             <h2 class="text-3xl font-black text-gray-900 dark:text-white">
               {{ mode() === 'login' ? translate('auth.signIn') : translate('auth.createAccount') }}
@@ -26,7 +25,6 @@ import { TranslationService } from '../../services/translation.service';
             </button>
           </div>
 
-          <!-- Form -->
           <form (ngSubmit)="onSubmit()" class="space-y-6">
             @if (mode() === 'register') {
               <div>
@@ -81,7 +79,6 @@ import { TranslationService } from '../../services/translation.service';
             </button>
           </form>
 
-          <!-- Toggle Mode -->
           <div class="mt-8 text-center">
             <p class="text-sm text-gray-600 dark:text-gray-400">
               {{ mode() === 'login' ? translate('auth.dontHaveAccount') : translate('auth.alreadyHaveAccount') }}

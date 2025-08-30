@@ -14,7 +14,6 @@ import { TranslationService } from '../../services/translation.service';
     <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16 md:h-18">
-          <!-- Logo -->
           <div class="flex items-center flex-shrink-0">
             <div class="flex-shrink-0">
               <img 
@@ -28,7 +27,6 @@ import { TranslationService } from '../../services/translation.service';
             </div>
           </div>
 
-          <!-- Navigation -->
           <div class="hidden md:block">
             <div class="ml-10 flex items-baseline space-x-10">
               <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
@@ -43,14 +41,12 @@ import { TranslationService } from '../../services/translation.service';
             </div>
           </div>
 
-          <!-- User Actions -->
           <div class="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
             <div class="flex items-center space-x-1 md:space-x-2">
               <app-theme-toggle></app-theme-toggle>
               <app-language-switcher></app-language-switcher>
             </div>
             @if (currentUser(); as user) {
-              <!-- Authenticated User -->
               <div class="flex items-center space-x-2 md:space-x-4">
                 <span class="hidden sm:inline text-gray-700 dark:text-gray-300 text-sm font-medium">{{ translate('nav.welcome') }}, {{ user.name }}</span>
                 <span class="sm:hidden text-gray-700 dark:text-gray-300 text-sm font-medium">{{ user.name }}</span>
@@ -61,7 +57,6 @@ import { TranslationService } from '../../services/translation.service';
                 </button>
               </div>
             } @else {
-              <!-- Guest User -->
               <div class="flex items-center space-x-2 md:space-x-3">
                 <button
                   (click)="openAuthModal()"
@@ -75,7 +70,6 @@ import { TranslationService } from '../../services/translation.service';
       </div>
     </nav>
 
-    <!-- Auth Modal -->
     @if (showAuthModal) {
       <app-auth-modal 
         [mode]="authMode" 

@@ -13,7 +13,6 @@ export class AuthService {
 
   login(email: string, password: string): Promise<boolean> {
     return new Promise((resolve) => {
-      // Simulate API call
       setTimeout(() => {
         this.currentUser.set({
           id: '1',
@@ -28,7 +27,6 @@ export class AuthService {
 
   register(name: string, email: string, password: string): Promise<boolean> {
     return new Promise((resolve) => {
-      // Simulate API call
       setTimeout(() => {
         this.currentUser.set({
           id: '1',

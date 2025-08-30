@@ -27,7 +27,6 @@ import { ThemeService } from './services/theme.service';
         <app-house-grid></app-house-grid>
       </main>
       
-      <!-- Footer -->
       <footer class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">

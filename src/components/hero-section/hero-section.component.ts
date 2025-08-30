@@ -9,7 +9,6 @@ import { inject } from '@angular/core';
   imports: [CommonModule],
   template: `
     <section class="gradient-hero dark:from-gray-900 dark:to-gray-800 text-white relative overflow-hidden">
-      <!-- Background decoration -->
       <div class="absolute inset-0 bg-black opacity-10"></div>
       <div class="absolute top-0 left-0 w-full h-full">
         <div class="absolute top-10 left-10 w-72 h-72 bg-white opacity-5 rounded-full blur-3xl"></div>
@@ -33,7 +32,6 @@ import { inject } from '@angular/core';
             </button>
           </div>
           
-          <!-- Trust indicators -->
           <div class="mt-16 flex flex-wrap justify-center items-center gap-8 opacity-80">
             <div class="text-center">
               <div class="text-2xl font-bold">142</div>
