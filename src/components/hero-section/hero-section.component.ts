@@ -8,7 +8,7 @@ import { inject } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="gradient-hero dark:from-gray-900 dark:to-gray-800 text-white relative overflow-hidden">
+    <section class="bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-white relative overflow-hidden transition-all duration-300">
       <div class="absolute inset-0 bg-black opacity-10"></div>
       <div class="absolute top-0 left-0 w-full h-full">
         <div class="absolute top-10 left-10 w-72 h-72 bg-white opacity-5 rounded-full blur-3xl"></div>
