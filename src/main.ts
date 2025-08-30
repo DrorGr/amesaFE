@@ -5,6 +5,7 @@ import { TopbarComponent } from './components/topbar/topbar.component';
 import { HeroSectionComponent } from './components/hero-section/hero-section.component';
 import { HouseGridComponent } from './components/house-grid/house-grid.component';
 import { StatsSectionComponent } from './components/stats-section/stats-section.component';
+import { TranslationService } from './services/translation.service';
 
 @Component({
   selector: 'app-root',
@@ -32,35 +33,41 @@ import { StatsSectionComponent } from './components/stats-section/stats-section.
             <div>
               <h3 class="text-2xl font-bold mb-4 text-gradient">HomeLotto</h3>
               <p class="text-gray-300 leading-relaxed">
-                Your trusted platform for house lotteries. Win your dream home today.
+                {{ translate('footer.description') }}
               </p>
             </div>
             <div>
-              <h4 class="font-semibold mb-6 text-white">Quick Links</h4>
+              <h4 class="font-semibold mb-6 text-white">{{ translate('footer.quickLinks') }}</h4>
               <ul class="space-y-3 text-gray-300">
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">How It Works</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">Winners Gallery</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">Terms & Conditions</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">Contact Us</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('nav.howItWorks') }}</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.winnersGallery') }}</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.termsConditions') }}</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.contactUs') }}</a></li>
               </ul>
             </div>
             <div>
-              <h4 class="font-semibold mb-6 text-white">Support</h4>
+              <h4 class="font-semibold mb-6 text-white">{{ translate('footer.support') }}</h4>
               <ul class="space-y-3 text-gray-300">
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">Help Center</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">Live Chat</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">Privacy Policy</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.helpCenter') }}</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.liveChat') }}</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.privacyPolicy') }}</a></li>
               </ul>
             </div>
           </div>
           <div class="border-t border-gray-700 mt-12 pt-8 text-center text-gray-400">
-            <p class="text-sm">&copy; 2025 HomeLotto. All rights reserved.</p>
+            <p class="text-sm">{{ translate('footer.copyright') }}</p>
           </div>
         </div>
       </footer>
     </div>
   `
 })
-export class App {}
+export class App {
+  private translationService = inject(TranslationService);
+
+  translate(key: string): string {
+    return this.translationService.translate(key);
+  }
+}
 
 bootstrapApplication(App);

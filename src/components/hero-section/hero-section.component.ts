@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslationService } from '../../services/translation.service';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-hero-section',
@@ -17,17 +19,17 @@ import { CommonModule } from '@angular/common';
       <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div class="text-center">
           <h1 class="hero-title font-black mb-8 text-balance animate-fadeIn">
-            Win Your Dream Home
+            {{ translate('hero.title') }}
           </h1>
           <p class="hero-subtitle mb-12 text-blue-100 max-w-4xl mx-auto leading-relaxed animate-fadeIn text-balance">
-            Enter exclusive house lotteries and get the chance to win amazing properties at a fraction of their market value.
+            {{ translate('hero.subtitle') }}
           </p>
           <div class="flex flex-col sm:flex-row gap-6 justify-center animate-fadeIn">
             <button class="btn-secondary text-lg px-10 py-4">
-              Browse Lotteries
+              {{ translate('hero.browseLotteries') }}
             </button>
             <button class="btn-outline text-lg px-10 py-4">
-              How It Works
+              {{ translate('hero.howItWorks') }}
             </button>
           </div>
           
@@ -35,17 +37,17 @@ import { CommonModule } from '@angular/common';
           <div class="mt-16 flex flex-wrap justify-center items-center gap-8 opacity-80">
             <div class="text-center">
               <div class="text-2xl font-bold">142</div>
-              <div class="text-sm text-blue-200">Happy Winners</div>
+              <div class="text-sm text-blue-200">{{ translate('hero.happyWinners') }}</div>
             </div>
             <div class="hidden sm:block w-px h-12 bg-blue-300 opacity-30"></div>
             <div class="text-center">
               <div class="text-2xl font-bold">$24M</div>
-              <div class="text-sm text-blue-200">Properties Won</div>
+              <div class="text-sm text-blue-200">{{ translate('hero.propertiesWon') }}</div>
             </div>
             <div class="hidden sm:block w-px h-12 bg-blue-300 opacity-30"></div>
             <div class="text-center">
               <div class="text-2xl font-bold">99.8%</div>
-              <div class="text-sm text-blue-200">Satisfaction</div>
+              <div class="text-sm text-blue-200">{{ translate('hero.satisfaction') }}</div>
             </div>
           </div>
         </div>
@@ -53,4 +55,10 @@ import { CommonModule } from '@angular/common';
     </section>
   `
 })
-export class HeroSectionComponent {}
+export class HeroSectionComponent {
+  private translationService = inject(TranslationService);
+
+  translate(key: string): string {
+    return this.translationService.translate(key);
+  }
+}

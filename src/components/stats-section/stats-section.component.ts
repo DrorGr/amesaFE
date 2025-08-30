@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslationService } from '../../services/translation.service';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-stats-section',
@@ -15,7 +17,7 @@ import { CommonModule } from '@angular/common';
                 {{ stat.value }}
               </div>
               <div class="text-gray-700 font-semibold text-sm md:text-base">
-                {{ stat.label }}
+                {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>
           }
@@ -25,10 +27,20 @@ import { CommonModule } from '@angular/common';
   `
 })
 export class StatsSectionComponent {
+  private translationService = inject(TranslationService);
+
   stats = [
-    { value: '142', label: 'Happy Winners' },
-    { value: '$24M', label: 'Properties Won' },
-    { value: '50+', label: 'Active Lotteries' },
-    { value: '99.8%', label: 'Satisfaction Rate' }
+    { value: '142', labelKey: 'stats.happyWinners' },
+    { value: '$24M', labelKey: 'stats.propertiesWon' },
+    { value: '50+', labelKey: 'stats.activeLotteries' },
+    { value: '99.8%', labelKey: 'stats.satisfactionRate' }
   ];
+
+  translate(key: string): string {
+    return this.translationService.translate(key);
+  }
+
+  getStatLabel(labelKey: string): string {
+    return this.translate(labelKey);
+  }
 }

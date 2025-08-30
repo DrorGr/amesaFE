@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LotteryService } from '../../services/lottery.service';
 import { HouseCardComponent } from '../house-card/house-card.component';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-house-grid',
@@ -12,10 +13,10 @@ import { HouseCardComponent } from '../house-card/house-card.component';
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
           <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-6 text-balance">
-            Active House Lotteries
+            {{ translate('houses.title') }}
           </h2>
           <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed text-balance">
-            Choose from our selection of amazing properties and enter to win your dream home today.
+            {{ translate('houses.subtitle') }}
           </p>
         </div>
 
@@ -33,7 +34,8 @@ import { HouseCardComponent } from '../house-card/house-card.component';
               </svg>
             </div>
             <h3 class="text-2xl font-bold text-gray-900 mb-3">No Active Lotteries</h3>
-            <p class="text-lg text-gray-600">Check back soon for new lottery opportunities!</p>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">{{ translate('houses.noLotteries') }}</h3>
+            <p class="text-lg text-gray-600">{{ translate('houses.checkBack') }}</p>
           </div>
         }
       </div>
@@ -42,6 +44,11 @@ import { HouseCardComponent } from '../house-card/house-card.component';
 })
 export class HouseGridComponent {
   private lotteryService = inject(LotteryService);
+  private translationService = inject(TranslationService);
   
   houses = this.lotteryService.getHouses();
+
+  translate(key: string): string {
+    return this.translationService.translate(key);
+  }
 }

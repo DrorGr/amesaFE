@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { House } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-house-card',
@@ -40,14 +41,14 @@ import { LotteryService } from '../../services/lottery.service';
         </div>
 
         <div class="flex items-center justify-between text-sm text-gray-600 mb-4">
-          <span>{{ house().bedrooms }} bed</span>
-          <span>{{ house().bathrooms }} bath</span>
-          <span>{{ formatSqft(house().sqft) }} sqft</span>
+          <span>{{ house().bedrooms }} {{ translate('house.bed') }}</span>
+          <span>{{ house().bathrooms }} {{ translate('house.bath') }}</span>
+          <span>{{ formatSqft(house().sqft) }} {{ translate('house.sqft') }}</span>
         </div>
 
         <div class="mb-4">
           <div class="flex justify-between text-sm text-gray-600 mb-1">
-            <span>Tickets Sold</span>
+            <span>{{ translate('house.ticketsSold') }}</span>
             <span>{{ house().soldTickets }}/{{ house().totalTickets }}</span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-2">
@@ -59,7 +60,7 @@ import { LotteryService } from '../../services/lottery.service';
         </div>
 
         <div class="text-center mb-4">
-          <div class="text-sm text-gray-600">Lottery ends in</div>
+          <div class="text-sm text-gray-600">{{ translate('house.lotteryEnds') }}</div>
           <div class="text-lg font-bold text-orange-600">{{ getTimeRemaining() }}</div>
         </div>
 
@@ -70,17 +71,17 @@ import { LotteryService } from '../../services/lottery.service';
               [disabled]="isPurchasing || house().status !== 'active'"
               class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-lg font-medium transition-colors">
               <ng-container *ngIf="isPurchasing; else buyTicketBlock">
-                Processing...
+                {{ translate('house.processing') }}
               </ng-container>
               <ng-template #buyTicketBlock>
-                Buy Ticket - {{ house().ticketPrice | currency:'USD':'symbol':'1.0-0' }}
+                {{ translate('house.buyTicket') }} - {{ house().ticketPrice | currency:'USD':'symbol':'1.0-0' }}
               </ng-template>
             </button>
           </ng-container>
           <ng-template #signInBlock>
             <div class="text-center">
-              <p class="text-sm text-gray-600 mb-2">Sign in to participate</p>
-              <div class="text-lg font-medium text-blue-600">{{ house().ticketPrice | currency:'USD':'symbol':'1.0-0' }} per ticket</div>
+              <p class="text-sm text-gray-600 mb-2">{{ translate('house.signInToParticipate') }}</p>
+              <div class="text-lg font-medium text-blue-600">{{ house().ticketPrice | currency:'USD':'symbol':'1.0-0' }} {{ translate('house.perTicket') }}</div>
             </div>
           </ng-template>
         </div>
@@ -99,6 +100,7 @@ import { LotteryService } from '../../services/lottery.service';
 export class HouseCardComponent {
   private authService = inject(AuthService);
   private lotteryService = inject(LotteryService);
+  private translationService = inject(TranslationService);
   
   house = input.required<House>();
   isPurchasing = false;
@@ -121,9 +123,9 @@ export class HouseCardComponent {
   getStatusText(): string {
     const status = this.house().status;
     switch (status) {
-      case 'active': return 'Active';
-      case 'ended': return 'Ended';
-      case 'upcoming': return 'Coming Soon';
+      case 'active': return this.translate('house.active');
+      case 'ended': return this.translate('house.ended');
+      case 'upcoming': return this.translate('house.upcoming');
       default: return 'Unknown';
     }
   }
@@ -134,7 +136,7 @@ export class HouseCardComponent {
     const diff = endDate.getTime() - now.getTime();
     
     if (diff <= 0) {
-      return 'Ended';
+      return this.translate('house.ended');
     }
     
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -167,5 +169,9 @@ export class HouseCardComponent {
     } finally {
       this.isPurchasing = false;
     }
+  }
+
+  translate(key: string): string {
+    return this.translationService.translate(key);
   }
 }

@@ -2,6 +2,7 @@ import { Component, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-auth-modal',
@@ -14,7 +15,7 @@ import { AuthService } from '../../services/auth.service';
           <!-- Header -->
           <div class="flex justify-between items-center mb-8">
             <h2 class="text-3xl font-black text-gray-900">
-              {{ mode() === 'login' ? 'Sign In' : 'Create Account' }}
+              {{ mode() === 'login' ? translate('auth.signIn') : translate('auth.createAccount') }}
             </h2>
             <button 
               (click)="close.emit()"
@@ -29,7 +30,7 @@ import { AuthService } from '../../services/auth.service';
           <form (ngSubmit)="onSubmit()" class="space-y-6">
             @if (mode() === 'register') {
               <div>
-                <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">{{ translate('auth.fullName') }}</label>
                 <input
                   type="text"
                   id="name"
@@ -41,7 +42,7 @@ import { AuthService } from '../../services/auth.service';
             }
             
             <div>
-              <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+              <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">{{ translate('auth.email') }}</label>
               <input
                 type="email"
                 id="email"
@@ -52,7 +53,7 @@ import { AuthService } from '../../services/auth.service';
             </div>
 
             <div>
-              <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+              <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">{{ translate('auth.password') }}</label>
               <input
                 type="password"
                 id="password"
@@ -72,10 +73,10 @@ import { AuthService } from '../../services/auth.service';
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Processing...
+                  {{ translate('auth.processing') }}
                 </span>
               } @else {
-                {{ mode() === 'login' ? 'Sign In' : 'Create Account' }}
+                {{ mode() === 'login' ? translate('auth.signIn') : translate('auth.createAccount') }}
               }
             </button>
           </form>
@@ -83,12 +84,12 @@ import { AuthService } from '../../services/auth.service';
           <!-- Toggle Mode -->
           <div class="mt-8 text-center">
             <p class="text-sm text-gray-600">
-              {{ mode() === 'login' ? "Don't have an account?" : "Already have an account?" }}
+              {{ mode() === 'login' ? translate('auth.dontHaveAccount') : translate('auth.alreadyHaveAccount') }}
               <button
                 type="button"
                 (click)="toggleMode()"
                 class="text-blue-600 hover:text-blue-700 font-semibold ml-1 transition-colors duration-200">
-                {{ mode() === 'login' ? 'Sign up' : 'Sign in' }}
+                {{ mode() === 'login' ? translate('auth.signUp') : translate('auth.signIn') }}
               </button>
             </p>
           </div>
@@ -104,6 +105,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class AuthModalComponent {
   private authService = inject(AuthService);
+  private translationService = inject(TranslationService);
   
   mode = input.required<'login' | 'register'>();
   close = output<void>();
@@ -157,5 +159,9 @@ export class AuthModalComponent {
     this.email = '';
     this.password = '';
     this.isLoading = false;
+  }
+
+  translate(key: string): string {
+    return this.translationService.translate(key);
   }
 }
