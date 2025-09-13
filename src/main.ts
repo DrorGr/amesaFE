@@ -29,8 +29,6 @@ import { ThemeService } from './services/theme.service';
       
       <footer class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
           <!-- Logo and Description Section -->
           <div class="mb-12 text-center md:text-left md:col-span-4">
             <img 
@@ -48,6 +46,7 @@ import { ThemeService } from './services/theme.service';
           
           
           <!-- Footer Links Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h4 class="font-semibold mb-6 text-white">{{ translate('footer.community') }}</h4>
               <ul class="space-y-3 text-gray-300">
