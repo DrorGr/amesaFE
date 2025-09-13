@@ -229,8 +229,8 @@ export class TranslationService {
 
   getAvailableLanguages(): { code: Language; name: string; flag: string }[] {
     return [
-      { code: 'en', name: 'English', flag: '🇺🇸' },
-      { code: 'pl', name: 'Polski', flag: '🇵🇱' }
+      { code: 'en', name: 'English', flag: 'https://flagcdn.com/w40/gb.png' },
+      { code: 'pl', name: 'Polski', flag: 'https://flagcdn.com/w40/pl.png' }
     ];
   }
 }
