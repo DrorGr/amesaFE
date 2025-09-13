@@ -10,7 +10,7 @@ import { inject } from '@angular/core';
   template: `
     <section class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-16 md:py-16 py-8 transition-colors duration-300 overflow-hidden">
       <div class="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
-        <div class="flex animate-scroll-stats space-x-4 md:space-x-8">
+        <div class="flex animate-scroll-stats space-x-8 md:space-x-12">
           @for (stat of stats; track stat.labelKey) {
             <div class="flex-shrink-0 text-center min-w-[100px] md:min-w-[200px]">
               <div class="text-xl md:text-6xl font-black text-gradient mb-0.5 md:mb-4">
