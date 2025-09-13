@@ -30,19 +30,21 @@ import { ThemeService } from './services/theme.service';
       <footer class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Logo and Main Description -->
-          <div class="mb-12">
-            <div class="flex items-center mb-6">
+          <div class="mb-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div class="flex items-center">
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
                 class="h-16 md:h-20 w-auto">
             </div>
-            <p class="text-gray-300 text-lg leading-relaxed max-w-4xl mb-8">
+            <p class="text-gray-300 text-lg leading-relaxed max-w-2xl">
               {{ translate('footer.description') }}
             </p>
-            
+          </div>
+          
+          <div class="mb-12">
             <!-- Community Support Section -->
-            <div class="mb-8">
+            <div>
               <h3 class="text-blue-400 font-semibold text-lg mb-3">{{ translate('footer.supportCause') }}</h3>
               <p class="text-gray-300 leading-relaxed max-w-4xl">
                 {{ translate('footer.supportDescription') }}
