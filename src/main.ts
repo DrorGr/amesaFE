@@ -35,7 +35,7 @@ import { ThemeService } from './services/theme.service';
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="h-16 w-auto">
+                class="h-12 w-auto">
               <p class="text-gray-300 text-lg leading-relaxed">
                 {{ translate('footer.description') }}
               </p>
