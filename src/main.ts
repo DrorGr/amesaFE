@@ -41,6 +41,7 @@ import { ThemeService } from './services/theme.service';
               <div class="mt-6">
                 <p class="text-blue-400 font-semibold mb-2">{{ translate('footer.supportCause') }}</p>
                 <p class="text-gray-300 text-sm">{{ translate('footer.supportDescription') }}</p>
+              </div>
               
               <!-- App Store Links -->
               <div class="mt-6">
