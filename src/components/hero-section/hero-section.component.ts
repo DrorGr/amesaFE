@@ -124,11 +124,9 @@ import { inject } from '@angular/core';
       .hero-subtitle {
         font-size: 1.5rem;
         line-height: 1.4;
-        text-shadow: 3px 3px 8px rgba(0,0,0,0.9), 1px 1px 3px rgba(0,0,0,0.8);
-        background: linear-gradient(135deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1));
-        padding: 8px 12px;
-        border-radius: 8px;
-        backdrop-filter: blur(2px);
+        -webkit-text-stroke: 1px rgba(0,0,0,0.8);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+        font-weight: 600;
       }
     }
   `]
