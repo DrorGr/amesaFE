@@ -125,7 +125,7 @@ import { inject } from '@angular/core';
         font-size: 1.5rem;
         line-height: 1.4;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-        font-weight: 500;
+        font-weight: 700;
       }
     }
   `]
