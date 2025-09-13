@@ -74,6 +74,7 @@ import { ThemeService } from './services/theme.service';
                   <div class="bg-white rounded px-2 py-1 text-xs text-gray-800 font-semibold">PayPal</div>
                   <div class="bg-white rounded px-2 py-1 text-xs text-gray-800 font-semibold">Stripe</div>
                 </div>
+              </div>
             </div>
           </div>
           <div class="border-t border-gray-700 mt-12 pt-8">
