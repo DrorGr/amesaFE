@@ -31,47 +31,23 @@ import { ThemeService } from './services/theme.service';
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <img 
-                src="assets/AmesaNoBG.png" 
-                alt="Amesa" 
-                class="h-15 md:h-20 w-auto mb-4">
-              <p class="text-gray-300 leading-relaxed">
-                {{ translate('footer.description') }}
-              </p>
-              <div class="mt-6">
-                <p class="text-blue-400 font-semibold mb-2">{{ translate('footer.supportCause') }}</p>
-                <p class="text-gray-300 text-sm">{{ translate('footer.supportDescription') }}</p>
-              </div>
-              
-              <!-- App Store Links -->
-              <div class="mt-6">
-                <p class="text-white font-semibold mb-3">{{ translate('footer.downloadApp') }}</p>
-                <div class="flex space-x-2">
-                  <a href="#" class="inline-block">
-                    <div class="bg-black rounded-lg px-3 py-2 flex items-center space-x-2">
-                      <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                      </svg>
-                      <div class="text-left">
-                        <div class="text-xs text-gray-300">Download on the</div>
-                        <div class="text-sm font-semibold text-white">App Store</div>
-                      </div>
-                    </div>
-                  </a>
-                  <a href="#" class="inline-block">
-                    <div class="bg-black rounded-lg px-3 py-2 flex items-center space-x-2">
-                      <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.92 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
-                      </svg>
-                      <div class="text-left">
-                        <div class="text-xs text-gray-300">Get it on</div>
-                        <div class="text-sm font-semibold text-white">Google Play</div>
-                      </div>
-                    </div>
-                  </a>
-                </div>
-              </div>
+          <!-- Logo and Description Section -->
+          <div class="mb-12 text-center md:text-left">
+            <img 
+              src="assets/AmesaNoBG.png" 
+              alt="Amesa" 
+              class="h-16 md:h-20 w-auto mx-auto md:mx-0 mb-4">
+            <p class="text-gray-300 leading-relaxed max-w-2xl mx-auto md:mx-0">
+              {{ translate('footer.description') }}
+            </p>
+            <div class="mt-6">
+              <p class="text-blue-400 font-semibold mb-2">{{ translate('footer.supportCause') }}</p>
+              <p class="text-gray-300 text-sm max-w-2xl mx-auto md:mx-0">{{ translate('footer.supportDescription') }}</p>
             </div>
+          </div>
+          
+          <!-- Footer Links Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h4 class="font-semibold mb-6 text-white">{{ translate('footer.community') }}</h4>
               <ul class="space-y-3 text-gray-300">
@@ -91,6 +67,44 @@ import { ThemeService } from './services/theme.service';
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.drawCalendar') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.branchMap') }}</a></li>
               </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-6 text-white">{{ translate('footer.support') }}</h4>
+              <ul class="space-y-3 text-gray-300">
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.helpCenter') }}</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.liveChat') }}</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.contactUs') }}</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.faq') }}</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.drawCalendar') }}</a></li>
+                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.branchMap') }}</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-6 text-white">{{ translate('footer.downloadApp') }}</h4>
+              <div class="flex flex-col space-y-2">
+                <a href="#" class="inline-block">
+                  <div class="bg-black rounded-lg px-3 py-2 flex items-center space-x-2">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                    </svg>
+                    <div class="text-left">
+                      <div class="text-xs text-gray-300">Download on the</div>
+                      <div class="text-sm font-semibold text-white">App Store</div>
+                    </div>
+                  </div>
+                </a>
+                <a href="#" class="inline-block">
+                  <div class="bg-black rounded-lg px-3 py-2 flex items-center space-x-2">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.92 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+                    </svg>
+                    <div class="text-left">
+                      <div class="text-xs text-gray-300">Get it on</div>
+                      <div class="text-sm font-semibold text-white">Google Play</div>
+                    </div>
+                  </div>
+                </a>
+              </div>
             </div>
             <div>
               <h4 class="font-semibold mb-6 text-white">{{ translate('footer.legal') }}</h4>
