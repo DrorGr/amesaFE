@@ -118,7 +118,7 @@ import { ThemeService } from './services/theme.service';
                     </div>
                   </div>
                   <div class="flex items-center space-x-2">
-          <div class="md:col-span-4 mb-8">
+                    <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
                       <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8.070 8.686 8.433 7.418zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.364.589 0 .832-.155.103-.346.196-.567.267z"/>
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6.102 7.036 6.102 8c0 .964.5 1.766 1.222 2.246.135.09.288.171.448.245.18.083.389.179.627.291.18-.083.389-.179.627-.291.16-.074.313-.155.448-.245C10.898 9.766 11.398 8.964 11.398 8c0-.964-.5-1.766-1.222-2.246A4.535 4.535 0 009.5 5.092V5a1 1 0 011 0zm-1 4a3 3 0 100 6 3 3 0 000-6z" clip-rule="evenodd"/>
@@ -126,42 +126,13 @@ import { ThemeService } from './services/theme.service';
                     </div>
                     <div class="text-sm">
                       <div class="text-white font-medium">{{ translate('footer.accountingPartner') }}</div>
-          </div>
-          
-          <div>
-            <h4 class="font-semibold mb-6 text-white">{{ translate('footer.supportCause') }}</h4>
-            <p class="text-gray-300 text-sm mb-6">{{ translate('footer.supportDescription') }}</p>
-            
-            <!-- App Store Links -->
-            <div>
-              <p class="text-white font-semibold mb-3">{{ translate('footer.downloadApp') }}</p>
-              <div class="flex space-x-2">
-                <a href="#" class="inline-block">
-                  <div class="bg-black rounded-lg px-3 py-2 flex items-center space-x-2">
-                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                    </svg>
-                    <div class="text-left">
-                      <div class="text-xs text-gray-300">Download on the</div>
-                      <div class="text-sm font-semibold text-white">App Store</div>
+                      <div class="text-gray-400 text-xs">{{ translate('footer.financialServices') }}</div>
                     </div>
                   </div>
-                </a>
-                <a href="#" class="inline-block">
-                  <div class="bg-black rounded-lg px-3 py-2 flex items-center space-x-2">
-                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.92 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
-                    </svg>
-                    <div class="text-left">
-                      <div class="text-xs text-gray-300">Get it on</div>
-                      <div class="text-sm font-semibold text-white">Google Play</div>
-                    </div>
-                  </div>
-                </a>
+                </div>
               </div>
             </div>
           </div>
-          
         </div>
       </footer>
     </div>
