@@ -10,24 +10,24 @@ import { inject } from '@angular/core';
   template: `
     <section class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-16 transition-colors duration-300 overflow-hidden">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex animate-scroll-stats space-x-8">
+        <div class="flex animate-scroll-stats space-x-4 md:space-x-8">
           @for (stat of stats; track stat.labelKey) {
-            <div class="flex-shrink-0 text-center min-w-[120px] md:min-w-[200px]">
-              <div class="text-2xl md:text-6xl font-black text-gradient mb-1 md:mb-4">
+            <div class="flex-shrink-0 text-center min-w-[100px] md:min-w-[200px]">
+              <div class="text-xl md:text-6xl font-black text-gradient mb-0.5 md:mb-4">
                 {{ stat.value }}
               </div>
-              <div class="text-gray-700 dark:text-gray-300 font-semibold text-xs md:text-lg">
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-xs md:text-lg leading-tight">
                 {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>
           }
           <!-- Duplicate for seamless loop -->
           @for (stat of stats; track stat.labelKey + '-duplicate') {
-            <div class="flex-shrink-0 text-center min-w-[120px] md:min-w-[200px]">
-              <div class="text-2xl md:text-6xl font-black text-gradient mb-1 md:mb-4">
+            <div class="flex-shrink-0 text-center min-w-[100px] md:min-w-[200px]">
+              <div class="text-xl md:text-6xl font-black text-gradient mb-0.5 md:mb-4">
                 {{ stat.value }}
               </div>
-              <div class="text-gray-700 dark:text-gray-300 font-semibold text-xs md:text-lg">
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-xs md:text-lg leading-tight">
                 {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>
@@ -52,7 +52,7 @@ import { inject } from '@angular/core';
     
     @media (max-width: 767px) {
       .animate-scroll-stats {
-        animation: scroll-stats 4s linear infinite;
+        animation: scroll-stats 3s linear infinite;
       }
     }
     
