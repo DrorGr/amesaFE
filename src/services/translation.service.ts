@@ -32,6 +32,7 @@ export class TranslationService {
       'hero.happyWinners': 'Happy Winners',
       'hero.propertiesWon': 'Properties Won',
       'hero.satisfaction': 'Satisfaction',
+      'hero.winnerKeys': 'Winner Keys',
       
       // Stats Section
       'stats.oddsToWin': 'Odds to Win',
@@ -120,6 +121,7 @@ export class TranslationService {
       'hero.happyWinners': 'Szczęśliwi Zwycięzcy',
       'hero.propertiesWon': 'Wygrane Nieruchomości',
       'hero.satisfaction': 'Zadowolenie',
+      'hero.winnerKeys': 'Klucze Zwycięzcy',
       
       // Stats Section
       'stats.oddsToWin': 'Szanse na Wygraną',
