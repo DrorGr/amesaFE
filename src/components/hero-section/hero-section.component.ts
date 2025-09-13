@@ -54,9 +54,9 @@ import { inject } from '@angular/core';
       
       <!-- Scrolling Marketing Images -->
       <div class="bg-gray-50 dark:bg-gray-800 py-8 overflow-hidden">
-        <div class="flex animate-scroll space-x-4">
+        <div class="flex animate-scroll space-x-2">
           @for (image of marketingImages; track image.id) {
-            <div class="flex-shrink-0 w-80 h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <div class="flex-shrink-0 w-64 h-40 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
               <img 
                 [src]="image.url" 
                 [alt]="image.alt"
@@ -65,7 +65,7 @@ import { inject } from '@angular/core';
           }
           <!-- Duplicate for seamless loop -->
           @for (image of marketingImages; track image.id + '-duplicate') {
-            <div class="flex-shrink-0 w-80 h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <div class="flex-shrink-0 w-64 h-40 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
               <img 
                 [src]="image.url" 
                 [alt]="image.alt"
@@ -89,7 +89,7 @@ import { inject } from '@angular/core';
     }
     
     .animate-scroll {
-      animation: scroll 15s linear infinite;
+      animation: scroll 8s linear infinite;
     }
     
     .animate-scroll:hover {
