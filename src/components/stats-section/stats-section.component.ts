@@ -12,22 +12,22 @@ import { inject } from '@angular/core';
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex animate-scroll-stats space-x-8">
           @for (stat of stats; track stat.labelKey) {
-            <div class="flex-shrink-0 text-center min-w-[200px]">
-              <div class="text-5xl md:text-6xl font-black text-gradient mb-4">
+            <div class="flex-shrink-0 text-center min-w-[150px] md:min-w-[200px]">
+              <div class="text-3xl md:text-6xl font-black text-gradient mb-2 md:mb-4">
                 {{ stat.value }}
               </div>
-              <div class="text-gray-700 dark:text-gray-300 font-semibold text-lg">
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-sm md:text-lg">
                 {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>
           }
           <!-- Duplicate for seamless loop -->
           @for (stat of stats; track stat.labelKey + '-duplicate') {
-            <div class="flex-shrink-0 text-center min-w-[200px]">
-              <div class="text-5xl md:text-6xl font-black text-gradient mb-4">
+            <div class="flex-shrink-0 text-center min-w-[150px] md:min-w-[200px]">
+              <div class="text-3xl md:text-6xl font-black text-gradient mb-2 md:mb-4">
                 {{ stat.value }}
               </div>
-              <div class="text-gray-700 dark:text-gray-300 font-semibold text-lg">
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-sm md:text-lg">
                 {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>
@@ -47,7 +47,13 @@ import { inject } from '@angular/core';
     }
     
     .animate-scroll-stats {
-      animation: scroll-stats 12s linear infinite;
+      animation: scroll-stats 8s linear infinite;
+    }
+    
+    @media (max-width: 767px) {
+      .animate-scroll-stats {
+        animation: scroll-stats 6s linear infinite;
+      }
     }
     
     .animate-scroll-stats:hover {
