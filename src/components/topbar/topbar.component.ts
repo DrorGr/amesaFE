@@ -19,7 +19,7 @@ import { TranslationService } from '../../services/translation.service';
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="h-15 md:h-20 w-auto">
+                class="h-10 md:h-16 w-auto max-w-[120px] md:max-w-none">
             </div>
           </div>
 
@@ -42,7 +42,7 @@ import { TranslationService } from '../../services/translation.service';
 
           <div class="flex items-center space-x-2 md:space-x-3 flex-shrink-0 min-w-0">
             <app-theme-toggle></app-theme-toggle>
-            <div class="w-28 flex justify-end">
+            <div class="w-20 md:w-28 flex justify-end">
               <app-language-switcher></app-language-switcher>
             </div>
             @if (currentUser(); as user) {
