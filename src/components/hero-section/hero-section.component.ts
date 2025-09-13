@@ -124,6 +124,7 @@ import { inject } from '@angular/core';
       .hero-subtitle {
         font-size: 1.5rem;
         line-height: 1.4;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
       }
     }
   `]
