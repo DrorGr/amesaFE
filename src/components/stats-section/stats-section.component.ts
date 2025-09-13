@@ -8,7 +8,7 @@ import { inject } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-16 transition-colors duration-300 overflow-hidden">
+    <section class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-16 md:py-16 py-8 transition-colors duration-300 overflow-hidden">
       <div class="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
         <div class="flex animate-scroll-stats space-x-4 md:space-x-8">
           @for (stat of stats; track stat.labelKey) {
