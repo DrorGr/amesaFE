@@ -34,10 +34,9 @@ export class TranslationService {
       'hero.satisfaction': 'Satisfaction',
       
       // Stats Section
-      'stats.happyWinners': 'Happy Winners',
-      'stats.propertiesWon': 'Properties Won',
+      'stats.oddsToWin': 'Odds to Win',
+      'stats.currentPrizes': 'Current Prizes',
       'stats.activeLotteries': 'Active Lotteries',
-      'stats.satisfactionRate': 'Satisfaction Rate',
       
       // House Grid
       'houses.title': 'Active House Lotteries',
@@ -72,15 +71,24 @@ export class TranslationService {
       
       // Footer
       'footer.description': 'Your trusted platform for house lotteries. Win your dream home today.',
-      'footer.quickLinks': 'Quick Links',
+      'footer.community': 'Community',
+      'footer.about': 'About',
+      'footer.partners': 'Partners',
+      'footer.sponsorship': 'Sponsorship',
+      'footer.responsibleGaming': 'Responsible Gaming',
       'footer.support': 'Support',
+      'footer.legal': 'Legal',
       'footer.helpCenter': 'Help Center',
       'footer.liveChat': 'Live Chat',
+      'footer.faq': 'FAQ',
       'footer.privacyPolicy': 'Privacy Policy',
       'footer.termsConditions': 'Terms & Conditions',
+      'footer.gdprInfo': 'GDPR Information',
       'footer.contactUs': 'Contact Us',
-      'footer.winnersGallery': 'Winners Gallery',
       'footer.copyright': '© 2025 Amesa. All rights reserved.',
+      'footer.supportCause': 'We Support Community',
+      'footer.supportDescription': 'Part of our proceeds go to support local housing initiatives and community development.',
+      'footer.paymentMethods': 'Payment Methods',
       
       // House Data
       'house.1.title': 'Modern Downtown Condo',
@@ -114,10 +122,9 @@ export class TranslationService {
       'hero.satisfaction': 'Zadowolenie',
       
       // Stats Section
-      'stats.happyWinners': 'Szczęśliwi Zwycięzcy',
-      'stats.propertiesWon': 'Wygrane Nieruchomości',
+      'stats.oddsToWin': 'Szanse na Wygraną',
+      'stats.currentPrizes': 'Aktualne Nagrody',
       'stats.activeLotteries': 'Aktywne Loterie',
-      'stats.satisfactionRate': 'Wskaźnik Zadowolenia',
       
       // House Grid
       'houses.title': 'Aktywne Loterie Domów',
@@ -152,15 +159,24 @@ export class TranslationService {
       
       // Footer
       'footer.description': 'Twoja zaufana platforma loterii domów. Wygraj dom swoich marzeń już dziś.',
-      'footer.quickLinks': 'Szybkie Linki',
+      'footer.community': 'Społeczność',
+      'footer.about': 'O nas',
+      'footer.partners': 'Partnerzy',
+      'footer.sponsorship': 'Sponsoring',
+      'footer.responsibleGaming': 'Odpowiedzialna Gra',
       'footer.support': 'Wsparcie',
+      'footer.legal': 'Prawne',
       'footer.helpCenter': 'Centrum Pomocy',
       'footer.liveChat': 'Czat na Żywo',
+      'footer.faq': 'FAQ',
       'footer.privacyPolicy': 'Polityka Prywatności',
       'footer.termsConditions': 'Regulamin',
+      'footer.gdprInfo': 'Informacje RODO',
       'footer.contactUs': 'Skontaktuj się z nami',
-      'footer.winnersGallery': 'Galeria Zwycięzców',
       'footer.copyright': '© 2025 Amesa. Wszelkie prawa zastrzeżone.',
+      'footer.supportCause': 'Wspieramy Społeczność',
+      'footer.supportDescription': 'Część naszych dochodów przeznaczamy na wsparcie lokalnych inicjatyw mieszkaniowych i rozwoju społeczności.',
+      'footer.paymentMethods': 'Metody Płatności',
       
       // House Data
       'house.1.title': 'Nowoczesne Mieszkanie w Centrum',

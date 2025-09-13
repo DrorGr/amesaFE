@@ -12,7 +12,7 @@ import { inject } from '@angular/core';
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
           @for (stat of stats; track stat.labelKey) {
-            <div class="text-center p-6 bg-white dark:bg-gray-800 rounded-xl shadow-soft hover:shadow-medium transition-all duration-300 hover:-translate-y-1 transform">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div class="text-4xl md:text-5xl font-black text-gradient mb-3">
                 {{ stat.value }}
               </div>
@@ -30,10 +30,9 @@ export class StatsSectionComponent {
   private translationService = inject(TranslationService);
 
   stats = [
-    { value: '142', labelKey: 'stats.happyWinners' },
-    { value: '$24M', labelKey: 'stats.propertiesWon' },
-    { value: '50+', labelKey: 'stats.activeLotteries' },
-    { value: '99.8%', labelKey: 'stats.satisfactionRate' }
+    { value: '1:2,500', labelKey: 'stats.oddsToWin' },
+    { value: '€2.5M', labelKey: 'stats.currentPrizes' },
+    { value: '12', labelKey: 'stats.activeLotteries' }
   ];
 
   translate(key: string): string {
