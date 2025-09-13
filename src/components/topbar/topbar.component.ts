@@ -71,8 +71,6 @@ import { TranslationService } from '../../services/translation.service';
 
           <!-- Right side: Theme toggle + Hamburger -->
           <div class="flex items-center space-x-3">
-            <app-theme-toggle></app-theme-toggle>
-            
             <!-- Hamburger Menu Button -->
             <button
               (click)="toggleMobileMenu()"
@@ -89,6 +87,10 @@ import { TranslationService } from '../../services/translation.service';
                 </svg>
               }
             </button>
+            
+            <app-language-switcher></app-language-switcher>
+            
+            <app-theme-toggle></app-theme-toggle>
           </div>
         </div>
 
@@ -112,12 +114,6 @@ import { TranslationService } from '../../services/translation.service';
             </div>
 
             <!-- Language Switcher -->
-            <div class="px-4 mb-6">
-              <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Language</div>
-              <app-language-switcher></app-language-switcher>
-            </div>
-
-            <!-- Auth Section -->
             <div class="px-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               @if (currentUser(); as user) {
                 <div class="space-y-3">
