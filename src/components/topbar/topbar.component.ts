@@ -71,6 +71,10 @@ import { TranslationService } from '../../services/translation.service';
 
           <!-- Right side: Theme toggle + Hamburger -->
           <div class="flex items-center space-x-3">
+            <app-language-switcher></app-language-switcher>
+            
+            <app-theme-toggle></app-theme-toggle>
+            
             <!-- Hamburger Menu Button -->
             <button
               (click)="toggleMobileMenu()"
@@ -87,10 +91,6 @@ import { TranslationService } from '../../services/translation.service';
                 </svg>
               }
             </button>
-            
-            <app-language-switcher></app-language-switcher>
-            
-            <app-theme-toggle></app-theme-toggle>
           </div>
         </div>
 
