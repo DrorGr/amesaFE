@@ -8,15 +8,26 @@ import { inject } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-20 transition-colors duration-300">
+    <section class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-16 transition-colors duration-300 overflow-hidden">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div class="flex animate-scroll-stats space-x-16">
           @for (stat of stats; track stat.labelKey) {
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div class="text-4xl md:text-5xl font-black text-gradient mb-3">
+            <div class="flex-shrink-0 text-center min-w-[300px]">
+              <div class="text-5xl md:text-6xl font-black text-gradient mb-4">
                 {{ stat.value }}
               </div>
-              <div class="text-gray-700 dark:text-gray-300 font-semibold text-sm md:text-base">
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-lg">
+                {{ getStatLabel(stat.labelKey) }}
+              </div>
+            </div>
+          }
+          <!-- Duplicate for seamless loop -->
+          @for (stat of stats; track stat.labelKey + '-duplicate') {
+            <div class="flex-shrink-0 text-center min-w-[300px]">
+              <div class="text-5xl md:text-6xl font-black text-gradient mb-4">
+                {{ stat.value }}
+              </div>
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-lg">
                 {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>
@@ -24,7 +35,25 @@ import { inject } from '@angular/core';
         </div>
       </div>
     </section>
-  `
+  `,
+  styles: [`
+    @keyframes scroll-stats {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+    
+    .animate-scroll-stats {
+      animation: scroll-stats 20s linear infinite;
+    }
+    
+    .animate-scroll-stats:hover {
+      animation-play-state: paused;
+    }
+  `]
 })
 export class StatsSectionComponent {
   private translationService = inject(TranslationService);
@@ -32,7 +61,10 @@ export class StatsSectionComponent {
   stats = [
     { value: '1:2,500', labelKey: 'stats.oddsToWin' },
     { value: '€2.5M', labelKey: 'stats.currentPrizes' },
-    { value: '12', labelKey: 'stats.activeLotteries' }
+    { value: '12', labelKey: 'stats.activeLotteries' },
+    { value: '98%', labelKey: 'stats.satisfaction' },
+    { value: '500+', labelKey: 'stats.happyWinners' },
+    { value: '€50M+', labelKey: 'stats.totalPrizes' }
   ];
 
   translate(key: string): string {

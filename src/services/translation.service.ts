@@ -38,6 +38,9 @@ export class TranslationService {
       'stats.oddsToWin': 'Odds to Win',
       'stats.currentPrizes': 'Current Prizes',
       'stats.activeLotteries': 'Active Lotteries',
+      'stats.satisfaction': 'Satisfaction Rate',
+      'stats.happyWinners': 'Happy Winners',
+      'stats.totalPrizes': 'Total Prizes Won',
       
       // House Grid
       'houses.title': 'Active House Lotteries',
@@ -72,24 +75,28 @@ export class TranslationService {
       
       // Footer
       'footer.description': 'Your trusted platform for house lotteries. Win your dream home today.',
+      'footer.downloadApp': 'Download Our App',
       'footer.community': 'Community',
       'footer.about': 'About',
+      'footer.makeSponsorship': 'Make a Sponsorship Offer',
       'footer.partners': 'Partners',
-      'footer.sponsorship': 'Sponsorship',
       'footer.responsibleGaming': 'Responsible Gaming',
       'footer.support': 'Support',
       'footer.legal': 'Legal',
       'footer.helpCenter': 'Help Center',
       'footer.liveChat': 'Live Chat',
       'footer.faq': 'FAQ',
+      'footer.drawCalendar': 'Draw Calendar',
+      'footer.branchMap': 'Branch Map',
+      'footer.regulations': 'Regulations',
       'footer.privacyPolicy': 'Privacy Policy',
       'footer.termsConditions': 'Terms & Conditions',
       'footer.gdprInfo': 'GDPR Information',
+      'footer.news': 'News',
       'footer.contactUs': 'Contact Us',
       'footer.copyright': '© 2025 Amesa. All rights reserved.',
       'footer.supportCause': 'We Support Community',
       'footer.supportDescription': 'Part of our proceeds go to support local housing initiatives and community development.',
-      'footer.paymentMethods': 'Payment Methods',
       
       // House Data
       'house.1.title': 'Modern Downtown Condo',
@@ -127,6 +134,9 @@ export class TranslationService {
       'stats.oddsToWin': 'Szanse na Wygraną',
       'stats.currentPrizes': 'Aktualne Nagrody',
       'stats.activeLotteries': 'Aktywne Loterie',
+      'stats.satisfaction': 'Wskaźnik Zadowolenia',
+      'stats.happyWinners': 'Szczęśliwi Zwycięzcy',
+      'stats.totalPrizes': 'Łączne Wygrane Nagrody',
       
       // House Grid
       'houses.title': 'Aktywne Loterie Domów',
