@@ -145,6 +145,7 @@ import { ThemeService } from './services/theme.service';
                 </div>
               </div>
             </div>
+          </div>
         </div>
       </footer>
     </div>
