@@ -52,29 +52,9 @@ import { inject } from '@angular/core';
         </div>
       </div>
       
-      <!-- Statistics Bar -->
-      <div class="bg-white dark:bg-gray-900 py-6 border-b border-gray-200 dark:border-gray-700">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-center items-center space-x-12">
-            <div class="text-center">
-              <div class="text-3xl font-black text-blue-600 dark:text-blue-400">24M</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ translate('hero.totalSlots') }}</div>
-            </div>
-            <div class="text-center">
-              <div class="text-3xl font-black text-yellow-600 dark:text-yellow-400">320M</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ translate('hero.totalPrize') }}</div>
-            </div>
-            <div class="text-center">
-              <div class="text-3xl font-black text-green-600 dark:text-green-400">98%</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ translate('hero.satisfaction') }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
       <!-- Scrolling Marketing Images -->
       <div class="bg-gray-50 dark:bg-gray-800 py-8 overflow-hidden">
-        <div class="flex animate-scroll space-x-8">
+        <div class="flex animate-scroll space-x-4">
           @for (image of marketingImages; track image.id) {
             <div class="flex-shrink-0 w-80 h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
               <img 
@@ -109,7 +89,7 @@ import { inject } from '@angular/core';
     }
     
     .animate-scroll {
-      animation: scroll 30s linear infinite;
+      animation: scroll 15s linear infinite;
     }
     
     .animate-scroll:hover {
