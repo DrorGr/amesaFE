@@ -31,12 +31,12 @@ import { ThemeService } from './services/theme.service';
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Logo, Description and Social Media -->
           <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex items-center gap-6">
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="h-12 md:h-16 w-auto">
-              <p class="text-gray-300 text-base leading-relaxed max-w-md">
+                class="h-16 md:h-20 w-auto">
+              <p class="text-gray-300 text-lg leading-relaxed">
                 {{ translate('footer.description') }}
               </p>
             </div>
