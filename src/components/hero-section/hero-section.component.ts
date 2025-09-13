@@ -17,8 +17,10 @@ import { inject } from '@angular/core';
             src="https://images.pexels.com/photos/1157557/pexels-photo-1157557.jpeg" 
             alt="Winner celebration" 
             class="w-full h-full object-cover">
-          <!-- Blue gradient overlay -->
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 opacity-90"></div>
+          <!-- Shaped blue overlay -->
+          <div class="absolute inset-0">
+            <div class="absolute top-0 left-0 w-3/5 h-full bg-gradient-to-r from-blue-600 via-blue-500 to-transparent opacity-85 clip-path-diagonal"></div>
+          </div>
         </div>
         
         <!-- Content Overlay -->
@@ -94,6 +96,10 @@ import { inject } from '@angular/core';
     
     .animate-scroll:hover {
       animation-play-state: paused;
+    }
+    
+    .clip-path-diagonal {
+      clip-path: polygon(0 0, 70% 0, 50% 100%, 0 100%);
     }
     
     @media (max-width: 767px) {
