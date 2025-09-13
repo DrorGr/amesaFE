@@ -16,6 +16,7 @@ export class TranslationService {
     en: {
       // Navigation
       'nav.lotteries': 'Lotteries',
+      'nav.promotions': 'Promotions',
       'nav.howItWorks': 'How It Works',
       'nav.winners': 'Winners',
       'nav.signIn': 'Sign In',
@@ -95,6 +96,7 @@ export class TranslationService {
     pl: {
       // Navigation
       'nav.lotteries': 'Loterie',
+      'nav.promotions': 'Promocje',
       'nav.howItWorks': 'Jak to działa',
       'nav.winners': 'Zwycięzcy',
       'nav.signIn': 'Zaloguj się',

@@ -13,20 +13,23 @@ import { TranslationService } from '../../services/translation.service';
   template: `
     <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-18 md:h-20">
+        <div class="flex justify-between items-center h-20 md:h-24">
           <div class="flex items-center flex-shrink-0">
             <div class="flex-shrink-0">
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="h-8 md:h-10 w-auto">
+                class="h-12 md:h-16 w-auto">
             </div>
           </div>
 
           <div class="hidden md:block">
-            <div class="ml-10 flex items-baseline space-x-10">
+            <div class="ml-10 flex items-baseline space-x-12">
               <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
                 {{ translate('nav.lotteries') }}
+              </a>
+              <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+                {{ translate('nav.promotions') }}
               </a>
               <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
                 {{ translate('nav.howItWorks') }}
