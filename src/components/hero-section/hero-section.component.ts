@@ -19,7 +19,7 @@ import { inject } from '@angular/core';
             class="w-full h-full object-cover">
           <!-- Shaped blue overlay -->
           <div class="absolute inset-0">
-            <div class="absolute top-0 left-0 w-3/5 h-full bg-gradient-to-r from-blue-600 via-blue-500 to-transparent opacity-85 clip-path-diagonal"></div>
+            <div class="absolute top-0 left-0 w-4/5 h-full bg-gradient-to-r from-blue-600 via-blue-500 via-blue-400 to-transparent opacity-85 clip-path-diagonal"></div>
           </div>
         </div>
         
@@ -99,7 +99,7 @@ import { inject } from '@angular/core';
     }
     
     .clip-path-diagonal {
-      clip-path: polygon(0 0, 70% 0, 50% 100%, 0 100%);
+      clip-path: polygon(0 0, 85% 0, 65% 100%, 0 100%);
     }
     
     @media (max-width: 767px) {
