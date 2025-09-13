@@ -9,62 +9,87 @@ import { inject } from '@angular/core';
   imports: [CommonModule],
   template: `
     <section class="relative overflow-hidden">
-      <!-- Main Hero Image with Winner Celebration -->
-      <div class="relative h-96 md:h-[500px] bg-gradient-to-br from-blue-600 to-blue-800">
+      <!-- Main Hero with Winner Celebration -->
+      <div class="relative h-96 md:h-[500px]">
         <!-- Background Image -->
         <div class="absolute inset-0">
           <img 
             src="https://images.pexels.com/photos/1157557/pexels-photo-1157557.jpeg" 
             alt="Winner celebration" 
             class="w-full h-full object-cover">
-          <div class="absolute inset-0 bg-blue-600 bg-opacity-70"></div>
+          <!-- Blue overlay with opacity -->
+          <div class="absolute inset-0 bg-blue-600 opacity-80"></div>
         </div>
         
         <!-- Content Overlay -->
-        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+          <!-- Left side content -->
           <div class="text-white max-w-2xl">
-            <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight" style="font-family: 'Brighter Brush', cursive; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+            <h1 class="hero-title font-black mb-6 leading-tight text-white" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
               {{ translate('hero.title') }}
             </h1>
-            <p class="text-xl md:text-2xl mb-8 text-blue-100 leading-relaxed">
+            <p class="hero-subtitle mb-8 text-blue-100 leading-relaxed font-medium">
               {{ translate('hero.subtitle') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-4">
-              <button class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 px-8 rounded-lg text-lg transition-all duration-200 transform hover:scale-105 shadow-lg">
+              <button class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 px-8 rounded-lg text-lg transition-all duration-200 transform hover:scale-105 shadow-xl hover:shadow-2xl">
                 {{ translate('hero.browseLotteries') }}
               </button>
-              <button class="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-bold py-4 px-8 rounded-lg text-lg transition-all duration-200 transform hover:scale-105">
+              <button class="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-bold py-4 px-8 rounded-lg text-lg transition-all duration-200 transform hover:scale-105 shadow-lg">
                 {{ translate('hero.howItWorks') }}
               </button>
             </div>
           </div>
           
-          <!-- Winner Keys Visual -->
-          <div class="hidden lg:block absolute right-8 top-1/2 transform -translate-y-1/2">
-            <div class="text-6xl animate-bounce">🗝️</div>
-            <div class="text-center text-white font-bold mt-2">{{ translate('hero.winnerKeys') }}</div>
+          <!-- Right side - Winner celebration visual -->
+          <div class="hidden lg:flex flex-col items-center">
+            <div class="text-8xl animate-bounce mb-4">🗝️</div>
+            <div class="text-center text-white">
+              <div class="text-2xl font-bold mb-2">{{ translate('hero.winnerKeys') }}</div>
+              <div class="text-lg opacity-90">{{ translate('hero.dreamHome') }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Statistics Bar -->
+      <div class="bg-white dark:bg-gray-900 py-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-center items-center space-x-12">
+            <div class="text-center">
+              <div class="text-3xl font-black text-blue-600 dark:text-blue-400">24M</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ translate('hero.totalSlots') }}</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-black text-yellow-600 dark:text-yellow-400">320M</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ translate('hero.totalPrize') }}</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-black text-green-600 dark:text-green-400">98%</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ translate('hero.satisfaction') }}</div>
+            </div>
           </div>
         </div>
       </div>
       
       <!-- Scrolling Marketing Images -->
-      <div class="bg-white dark:bg-gray-900 py-8 overflow-hidden">
+      <div class="bg-gray-50 dark:bg-gray-800 py-8 overflow-hidden">
         <div class="flex animate-scroll space-x-8">
           @for (image of marketingImages; track image.id) {
-            <div class="flex-shrink-0 w-80 h-48 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex-shrink-0 w-80 h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
               <img 
                 [src]="image.url" 
                 [alt]="image.alt"
-                class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                class="w-full h-full object-cover">
             </div>
           }
           <!-- Duplicate for seamless loop -->
           @for (image of marketingImages; track image.id + '-duplicate') {
-            <div class="flex-shrink-0 w-80 h-48 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex-shrink-0 w-80 h-48 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
               <img 
                 [src]="image.url" 
                 [alt]="image.alt"
-                class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                class="w-full h-full object-cover">
             </div>
           }
         </div>
@@ -89,6 +114,30 @@ import { inject } from '@angular/core';
     
     .animate-scroll:hover {
       animation-play-state: paused;
+    }
+    
+    @media (max-width: 767px) {
+      .hero-title {
+        font-size: 2.5rem;
+        line-height: 1.1;
+      }
+      
+      .hero-subtitle {
+        font-size: 1.125rem;
+        line-height: 1.5;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .hero-title {
+        font-size: 4rem;
+        line-height: 1;
+      }
+      
+      .hero-subtitle {
+        font-size: 1.5rem;
+        line-height: 1.4;
+      }
     }
   `]
 })
@@ -122,6 +171,7 @@ export class HeroSectionComponent {
       alt: 'Contemporary apartment'
     }
   ];
+
   translate(key: string): string {
     return this.translationService.translate(key);
   }

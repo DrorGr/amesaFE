@@ -33,6 +33,9 @@ export class TranslationService {
       'hero.propertiesWon': 'Properties Won',
       'hero.satisfaction': 'Satisfaction',
       'hero.winnerKeys': 'Winner Keys',
+      'hero.dreamHome': 'Dream Home',
+      'hero.totalSlots': 'Total Slots',
+      'hero.totalPrize': 'Total Prize',
       
       // Stats Section
       'stats.oddsToWin': 'Odds to Win',
@@ -129,6 +132,9 @@ export class TranslationService {
       'hero.propertiesWon': 'Wygrane Nieruchomości',
       'hero.satisfaction': 'Zadowolenie',
       'hero.winnerKeys': 'Klucze Zwycięzcy',
+      'hero.dreamHome': 'Dom Marzeń',
+      'hero.totalSlots': 'Łączne Sloty',
+      'hero.totalPrize': 'Łączna Nagroda',
       
       // Stats Section
       'stats.oddsToWin': 'Szanse na Wygraną',
