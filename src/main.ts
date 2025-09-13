@@ -35,7 +35,7 @@ import { ThemeService } from './services/theme.service';
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="h-16 md:h-20 w-auto">
+                class="h-32 md:h-40 w-auto">
               <p class="text-gray-300 text-lg leading-relaxed">
                 {{ translate('footer.description') }}
               </p>
@@ -75,7 +75,7 @@ import { ThemeService } from './services/theme.service';
             </div>
           </div>
           
-          <div class="mb-6">
+          <div class="mb-4">
             <!-- Community Support Section -->
             <div>
               <h3 class="text-blue-400 font-semibold text-base mb-2">{{ translate('footer.supportCause') }}</h3>
@@ -86,7 +86,7 @@ import { ThemeService } from './services/theme.service';
           </div>
           
           <!-- Footer Links Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
             <!-- Community -->
             <div>
               <h4 class="font-semibold mb-4 text-white text-sm">{{ translate('footer.community') }}</h4>
