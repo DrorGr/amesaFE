@@ -27,15 +27,15 @@ import { ThemeService } from './services/theme.service';
         <app-house-grid></app-house-grid>
       </main>
       
-      <footer class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-16">
+      <footer class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Logo, Description and Social Media -->
-          <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div class="flex items-center gap-6">
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="h-32 md:h-40 w-auto">
+                class="h-24 md:h-32 w-auto">
               <p class="text-gray-300 text-lg leading-relaxed">
                 {{ translate('footer.description') }}
               </p>
@@ -75,10 +75,10 @@ import { ThemeService } from './services/theme.service';
             </div>
           </div>
           
-          <div class="mb-4">
+          <div class="mb-3">
             <!-- Community Support Section -->
             <div>
-              <h3 class="text-blue-400 font-semibold text-base mb-2">{{ translate('footer.supportCause') }}</h3>
+              <h3 class="text-blue-400 font-semibold text-sm mb-1">{{ translate('footer.supportCause') }}</h3>
               <p class="text-gray-300 text-sm leading-relaxed max-w-4xl">
                 {{ translate('footer.supportDescription') }}
               </p>
@@ -86,11 +86,11 @@ import { ThemeService } from './services/theme.service';
           </div>
           
           <!-- Footer Links Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
             <!-- Community -->
             <div>
-              <h4 class="font-semibold mb-4 text-white text-sm">{{ translate('footer.community') }}</h4>
-              <ul class="space-y-2 text-gray-300 text-sm">
+              <h4 class="font-semibold mb-2 text-white text-sm">{{ translate('footer.community') }}</h4>
+              <ul class="space-y-1 text-gray-300 text-sm">
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.about') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.makeSponsorship') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.partners') }}</a></li>
@@ -100,8 +100,8 @@ import { ThemeService } from './services/theme.service';
             
             <!-- Support -->
             <div>
-              <h4 class="font-semibold mb-4 text-white text-sm">{{ translate('footer.support') }}</h4>
-              <ul class="space-y-2 text-gray-300 text-sm">
+              <h4 class="font-semibold mb-2 text-white text-sm">{{ translate('footer.support') }}</h4>
+              <ul class="space-y-1 text-gray-300 text-sm">
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.helpCenter') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.liveChat') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.contactUs') }}</a></li>
@@ -113,7 +113,7 @@ import { ThemeService } from './services/theme.service';
             
             <!-- Legal -->
             <div>
-              <h4 class="font-semibold mb-4 text-white text-sm">{{ translate('footer.legal') }}</h4>
+              <h4 class="font-semibold mb-2 text-white text-sm">{{ translate('footer.legal') }}</h4>
               <ul class="space-y-1 text-gray-300 text-sm">
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.regulations') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.termsConditions') }}</a></li>
@@ -125,8 +125,8 @@ import { ThemeService } from './services/theme.service';
             
             <!-- Legal Partners -->
             <div>
-              <h4 class="font-semibold mb-3 text-white text-sm">{{ translate('footer.legalPartners') }}</h4>
-              <div class="space-y-2">
+              <h4 class="font-semibold mb-2 text-white text-sm">{{ translate('footer.legalPartners') }}</h4>
+              <div class="space-y-1">
                 <div class="flex items-center space-x-2">
                   <div class="w-5 h-5 bg-blue-600 rounded flex items-center justify-center">
                     <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -155,10 +155,10 @@ import { ThemeService } from './services/theme.service';
             
             <!-- App Download -->
             <div>
-              <h4 class="font-semibold mb-4 text-white text-sm">{{ translate('footer.downloadApp') }}</h4>
-              <div class="flex flex-col space-y-2">
+              <h4 class="font-semibold mb-2 text-white text-sm">{{ translate('footer.downloadApp') }}</h4>
+              <div class="flex flex-col space-y-1">
                 <a href="#" class="inline-block">
-                  <div class="bg-black rounded-lg px-4 py-3 flex items-center space-x-3 hover:bg-gray-800 transition-colors duration-200">
+                  <div class="bg-black rounded-lg px-3 py-2 flex items-center space-x-2 hover:bg-gray-800 transition-colors duration-200">
                     <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                     </svg>
@@ -169,7 +169,7 @@ import { ThemeService } from './services/theme.service';
                   </div>
                 </a>
                 <a href="#" class="inline-block">
-                  <div class="bg-black rounded-lg px-4 py-3 flex items-center space-x-3 hover:bg-gray-800 transition-colors duration-200">
+                  <div class="bg-black rounded-lg px-3 py-2 flex items-center space-x-2 hover:bg-gray-800 transition-colors duration-200">
                     <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.92 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
                     </svg>
@@ -184,7 +184,7 @@ import { ThemeService } from './services/theme.service';
           </div>
           
           <!-- Copyright -->
-          <div class="border-t border-gray-700 pt-4">
+          <div class="border-t border-gray-700 pt-2">
             <p class="text-center text-gray-400">{{ translate('footer.copyright') }}</p>
           </div>
         </div>
