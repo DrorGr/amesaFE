@@ -42,15 +42,6 @@ import { inject } from '@angular/core';
               </button>
             </div>
           </div>
-          
-          <!-- Right side - Winner celebration visual -->
-          <div class="hidden lg:flex flex-col items-center">
-            <div class="text-8xl animate-bounce mb-4">🗝️</div>
-            <div class="text-center text-white">
-              <div class="text-2xl font-bold mb-2">{{ translate('hero.winnerKeys') }}</div>
-              <div class="text-lg opacity-90">{{ translate('hero.dreamHome') }}</div>
-            </div>
-          </div>
         </div>
       </div>
       
