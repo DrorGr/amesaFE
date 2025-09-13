@@ -19,7 +19,7 @@ import { inject } from '@angular/core';
             class="w-full h-full object-cover">
           <!-- Shaped blue overlay -->
           <div class="absolute inset-0">
-            <div class="absolute top-0 left-0 w-4/5 h-full bg-gradient-to-r from-blue-600 via-blue-500 via-blue-400 via-blue-300 via-blue-200 via-blue-100 to-transparent opacity-75 clip-path-diagonal"></div>
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-blue-600 via-blue-500 via-blue-400 via-blue-300 via-blue-200 via-blue-100 to-transparent opacity-75 clip-path-extended"></div>
           </div>
         </div>
         
@@ -98,8 +98,8 @@ import { inject } from '@angular/core';
       animation-play-state: paused;
     }
     
-    .clip-path-diagonal {
-      clip-path: polygon(0 0, 90% 0, 70% 100%, 0 100%);
+    .clip-path-extended {
+      clip-path: polygon(0 0, 95% 0, 80% 100%, 0 100%);
       filter: blur(0.5px);
     }
     
@@ -124,9 +124,8 @@ import { inject } from '@angular/core';
       .hero-subtitle {
         font-size: 1.5rem;
         line-height: 1.4;
-        -webkit-text-stroke: 1px rgba(0,0,0,0.8);
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
-        font-weight: 600;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        font-weight: 500;
       }
     }
   `]
