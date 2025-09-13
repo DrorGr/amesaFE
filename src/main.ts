@@ -108,7 +108,9 @@ import { ThemeService } from './services/theme.service';
                 <div class="space-y-2">
                   <div class="flex items-center space-x-2">
                     <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                      <span class="text-white text-xs font-bold">⚖️</span>
+                      <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2L3 7v11c0 5.55 3.84 10 9 10s9-4.45 9-10V7l-7-5zM8 13l2-2 4 4-6 6-4-4 4-4z" clip-rule="evenodd"/>
+                      </svg>
                     </div>
                     <div class="text-sm">
                       <div class="text-white font-medium">{{ translate('footer.attorneyOffice') }}</div>
@@ -117,7 +119,10 @@ import { ThemeService } from './services/theme.service';
                   </div>
                   <div class="flex items-center space-x-2">
                     <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
-                      <span class="text-white text-xs font-bold">💰</span>
+                      <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8.070 8.686 8.433 7.418zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.364.589 0 .832-.155.103-.346.196-.567.267z"/>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6.102 7.036 6.102 8c0 .964.5 1.766 1.222 2.246.135.09.288.171.448.245.18.083.389.179.627.291.18-.083.389-.179.627-.291.16-.074.313-.155.448-.245C10.898 9.766 11.398 8.964 11.398 8c0-.964-.5-1.766-1.222-2.246A4.535 4.535 0 009.5 5.092V5a1 1 0 011 0zm-1 4a3 3 0 100 6 3 3 0 000-6z" clip-rule="evenodd"/>
+                      </svg>
                     </div>
                     <div class="text-sm">
                       <div class="text-white font-medium">{{ translate('footer.accountingPartner') }}</div>
