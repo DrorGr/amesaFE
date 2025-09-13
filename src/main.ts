@@ -32,7 +32,7 @@ import { ThemeService } from './services/theme.service';
           <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
           <!-- Logo and Description Section -->
-          <div class="mb-12 text-center md:text-left">
+          <div class="mb-12 text-center md:text-left md:col-span-4">
             <img 
               src="assets/AmesaNoBG.png" 
               alt="Amesa" 
@@ -46,8 +46,8 @@ import { ThemeService } from './services/theme.service';
             </div>
           </div>
           
+          
           <!-- Footer Links Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h4 class="font-semibold mb-6 text-white">{{ translate('footer.community') }}</h4>
               <ul class="space-y-3 text-gray-300">
@@ -146,7 +146,6 @@ import { ThemeService } from './services/theme.service';
                 </div>
               </div>
             </div>
-          </div>
         </div>
       </footer>
     </div>
