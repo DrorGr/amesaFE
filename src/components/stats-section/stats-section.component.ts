@@ -10,9 +10,9 @@ import { inject } from '@angular/core';
   template: `
     <section class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-16 transition-colors duration-300 overflow-hidden">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex animate-scroll-stats space-x-16">
+        <div class="flex animate-scroll-stats space-x-8">
           @for (stat of stats; track stat.labelKey) {
-            <div class="flex-shrink-0 text-center min-w-[300px]">
+            <div class="flex-shrink-0 text-center min-w-[200px]">
               <div class="text-5xl md:text-6xl font-black text-gradient mb-4">
                 {{ stat.value }}
               </div>
@@ -23,7 +23,7 @@ import { inject } from '@angular/core';
           }
           <!-- Duplicate for seamless loop -->
           @for (stat of stats; track stat.labelKey + '-duplicate') {
-            <div class="flex-shrink-0 text-center min-w-[300px]">
+            <div class="flex-shrink-0 text-center min-w-[200px]">
               <div class="text-5xl md:text-6xl font-black text-gradient mb-4">
                 {{ stat.value }}
               </div>
@@ -47,7 +47,7 @@ import { inject } from '@angular/core';
     }
     
     .animate-scroll-stats {
-      animation: scroll-stats 20s linear infinite;
+      animation: scroll-stats 12s linear infinite;
     }
     
     .animate-scroll-stats:hover {
