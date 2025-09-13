@@ -17,8 +17,8 @@ import { inject } from '@angular/core';
             src="https://images.pexels.com/photos/1157557/pexels-photo-1157557.jpeg" 
             alt="Winner celebration" 
             class="w-full h-full object-cover">
-          <!-- Blue gradient overlay matching reference -->
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 opacity-85"></div>
+          <!-- Blue gradient overlay -->
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 opacity-90"></div>
         </div>
         
         <!-- Content Overlay -->
