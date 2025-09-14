@@ -8,28 +8,18 @@ import { inject } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <!-- House Carousel Section -->
-    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-16 transition-colors duration-300">
+    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-8 transition-colors duration-300">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-            {{ translate('hero.dreamHome') }}
-          </h2>
-          <p class="text-lg text-gray-600 dark:text-gray-300">
-            Explore our featured properties and imagine your future home
-          </p>
-        </div>
-        
         <div class="max-w-2xl mx-auto">
-          <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
-            <h3 class="text-gray-900 dark:text-white text-2xl font-bold mb-6 text-center">{{ getCurrentHouse().name }}</h3>
+          <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+            <h3 class="text-gray-900 dark:text-white text-xl font-bold mb-4 text-center">{{ getCurrentHouse().name }}</h3>
             
             <!-- Main House Image -->
-            <div class="relative mb-6">
-              <img 
+            <div class="relative mb-4">
+              <img
                 [src]="getCurrentHouseImage().url" 
                 [alt]="getCurrentHouseImage().alt"
-                class="w-full h-64 md:h-80 object-cover rounded-xl shadow-lg">
+                class="w-full h-48 md:h-64 object-cover rounded-xl shadow-lg">
               
               <!-- Image Navigation -->
               <button 
@@ -49,11 +39,11 @@ import { inject } from '@angular/core';
             </div>
             
             <!-- Image Thumbnails -->
-            <div class="flex justify-center space-x-3 mb-6">
+            <div class="flex justify-center space-x-2 mb-4">
               @for (image of getCurrentHouse().images; track $index) {
                 <button 
                   (click)="goToHouseImage($index)"
-                  class="w-16 h-16 rounded-lg overflow-hidden border-3 transition-all hover:scale-105"
+                  class="w-12 h-12 rounded-lg overflow-hidden border-2 transition-all hover:scale-105"
                   [class.border-blue-500]="currentHouseImageIndex === $index"
                   [class.border-gray-300]="currentHouseImageIndex !== $index"
                   [class.dark:border-blue-400]="currentHouseImageIndex === $index"
@@ -67,17 +57,17 @@ import { inject } from '@angular/core';
             <div class="flex justify-between items-center">
               <button 
                 (click)="previousSlide()"
-                class="bg-blue-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 p-3 rounded-full hover:bg-blue-200 dark:hover:bg-gray-600 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="bg-blue-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 p-2 rounded-full hover:bg-blue-200 dark:hover:bg-gray-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
               </button>
               
-              <div class="flex space-x-3">
+              <div class="flex space-x-2">
                 @for (house of houses; track house.id) {
                   <button 
                     (click)="goToSlide($index)"
-                    class="w-3 h-3 rounded-full transition-all hover:scale-125"
+                    class="w-2 h-2 rounded-full transition-all hover:scale-125"
                     [class.bg-blue-600]="currentSlide === $index"
                     [class.bg-gray-300]="currentSlide !== $index"
                     [class.dark:bg-blue-400]="currentSlide === $index"
@@ -88,8 +78,8 @@ import { inject } from '@angular/core';
               
               <button 
                 (click)="nextSlide()"
-                class="bg-blue-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 p-3 rounded-full hover:bg-blue-200 dark:hover:bg-gray-600 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="bg-blue-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 p-2 rounded-full hover:bg-blue-200 dark:hover:bg-gray-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
               </button>
