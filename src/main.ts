@@ -25,8 +25,8 @@ import { ThemeService } from './services/theme.service';
       <app-topbar></app-topbar>
       <main>
         <app-hero-section></app-hero-section>
-        <app-stats-section></app-stats-section>
         <app-house-carousel></app-house-carousel>
+        <app-stats-section></app-stats-section>
         <app-house-grid></app-house-grid>
       </main>
       
