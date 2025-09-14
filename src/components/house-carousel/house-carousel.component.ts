@@ -39,7 +39,7 @@ import { LotteryService } from '../../services/lottery.service';
               </div>
               
               <!-- Mobile Navigation Arrows - In the void space -->
-              <div class="lg:hidden flex justify-between items-center py-2 px-4">
+              <div class="lg:hidden flex justify-between items-center py-2 w-full">
                 <button 
                   (click)="previousSlide()"
                   class="bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
