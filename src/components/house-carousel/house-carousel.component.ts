@@ -9,16 +9,32 @@ import { LotteryService } from '../../services/lottery.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 transition-colors duration-300">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col lg:flex-row items-center gap-8">
+    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 transition-colors duration-300 relative">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <!-- Main Navigation Arrows - Component Level -->
+        <button 
+          (click)="previousSlide()"
+          class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        <button 
+          (click)="nextSlide()"
+          class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+        
+        <div class="flex flex-col lg:flex-row items-stretch gap-8">
           <!-- Main House Image -->
-          <div class="flex-1 max-w-2xl">
+          <div class="flex-1 max-w-2xl flex flex-col">
             <div class="relative">
               <img
                 [src]="getCurrentHouseImage().url" 
                 [alt]="getCurrentHouseImage().alt"
-                class="w-full h-64 md:h-80 object-cover rounded-xl shadow-lg">
+                class="w-full h-64 md:h-96 object-cover rounded-xl shadow-lg">
               
               <!-- House Name Overlay -->
               <div class="absolute top-4 left-4 bg-black/60 text-white px-4 py-2 rounded-lg">
@@ -85,16 +101,18 @@ import { LotteryService } from '../../services/lottery.service';
           </div>
           
           <!-- Property Description and Lottery Info -->
-          <div class="flex-1 max-w-md text-center lg:text-left">
+          <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-full">
+            <div>
             <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
               {{ getCurrentHouse().name }}
             </h2>
             <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
               {{ getCurrentHouse().description }}
             </p>
+            </div>
             
             <!-- Lottery Information -->
-            <div class="space-y-4">
+            <div class="space-y-4 flex-grow flex flex-col justify-center">
               <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
                 <span class="text-gray-600 dark:text-gray-400">Property Value</span>
                 <span class="font-bold text-gray-900 dark:text-white">€{{ formatPrice(getCurrentHouse().price) }}</span>
@@ -111,10 +129,9 @@ import { LotteryService } from '../../services/lottery.service';
                 <span class="text-gray-600 dark:text-gray-400">Draw Date</span>
                 <span class="font-bold text-orange-600 dark:text-orange-400">{{ formatDate(getCurrentHouse().lotteryEndDate) }}</span>
               </div>
-            </div>
             
             <!-- Progress Bar -->
-            <div class="mt-6">
+            <div class="mt-4">
               <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
                 <span>Progress</span>
                 <span>{{ getTicketProgress() }}%</span>
@@ -128,9 +145,10 @@ import { LotteryService } from '../../services/lottery.service';
             </div>
             
             <!-- Buy Ticket Button -->
-            <button class="w-full mt-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5">
+            <button class="w-full mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5">
               Buy Ticket - €{{ getCurrentHouse().ticketPrice }}
             </button>
+            </div>
           </div>
         </div>
       </div>
