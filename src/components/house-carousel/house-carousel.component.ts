@@ -38,6 +38,20 @@ import { LotteryService } from '../../services/lottery.service';
                 }
               </div>
               
+              <!-- Image Navigation Dots - Directly under thumbnails -->
+              <div class="flex space-x-1 mt-1">
+                @for (image of getCurrentHouse().images; track $index) {
+                  <button 
+                    (click)="goToHouseImage($index)"
+                    class="w-2 h-2 rounded-full transition-all hover:scale-125"
+                    [class.bg-blue-500]="currentHouseImageIndex === $index"
+                    [class.bg-gray-300]="currentHouseImageIndex !== $index"
+                    [class.dark:bg-blue-400]="currentHouseImageIndex === $index"
+                    [class.dark:bg-gray-600]="currentHouseImageIndex !== $index">
+                  </button>
+                }
+              </div>
+              
               <!-- Mobile Navigation Arrows - In the void space -->
               <div class="lg:hidden flex justify-between items-center py-2 w-full">
                 <button 
@@ -54,20 +68,6 @@ import { LotteryService } from '../../services/lottery.service';
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                   </svg>
                 </button>
-              </div>
-              
-              <!-- Image Navigation Dots -->
-              <div class="flex space-x-1 mt-1">
-                @for (image of getCurrentHouse().images; track $index) {
-                  <button 
-                    (click)="goToHouseImage($index)"
-                    class="w-2 h-2 rounded-full transition-all hover:scale-125"
-                    [class.bg-blue-500]="currentHouseImageIndex === $index"
-                    [class.bg-gray-300]="currentHouseImageIndex !== $index"
-                    [class.dark:bg-blue-400]="currentHouseImageIndex === $index"
-                    [class.dark:bg-gray-600]="currentHouseImageIndex !== $index">
-                  </button>
-                }
               </div>
             </div>
           </div>
