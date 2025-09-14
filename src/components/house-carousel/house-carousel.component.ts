@@ -11,22 +11,6 @@ import { LotteryService } from '../../services/lottery.service';
   template: `
     <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 transition-colors duration-300 relative">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <!-- Main Navigation Arrows - Component Level -->
-        <button 
-          (click)="previousSlide()"
-          class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        </button>
-        <button 
-          (click)="nextSlide()"
-          class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
-        
         <div class="flex flex-col lg:flex-row items-stretch gap-8">
           <!-- Main House Image -->
           <div class="flex-1 max-w-2xl flex flex-col">
@@ -120,6 +104,22 @@ import { LotteryService } from '../../services/lottery.service';
             </div>
           </div>
         </div>
+        
+        <!-- Main Navigation Arrows - Outside Content -->
+        <button 
+          (click)="previousSlide()"
+          class="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        <button 
+          (click)="nextSlide()"
+          class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
         
         <!-- House Navigation Dots at Footer -->
         <div class="flex justify-center space-x-3 mt-6">
