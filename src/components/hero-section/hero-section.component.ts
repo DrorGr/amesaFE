@@ -198,16 +198,4 @@ export class HeroSectionComponent {
   goToSlide(index: number) {
     this.currentSlide = index;
   }
-  
-  nextSlide() {
-    this.currentSlide = (this.currentSlide + 1) % this.marketingImages.length;
-  }
-  
-  previousSlide() {
-    this.currentSlide = this.currentSlide === 0 ? this.marketingImages.length - 1 : this.currentSlide - 1;
-  }
-  
-  goToSlide(index: number) {
-    this.currentSlide = index;
-  }
 }
