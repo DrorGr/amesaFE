@@ -11,9 +11,8 @@ import { inject } from '@angular/core';
     <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-8 transition-colors duration-300">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="max-w-2xl mx-auto">
-          <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
-            <h3 class="text-gray-900 dark:text-white text-xl font-bold mb-4 text-center">{{ getCurrentHouse().name }}</h3>
-            
+          <!-- Main House Image -->
+          <div class="relative">
             <!-- Main House Image -->
             <div class="relative mb-4">
               <img
@@ -67,7 +66,6 @@ import { inject } from '@angular/core';
                 }
               </div>
             </div>
-          </div>
         </div>
       </div>
     </section>
