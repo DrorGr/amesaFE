@@ -54,12 +54,12 @@ import { LotteryService } from '../../services/lottery.service';
           </div>
           
           <!-- Property Description and Lottery Info -->
-          <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between min-h-[16rem] md:min-h-[24rem]">
+          <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-[20rem] md:h-[24rem]">
             <div>
-            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 min-h-[3rem] md:min-h-[4rem] flex items-center justify-center lg:justify-start">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 h-[4rem] md:h-[4rem] flex items-center justify-center lg:justify-start">
               {{ getCurrentHouse().name }}
             </h2>
-            <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed min-h-[6rem] md:min-h-[8rem]">
+            <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed h-[6rem] md:h-[6rem] overflow-hidden">
               {{ getCurrentHouse().description }}
             </p>
             </div>
@@ -123,14 +123,14 @@ import { LotteryService } from '../../services/lottery.service';
       <!-- Main Navigation Arrows - Outside Entire Component -->
       <button 
         (click)="previousSlide()"
-        class="hidden lg:block absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
+        class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
       </button>
       <button 
         (click)="nextSlide()"
-        class="hidden lg:block absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
+        class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
         </svg>
