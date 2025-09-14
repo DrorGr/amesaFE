@@ -11,16 +11,15 @@ import { LotteryService } from '../../services/lottery.service';
   template: `
     <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 transition-colors duration-300 relative">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="flex flex-col lg:flex-row items-stretch gap-8">
+        <div class="flex flex-col lg:flex-row items-stretch gap-8 transition-transform duration-500 ease-in-out" 
+             [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
           <!-- Main House Image -->
-          <div class="flex-1 max-w-2xl flex flex-col">
+          <div class="flex-1 max-w-2xl flex flex-col min-w-full lg:min-w-0">
             <div>
               <img
                 [src]="getCurrentHouseImage().url" 
                 [alt]="getCurrentHouseImage().alt"
-                class="w-full h-64 md:h-96 object-cover rounded-xl shadow-lg transition-opacity duration-500"
-                [class.opacity-0]="isTransitioning"
-                [class.opacity-100]="!isTransitioning">
+                class="w-full h-64 md:h-96 object-cover rounded-xl shadow-lg">
             </div>
             
             <!-- Image Navigation Below Main Image -->
@@ -75,7 +74,7 @@ import { LotteryService } from '../../services/lottery.service';
           </div>
           
           <!-- Property Description and Lottery Info -->
-          <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-64 md:h-96">
+          <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-64 md:h-96 min-w-full lg:min-w-0">
             <div>
             <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center lg:justify-start">
               {{ getCurrentHouse().name }}
@@ -295,31 +294,19 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
   
   nextSlide() {
-    this.isTransitioning = true;
-    setTimeout(() => {
     this.currentSlide = (this.currentSlide + 1) % this.houses.length;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-      this.isTransitioning = false;
-    }, 250);
   }
   
   previousSlide() {
-    this.isTransitioning = true;
-    setTimeout(() => {
     this.currentSlide = this.currentSlide === 0 ? this.houses.length - 1 : this.currentSlide - 1;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-      this.isTransitioning = false;
-    }, 250);
     this.resetAutoSlide();
   }
   
   goToSlide(index: number) {
-    this.isTransitioning = true;
-    setTimeout(() => {
     this.currentSlide = index;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-      this.isTransitioning = false;
-    }, 250);
     this.resetAutoSlide();
   }
   
