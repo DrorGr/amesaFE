@@ -30,6 +30,9 @@ import { inject } from '@angular/core';
             <h1 class="hero-title font-black mb-6 leading-tight text-white" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
               {{ translate('hero.title') }}
             </h1>
+          </div>
+        </div>
+      </div>
     </section>
   `,
   styles: [`
