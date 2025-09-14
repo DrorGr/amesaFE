@@ -30,16 +30,11 @@ import { LotteryService } from '../../services/lottery.service';
         <div class="flex flex-col lg:flex-row items-stretch gap-8">
           <!-- Main House Image -->
           <div class="flex-1 max-w-2xl flex flex-col">
-            <div class="relative">
+            <div>
               <img
                 [src]="getCurrentHouseImage().url" 
                 [alt]="getCurrentHouseImage().alt"
                 class="w-full h-64 md:h-96 object-cover rounded-xl shadow-lg">
-              
-              <!-- House Name Overlay -->
-              <div class="absolute top-4 left-4 bg-black/60 text-white px-4 py-2 rounded-lg">
-                <h3 class="text-lg md:text-xl font-bold">{{ getCurrentHouse().name }}</h3>
-              </div>
             </div>
             
             <!-- Image Navigation Below Main Image -->
