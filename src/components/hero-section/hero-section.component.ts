@@ -35,21 +35,6 @@ import { inject } from '@angular/core';
             </p>
             <div class="flex flex-col sm:flex-row gap-4">
               <button class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 px-8 rounded-lg text-lg transition-all duration-200 transform hover:scale-105 shadow-xl hover:shadow-2xl">
-                {{ translate('hero.browseLotteries') }}
-              </button>
-              <button class="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-bold py-4 px-8 rounded-lg text-lg transition-all duration-200 transform hover:scale-105 shadow-lg">
-                {{ translate('hero.howItWorks') }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Scrolling Marketing Images -->
-      <!-- Manual Carousel -->
-      <div class="bg-gray-50 dark:bg-gray-800 py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="relative">
             <!-- Content Area -->
             <div class="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg min-h-[300px] flex items-center justify-center overflow-hidden">
               <div class="w-full h-full flex flex-col">
@@ -119,18 +104,6 @@ import { inject } from '@angular/core';
               </svg>
             </button>
             
-            <!-- Next House Button -->
-            <button 
-              (click)="nextSlide()"
-              class="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 z-10">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </button>
-          </div>
-          
-          <!-- House Scroll Markers -->
-          <div class="flex justify-center mt-6 space-x-2">
             @for (house of houses; track house.id; let i = $index) {
               <button
                 (click)="goToSlide(i)"
