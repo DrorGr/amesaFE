@@ -40,63 +40,37 @@ import { LotteryService } from '../../services/lottery.service';
               <div class="absolute top-4 left-4 bg-black/60 text-white px-4 py-2 rounded-lg">
                 <h3 class="text-lg md:text-xl font-bold">{{ getCurrentHouse().name }}</h3>
               </div>
-              
-              <!-- Image Navigation Dots -->
-              <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-2">
-                <!-- Thumbnail Images -->
-                <div class="flex space-x-2">
-                  @for (image of getCurrentHouse().images; track $index) {
-                    <button 
-                      (click)="goToHouseImage($index)"
-                      class="w-12 h-8 rounded overflow-hidden border-2 transition-all hover:scale-105"
-                      [class.border-white]="currentHouseImageIndex === $index"
-                      [class.border-white/50]="currentHouseImageIndex !== $index">
-                      <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
-                    </button>
-                  }
-                </div>
-                <!-- Image Navigation Dots -->
-                <div class="flex space-x-1">
-                  @for (image of getCurrentHouse().images; track $index) {
-                    <button 
-                      (click)="goToHouseImage($index)"
-                      class="w-2 h-2 rounded-full transition-all hover:scale-125"
-                      [class.bg-white]="currentHouseImageIndex === $index"
-                      [class.bg-white/50]="currentHouseImageIndex !== $index">
-                    </button>
-                  }
-                </div>
-              </div>
-              
-              <!-- House Navigation Arrows -->
-              <button 
-                (click)="previousSlide()"
-                class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-              </button>
-              <button 
-                (click)="nextSlide()"
-                class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </button>
             </div>
             
-            <!-- House Navigation Dots (Below Image) -->
-            <div class="flex justify-center space-x-3 mt-4">
-              @for (house of houses; track house.id) {
-                <button 
-                  (click)="goToSlide($index)"
-                  class="w-4 h-4 rounded-full transition-all hover:scale-125"
-                  [class.bg-blue-600]="currentSlide === $index"
-                  [class.bg-gray-300]="currentSlide !== $index"
-                  [class.dark:bg-blue-500]="currentSlide === $index"
-                  [class.dark:bg-gray-600]="currentSlide !== $index">
-                </button>
-              }
+            <!-- Image Navigation Below Main Image -->
+            <div class="flex flex-col items-center space-y-2 mt-4">
+              <!-- Thumbnail Images -->
+              <div class="flex space-x-2">
+                @for (image of getCurrentHouse().images; track $index) {
+                  <button 
+                    (click)="goToHouseImage($index)"
+                    class="w-12 h-8 rounded overflow-hidden border-2 transition-all hover:scale-105"
+                    [class.border-blue-500]="currentHouseImageIndex === $index"
+                    [class.border-gray-300]="currentHouseImageIndex !== $index"
+                    [class.dark:border-blue-400]="currentHouseImageIndex === $index"
+                    [class.dark:border-gray-600]="currentHouseImageIndex !== $index">
+                    <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
+                  </button>
+                }
+              </div>
+              <!-- Image Navigation Dots -->
+              <div class="flex space-x-1">
+                @for (image of getCurrentHouse().images; track $index) {
+                  <button 
+                    (click)="goToHouseImage($index)"
+                    class="w-2 h-2 rounded-full transition-all hover:scale-125"
+                    [class.bg-blue-500]="currentHouseImageIndex === $index"
+                    [class.bg-gray-300]="currentHouseImageIndex !== $index"
+                    [class.dark:bg-blue-400]="currentHouseImageIndex === $index"
+                    [class.dark:bg-gray-600]="currentHouseImageIndex !== $index">
+                  </button>
+                }
+              </div>
             </div>
           </div>
           
@@ -150,6 +124,20 @@ import { LotteryService } from '../../services/lottery.service';
             </button>
             </div>
           </div>
+        </div>
+        
+        <!-- House Navigation Dots at Footer -->
+        <div class="flex justify-center space-x-3 mt-6">
+          @for (house of houses; track house.id) {
+            <button 
+              (click)="goToSlide($index)"
+              class="w-4 h-4 rounded-full transition-all hover:scale-125"
+              [class.bg-blue-600]="currentSlide === $index"
+              [class.bg-gray-300]="currentSlide !== $index"
+              [class.dark:bg-blue-500]="currentSlide === $index"
+              [class.dark:bg-gray-600]="currentSlide !== $index">
+            </button>
+          }
         </div>
       </div>
     </section>
