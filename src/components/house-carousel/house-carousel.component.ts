@@ -105,22 +105,6 @@ import { LotteryService } from '../../services/lottery.service';
           </div>
         </div>
         
-        <!-- Main Navigation Arrows - Outside Content -->
-        <button 
-          (click)="previousSlide()"
-          class="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        </button>
-        <button 
-          (click)="nextSlide()"
-          class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
-        
         <!-- House Navigation Dots at Footer -->
         <div class="flex justify-center space-x-3 mt-6">
           @for (house of houses; track house.id) {
@@ -135,6 +119,22 @@ import { LotteryService } from '../../services/lottery.service';
           }
         </div>
       </div>
+      
+      <!-- Main Navigation Arrows - Outside Entire Component -->
+      <button 
+        (click)="previousSlide()"
+        class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <button 
+        (click)="nextSlide()"
+        class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
     </section>
   `
 })
