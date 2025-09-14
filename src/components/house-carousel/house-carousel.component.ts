@@ -312,6 +312,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
   
   goToSlide(index: number) {
+    if (index < 0 || index >= this.houses.length) return;
     this.currentSlide = index;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
     this.resetAutoSlide();
