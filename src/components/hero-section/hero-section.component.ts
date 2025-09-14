@@ -31,7 +31,7 @@ import { inject } from '@angular/core';
               {{ translate('hero.title') }}
             </h1>
             <p class="hero-subtitle mb-8 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
-              {{ translate('hero.subtitle') }}
+              Enter exclusive house lotteries and get the chance to win amazing properties at a fraction of their market value.
             </p>
             <div class="flex flex-col sm:flex-row gap-4">
               <button class="btn-primary text-lg px-8 py-4">
