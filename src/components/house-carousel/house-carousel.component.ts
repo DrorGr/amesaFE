@@ -37,6 +37,25 @@ import { LotteryService } from '../../services/lottery.service';
                   </button>
                 }
               </div>
+              
+              <!-- Mobile Navigation Arrows - In the void space -->
+              <div class="lg:hidden flex justify-center space-x-8 py-2">
+                <button 
+                  (click)="previousSlide()"
+                  class="bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                  </svg>
+                </button>
+                <button 
+                  (click)="nextSlide()"
+                  class="bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+              </div>
+              
               <!-- Image Navigation Dots -->
               <div class="flex space-x-1">
                 @for (image of getCurrentHouse().images; track $index) {
@@ -138,22 +157,6 @@ import { LotteryService } from '../../services/lottery.service';
       </button>
       
       <!-- Mobile Navigation Arrows - Bottom -->
-      <div class="lg:hidden flex justify-center space-x-8 mt-4">
-        <button 
-          (click)="previousSlide()"
-          class="bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        </button>
-        <button 
-          (click)="nextSlide()"
-          class="bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
-      </div>
     </section>
   `
 })
