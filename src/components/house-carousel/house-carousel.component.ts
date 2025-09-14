@@ -2,38 +2,37 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 import { inject } from '@angular/core';
+import { LotteryService } from '../../services/lottery.service';
 
 @Component({
   selector: 'app-house-carousel',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-8 transition-colors duration-300">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mx-auto">
+    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 transition-colors duration-300">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row items-center gap-8">
           <!-- Main House Image -->
-          <div class="relative">
-            <!-- Main House Image -->
-            <div class="relative mb-4">
+          <div class="flex-1 max-w-2xl">
+            <div class="relative">
               <img
                 [src]="getCurrentHouseImage().url" 
                 [alt]="getCurrentHouseImage().alt"
-                class="w-full h-48 md:h-64 object-cover rounded-xl shadow-lg">
+                class="w-full h-64 md:h-80 object-cover rounded-xl shadow-lg">
               
               <!-- House Name Overlay -->
               <div class="absolute top-4 left-4 bg-black/60 text-white px-4 py-2 rounded-lg">
-                <h3 class="text-lg font-bold">{{ getCurrentHouse().name }}</h3>
+                <h3 class="text-lg md:text-xl font-bold">{{ getCurrentHouse().name }}</h3>
               </div>
               
-              <!-- Image Thumbnails Overlay -->
+              <!-- Image Navigation Dots -->
               <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
                 @for (image of getCurrentHouse().images; track $index) {
                   <button 
                     (click)="goToHouseImage($index)"
-                    class="w-8 h-8 rounded-lg overflow-hidden border-2 transition-all hover:scale-105"
-                    [class.border-white]="currentHouseImageIndex === $index"
-                    [class.border-white/50]="currentHouseImageIndex !== $index">
-                    <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
+                    class="w-2 h-2 rounded-full transition-all hover:scale-125"
+                    [class.bg-white]="currentHouseImageIndex === $index"
+                    [class.bg-white/50]="currentHouseImageIndex !== $index">
                   </button>
                 }
               </div>
@@ -41,14 +40,14 @@ import { inject } from '@angular/core';
               <!-- House Navigation Arrows -->
               <button 
                 (click)="previousSlide()"
-                class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
+                class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
               </button>
               <button 
                 (click)="nextSlide()"
-                class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
+                class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
@@ -66,7 +65,56 @@ import { inject } from '@angular/core';
                 }
               </div>
             </div>
-        </div>
+          </div>
+          
+          <!-- Property Description and Lottery Info -->
+          <div class="flex-1 max-w-md text-center lg:text-left">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              {{ getCurrentHouse().name }}
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+              {{ getCurrentHouse().description }}
+            </p>
+            
+            <!-- Lottery Information -->
+            <div class="space-y-4">
+              <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                <span class="text-gray-600 dark:text-gray-400">Property Value</span>
+                <span class="font-bold text-gray-900 dark:text-white">€{{ formatPrice(getCurrentHouse().price) }}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                <span class="text-gray-600 dark:text-gray-400">Ticket Price</span>
+                <span class="font-bold text-blue-600 dark:text-blue-400">€{{ getCurrentHouse().ticketPrice }}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                <span class="text-gray-600 dark:text-gray-400">Tickets Sold</span>
+                <span class="font-bold text-gray-900 dark:text-white">{{ getCurrentHouse().soldTickets }}/{{ getCurrentHouse().totalTickets }}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                <span class="text-gray-600 dark:text-gray-400">Draw Date</span>
+                <span class="font-bold text-orange-600 dark:text-orange-400">{{ formatDate(getCurrentHouse().lotteryEndDate) }}</span>
+              </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mt-6">
+              <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                <span>Progress</span>
+                <span>{{ getTicketProgress() }}%</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                <div 
+                  class="bg-blue-600 dark:bg-blue-500 h-3 rounded-full transition-all duration-300"
+                  [style.width.%]="getTicketProgress()">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Buy Ticket Button -->
+            <button class="w-full mt-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5">
+              Buy Ticket - €{{ getCurrentHouse().ticketPrice }}
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -74,6 +122,7 @@ import { inject } from '@angular/core';
 })
 export class HouseCarouselComponent {
   private translationService = inject(TranslationService);
+  private lotteryService = inject(LotteryService);
   
   currentSlide = 0;
   currentHouseImageIndex = 0;
@@ -82,6 +131,12 @@ export class HouseCarouselComponent {
     {
       id: 1,
       name: 'Modern Downtown Condo',
+      description: 'Stunning 2-bedroom condo in the heart of downtown with city views and modern amenities. Perfect for urban professionals seeking luxury living.',
+      price: 450000,
+      ticketPrice: 50,
+      totalTickets: 1000,
+      soldTickets: 650,
+      lotteryEndDate: new Date('2025-02-15'),
       images: [
         {
           url: 'https://images.pexels.com/photos/1918291/pexels-photo-1918291.jpeg',
@@ -104,6 +159,12 @@ export class HouseCarouselComponent {
     {
       id: 2,
       name: 'Suburban Family Home',
+      description: 'Beautiful 4-bedroom family home with large backyard and garage in quiet neighborhood. Ideal for growing families.',
+      price: 680000,
+      ticketPrice: 75,
+      totalTickets: 1500,
+      soldTickets: 890,
+      lotteryEndDate: new Date('2025-02-20'),
       images: [
         {
           url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg',
@@ -126,6 +187,12 @@ export class HouseCarouselComponent {
     {
       id: 3,
       name: 'Luxury Waterfront Villa',
+      description: 'Exclusive waterfront villa with private beach access and panoramic ocean views. The ultimate in luxury living.',
+      price: 1200000,
+      ticketPrice: 100,
+      totalTickets: 2000,
+      soldTickets: 1245,
+      lotteryEndDate: new Date('2025-03-01'),
       images: [
         {
           url: 'https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg',
@@ -188,5 +255,22 @@ export class HouseCarouselComponent {
   
   goToHouseImage(index: number) {
     this.currentHouseImageIndex = index;
+  }
+  
+  formatPrice(price: number): string {
+    return price.toLocaleString();
+  }
+  
+  formatDate(date: Date): string {
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  }
+  
+  getTicketProgress(): number {
+    const house = this.getCurrentHouse();
+    return Math.round((house.soldTickets / house.totalTickets) * 100);
   }
 }
