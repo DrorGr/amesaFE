@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 import { inject } from '@angular/core';
@@ -18,7 +18,9 @@ import { LotteryService } from '../../services/lottery.service';
               <img
                 [src]="getCurrentHouseImage().url" 
                 [alt]="getCurrentHouseImage().alt"
-                class="w-full h-64 md:h-96 object-cover rounded-xl shadow-lg transition-none">
+                class="w-full h-64 md:h-96 object-cover rounded-xl shadow-lg transition-opacity duration-500"
+                [class.opacity-0]="isTransitioning"
+                [class.opacity-100]="!isTransitioning">
             </div>
             
             <!-- Image Navigation Below Main Image -->
@@ -143,14 +145,14 @@ import { LotteryService } from '../../services/lottery.service';
       <!-- Desktop Navigation Arrows - Sides -->
       <button 
         (click)="previousSlide()"
-        class="hidden lg:block absolute left-4 top-32 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
+        class="hidden lg:block absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
       </button>
       <button 
         (click)="nextSlide()"
-        class="hidden lg:block absolute right-4 top-32 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
+        class="hidden lg:block absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
         </svg>
@@ -160,12 +162,14 @@ import { LotteryService } from '../../services/lottery.service';
     </section>
   `
 })
-export class HouseCarouselComponent {
+export class HouseCarouselComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private lotteryService = inject(LotteryService);
   
   currentSlide = 0;
   currentHouseImageIndex = 0;
+  isTransitioning = false;
+  private autoSlideInterval: any;
 
   houses = [
     {
@@ -254,6 +258,30 @@ export class HouseCarouselComponent {
     }
   ];
 
+  ngOnInit() {
+    this.startAutoSlide();
+  }
+
+  ngOnDestroy() {
+    this.stopAutoSlide();
+  }
+
+  private startAutoSlide() {
+    this.autoSlideInterval = setInterval(() => {
+      this.nextSlide();
+    }, 5000);
+  }
+
+  private stopAutoSlide() {
+    if (this.autoSlideInterval) {
+      clearInterval(this.autoSlideInterval);
+    }
+  }
+
+  private resetAutoSlide() {
+    this.stopAutoSlide();
+    this.startAutoSlide();
+  }
   translate(key: string): string {
     return this.translationService.translate(key);
   }
@@ -267,23 +295,38 @@ export class HouseCarouselComponent {
   }
   
   nextSlide() {
+    this.isTransitioning = true;
+    setTimeout(() => {
     this.currentSlide = (this.currentSlide + 1) % this.houses.length;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+      this.isTransitioning = false;
+    }, 250);
   }
   
   previousSlide() {
+    this.isTransitioning = true;
+    setTimeout(() => {
     this.currentSlide = this.currentSlide === 0 ? this.houses.length - 1 : this.currentSlide - 1;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+      this.isTransitioning = false;
+    }, 250);
+    this.resetAutoSlide();
   }
   
   goToSlide(index: number) {
+    this.isTransitioning = true;
+    setTimeout(() => {
     this.currentSlide = index;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+      this.isTransitioning = false;
+    }, 250);
+    this.resetAutoSlide();
   }
   
   nextHouseImage() {
     const currentHouse = this.getCurrentHouse();
     this.currentHouseImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
+    this.resetAutoSlide();
   }
   
   previousHouseImage() {
@@ -291,10 +334,12 @@ export class HouseCarouselComponent {
     this.currentHouseImageIndex = this.currentHouseImageIndex === 0 
       ? currentHouse.images.length - 1 
       : this.currentHouseImageIndex - 1;
+    this.resetAutoSlide();
   }
   
   goToHouseImage(index: number) {
     this.currentHouseImageIndex = index;
+    this.resetAutoSlide();
   }
   
   formatPrice(price: number): string {
