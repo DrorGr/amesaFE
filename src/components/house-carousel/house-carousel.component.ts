@@ -22,7 +22,7 @@ import { LotteryService } from '../../services/lottery.service';
             </div>
             
             <!-- Image Navigation Below Main Image -->
-            <div class="flex flex-col items-center space-y-2 mt-4">
+            <div class="flex flex-col items-center mt-4">
               <!-- Thumbnail Images -->
               <div class="flex space-x-2">
                 @for (image of getCurrentHouse().images; track $index) {
@@ -57,7 +57,7 @@ import { LotteryService } from '../../services/lottery.service';
               </div>
               
               <!-- Image Navigation Dots -->
-              <div class="flex space-x-1">
+              <div class="flex space-x-1 mt-1">
                 @for (image of getCurrentHouse().images; track $index) {
                   <button 
                     (click)="goToHouseImage($index)"
