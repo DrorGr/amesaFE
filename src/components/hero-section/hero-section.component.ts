@@ -44,42 +44,59 @@ import { inject } from '@angular/core';
           </div>
           
           <!-- Right side - House Carousel -->
-          <div class="hidden lg:block max-w-md">
-            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 class="text-white text-xl font-bold mb-4 text-center">{{ getCurrentHouse().name }}</h3>
+        </div>
+      </div>
+      
+      <!-- House Carousel Section -->
+      <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-16 transition-colors duration-300">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
+              {{ translate('hero.dreamHome') }}
+            </h2>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+              Explore our featured properties and imagine your future home
+            </p>
+          </div>
+          
+          <div class="max-w-2xl mx-auto">
+            <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+              <h3 class="text-gray-900 dark:text-white text-2xl font-bold mb-6 text-center">{{ getCurrentHouse().name }}</h3>
               
               <!-- Main House Image -->
-              <div class="relative mb-4">
+              <div class="relative mb-6">
                 <img 
                   [src]="getCurrentHouseImage().url" 
                   [alt]="getCurrentHouseImage().alt"
-                  class="w-full h-48 object-cover rounded-lg">
+                  class="w-full h-64 md:h-80 object-cover rounded-xl shadow-lg">
                 
                 <!-- Image Navigation -->
                 <button 
                   (click)="previousHouseImage()"
-                  class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                   </svg>
                 </button>
                 <button 
                   (click)="nextHouseImage()"
-                  class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                   </svg>
                 </button>
               </div>
               
               <!-- Image Thumbnails -->
-              <div class="flex space-x-2 mb-4">
+              <div class="flex justify-center space-x-3 mb-6">
                 @for (image of getCurrentHouse().images; track $index) {
                   <button 
                     (click)="goToHouseImage($index)"
-                    class="w-12 h-12 rounded overflow-hidden border-2 transition-all"
-                    [class.border-white]="currentHouseImageIndex === $index"
-                    [class.border-white/30]="currentHouseImageIndex !== $index">
+                    class="w-16 h-16 rounded-lg overflow-hidden border-3 transition-all hover:scale-105"
+                    [class.border-blue-500]="currentHouseImageIndex === $index"
+                    [class.border-gray-300]="currentHouseImageIndex !== $index"
+                    [class.dark:border-blue-400]="currentHouseImageIndex === $index"
+                    [class.dark:border-gray-600]="currentHouseImageIndex !== $index">
                     <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
                   </button>
                 }
@@ -89,27 +106,29 @@ import { inject } from '@angular/core';
               <div class="flex justify-between items-center">
                 <button 
                   (click)="previousSlide()"
-                  class="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="bg-blue-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 p-3 rounded-full hover:bg-blue-200 dark:hover:bg-gray-600 transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                   </svg>
                 </button>
                 
-                <div class="flex space-x-2">
+                <div class="flex space-x-3">
                   @for (house of houses; track house.id) {
                     <button 
                       (click)="goToSlide($index)"
-                      class="w-2 h-2 rounded-full transition-all"
-                      [class.bg-white]="currentSlide === $index"
-                      [class.bg-white/40]="currentSlide !== $index">
+                      class="w-3 h-3 rounded-full transition-all hover:scale-125"
+                      [class.bg-blue-600]="currentSlide === $index"
+                      [class.bg-gray-300]="currentSlide !== $index"
+                      [class.dark:bg-blue-400]="currentSlide === $index"
+                      [class.dark:bg-gray-600]="currentSlide !== $index">
                     </button>
                   }
                 </div>
                 
                 <button 
                   (click)="nextSlide()"
-                  class="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="bg-blue-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 p-3 rounded-full hover:bg-blue-200 dark:hover:bg-gray-600 transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                   </svg>
                 </button>
@@ -117,7 +136,7 @@ import { inject } from '@angular/core';
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </section>
   `,
   styles: [`
