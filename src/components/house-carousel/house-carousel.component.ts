@@ -14,14 +14,14 @@ import { LotteryService } from '../../services/lottery.service';
         <div class="overflow-hidden">
           <div class="flex transition-transform duration-500 ease-in-out" 
                [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
-            @for (house of houses; track house.id) {
+            @for (house of houses; track house.id; let houseIndex = $index) {
               <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-8">
                 <!-- Main House Image -->
                 <div class="flex-1 max-w-2xl flex flex-col">
                   <div>
                     <img
-                      [src]="house.images[getImageIndexForHouse($index)].url" 
-                      [alt]="house.images[getImageIndexForHouse($index)].alt"
+                      [src]="house.images[getImageIndexForHouse(houseIndex)].url" 
+                      [alt]="house.images[getImageIndexForHouse(houseIndex)].alt"
                       class="w-full h-64 md:h-96 object-cover rounded-xl shadow-lg">
                   </div>
                   
@@ -33,10 +33,10 @@ import { LotteryService } from '../../services/lottery.service';
                         <button 
                           (click)="goToHouseImage($index)"
                           class="w-12 h-8 rounded overflow-hidden border-2 transition-all hover:scale-105"
-                          [class.border-blue-500]="currentSlide === $parent.$index && currentHouseImageIndex === $index"
-                          [class.border-gray-300]="!(currentSlide === $parent.$index && currentHouseImageIndex === $index)"
-                          [class.dark:border-blue-400]="currentSlide === $parent.$index && currentHouseImageIndex === $index"
-                          [class.dark:border-gray-600]="!(currentSlide === $parent.$index && currentHouseImageIndex === $index)">
+                          [class.border-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.border-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                          [class.dark:border-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
                           <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
                         </button>
                       }
@@ -48,10 +48,10 @@ import { LotteryService } from '../../services/lottery.service';
                         <button 
                           (click)="goToHouseImage($index)"
                           class="w-2 h-2 rounded-full transition-all hover:scale-125"
-                          [class.bg-blue-500]="currentSlide === $parent.$index && currentHouseImageIndex === $index"
-                          [class.bg-gray-300]="!(currentSlide === $parent.$index && currentHouseImageIndex === $index)"
-                          [class.dark:bg-blue-400]="currentSlide === $parent.$index && currentHouseImageIndex === $index"
-                          [class.dark:bg-gray-600]="!(currentSlide === $parent.$index && currentHouseImageIndex === $index)">
+                          [class.bg-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.bg-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                          [class.dark:bg-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.dark:bg-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
                         </button>
                       }
                     </div>
