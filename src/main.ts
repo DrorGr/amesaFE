@@ -5,6 +5,7 @@ import { TopbarComponent } from './components/topbar/topbar.component';
 import { HeroSectionComponent } from './components/hero-section/hero-section.component';
 import { HouseGridComponent } from './components/house-grid/house-grid.component';
 import { StatsSectionComponent } from './components/stats-section/stats-section.component';
+import { HouseCarouselComponent } from './components/house-carousel/house-carousel.component';
 import { TranslationService } from './services/translation.service';
 import { ThemeService } from './services/theme.service';
 
@@ -16,7 +17,8 @@ import { ThemeService } from './services/theme.service';
     TopbarComponent,
     HeroSectionComponent,
     HouseGridComponent,
-    StatsSectionComponent
+    StatsSectionComponent,
+    HouseCarouselComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
@@ -24,6 +26,7 @@ import { ThemeService } from './services/theme.service';
       <main>
         <app-hero-section></app-hero-section>
         <app-stats-section></app-stats-section>
+        <app-house-carousel></app-house-carousel>
         <app-house-grid></app-house-grid>
       </main>
       
