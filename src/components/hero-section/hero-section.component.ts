@@ -139,6 +139,7 @@ import { inject } from '@angular/core';
             }
           </div>
         </div>
+          </div>
       </div>
     </section>
   `,
