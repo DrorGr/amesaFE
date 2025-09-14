@@ -11,6 +11,24 @@ import { LotteryService } from '../../services/lottery.service';
   template: `
     <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 transition-colors duration-300 relative">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <!-- Navigation Arrows - Above Content -->
+        <div class="flex justify-between items-center mb-4">
+          <button 
+            (click)="previousSlide()"
+            class="bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          <button 
+            (click)="nextSlide()"
+            class="bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+        
         <div class="overflow-hidden">
           <div class="flex transition-transform duration-500 ease-in-out" 
                [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
@@ -57,22 +75,6 @@ import { LotteryService } from '../../services/lottery.service';
                     </div>
                     
                     <!-- Mobile Navigation Arrows - In the void space -->
-                    <div class="lg:hidden flex justify-between items-center py-2 w-full">
-                      <button 
-                        (click)="previousSlide()"
-                        class="bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                      </button>
-                      <button 
-                        (click)="nextSlide()"
-                        class="bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </button>
-                    </div>
                   </div>
                 </div>
                 
@@ -145,25 +147,6 @@ import { LotteryService } from '../../services/lottery.service';
           }
         </div>
       </div>
-      
-      <!-- Main Navigation Arrows - Outside Entire Component -->
-      <!-- Desktop Navigation Arrows - Sides -->
-      <button 
-        (click)="previousSlide()"
-        class="hidden lg:block absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-        </svg>
-      </button>
-      <button 
-        (click)="nextSlide()"
-        class="hidden lg:block absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg z-10">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-        </svg>
-      </button>
-      
-      <!-- Mobile Navigation Arrows - Bottom -->
     </section>
   `
 })
