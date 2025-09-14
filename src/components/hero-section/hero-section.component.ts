@@ -30,6 +30,91 @@ import { inject } from '@angular/core';
             <h1 class="hero-title font-black mb-6 leading-tight text-white" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
               {{ translate('hero.title') }}
             </h1>
+            <p class="hero-subtitle mb-8 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              {{ translate('hero.subtitle') }}
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <button class="btn-primary text-lg px-8 py-4">
+                {{ translate('hero.browseLotteries') }}
+              </button>
+              <button class="btn-outline text-lg px-8 py-4">
+                {{ translate('hero.howItWorks') }}
+              </button>
+            </div>
+          </div>
+          
+          <!-- Right side - House Carousel -->
+          <div class="hidden lg:block max-w-md">
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 class="text-white text-xl font-bold mb-4 text-center">{{ getCurrentHouse().name }}</h3>
+              
+              <!-- Main House Image -->
+              <div class="relative mb-4">
+                <img 
+                  [src]="getCurrentHouseImage().url" 
+                  [alt]="getCurrentHouseImage().alt"
+                  class="w-full h-48 object-cover rounded-lg">
+                
+                <!-- Image Navigation -->
+                <button 
+                  (click)="previousHouseImage()"
+                  class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                  </svg>
+                </button>
+                <button 
+                  (click)="nextHouseImage()"
+                  class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+              </div>
+              
+              <!-- Image Thumbnails -->
+              <div class="flex space-x-2 mb-4">
+                @for (image of getCurrentHouse().images; track $index) {
+                  <button 
+                    (click)="goToHouseImage($index)"
+                    class="w-12 h-12 rounded overflow-hidden border-2 transition-all"
+                    [class.border-white]="currentHouseImageIndex === $index"
+                    [class.border-white/30]="currentHouseImageIndex !== $index">
+                    <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
+                  </button>
+                }
+              </div>
+              
+              <!-- House Navigation -->
+              <div class="flex justify-between items-center">
+                <button 
+                  (click)="previousSlide()"
+                  class="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                  </svg>
+                </button>
+                
+                <div class="flex space-x-2">
+                  @for (house of houses; track house.id) {
+                    <button 
+                      (click)="goToSlide($index)"
+                      class="w-2 h-2 rounded-full transition-all"
+                      [class.bg-white]="currentSlide === $index"
+                      [class.bg-white/40]="currentSlide !== $index">
+                    </button>
+                  }
+                </div>
+                
+                <button 
+                  (click)="nextSlide()"
+                  class="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
