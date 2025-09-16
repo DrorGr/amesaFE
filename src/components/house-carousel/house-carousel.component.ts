@@ -1,6 +1,22 @@
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslationService } from '../../services/translation.service';
+import { LotteryService } from '../../services/lottery.service';
+
+@Component({
+  selector: 'app-house-carousel',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 transition-colors duration-300 relative">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="overflow-hidden">
+          <div class="flex transition-transform duration-500 ease-in-out" 
+               [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
+            @for (house of houses; track house.id; let houseIndex = $index) {
               <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-8 relative">
-                <!-- Navigation Arrows - Centered over component -->
-                <div class="absolute top-4 left-1/2 transform -translate-x-1/2 flex space-x-4 z-10">
+                <!-- Main House Image -->
+                <div class="flex-1 max-w-2xl flex flex-col">
                   <div class="relative">
                     <!-- Navigation Arrows - Centered above image -->
                     <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 flex space-x-4 z-10">
@@ -19,24 +35,6 @@
                         </svg>
                       </button>
                     </div>
-                    (click)="previousSlide()"
-                    class="bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                  </button>
-                  <button 
-                    (click)="nextSlide()"
-                    class="bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                  </button>
-                </div>
-                
-                <!-- Main House Image -->
-                <div class="flex-1 max-w-2xl flex flex-col">
-                  <div>
                     <img
                       [src]="house.images[getImageIndexForHouse(houseIndex)].url" 
                       [alt]="house.images[getImageIndexForHouse(houseIndex)].alt"
@@ -73,20 +71,18 @@
                         </button>
                       }
                     </div>
-                    
-                    <!-- Mobile Navigation Arrows - In the void space -->
                   </div>
                 </div>
                 
                 <!-- Property Description and Lottery Info -->
                 <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-64 md:h-96">
                   <div>
-                  <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center lg:justify-start">
-                    {{ house.name }}
-                  </h2>
-                  <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-                    {{ house.description }}
-                  </p>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center lg:justify-start">
+                      {{ house.name }}
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                      {{ house.description }}
+                    </p>
                   </div>
                   
                   <!-- Lottery Information -->
@@ -108,24 +104,24 @@
                       <span class="font-bold text-orange-600 dark:text-orange-400">{{ formatDate(house.lotteryEndDate) }}</span>
                     </div>
                   
-                  <!-- Progress Bar -->
-                  <div class="mt-4">
-                    <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      <span>Progress</span>
-                      <span>{{ getTicketProgressForHouse(house) }}%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                      <div 
-                        class="bg-blue-600 dark:bg-blue-500 h-3 rounded-full transition-all duration-300"
-                        [style.width.%]="getTicketProgressForHouse(house)">
+                    <!-- Progress Bar -->
+                    <div class="mt-4">
+                      <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        <span>Progress</span>
+                        <span>{{ getTicketProgressForHouse(house) }}%</span>
+                      </div>
+                      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                        <div 
+                          class="bg-blue-600 dark:bg-blue-500 h-3 rounded-full transition-all duration-300"
+                          [style.width.%]="getTicketProgressForHouse(house)">
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <!-- Buy Ticket Button -->
-                  <button class="w-full mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5">
-                    Buy Ticket - €{{ house.ticketPrice }}
-                  </button>
+                    
+                    <!-- Buy Ticket Button -->
+                    <button class="w-full mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5">
+                      Buy Ticket - €{{ house.ticketPrice }}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -270,6 +266,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.stopAutoSlide();
     this.startAutoSlide();
   }
+
   translate(key: string): string {
     return this.translationService.translate(key);
   }
@@ -323,6 +320,19 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   formatPrice(price: number): string {
     return price.toLocaleString();
   }
+
+  formatDate(date: Date): string {
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  }
+
+  getTicketProgressForHouse(house: any): number {
+    return Math.round((house.soldTickets / house.totalTickets) * 100);
+  }
+  
   getImageIndexForHouse(houseIndex: number): number {
     return houseIndex === this.currentSlide ? this.currentHouseImageIndex : 0;
   }
