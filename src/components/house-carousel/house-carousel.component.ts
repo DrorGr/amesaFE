@@ -28,15 +28,6 @@ import { LotteryService } from '../../services/lottery.service';
                   <div class="flex flex-col items-center mt-4">
                     <!-- Mobile: Navigation buttons positioned outside thumbnails -->
                     <div class="md:hidden relative w-full flex justify-center">
-                      <!-- Left arrow - positioned outside left -->
-                      <button 
-                        (click)="previousSlide()"
-                        class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                      </button>
-                      
                       <!-- Thumbnail Images - centered -->
                       <div class="flex space-x-2">
                         @for (image of house.images; track $index) {
@@ -51,35 +42,10 @@ import { LotteryService } from '../../services/lottery.service';
                           </button>
                         }
                       </div>
-                      
-                      <!-- Right arrow - positioned outside right -->
-                      <button 
-                        (click)="nextSlide()"
-                        class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </button>
                     </div>
                     
                     <!-- Desktop: Only thumbnails with side navigation -->
                     <div class="hidden md:flex space-x-2">
-                      <!-- Desktop side navigation buttons -->
-                      <button 
-                        (click)="previousSlide()"
-                        class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg hover:shadow-xl z-20 border border-gray-200 dark:border-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                      </button>
-                      <button 
-                        (click)="nextSlide()"
-                        class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg hover:shadow-xl z-20 border border-gray-200 dark:border-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </button>
-                      
                       <!-- Desktop thumbnails -->
                       @for (image of house.images; track $index) {
                         <button 
@@ -113,9 +79,31 @@ import { LotteryService } from '../../services/lottery.service';
                 <!-- Property Description and Lottery Info -->
                 <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-auto md:h-96">
                   <div>
-                    <h2 class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2 md:mb-4 flex items-center justify-center lg:justify-start">
-                      {{ house.name }}
-                    </h2>
+                    <!-- Title with Navigation Buttons -->
+                    <div class="flex items-center justify-between mb-2 md:mb-4">
+                      <!-- Left Navigation Button -->
+                      <button 
+                        (click)="previousSlide()"
+                        class="flex-shrink-0 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-2 md:p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
+                        <svg class="w-4 h-4 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                      </button>
+                      
+                      <!-- House Title -->
+                      <h2 class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white text-center flex-1 mx-4">
+                        {{ house.name }}
+                      </h2>
+                      
+                      <!-- Right Navigation Button -->
+                      <button 
+                        (click)="nextSlide()"
+                        class="flex-shrink-0 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-2 md:p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
+                        <svg class="w-4 h-4 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </button>
+                    </div>
                     <p class="text-gray-600 dark:text-gray-300 mb-3 md:mb-6 leading-relaxed text-sm md:text-base">
                       {{ house.description }}
                     </p>
