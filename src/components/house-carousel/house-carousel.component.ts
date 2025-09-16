@@ -1,24 +1,24 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TranslationService } from '../../services/translation.service';
-import { inject } from '@angular/core';
-import { LotteryService } from '../../services/lottery.service';
-
-@Component({
-  selector: 'app-house-carousel',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
-    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 transition-colors duration-300 relative">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="overflow-hidden">
-          <div class="flex transition-transform duration-500 ease-in-out" 
-               [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
-            @for (house of houses; track house.id; let houseIndex = $index) {
               <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-8 relative">
                 <!-- Navigation Arrows - Centered over component -->
                 <div class="absolute top-4 left-1/2 transform -translate-x-1/2 flex space-x-4 z-10">
-                  <button 
+                  <div class="relative">
+                    <!-- Navigation Arrows - Centered above image -->
+                    <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 flex space-x-4 z-10">
+                      <button 
+                        (click)="previousSlide()"
+                        class="bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                      </button>
+                      <button 
+                        (click)="nextSlide()"
+                        class="bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </button>
+                    </div>
                     (click)="previousSlide()"
                     class="bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,24 +323,6 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   formatPrice(price: number): string {
     return price.toLocaleString();
   }
-  
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
-    });
-  }
-  
-  getTicketProgress(): number {
-    const house = this.getCurrentHouse();
-    return Math.round((house.soldTickets / house.totalTickets) * 100);
-  }
-  
-  getTicketProgressForHouse(house: any): number {
-    return Math.round((house.soldTickets / house.totalTickets) * 100);
-  }
-  
   getImageIndexForHouse(houseIndex: number): number {
     return houseIndex === this.currentSlide ? this.currentHouseImageIndex : 0;
   }
