@@ -11,13 +11,138 @@ import { LotteryService } from '../../services/lottery.service';
     <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-2 md:py-4 transition-colors duration-300 relative">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
-        <!-- Fixed Navigation Controls - Outside carousel -->
-        <div class="absolute top-4 left-0 right-0 z-10 flex items-center justify-between px-4">
+        <div class="overflow-hidden">
+          <div class="flex transition-transform duration-500 ease-in-out" 
+               [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
+            @for (house of houses; track house.id; let houseIndex = $index) {
+              <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-2 md:gap-4 relative">
+                <!-- Main House Image -->
+                <div class="flex-1 max-w-2xl flex flex-col mb-2">
+                  <div class="relative">
+                    <img
+                      [src]="house.images[getImageIndexForHouse(houseIndex)].url" 
+                      [alt]="house.images[getImageIndexForHouse(houseIndex)].alt"
+                      class="w-full h-48 md:h-72 object-cover rounded-xl shadow-lg">
+                  </div>
+                  
+                  <!-- Image Navigation Below Main Image -->
+                  <div class="flex flex-col items-center mt-2">
+                    <!-- Mobile: Navigation buttons positioned outside thumbnails -->
+                    <div class="md:hidden relative w-full flex justify-center">
+                      <!-- Thumbnail Images - centered -->
+                      <div class="flex space-x-1">
+                        @for (image of house.images; track $index) {
+                          <button 
+                            (click)="goToHouseImage($index)"
+                            class="w-10 h-6 rounded overflow-hidden border-2 transition-all hover:scale-105"
+                            [class.border-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                            [class.border-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                            [class.dark:border-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                            [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
+                            <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
+                          </button>
+                        }
+                      </div>
+                    </div>
+                    
+                    <!-- Desktop: Only thumbnails with side navigation -->
+                    <div class="hidden md:flex space-x-1">
+                      <!-- Desktop thumbnails -->
+                      @for (image of house.images; track $index) {
+                        <button 
+                          (click)="goToHouseImage($index)"
+                          class="w-10 h-6 rounded overflow-hidden border-2 transition-all hover:scale-105"
+                          [class.border-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.border-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                          [class.dark:border-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
+                          <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
+                        </button>
+                      }
+                    </div>
+                    
+                    <!-- Image Navigation Dots - Directly under thumbnails -->
+                    <div class="flex space-x-1 mt-0.5">
+                      @for (image of house.images; track $index) {
+                        <button 
+                          (click)="goToHouseImage($index)"
+                          class="w-1.5 h-1.5 rounded-full transition-all hover:scale-125"
+                          [class.bg-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.bg-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                          [class.dark:bg-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.dark:bg-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
+                        </button>
+                      }
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Property Description and Lottery Info -->
+                <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-auto md:h-72">
+                  <div>
+                    <!-- House Title -->
+                    <div class="mb-1 md:mb-2">
+                      <h2 class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white text-center">
+                        {{ house.name }}
+                      </h2>
+                    </div>
+                    
+                    <p class="text-gray-600 dark:text-gray-300 mb-2 md:mb-3 leading-relaxed text-xs md:text-sm">
+                      {{ house.description }}
+                    </p>
+                  </div>
+                  
+                  <!-- Lottery Information -->
+                  <div class="space-y-1 md:space-y-2 flex-grow flex flex-col justify-center">
+                    <div class="flex justify-between items-center py-0.5 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-sm">Property Value</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-xs md:text-sm">€{{ formatPrice(house.price) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-0.5 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-sm">Ticket Price</span>
+                      <span class="font-bold text-blue-600 dark:text-blue-400 text-xs md:text-sm">€{{ house.ticketPrice }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-0.5 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-sm">Tickets Sold</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-xs md:text-sm">{{ house.soldTickets }}/{{ house.totalTickets }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-0.5 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-sm">Draw Date</span>
+                      <span class="font-bold text-orange-600 dark:text-orange-400 text-xs md:text-sm">{{ formatDate(house.lotteryEndDate) }}</span>
+                    </div>
+                  
+                    <!-- Progress Bar -->
+                    <div class="mt-0.5 md:mt-1">
+                      <div class="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                        <span>Progress</span>
+                        <span>{{ getTicketProgressForHouse(house) }}%</span>
+                      </div>
+                      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div 
+                          class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
+                          [style.width.%]="getTicketProgressForHouse(house)">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Buy Ticket Button -->
+                    <button class="w-full mt-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-1.5 md:py-2 px-3 md:px-4 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-xs md:text-sm">
+                      Buy Ticket - €{{ house.ticketPrice }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        
+        <!-- Fixed Navigation Controls - Bottom of component -->
+        <div class="flex items-center justify-between px-4 mt-2 md:mt-4">
           <!-- Left Navigation Button -->
           <button 
             (click)="previousSlide()"
-            class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 md:p-5 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
-            <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 md:p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
           </button>
@@ -39,136 +164,11 @@ import { LotteryService } from '../../services/lottery.service';
           <!-- Right Navigation Button -->
           <button 
             (click)="nextSlide()"
-            class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 md:p-5 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
-            <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 md:p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
           </button>
-        </div>
-        
-        <div class="overflow-hidden">
-          <div class="flex transition-transform duration-500 ease-in-out" 
-               [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
-            @for (house of houses; track house.id; let houseIndex = $index) {
-              <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 relative">
-                <!-- Main House Image -->
-                <div class="flex-1 max-w-2xl flex flex-col">
-                  <div class="relative">
-                    <img
-                      [src]="house.images[getImageIndexForHouse(houseIndex)].url" 
-                      [alt]="house.images[getImageIndexForHouse(houseIndex)].alt"
-                      class="w-full h-64 md:h-96 object-cover rounded-xl shadow-lg">
-                  </div>
-                  
-                  <!-- Image Navigation Below Main Image -->
-                  <div class="flex flex-col items-center mt-4">
-                    <!-- Mobile: Navigation buttons positioned outside thumbnails -->
-                    <div class="md:hidden relative w-full flex justify-center">
-                      <!-- Thumbnail Images - centered -->
-                      <div class="flex space-x-2">
-                        @for (image of house.images; track $index) {
-                          <button 
-                            (click)="goToHouseImage($index)"
-                            class="w-12 h-8 rounded overflow-hidden border-2 transition-all hover:scale-105"
-                            [class.border-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
-                            [class.border-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
-                            [class.dark:border-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
-                            [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
-                            <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
-                          </button>
-                        }
-                      </div>
-                    </div>
-                    
-                    <!-- Desktop: Only thumbnails with side navigation -->
-                    <div class="hidden md:flex space-x-2">
-                      <!-- Desktop thumbnails -->
-                      @for (image of house.images; track $index) {
-                        <button 
-                          (click)="goToHouseImage($index)"
-                          class="w-12 h-8 rounded overflow-hidden border-2 transition-all hover:scale-105"
-                          [class.border-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
-                          [class.border-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
-                          [class.dark:border-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
-                          [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
-                          <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
-                        </button>
-                      }
-                    </div>
-                    
-                    <!-- Image Navigation Dots - Directly under thumbnails -->
-                    <div class="flex space-x-1 mt-1">
-                      @for (image of house.images; track $index) {
-                        <button 
-                          (click)="goToHouseImage($index)"
-                          class="w-2 h-2 rounded-full transition-all hover:scale-125"
-                          [class.bg-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
-                          [class.bg-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
-                          [class.dark:bg-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
-                          [class.dark:bg-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
-                        </button>
-                      }
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Property Description and Lottery Info -->
-                <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-auto md:h-96">
-                  <div>
-                    <!-- House Title -->
-                    <div class="mb-2 md:mb-4">
-                      <h2 class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white text-center">
-                        {{ house.name }}
-                      </h2>
-                    </div>
-                    
-                    <p class="text-gray-600 dark:text-gray-300 mb-3 md:mb-6 leading-relaxed text-sm md:text-base">
-                      {{ house.description }}
-                    </p>
-                  </div>
-                  
-                  <!-- Lottery Information -->
-                  <div class="space-y-2 md:space-y-4 flex-grow flex flex-col justify-center">
-                    <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400 text-sm md:text-base">Property Value</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-sm md:text-base">€{{ formatPrice(house.price) }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400 text-sm md:text-base">Ticket Price</span>
-                      <span class="font-bold text-blue-600 dark:text-blue-400 text-sm md:text-base">€{{ house.ticketPrice }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400 text-sm md:text-base">Tickets Sold</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-sm md:text-base">{{ house.soldTickets }}/{{ house.totalTickets }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400 text-sm md:text-base">Draw Date</span>
-                      <span class="font-bold text-orange-600 dark:text-orange-400 text-sm md:text-base">{{ formatDate(house.lotteryEndDate) }}</span>
-                    </div>
-                  
-                    <!-- Progress Bar -->
-                    <div class="mt-1 md:mt-2">
-                      <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-                        <span>Progress</span>
-                        <span>{{ getTicketProgressForHouse(house) }}%</span>
-                      </div>
-                      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                        <div 
-                          class="bg-blue-600 dark:bg-blue-500 h-3 rounded-full transition-all duration-300"
-                          [style.width.%]="getTicketProgressForHouse(house)">
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <!-- Buy Ticket Button -->
-                    <button class="w-full mt-1 md:mt-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-sm md:text-base">
-                      Buy Ticket - €{{ house.ticketPrice }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
         </div>
         
       </div>
