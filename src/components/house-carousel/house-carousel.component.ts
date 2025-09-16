@@ -1,0 +1,404 @@
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslationService } from '../../services/translation.service';
+import { LotteryService } from '../../services/lottery.service';
+
+@Component({
+  selector: 'app-house-carousel',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-2 md:py-4 transition-colors duration-300 relative">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        
+        <div class="overflow-hidden">
+          <div class="flex transition-transform duration-500 ease-in-out" 
+               [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
+            @for (house of houses; track house.id; let houseIndex = $index) {
+              <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 relative">
+                <!-- Main House Image -->
+                <div class="flex-1 max-w-4xl flex flex-col mb-2">
+                  <div class="relative">
+                    <img
+                      [src]="house.images[getImageIndexForHouse(houseIndex)].url" 
+                      [alt]="house.images[getImageIndexForHouse(houseIndex)].alt"
+                      class="w-full h-48 md:h-96 object-cover rounded-xl shadow-lg">
+                  </div>
+                  
+                  <!-- Image Navigation Below Main Image -->
+                  <div class="flex flex-col items-center mt-3">
+                    <!-- Mobile: Navigation buttons positioned outside thumbnails -->
+                    <div class="md:hidden relative w-full flex justify-center">
+                      <!-- Thumbnail Images - centered -->
+                      <div class="flex space-x-1">
+                        @for (image of house.images; track $index) {
+                          <button 
+                            (click)="goToHouseImage($index)"
+                            class="w-12 h-8 rounded overflow-hidden border-2 transition-all hover:scale-105"
+                            [class.border-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                            [class.border-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                            [class.dark:border-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                            [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
+                            <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
+                          </button>
+                        }
+                      </div>
+                    </div>
+                    
+                    <!-- Desktop: Only thumbnails with side navigation -->
+                    <div class="hidden md:flex space-x-2">
+                      <!-- Desktop thumbnails -->
+                      @for (image of house.images; track $index) {
+                        <button 
+                          (click)="goToHouseImage($index)"
+                          class="w-16 h-10 rounded overflow-hidden border-2 transition-all hover:scale-105"
+                          [class.border-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.border-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                          [class.dark:border-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
+                          <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
+                        </button>
+                      }
+                    </div>
+                    
+                    <!-- Image Navigation Dots - Directly under thumbnails -->
+                    <div class="flex space-x-1 mt-1">
+                      @for (image of house.images; track $index) {
+                        <button 
+                          (click)="goToHouseImage($index)"
+                          class="w-2 h-2 rounded-full transition-all hover:scale-125"
+                          [class.bg-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.bg-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                          [class.dark:bg-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.dark:bg-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
+                        </button>
+                      }
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Property Description and Lottery Info -->
+                <div class="flex-1 max-w-lg text-center lg:text-left flex flex-col justify-between h-auto md:h-96">
+                  <div>
+                    <!-- House Title -->
+                    <div class="mb-2 md:mb-4">
+                      <h2 class="text-lg md:text-3xl font-bold text-gray-900 dark:text-white text-center">
+                        {{ house.name }}
+                      </h2>
+                    </div>
+                    
+                    <p class="text-gray-600 dark:text-gray-300 mb-3 md:mb-6 leading-relaxed text-xs md:text-base">
+                      {{ house.description }}
+                    </p>
+                  </div>
+                  
+                  <!-- Lottery Information -->
+                  <div class="space-y-2 md:space-y-4 flex-grow flex flex-col justify-center">
+                    <div class="flex justify-between items-center py-1 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-base">Property Value</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-xs md:text-lg">€{{ formatPrice(house.price) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-1 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-base">Ticket Price</span>
+                      <span class="font-bold text-blue-600 dark:text-blue-400 text-xs md:text-lg">€{{ house.ticketPrice }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-1 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-base">Tickets Sold</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-xs md:text-lg">{{ house.soldTickets }}/{{ house.totalTickets }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-1 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-base">Draw Date</span>
+                      <span class="font-bold text-orange-600 dark:text-orange-400 text-xs md:text-lg">{{ formatDate(house.lotteryEndDate) }}</span>
+                    </div>
+                  
+                    <!-- Progress Bar -->
+                    <div class="mt-1 md:mt-3">
+                      <div class="flex justify-between text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1 md:mb-2">
+                        <span>Progress</span>
+                        <span>{{ getTicketProgressForHouse(house) }}%</span>
+                      </div>
+                      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 md:h-3">
+                        <div 
+                          class="bg-blue-600 dark:bg-blue-500 h-2 md:h-3 rounded-full transition-all duration-300"
+                          [style.width.%]="getTicketProgressForHouse(house)">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Buy Ticket Button -->
+                    <button class="w-full mt-2 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-2 md:py-4 px-4 md:px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-sm md:text-lg">
+                      Buy Ticket - €{{ house.ticketPrice }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        
+        <!-- Fixed Navigation Controls - Bottom of component -->
+        <!-- Mobile Navigation - Bottom -->
+        <div class="md:hidden absolute bottom-6 left-0 right-0 flex items-center justify-between px-6 z-10">
+          <!-- Left Navigation Button -->
+          <button 
+            (click)="previousSlide()"
+            class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          
+          <!-- Container Dots -->
+          <div class="flex space-x-3">
+            @for (house of houses; track house.id) {
+              <button 
+                (click)="goToSlide($index)"
+                class="w-4 h-4 rounded-full transition-all hover:scale-125"
+                [class.bg-blue-600]="currentSlide === $index"
+                [class.bg-gray-300]="currentSlide !== $index"
+                [class.dark:bg-blue-500]="currentSlide === $index"
+                [class.dark:bg-gray-600]="currentSlide !== $index">
+              </button>
+            }
+          </div>
+          
+          <!-- Right Navigation Button -->
+          <button 
+            (click)="nextSlide()"
+            class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Desktop Navigation - Side buttons centered vertically -->
+        <div class="hidden md:block">
+          <!-- Left Navigation Button -->
+          <button 
+            (click)="previousSlide()"
+            class="absolute -left-16 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-10">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          
+          <!-- Right Navigation Button - in dead space -->
+          <button 
+            (click)="nextSlide()"
+            class="absolute -right-16 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-10">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Desktop Container Dots - Bottom center -->
+        <div class="hidden md:flex absolute bottom-6 left-1/2 transform -translate-x-1/2 space-x-4 z-10">
+          @for (house of houses; track house.id) {
+            <button 
+              (click)="goToSlide($index)"
+              class="w-5 h-5 rounded-full transition-all hover:scale-125"
+              [class.bg-blue-600]="currentSlide === $index"
+              [class.bg-gray-300]="currentSlide !== $index"
+              [class.dark:bg-blue-500]="currentSlide === $index"
+              [class.dark:bg-gray-600]="currentSlide !== $index">
+            </button>
+          }
+        </div>
+        
+      </div>
+    </section>
+  `
+})
+export class HouseCarouselComponent implements OnInit, OnDestroy {
+  private translationService = inject(TranslationService);
+  private lotteryService = inject(LotteryService);
+  
+  currentSlide = 0;
+  currentHouseImageIndex = 0;
+  isTransitioning = false;
+  private autoSlideInterval: any;
+
+  houses = [
+    {
+      id: 1,
+      name: 'Modern Downtown Condo',
+      description: 'Stunning 2-bedroom condo in the heart of downtown with city views and modern amenities. Perfect for urban professionals seeking luxury living.',
+      price: 450000,
+      ticketPrice: 50,
+      totalTickets: 1000,
+      soldTickets: 650,
+      lotteryEndDate: new Date('2025-02-15'),
+      images: [
+        {
+          url: 'https://images.pexels.com/photos/1918291/pexels-photo-1918291.jpeg',
+          alt: 'Modern downtown condo exterior'
+        },
+        {
+          url: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg',
+          alt: 'Modern living room'
+        },
+        {
+          url: 'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg',
+          alt: 'Modern kitchen'
+        },
+        {
+          url: 'https://images.pexels.com/photos/1571468/pexels-photo-1571468.jpeg',
+          alt: 'Modern bedroom'
+        }
+      ]
+    },
+    {
+      id: 2,
+      name: 'Suburban Family Home',
+      description: 'Beautiful 4-bedroom family home with large backyard and garage in quiet neighborhood. Ideal for growing families.',
+      price: 680000,
+      ticketPrice: 75,
+      totalTickets: 1500,
+      soldTickets: 890,
+      lotteryEndDate: new Date('2025-02-20'),
+      images: [
+        {
+          url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg',
+          alt: 'Suburban family home exterior'
+        },
+        {
+          url: 'https://images.pexels.com/photos/1571471/pexels-photo-1571471.jpeg',
+          alt: 'Family living room'
+        },
+        {
+          url: 'https://images.pexels.com/photos/1571457/pexels-photo-1571457.jpeg',
+          alt: 'Family kitchen'
+        },
+        {
+          url: 'https://images.pexels.com/photos/1571463/pexels-photo-1571463.jpeg',
+          alt: 'Family dining room'
+        }
+      ]
+    },
+    {
+      id: 3,
+      name: 'Luxury Waterfront Villa',
+      description: 'Exclusive waterfront villa with private beach access and panoramic ocean views. The ultimate in luxury living.',
+      price: 1200000,
+      ticketPrice: 100,
+      totalTickets: 2000,
+      soldTickets: 1245,
+      lotteryEndDate: new Date('2025-03-01'),
+      images: [
+        {
+          url: 'https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg',
+          alt: 'Luxury waterfront villa exterior'
+        },
+        {
+          url: 'https://images.pexels.com/photos/1571475/pexels-photo-1571475.jpeg',
+          alt: 'Luxury living area'
+        },
+        {
+          url: 'https://images.pexels.com/photos/1571477/pexels-photo-1571477.jpeg',
+          alt: 'Luxury master bedroom'
+        },
+        {
+          url: 'https://images.pexels.com/photos/1571479/pexels-photo-1571479.jpeg',
+          alt: 'Luxury bathroom'
+        }
+      ]
+    }
+  ];
+
+  ngOnInit() {
+    this.startAutoSlide();
+  }
+
+  ngOnDestroy() {
+    this.stopAutoSlide();
+  }
+
+  private startAutoSlide() {
+    this.autoSlideInterval = setInterval(() => {
+      this.nextSlide();
+    }, 5000);
+  }
+
+  private stopAutoSlide() {
+    if (this.autoSlideInterval) {
+      clearInterval(this.autoSlideInterval);
+    }
+  }
+
+  private resetAutoSlide() {
+    this.stopAutoSlide();
+    this.startAutoSlide();
+  }
+
+  translate(key: string): string {
+    return this.translationService.translate(key);
+  }
+  
+  getCurrentHouse() {
+    return this.houses[this.currentSlide];
+  }
+  
+  getCurrentHouseImage() {
+    return this.getCurrentHouse().images[this.currentHouseImageIndex];
+  }
+  
+  nextSlide() {
+    this.currentSlide = (this.currentSlide + 1) % this.houses.length;
+    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+    this.resetAutoSlide();
+  }
+  
+  previousSlide() {
+    this.currentSlide = this.currentSlide === 0 ? this.houses.length - 1 : this.currentSlide - 1;
+    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+    this.resetAutoSlide();
+  }
+  
+  goToSlide(index: number) {
+    if (index < 0 || index >= this.houses.length) return;
+    this.currentSlide = index;
+    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+    this.resetAutoSlide();
+  }
+  
+  nextHouseImage() {
+    const currentHouse = this.getCurrentHouse();
+    this.currentHouseImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
+    this.resetAutoSlide();
+  }
+  
+  previousHouseImage() {
+    const currentHouse = this.getCurrentHouse();
+    this.currentHouseImageIndex = this.currentHouseImageIndex === 0 
+      ? currentHouse.images.length - 1 
+      : this.currentHouseImageIndex - 1;
+    this.resetAutoSlide();
+  }
+  
+  goToHouseImage(index: number) {
+    this.currentHouseImageIndex = index;
+    this.resetAutoSlide();
+  }
+  
+  formatPrice(price: number): string {
+    return price.toLocaleString();
+  }
+
+  formatDate(date: Date): string {
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  }
+
+  getTicketProgressForHouse(house: any): number {
+    return Math.round((house.soldTickets / house.totalTickets) * 100);
+  }
+  
+  getImageIndexForHouse(houseIndex: number): number {
+    return houseIndex === this.currentSlide ? this.currentHouseImageIndex : 0;
+  }
+}
