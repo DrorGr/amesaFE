@@ -137,22 +137,23 @@ import { LotteryService } from '../../services/lottery.service';
         </div>
         
         <!-- Fixed Navigation Controls - Bottom of component -->
-        <div class="absolute bottom-6 left-0 right-0 flex items-center justify-between px-6 z-10">
+        <!-- Mobile Navigation - Bottom -->
+        <div class="md:hidden absolute bottom-6 left-0 right-0 flex items-center justify-between px-6 z-10">
           <!-- Left Navigation Button -->
           <button 
             (click)="previousSlide()"
-            class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-5 md:p-6 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
-            <svg class="w-7 h-7 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
           </button>
           
           <!-- Container Dots -->
-          <div class="flex space-x-3 md:space-x-4">
+          <div class="flex space-x-3">
             @for (house of houses; track house.id) {
               <button 
                 (click)="goToSlide($index)"
-                class="w-4 h-4 md:w-5 md:h-5 rounded-full transition-all hover:scale-125"
+                class="w-4 h-4 rounded-full transition-all hover:scale-125"
                 [class.bg-blue-600]="currentSlide === $index"
                 [class.bg-gray-300]="currentSlide !== $index"
                 [class.dark:bg-blue-500]="currentSlide === $index"
@@ -164,11 +165,46 @@ import { LotteryService } from '../../services/lottery.service';
           <!-- Right Navigation Button -->
           <button 
             (click)="nextSlide()"
-            class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-5 md:p-6 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
-            <svg class="w-7 h-7 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
           </button>
+        </div>
+        
+        <!-- Desktop Navigation - Side buttons centered vertically -->
+        <div class="hidden md:block">
+          <!-- Left Navigation Button -->
+          <button 
+            (click)="previousSlide()"
+            class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-6 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-10">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          
+          <!-- Right Navigation Button -->
+          <button 
+            (click)="nextSlide()"
+            class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-6 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-10">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Desktop Container Dots - Bottom center -->
+        <div class="hidden md:flex absolute bottom-6 left-1/2 transform -translate-x-1/2 space-x-4 z-10">
+          @for (house of houses; track house.id) {
+            <button 
+              (click)="goToSlide($index)"
+              class="w-5 h-5 rounded-full transition-all hover:scale-125"
+              [class.bg-blue-600]="currentSlide === $index"
+              [class.bg-gray-300]="currentSlide !== $index"
+              [class.dark:bg-blue-500]="currentSlide === $index"
+              [class.dark:bg-gray-600]="currentSlide !== $index">
+            </button>
+          }
         </div>
         
       </div>
