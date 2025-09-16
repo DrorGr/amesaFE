@@ -80,30 +80,47 @@ import { LotteryService } from '../../services/lottery.service';
                 <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-auto md:h-96">
                   <div>
                     <!-- Title with Navigation Buttons -->
-                    <div class="flex items-center justify-between mb-2 md:mb-4">
+                    <div class="flex items-center justify-center mb-2 md:mb-4 relative">
                       <!-- Left Navigation Button -->
                       <button 
                         (click)="previousSlide()"
-                        class="flex-shrink-0 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-2 md:p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
-                        <svg class="w-4 h-4 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="absolute left-0 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 md:p-5 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
+                        <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
                       </button>
                       
-                      <!-- House Title -->
-                      <h2 class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white text-center flex-1 mx-4">
-                        {{ house.name }}
-                      </h2>
+                      <!-- Container Dots -->
+                      <div class="flex space-x-2 md:space-x-3">
+                        @for (house of houses; track house.id) {
+                          <button 
+                            (click)="goToSlide($index)"
+                            class="w-3 h-3 md:w-4 md:h-4 rounded-full transition-all hover:scale-125"
+                            [class.bg-blue-600]="currentSlide === $index"
+                            [class.bg-gray-300]="currentSlide !== $index"
+                            [class.dark:bg-blue-500]="currentSlide === $index"
+                            [class.dark:bg-gray-600]="currentSlide !== $index">
+                          </button>
+                        }
+                      </div>
                       
                       <!-- Right Navigation Button -->
                       <button 
                         (click)="nextSlide()"
-                        class="flex-shrink-0 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-2 md:p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
-                        <svg class="w-4 h-4 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="absolute right-0 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 md:p-5 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110">
+                        <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                       </button>
                     </div>
+                    
+                    <!-- House Title -->
+                    <div class="mb-2 md:mb-4">
+                      <h2 class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white text-center">
+                        {{ house.name }}
+                      </h2>
+                    </div>
+                    
                     <p class="text-gray-600 dark:text-gray-300 mb-3 md:mb-6 leading-relaxed text-sm md:text-base">
                       {{ house.description }}
                     </p>
@@ -153,19 +170,6 @@ import { LotteryService } from '../../services/lottery.service';
           </div>
         </div>
         
-        <!-- House Navigation Dots at Footer -->
-        <div class="flex justify-center space-x-3 mt-6">
-          @for (house of houses; track house.id) {
-            <button 
-              (click)="goToSlide($index)"
-              class="w-4 h-4 rounded-full transition-all hover:scale-125"
-              [class.bg-blue-600]="currentSlide === $index"
-              [class.bg-gray-300]="currentSlide !== $index"
-              [class.dark:bg-blue-500]="currentSlide === $index"
-              [class.dark:bg-gray-600]="currentSlide !== $index">
-            </button>
-          }
-        </div>
       </div>
     </section>
   `
