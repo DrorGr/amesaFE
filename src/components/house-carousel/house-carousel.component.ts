@@ -10,22 +10,6 @@ import { LotteryService } from '../../services/lottery.service';
   template: `
     <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-2 md:py-4 transition-colors duration-300 relative">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <!-- Side Navigation Buttons for Houses -->
-        <button 
-          (click)="previousSlide()"
-          class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg hover:shadow-xl z-20 border border-gray-200 dark:border-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        </button>
-        <button 
-          (click)="nextSlide()"
-          class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg hover:shadow-xl z-20 border border-gray-200 dark:border-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
-        
         <div class="overflow-hidden">
           <div class="flex transition-transform duration-500 ease-in-out" 
                [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
@@ -34,23 +18,6 @@ import { LotteryService } from '../../services/lottery.service';
                 <!-- Main House Image -->
                 <div class="flex-1 max-w-2xl flex flex-col">
                   <div class="relative">
-                    <!-- Navigation Arrows - Centered above image -->
-                    <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 flex space-x-4 z-10">
-                      <button 
-                        (click)="previousSlide()"
-                        class="bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                      </button>
-                      <button 
-                        (click)="nextSlide()"
-                        class="bg-black/60 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </button>
-                    </div>
                     <img
                       [src]="house.images[getImageIndexForHouse(houseIndex)].url" 
                       [alt]="house.images[getImageIndexForHouse(houseIndex)].alt"
@@ -95,8 +62,25 @@ import { LotteryService } from '../../services/lottery.service';
                       </button>
                     </div>
                     
-                    <!-- Desktop: Only thumbnails -->
+                    <!-- Desktop: Only thumbnails with side navigation -->
                     <div class="hidden md:flex space-x-2">
+                      <!-- Desktop side navigation buttons -->
+                      <button 
+                        (click)="previousSlide()"
+                        class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg hover:shadow-xl z-20 border border-gray-200 dark:border-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                      </button>
+                      <button 
+                        (click)="nextSlide()"
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg hover:shadow-xl z-20 border border-gray-200 dark:border-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </button>
+                      
+                      <!-- Desktop thumbnails -->
                       @for (image of house.images; track $index) {
                         <button 
                           (click)="goToHouseImage($index)"
