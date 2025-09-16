@@ -175,26 +175,8 @@ import { LotteryService } from '../../services/lottery.service';
         </div>
         
         <!-- Desktop Navigation -->
-        <div class="hidden md:block relative">
-          <!-- Side Navigation Buttons -->
-          <button 
-            (click)="previousSlide()"
-            class="fixed left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-10"
-            style="margin-top: -48px;">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-          </button>
-          
-          <button 
-            (click)="nextSlide()"
-            class="fixed right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-10"
-            style="margin-top: -48px;">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </button>
-          
+        <!-- Desktop Navigation - Only visible on desktop -->
+        <div class="hidden md:block">
           <!-- Desktop Container Dots - Bottom center -->
           <div class="flex justify-center space-x-3 py-4">
             @for (house of houses; track house.id) {
@@ -210,6 +192,25 @@ import { LotteryService } from '../../services/lottery.service';
           </div>
         </div>
         
+      </div>
+      
+      <!-- Desktop Side Navigation Buttons - Outside container, at screen edges -->
+      <div class="hidden md:block">
+        <button 
+          (click)="previousSlide()"
+          class="fixed left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-30">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        
+        <button 
+          (click)="nextSlide()"
+          class="fixed right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-30">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
       </div>
     </section>
   `
