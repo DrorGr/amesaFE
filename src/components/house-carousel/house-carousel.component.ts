@@ -59,8 +59,44 @@ import { LotteryService } from '../../services/lottery.service';
                   
                   <!-- Image Navigation Below Main Image -->
                   <div class="flex flex-col items-center mt-4">
-                    <!-- Thumbnail Images -->
-                    <div class="flex space-x-2">
+                    <!-- Mobile: Navigation buttons with thumbnails -->
+                    <div class="md:hidden flex items-center space-x-4">
+                      <!-- Left arrow -->
+                      <button 
+                        (click)="previousSlide()"
+                        class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-2 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                      </button>
+                      
+                      <!-- Thumbnail Images -->
+                      <div class="flex space-x-2">
+                        @for (image of house.images; track $index) {
+                          <button 
+                            (click)="goToHouseImage($index)"
+                            class="w-12 h-8 rounded overflow-hidden border-2 transition-all hover:scale-105"
+                            [class.border-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                            [class.border-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                            [class.dark:border-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                            [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
+                            <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover">
+                          </button>
+                        }
+                      </div>
+                      
+                      <!-- Right arrow -->
+                      <button 
+                        (click)="nextSlide()"
+                        class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-2 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    <!-- Desktop: Only thumbnails -->
+                    <div class="hidden md:flex space-x-2">
                       @for (image of house.images; track $index) {
                         <button 
                           (click)="goToHouseImage($index)"
