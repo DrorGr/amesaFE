@@ -59,18 +59,18 @@ import { LotteryService } from '../../services/lottery.service';
                   
                   <!-- Image Navigation Below Main Image -->
                   <div class="flex flex-col items-center mt-4">
-                    <!-- Mobile: Navigation buttons with thumbnails -->
-                    <div class="md:hidden flex items-center space-x-4">
-                      <!-- Left arrow -->
+                    <!-- Mobile: Navigation buttons positioned outside thumbnails -->
+                    <div class="md:hidden relative w-full flex justify-center">
+                      <!-- Left arrow - positioned outside left -->
                       <button 
                         (click)="previousSlide()"
-                        class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-2 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
                       </button>
                       
-                      <!-- Thumbnail Images -->
+                      <!-- Thumbnail Images - centered -->
                       <div class="flex space-x-2">
                         @for (image of house.images; track $index) {
                           <button 
@@ -85,11 +85,11 @@ import { LotteryService } from '../../services/lottery.service';
                         }
                       </div>
                       
-                      <!-- Right arrow -->
+                      <!-- Right arrow - positioned outside right -->
                       <button 
                         (click)="nextSlide()"
-                        class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-2 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                       </button>
