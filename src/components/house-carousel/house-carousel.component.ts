@@ -8,7 +8,7 @@ import { LotteryService } from '../../services/lottery.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 transition-colors duration-300 relative">
+    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-2 md:py-4 transition-colors duration-300 relative">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Side Navigation Buttons for Houses -->
         <button 
@@ -30,7 +30,7 @@ import { LotteryService } from '../../services/lottery.service';
           <div class="flex transition-transform duration-500 ease-in-out" 
                [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
             @for (house of houses; track house.id; let houseIndex = $index) {
-              <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-8 relative">
+              <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 relative">
                 <!-- Main House Image -->
                 <div class="flex-1 max-w-2xl flex flex-col">
                   <div class="relative">
@@ -91,37 +91,37 @@ import { LotteryService } from '../../services/lottery.service';
                 </div>
                 
                 <!-- Property Description and Lottery Info -->
-                <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-64 md:h-96">
+                <div class="flex-1 max-w-md text-center lg:text-left flex flex-col justify-between h-auto md:h-96">
                   <div>
-                    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center lg:justify-start">
+                    <h2 class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2 md:mb-4 flex items-center justify-center lg:justify-start">
                       {{ house.name }}
                     </h2>
-                    <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                    <p class="text-gray-600 dark:text-gray-300 mb-3 md:mb-6 leading-relaxed text-sm md:text-base">
                       {{ house.description }}
                     </p>
                   </div>
                   
                   <!-- Lottery Information -->
-                  <div class="space-y-4 flex-grow flex flex-col justify-center">
+                  <div class="space-y-2 md:space-y-4 flex-grow flex flex-col justify-center">
                     <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400">Property Value</span>
-                      <span class="font-bold text-gray-900 dark:text-white">€{{ formatPrice(house.price) }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-sm md:text-base">Property Value</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-sm md:text-base">€{{ formatPrice(house.price) }}</span>
                     </div>
                     <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400">Ticket Price</span>
-                      <span class="font-bold text-blue-600 dark:text-blue-400">€{{ house.ticketPrice }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-sm md:text-base">Ticket Price</span>
+                      <span class="font-bold text-blue-600 dark:text-blue-400 text-sm md:text-base">€{{ house.ticketPrice }}</span>
                     </div>
                     <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400">Tickets Sold</span>
-                      <span class="font-bold text-gray-900 dark:text-white">{{ house.soldTickets }}/{{ house.totalTickets }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-sm md:text-base">Tickets Sold</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-sm md:text-base">{{ house.soldTickets }}/{{ house.totalTickets }}</span>
                     </div>
                     <div class="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400">Draw Date</span>
-                      <span class="font-bold text-orange-600 dark:text-orange-400">{{ formatDate(house.lotteryEndDate) }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-sm md:text-base">Draw Date</span>
+                      <span class="font-bold text-orange-600 dark:text-orange-400 text-sm md:text-base">{{ formatDate(house.lotteryEndDate) }}</span>
                     </div>
                   
                     <!-- Progress Bar -->
-                    <div class="mt-2">
+                    <div class="mt-1 md:mt-2">
                       <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
                         <span>Progress</span>
                         <span>{{ getTicketProgressForHouse(house) }}%</span>
@@ -135,7 +135,7 @@ import { LotteryService } from '../../services/lottery.service';
                     </div>
                     
                     <!-- Buy Ticket Button -->
-                    <button class="w-full mt-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5">
+                    <button class="w-full mt-1 md:mt-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-sm md:text-base">
                       Buy Ticket - €{{ house.ticketPrice }}
                     </button>
                   </div>
