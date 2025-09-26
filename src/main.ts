@@ -6,8 +6,19 @@ import { HeroSectionComponent } from './components/hero-section/hero-section.com
 import { HouseGridComponent } from './components/house-grid/house-grid.component';
 import { StatsSectionComponent } from './components/stats-section/stats-section.component';
 import { HouseCarouselComponent } from './components/house-carousel/house-carousel.component';
+import { AboutPageComponent } from './components/about-page/about-page.component';
+import { SponsorshipPageComponent } from './components/sponsorship-page/sponsorship-page.component';
+import { FAQPageComponent } from './components/faq-page/faq-page.component';
+import { HelpCenterPageComponent } from './components/help-center-page/help-center-page.component';
+import { RegistrationPageComponent } from './components/registration-page/registration-page.component';
+import { MemberSettingsPageComponent } from './components/member-settings-page/member-settings-page.component';
+import { PartnersPageComponent } from './components/partners-page/partners-page.component';
+import { PromotionsPageComponent } from './components/promotions-page/promotions-page.component';
+import { ResponsibleGamblingPageComponent } from './components/responsible-gambling-page/responsible-gambling-page.component';
+import { HowItWorksPageComponent } from './components/how-it-works-page/how-it-works-page.component';
 import { TranslationService } from './services/translation.service';
 import { ThemeService } from './services/theme.service';
+import { NavigationService } from './services/navigation.service';
 
 @Component({
   selector: 'app-root',
@@ -18,17 +29,52 @@ import { ThemeService } from './services/theme.service';
     HeroSectionComponent,
     HouseGridComponent,
     StatsSectionComponent,
-    HouseCarouselComponent
+    HouseCarouselComponent,
+    AboutPageComponent,
+    SponsorshipPageComponent,
+    FAQPageComponent,
+    HelpCenterPageComponent,
+    RegistrationPageComponent,
+    MemberSettingsPageComponent,
+    PartnersPageComponent,
+    PromotionsPageComponent,
+    ResponsibleGamblingPageComponent,
+    HowItWorksPageComponent
   ],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
       <app-topbar></app-topbar>
-      <main>
-        <app-hero-section></app-hero-section>
-        <app-house-carousel></app-house-carousel>
-        <app-stats-section></app-stats-section>
-        <app-house-grid></app-house-grid>
-      </main>
+      
+      <div class="transition-all duration-500 ease-in-out">
+        @if (currentPage() === 'about') {
+          <app-about-page></app-about-page>
+        } @else if (currentPage() === 'sponsorship') {
+          <app-sponsorship-page></app-sponsorship-page>
+        } @else if (currentPage() === 'faq') {
+          <app-faq-page></app-faq-page>
+        } @else if (currentPage() === 'help') {
+          <app-help-center-page></app-help-center-page>
+        } @else if (currentPage() === 'register') {
+          <app-registration-page></app-registration-page>
+        } @else if (currentPage() === 'member-settings') {
+          <app-member-settings-page></app-member-settings-page>
+        } @else if (currentPage() === 'partners') {
+          <app-partners-page></app-partners-page>
+        } @else if (currentPage() === 'promotions') {
+          <app-promotions-page></app-promotions-page>
+        } @else if (currentPage() === 'responsible-gambling') {
+          <app-responsible-gambling-page></app-responsible-gambling-page>
+        } @else if (currentPage() === 'how-it-works') {
+          <app-how-it-works-page></app-how-it-works-page>
+        } @else {
+          <main>
+            <app-hero-section></app-hero-section>
+            <app-house-carousel></app-house-carousel>
+            <app-stats-section></app-stats-section>
+            <app-house-grid></app-house-grid>
+          </main>
+        }
+      </div>
       
       <footer class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -95,10 +141,10 @@ import { ThemeService } from './services/theme.service';
             <div>
               <h4 class="font-semibold mb-3 text-white">{{ translate('footer.community') }}</h4>
               <ul class="space-y-2 text-gray-300 text-sm">
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.about') }}</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.makeSponsorship') }}</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.partners') }}</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.responsibleGaming') }}</a></li>
+                <li><button (click)="navigateToAbout()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.about') }}</button></li>
+                <li><button (click)="navigateToSponsorship()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.makeSponsorship') }}</button></li>
+                <li><button (click)="navigateToPartners()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.partners') }}</button></li>
+                <li><button (click)="navigateToResponsibleGambling()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.responsibleGaming') }}</button></li>
               </ul>
             </div>
             
@@ -106,10 +152,10 @@ import { ThemeService } from './services/theme.service';
             <div>
               <h4 class="font-semibold mb-3 text-white">{{ translate('footer.support') }}</h4>
               <ul class="space-y-2 text-gray-300 text-sm">
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.helpCenter') }}</a></li>
+                <li><button (click)="navigateToHelp()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.helpCenter') }}</button></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.liveChat') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.contactUs') }}</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.faq') }}</a></li>
+                <li><button (click)="navigateToFAQ()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.faq') }}</button></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.drawCalendar') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.branchMap') }}</a></li>
               </ul>
@@ -127,35 +173,24 @@ import { ThemeService } from './services/theme.service';
               </ul>
             </div>
             
-            <!-- Legal Partners -->
-            <div>
-              <h4 class="font-semibold mb-3 text-white">{{ translate('footer.legalPartners') }}</h4>
-              <div class="space-y-3">
-                <div class="flex items-center space-x-2">
-                  <div class="w-5 h-5 bg-blue-600 rounded flex items-center justify-center">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 2L3 7v11c0 5.55 3.84 10 9 10s9-4.45 9-10V7l-7-5zM8 13l2-2 4 4-6 6-4-4 4-4z" clip-rule="evenodd"/>
-                    </svg>
-                  </div>
-                  <div class="text-sm">
-                    <div class="text-white font-medium">{{ translate('footer.attorneyOffice') }}</div>
-                    <div class="text-gray-400 text-xs">{{ translate('footer.legalSupport') }}</div>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <div class="w-5 h-5 bg-green-600 rounded flex items-center justify-center">
-                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8.070 8.686 8.433 7.418zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.364.589 0 .832-.155.103-.346.196-.567.267z"/>
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6.102 7.036 6.102 8c0 .964.5 1.766 1.222 2.246.135.09.288.171.448.245.18.083.389.179.627.291.18-.083.389-.179.627-.291.16-.074.313-.155.448-.245C10.898 9.766 11.398 8.964 11.398 8c0-.964-.5-1.766-1.222-2.246A4.535 4.535 0 009.5 5.092V5a1 1 0 011 0zm-1 4a3 3 0 100 6 3 3 0 000-6z" clip-rule="evenodd"/>
-                    </svg>
-                  </div>
-                  <div class="text-sm">
-                    <div class="text-white font-medium">{{ translate('footer.accountingPartner') }}</div>
-                    <div class="text-gray-400 text-xs">{{ translate('footer.financialServices') }}</div>
+                <!-- Legal Partners -->
+                <div>
+                  <h4 class="font-semibold mb-3 text-white">{{ translate('footer.legalPartners') }}</h4>
+                  <div class="space-y-3">
+                    <div>
+                      <div class="text-gray-400 text-xs mb-1">{{ translate('partners.legalPartner') }}</div>
+                      <a href="https://ziebapartners.com" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-sm">
+                        Zeiba & Partners
+                      </a>
+                    </div>
+                    <div>
+                      <div class="text-gray-400 text-xs mb-1">{{ translate('partners.accountingPartner') }}</div>
+                      <a href="https://pik.tax/kontakt" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-sm">
+                        PiK Podatki i Księgowość Sp. z o.o
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
             
             <!-- App Download -->
             <div>
@@ -199,9 +234,49 @@ import { ThemeService } from './services/theme.service';
 export class App {
   private translationService = inject(TranslationService);
   private themeService = inject(ThemeService);
+  private navigationService = inject(NavigationService);
+  
+  currentPage = this.navigationService.getCurrentPage();
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  navigateToAbout() {
+    this.navigationService.navigateTo('about');
+    this.scrollToTop();
+  }
+
+  navigateToSponsorship() {
+    this.navigationService.navigateTo('sponsorship');
+    this.scrollToTop();
+  }
+
+  navigateToFAQ() {
+    this.navigationService.navigateTo('faq');
+    this.scrollToTop();
+  }
+
+  navigateToHelp() {
+    this.navigationService.navigateTo('help');
+    this.scrollToTop();
+  }
+
+  navigateToPartners() {
+    this.navigationService.navigateTo('partners');
+    this.scrollToTop();
+  }
+
+  navigateToResponsibleGambling() {
+    this.navigationService.navigateTo('responsible-gambling');
+    this.scrollToTop();
+  }
+
+  private scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }
 }
 

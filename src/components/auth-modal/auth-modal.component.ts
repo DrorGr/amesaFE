@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
+import { NavigationService } from '../../services/navigation.service';
 
 @Component({
   selector: 'app-auth-modal',
@@ -84,7 +85,7 @@ import { TranslationService } from '../../services/translation.service';
               {{ mode() === 'login' ? translate('auth.dontHaveAccount') : translate('auth.alreadyHaveAccount') }}
               <button
                 type="button"
-                (click)="toggleMode()"
+                (click)="handleSignUpClick()"
                 class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold ml-1 transition-colors duration-200">
                 {{ mode() === 'login' ? translate('auth.signUp') : translate('auth.signIn') }}
               </button>
@@ -103,6 +104,7 @@ import { TranslationService } from '../../services/translation.service';
 export class AuthModalComponent {
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
+  private navigationService = inject(NavigationService);
   
   mode = input.required<'login' | 'register'>();
   close = output<void>();
@@ -136,6 +138,18 @@ export class AuthModalComponent {
     }
   }
 
+  handleSignUpClick() {
+    if (this.mode() === 'login') {
+      // Navigate to registration page
+      this.navigationService.navigateTo('register');
+      this.close.emit();
+      this.scrollToTop();
+    } else {
+      // Toggle to login mode
+      this.toggleMode();
+    }
+  }
+
   toggleMode() {
     this.resetForm();
     // Emit event to parent to toggle mode
@@ -144,6 +158,13 @@ export class AuthModalComponent {
   }
 
   modeChange = output<'login' | 'register'>();
+
+  private scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
 
   onBackdropClick(event: Event) {
     if (event.target === event.currentTarget) {

@@ -9,8 +9,8 @@ import { TranslationService } from '../../services/translation.service';
   standalone: true,
   imports: [CommonModule, HouseCardComponent],
   template: `
-    <section class="bg-white dark:bg-gray-900 py-20 transition-colors duration-300">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="bg-white dark:bg-gray-900 py-20 pb-32 transition-colors duration-300" style="min-height: 100vh; overflow: visible;">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="overflow: visible;">
         <div class="text-center mb-16">
           <h2 class="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-6 text-balance">
             {{ translate('houses.title') }}
@@ -20,9 +20,11 @@ import { TranslationService } from '../../services/translation.service';
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 3rem; align-items: start; padding-bottom: 4rem; width: 100%;">
           @for (house of houses(); track house.id) {
-            <app-house-card [house]="house"></app-house-card>
+            <div style="display: block; width: 100%; height: auto;">
+              <app-house-card [house]="house"></app-house-card>
+            </div>
           }
         </div>
 

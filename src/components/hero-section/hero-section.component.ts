@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
+import { NavigationService } from '../../services/navigation.service';
 import { inject } from '@angular/core';
 
 @Component({
@@ -37,7 +38,7 @@ import { inject } from '@angular/core';
               <button class="btn-primary text-lg px-8 py-4">
                 {{ translate('hero.browseLotteries') }}
               </button>
-              <button class="btn-outline text-lg px-8 py-4">
+              <button (click)="navigateToHowItWorks()" class="btn-outline text-lg px-8 py-4">
                 {{ translate('hero.howItWorks') }}
               </button>
             </div>
@@ -94,6 +95,7 @@ import { inject } from '@angular/core';
 })
 export class HeroSectionComponent {
   private translationService = inject(TranslationService);
+  private navigationService = inject(NavigationService);
   
   currentSlide = 0;
   currentHouseImageIndex = 0;
@@ -208,5 +210,17 @@ export class HeroSectionComponent {
   
   goToHouseImage(index: number) {
     this.currentHouseImageIndex = index;
+  }
+
+  navigateToHowItWorks() {
+    this.navigationService.navigateTo('how-it-works');
+    this.scrollToTop();
+  }
+
+  private scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }
 }

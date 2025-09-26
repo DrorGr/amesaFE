@@ -93,7 +93,7 @@ import { LotteryService } from '../../services/lottery.service';
                   </div>
                   
                   <!-- Lottery Information -->
-                  <div class="space-y-2 md:space-y-4 flex-grow flex flex-col justify-center">
+                  <div class="space-y-1 md:space-y-2 flex-grow flex flex-col justify-center">
                     <div class="flex justify-between items-center py-1 md:py-2 border-b border-gray-200 dark:border-gray-700">
                       <span class="text-gray-600 dark:text-gray-400 text-xs md:text-base">Property Value</span>
                       <span class="font-bold text-gray-900 dark:text-white text-xs md:text-lg">€{{ formatPrice(house.price) }}</span>
