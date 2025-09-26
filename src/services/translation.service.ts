@@ -83,6 +83,22 @@ export class TranslationService {
       'auth.dontHaveAccount': "Don't have an account?",
       'auth.alreadyHaveAccount': 'Already have an account?',
       'auth.signUp': 'Sign up',
+      'auth.continueWithGoogle': 'Continue with Google',
+      'auth.continueWithMeta': 'Continue with Meta',
+      'auth.continueWithApple': 'Continue with Apple',
+      'auth.or': 'or',
+      'auth.forgotPassword': 'Forgot Password?',
+      'auth.resetPassword': 'Reset Password',
+      'auth.resetPasswordDescription': 'Enter your email address and we\'ll send you a link to reset your password.',
+      'auth.enterEmail': 'Enter your email address',
+      'auth.sendResetEmail': 'Send Reset Email',
+      'auth.sending': 'Sending...',
+      'auth.emailSent': 'Email Sent!',
+      'auth.checkEmailInstructions': 'We\'ve sent you a password reset link. Please check your email and follow the instructions.',
+      'auth.emailSentTo': 'Email sent to',
+      'auth.resendEmail': 'Resend Email',
+      'auth.resending': 'Resending...',
+      'auth.backToLogin': 'Back to Login',
       
       // Footer
       'footer.description': 'Your trusted platform for house lotteries. Win your dream home today.',
@@ -377,6 +393,8 @@ export class TranslationService {
       'register.previousStep': 'Previous Step',
       'register.createAccount': 'Create Account',
       'register.completeRegistration': 'Complete Registration',
+      'register.quickRegistration': 'Quick Registration',
+      'register.quickRegistrationDesc': 'Sign up instantly with your social account',
       
       // Member Settings Page
       'member.heroTitle': 'Member Settings',
@@ -650,6 +668,22 @@ export class TranslationService {
       'auth.dontHaveAccount': 'Nie masz konta?',
       'auth.alreadyHaveAccount': 'Masz już konto?',
       'auth.signUp': 'Zarejestruj się',
+      'auth.continueWithGoogle': 'Kontynuuj z Google',
+      'auth.continueWithMeta': 'Kontynuuj z Meta',
+      'auth.continueWithApple': 'Kontynuuj z Apple',
+      'auth.or': 'lub',
+      'auth.forgotPassword': 'Zapomniałeś hasła?',
+      'auth.resetPassword': 'Resetuj Hasło',
+      'auth.resetPasswordDescription': 'Wprowadź swój adres email, a wyślemy Ci link do resetowania hasła.',
+      'auth.enterEmail': 'Wprowadź swój adres email',
+      'auth.sendResetEmail': 'Wyślij Email Resetujący',
+      'auth.sending': 'Wysyłanie...',
+      'auth.emailSent': 'Email Wysłany!',
+      'auth.checkEmailInstructions': 'Wysłaliśmy Ci link do resetowania hasła. Sprawdź swój email i postępuj zgodnie z instrukcjami.',
+      'auth.emailSentTo': 'Email wysłany do',
+      'auth.resendEmail': 'Wyślij Email Ponownie',
+      'auth.resending': 'Wysyłanie ponownie...',
+      'auth.backToLogin': 'Powrót do Logowania',
       
       // Footer
       'footer.description': 'Twoja zaufana platforma loterii domów. Wygraj dom swoich marzeń już dziś.',
@@ -939,6 +973,8 @@ export class TranslationService {
       'register.previousStep': 'Poprzedni Krok',
       'register.createAccount': 'Utwórz Konto',
       'register.completeRegistration': 'Zakończ Rejestrację',
+      'register.quickRegistration': 'Szybka Rejestracja',
+      'register.quickRegistrationDesc': 'Zarejestruj się natychmiast za pomocą swojego konta społecznościowego',
       
       // Member Settings Page
       'member.heroTitle': 'Ustawienia Członka',

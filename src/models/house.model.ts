@@ -20,6 +20,7 @@ export interface User {
   name: string;
   email: string;
   isAuthenticated: boolean;
+  provider?: 'google' | 'meta' | 'apple' | 'twitter' | 'email';
 }
 
 export interface LotteryTicket {

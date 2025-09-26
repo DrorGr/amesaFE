@@ -1,78 +1,35 @@
 import { Component, inject } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
+import { RouterOutlet, Router } from '@angular/router';
 import { TopbarComponent } from './components/topbar/topbar.component';
-import { HeroSectionComponent } from './components/hero-section/hero-section.component';
-import { HouseGridComponent } from './components/house-grid/house-grid.component';
-import { StatsSectionComponent } from './components/stats-section/stats-section.component';
-import { HouseCarouselComponent } from './components/house-carousel/house-carousel.component';
-import { AboutPageComponent } from './components/about-page/about-page.component';
-import { SponsorshipPageComponent } from './components/sponsorship-page/sponsorship-page.component';
-import { FAQPageComponent } from './components/faq-page/faq-page.component';
-import { HelpCenterPageComponent } from './components/help-center-page/help-center-page.component';
-import { RegistrationPageComponent } from './components/registration-page/registration-page.component';
-import { MemberSettingsPageComponent } from './components/member-settings-page/member-settings-page.component';
-import { PartnersPageComponent } from './components/partners-page/partners-page.component';
-import { PromotionsPageComponent } from './components/promotions-page/promotions-page.component';
-import { ResponsibleGamblingPageComponent } from './components/responsible-gambling-page/responsible-gambling-page.component';
-import { HowItWorksPageComponent } from './components/how-it-works-page/how-it-works-page.component';
+import { LoadingComponent } from './components/loading/loading.component';
 import { TranslationService } from './services/translation.service';
 import { ThemeService } from './services/theme.service';
-import { NavigationService } from './services/navigation.service';
+import { RouteLoadingService } from './services/route-loading.service';
+import { RoutePerformanceInterceptor } from './interceptors/route-performance.interceptor';
+import { routes } from './app.routes';
+import { provideRouter, withPreloading, withInMemoryScrolling } from '@angular/router';
+import { CustomPreloadingStrategy } from './app.preloading-strategy';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
     CommonModule,
+    RouterOutlet,
     TopbarComponent,
-    HeroSectionComponent,
-    HouseGridComponent,
-    StatsSectionComponent,
-    HouseCarouselComponent,
-    AboutPageComponent,
-    SponsorshipPageComponent,
-    FAQPageComponent,
-    HelpCenterPageComponent,
-    RegistrationPageComponent,
-    MemberSettingsPageComponent,
-    PartnersPageComponent,
-    PromotionsPageComponent,
-    ResponsibleGamblingPageComponent,
-    HowItWorksPageComponent
+    LoadingComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
       <app-topbar></app-topbar>
       
       <div class="transition-all duration-500 ease-in-out">
-        @if (currentPage() === 'about') {
-          <app-about-page></app-about-page>
-        } @else if (currentPage() === 'sponsorship') {
-          <app-sponsorship-page></app-sponsorship-page>
-        } @else if (currentPage() === 'faq') {
-          <app-faq-page></app-faq-page>
-        } @else if (currentPage() === 'help') {
-          <app-help-center-page></app-help-center-page>
-        } @else if (currentPage() === 'register') {
-          <app-registration-page></app-registration-page>
-        } @else if (currentPage() === 'member-settings') {
-          <app-member-settings-page></app-member-settings-page>
-        } @else if (currentPage() === 'partners') {
-          <app-partners-page></app-partners-page>
-        } @else if (currentPage() === 'promotions') {
-          <app-promotions-page></app-promotions-page>
-        } @else if (currentPage() === 'responsible-gambling') {
-          <app-responsible-gambling-page></app-responsible-gambling-page>
-        } @else if (currentPage() === 'how-it-works') {
-          <app-how-it-works-page></app-how-it-works-page>
+        @if (isLoading | async) {
+          <app-loading></app-loading>
         } @else {
-          <main>
-            <app-hero-section></app-hero-section>
-            <app-house-carousel></app-house-carousel>
-            <app-stats-section></app-stats-section>
-            <app-house-grid></app-house-grid>
-          </main>
+          <router-outlet></router-outlet>
         }
       </div>
       
@@ -234,41 +191,42 @@ import { NavigationService } from './services/navigation.service';
 export class App {
   private translationService = inject(TranslationService);
   private themeService = inject(ThemeService);
-  private navigationService = inject(NavigationService);
+  private router = inject(Router);
+  private routeLoadingService = inject(RouteLoadingService);
   
-  currentPage = this.navigationService.getCurrentPage();
+  isLoading = this.routeLoadingService.loading$;
 
   translate(key: string): string {
     return this.translationService.translate(key);
   }
 
   navigateToAbout() {
-    this.navigationService.navigateTo('about');
+    this.router.navigate(['/about']);
     this.scrollToTop();
   }
 
   navigateToSponsorship() {
-    this.navigationService.navigateTo('sponsorship');
+    this.router.navigate(['/sponsorship']);
     this.scrollToTop();
   }
 
   navigateToFAQ() {
-    this.navigationService.navigateTo('faq');
+    this.router.navigate(['/faq']);
     this.scrollToTop();
   }
 
   navigateToHelp() {
-    this.navigationService.navigateTo('help');
+    this.router.navigate(['/help']);
     this.scrollToTop();
   }
 
   navigateToPartners() {
-    this.navigationService.navigateTo('partners');
+    this.router.navigate(['/partners']);
     this.scrollToTop();
   }
 
   navigateToResponsibleGambling() {
-    this.navigationService.navigateTo('responsible-gambling');
+    this.router.navigate(['/responsible-gambling']);
     this.scrollToTop();
   }
 
@@ -280,4 +238,16 @@ export class App {
   }
 }
 
-bootstrapApplication(App);
+bootstrapApplication(App, {
+  providers: [
+    provideRouter(
+      routes,
+      withPreloading(CustomPreloadingStrategy),
+      withInMemoryScrolling({
+        scrollPositionRestoration: 'top',
+        anchorScrolling: 'enabled'
+      })
+    ),
+    RoutePerformanceInterceptor
+  ]
+});

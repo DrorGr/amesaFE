@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AuthModalComponent } from '../auth-modal/auth-modal.component';
 import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 import { TranslationService } from '../../services/translation.service';
-import { NavigationService } from '../../services/navigation.service';
 
 @Component({
   selector: 'app-topbar',
@@ -26,13 +26,13 @@ import { NavigationService } from '../../services/navigation.service';
           </div>
 
           <div class="ml-10 flex items-center space-x-8">
-            <button (click)="navigateToHome()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+            <button (click)="navigateToHome()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-base font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
               {{ translate('nav.lotteries') }}
             </button>
-                <button (click)="navigateToPromotions()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+                <button (click)="navigateToPromotions()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-base font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
                   {{ translate('nav.promotions') }}
                 </button>
-            <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+            <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-base font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
               {{ translate('nav.winners') }}
             </a>
           </div>
@@ -58,7 +58,7 @@ import { NavigationService } from '../../services/navigation.service';
                   <div class="flex items-center space-x-3">
                     <button
                       (click)="openAuthModal()"
-                      class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md">
+                      class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-lg text-base font-semibold transition-all duration-200 hover:shadow-md min-h-[48px]">
                       {{ translate('nav.signIn') }}
                     </button>
                   </div>
@@ -108,13 +108,13 @@ import { NavigationService } from '../../services/navigation.service';
           <div class="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-4 animate-fadeIn shadow-lg z-50">
             <!-- Navigation Links -->
             <div class="space-y-2 mb-6">
-              <button (click)="navigateToHome()" class="block w-full text-left px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200">
+              <button (click)="navigateToHome()" class="block w-full text-left px-6 py-4 text-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors duration-200">
                 {{ translate('nav.lotteries') }}
               </button>
-                  <button (click)="navigateToPromotions()" class="block w-full text-left px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200">
+                  <button (click)="navigateToPromotions()" class="block w-full text-left px-6 py-4 text-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors duration-200">
                     {{ translate('nav.promotions') }}
                   </button>
-              <a href="#" class="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200">
+              <a href="#" class="block px-6 py-4 text-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors duration-200">
                 {{ translate('nav.winners') }}
               </a>
             </div>
@@ -123,17 +123,17 @@ import { NavigationService } from '../../services/navigation.service';
             <div class="px-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   @if (currentUser(); as user) {
                     <div class="space-y-3">
-                      <div class="text-gray-700 dark:text-gray-300 font-medium">
+                      <div class="text-lg text-gray-700 dark:text-gray-300 font-semibold px-6 py-2">
                         {{ translate('nav.welcome') }}, {{ user.name }}
                       </div>
                       <button
                         (click)="navigateToMemberSettings(); toggleMobileMenu()"
-                        class="w-full bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
+                        class="w-full bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-6 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 min-h-[56px]">
                         {{ translate('nav.memberSettings') }}
                       </button>
                       <button
                         (click)="logout(); toggleMobileMenu()"
-                        class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
+                        class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 min-h-[56px]">
                         {{ translate('nav.logout') }}
                       </button>
                     </div>
@@ -141,7 +141,7 @@ import { NavigationService } from '../../services/navigation.service';
                     <div class="space-y-3">
                       <button
                         (click)="openAuthModal(); toggleMobileMenu()"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors duration-200">
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 min-h-[56px]">
                         {{ translate('nav.signIn') }}
                       </button>
                     </div>
@@ -170,7 +170,7 @@ import { NavigationService } from '../../services/navigation.service';
 export class TopbarComponent {
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
-  private navigationService = inject(NavigationService);
+  private router = inject(Router);
   
   showAuthModal = false;
   authMode: 'login' | 'register' = 'login';
@@ -208,18 +208,17 @@ export class TopbarComponent {
   }
 
   navigateToHome() {
-    this.navigationService.navigateTo('home');
+    this.router.navigate(['/']);
     this.isMobileMenuOpen = false;
   }
 
-
   navigateToMemberSettings() {
-    this.navigationService.navigateTo('member-settings');
+    this.router.navigate(['/member-settings']);
     this.isMobileMenuOpen = false;
   }
 
   navigateToPromotions() {
-    this.navigationService.navigateTo('promotions');
+    this.router.navigate(['/promotions']);
     this.isMobileMenuOpen = false;
   }
 }

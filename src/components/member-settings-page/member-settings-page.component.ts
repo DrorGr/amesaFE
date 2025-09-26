@@ -1,8 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
-import { NavigationService } from '../../services/navigation.service';
 import { ThemeService } from '../../services/theme.service';
 
 interface UserProfile {
@@ -565,7 +565,7 @@ interface StarReward {
 })
 export class MemberSettingsPageComponent {
   private translationService = inject(TranslationService);
-  private navigationService = inject(NavigationService);
+  private router = inject(Router);
   private themeService = inject(ThemeService);
   private fb = inject(FormBuilder);
 
@@ -705,7 +705,7 @@ export class MemberSettingsPageComponent {
 
   verifyAccount() {
     // Navigate to identity verification
-    this.navigationService.navigateTo('register');
+    this.router.navigate(['/register']);
   }
 
   copyToClipboard(text: string) {

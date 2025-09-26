@@ -11,7 +11,7 @@ import { TranslationService } from '../../services/translation.service';
   imports: [CommonModule],
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div style="background: white; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; overflow: visible; display: flex; flex-direction: column; min-height: 800px; width: 100%; margin-bottom: 2rem;" 
+    <div style="background: white; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; overflow: visible; display: flex; flex-direction: column; width: 100%;" 
          [class.dark:bg-gray-800]="true">
       <div style="position: relative; height: 12rem; background: #e5e7eb; flex-shrink: 0;">
         <img 
@@ -25,12 +25,12 @@ import { TranslationService } from '../../services/translation.service';
         </div>
       </div>
 
-      <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; overflow: visible;">
+      <div style="padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; overflow: visible;">
         <div style="flex-grow: 1; display: flex; flex-direction: column; min-height: 0; overflow: visible;">
           <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 0.5rem; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto; line-height: 1.4;">{{ translate('house.' + house().id + '.title') }}</h3>
           <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto; line-height: 1.4;">{{ translate('house.' + house().id + '.description') }}</p>
           
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
             <div style="display: flex; align-items: center; color: #6b7280; font-size: 0.875rem; min-width: 0; flex: 1; margin-right: 0.5rem;">
               <svg style="width: 1rem; height: 1rem; margin-right: 0.25rem; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -43,13 +43,13 @@ import { TranslationService } from '../../services/translation.service';
             </div>
           </div>
 
-          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.75rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">
             <span>{{ house().bedrooms }} {{ translate('house.bed') }}{{ house().bedrooms > 1 ? 's' : '' }}</span>
             <span>{{ house().bathrooms }} {{ translate('house.bath') }}{{ house().bathrooms > 1 ? 's' : '' }}</span>
             <span>{{ formatSqft(house().sqft) }} {{ translate('house.sqft') }}</span>
           </div>
 
-          <div style="margin-bottom: 0.75rem;">
+          <div style="margin-bottom: 0.5rem;">
             <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">
               <span>{{ translate('house.ticketsSold') }}</span>
               <span>{{ house().soldTickets }}/{{ house().totalTickets }}</span>
@@ -62,7 +62,7 @@ import { TranslationService } from '../../services/translation.service';
             </div>
           </div>
 
-          <div style="text-align: center; margin-bottom: 0.75rem;">
+          <div style="text-align: center; margin-bottom: 0.5rem;">
             <div style="font-size: 0.875rem; color: #6b7280;">{{ translate('house.lotteryEnds') }}</div>
             <div style="font-size: 1.125rem; font-weight: 700; color: #ea580c;">{{ getTimeRemaining() }}</div>
           </div>
@@ -73,7 +73,7 @@ import { TranslationService } from '../../services/translation.service';
             <button
               (click)="purchaseTicket()"
               [disabled]="isPurchasing || house().status !== 'active'"
-              style="width: 100%; background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.2s ease; border: none; cursor: pointer;"
+              style="width: 100%; background: #2563eb; color: white; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.2s ease; border: none; cursor: pointer;"
               [style.background]="(isPurchasing || house().status !== 'active') ? '#9ca3af' : '#2563eb'"
               [style.cursor]="(isPurchasing || house().status !== 'active') ? 'not-allowed' : 'pointer'">
               <ng-container *ngIf="isPurchasing; else buyTicketBlock">

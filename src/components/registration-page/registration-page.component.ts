@@ -1,8 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
-import { NavigationService } from '../../services/navigation.service';
+import { AuthService } from '../../services/auth.service';
 
 interface UserRegistration {
   // Basic Account
@@ -82,7 +83,7 @@ interface UserRegistration {
                   {{ step.id }}
                 </div>
                 <div class="ml-3 text-center">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ translate(step.title) }}</p>
+                  <p class="text-base md:text-sm font-semibold text-gray-900 dark:text-white">{{ translate(step.title) }}</p>
                 </div>
               </div>
               @if (i < steps.length - 1) {
@@ -97,27 +98,85 @@ interface UserRegistration {
 
         <!-- Registration Form -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 md:p-12">
+          <!-- Quick Registration Options -->
+          @if (currentStep() === 1) {
+            <div class="mb-8">
+              <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+                {{ translate('register.quickRegistration') }}
+              </h2>
+              <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8 text-center">
+                {{ translate('register.quickRegistrationDesc') }}
+              </p>
+
+              <!-- Social Registration Buttons -->
+              <div class="space-y-4 mb-8">
+                <button
+                  (click)="registerWithGoogle()"
+                  [disabled]="isLoading()"
+                  class="w-full flex items-center justify-center px-6 py-4 text-lg font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[56px]">
+                  <svg class="w-6 h-6 mr-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  {{ translate('auth.continueWithGoogle') }}
+                </button>
+
+                <button
+                  (click)="registerWithMeta()"
+                  [disabled]="isLoading()"
+                  class="w-full flex items-center justify-center px-6 py-4 text-lg font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[56px]">
+                  <svg class="w-6 h-6 mr-4" fill="#1877F2" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  {{ translate('auth.continueWithMeta') }}
+                </button>
+
+                <button
+                  (click)="registerWithApple()"
+                  [disabled]="isLoading()"
+                  class="w-full flex items-center justify-center px-6 py-4 text-lg font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[56px]">
+                  <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  </svg>
+                  {{ translate('auth.continueWithApple') }}
+                </button>
+              </div>
+
+              <!-- Divider -->
+              <div class="relative mb-8">
+                <div class="absolute inset-0 flex items-center">
+                  <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                </div>
+                <div class="relative flex justify-center text-base">
+                  <span class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium">{{ translate('auth.or') }}</span>
+                </div>
+              </div>
+            </div>
+          }
+
           <!-- Step 1: Personal Details -->
           @if (currentStep() === 1) {
             <div>
-              <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
+              <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
                 {{ translate('register.personalDetails') }}
               </h2>
-              <p class="text-gray-600 dark:text-gray-400 mb-8">
+              <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8">
                 {{ translate('register.personalDetailsDesc') }}
               </p>
 
               <form [formGroup]="personalDetailsForm" (ngSubmit)="onPersonalDetailsSubmit()" class="space-y-6">
                 <!-- Username -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.username') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     formControlName="username"
                     [class]="usernameError() ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'"
-                    class="input-field"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.usernamePlaceholder')">
                   @if (usernameError()) {
                     <p class="mt-2 text-sm text-red-600 dark:text-red-400">
@@ -144,46 +203,46 @@ interface UserRegistration {
                 <!-- First Name & Last Name -->
                 <div class="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.firstName') }} <span class="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       formControlName="firstName"
-                      class="input-field"
+                      class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                       [placeholder]="translate('register.firstNamePlaceholder')">
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.lastName') }} <span class="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       formControlName="lastName"
-                      class="input-field"
+                      class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                       [placeholder]="translate('register.lastNamePlaceholder')">
                   </div>
                 </div>
 
                 <!-- ID Number -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.idNumber') }}
                   </label>
                   <input
                     type="text"
                     formControlName="idNumber"
-                    class="input-field"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.idNumberPlaceholder')">
                 </div>
 
                 <!-- Gender & Date of Birth -->
                 <div class="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.gender') }} <span class="text-red-500">*</span>
                     </label>
-                    <select formControlName="gender" class="input-field">
+                    <select formControlName="gender" class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200">
                       <option value="">{{ translate('register.selectGender') }}</option>
                       <option value="male">{{ translate('register.male') }}</option>
                       <option value="female">{{ translate('register.female') }}</option>
@@ -191,13 +250,13 @@ interface UserRegistration {
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.dateOfBirth') }} <span class="text-red-500">*</span>
                     </label>
                     <input
                       type="date"
                       formControlName="dateOfBirth"
-                      class="input-field">
+                      class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200">
                   </div>
                 </div>
 
@@ -208,53 +267,53 @@ interface UserRegistration {
                   </h3>
                   <div class="grid md:grid-cols-2 gap-6">
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         {{ translate('register.country') }}
                       </label>
                       <input
                         type="text"
                         formControlName="country"
-                        class="input-field"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.countryPlaceholder')">
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         {{ translate('register.city') }}
                       </label>
                       <input
                         type="text"
                         formControlName="city"
-                        class="input-field"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.cityPlaceholder')">
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         {{ translate('register.street') }}
                       </label>
                       <input
                         type="text"
                         formControlName="street"
-                        class="input-field"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.streetPlaceholder')">
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         {{ translate('register.houseNumber') }}
                       </label>
                       <input
                         type="text"
                         formControlName="houseNumber"
-                        class="input-field"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.houseNumberPlaceholder')">
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         {{ translate('register.zipCode') }}
                       </label>
                       <input
                         type="text"
                         formControlName="zipCode"
-                        class="input-field"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.zipCodePlaceholder')">
                     </div>
                   </div>
@@ -265,7 +324,7 @@ interface UserRegistration {
                   <button
                     type="submit"
                     [disabled]="personalDetailsForm.invalid"
-                    class="btn-primary">
+                    class="px-8 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]">
                     {{ translate('register.nextStep') }}
                   </button>
                 </div>
@@ -286,13 +345,13 @@ interface UserRegistration {
               <form [formGroup]="communicationForm" (ngSubmit)="onCommunicationSubmit()" class="space-y-6">
                 <!-- Email -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.email') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
                     formControlName="email"
-                    class="input-field"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.emailPlaceholder')">
                   @if (emailVerified()) {
                     <p class="mt-2 text-sm text-green-600 dark:text-green-400 flex items-center">
@@ -306,7 +365,7 @@ interface UserRegistration {
 
                 <!-- Phone Numbers -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.phone') }} <span class="text-red-500">*</span>
                   </label>
                   @for (phone of phoneNumbers(); track $index) {
@@ -314,7 +373,7 @@ interface UserRegistration {
                       <input
                         type="tel"
                         [(ngModel)]="phoneNumbers()[$index]"
-                        class="input-field flex-1"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200 flex-1"
                         [placeholder]="translate('register.phonePlaceholder')">
                       @if (phoneNumbers().length > 1) {
                         <button
@@ -343,13 +402,13 @@ interface UserRegistration {
                   <button
                     type="button"
                     (click)="goToPreviousStep()"
-                    class="btn-outline">
+                    class="px-8 py-4 text-lg font-semibold text-blue-600 bg-transparent border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[56px]">
                     {{ translate('register.previousStep') }}
                   </button>
                   <button
                     type="submit"
                     [disabled]="communicationForm.invalid"
-                    class="btn-primary">
+                    class="px-8 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]">
                     {{ translate('register.nextStep') }}
                   </button>
                 </div>
@@ -370,13 +429,13 @@ interface UserRegistration {
               <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()" class="space-y-6">
                 <!-- Password -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.password') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     type="password"
                     formControlName="password"
-                    class="input-field"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.passwordPlaceholder')">
                   <!-- Password Strength Indicator -->
                   <div class="mt-2">
@@ -396,13 +455,13 @@ interface UserRegistration {
 
                 <!-- Confirm Password -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.confirmPassword') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     type="password"
                     formControlName="confirmPassword"
-                    class="input-field"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.confirmPasswordPlaceholder')">
                   @if (passwordForm.get('confirmPassword')?.touched && passwordForm.get('confirmPassword')?.errors?.['mismatch']) {
                     <p class="mt-2 text-sm text-red-600 dark:text-red-400">
@@ -416,13 +475,13 @@ interface UserRegistration {
                   <button
                     type="button"
                     (click)="goToPreviousStep()"
-                    class="btn-outline">
+                    class="px-8 py-4 text-lg font-semibold text-blue-600 bg-transparent border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[56px]">
                     {{ translate('register.previousStep') }}
                   </button>
                   <button
                     type="submit"
                     [disabled]="passwordForm.invalid"
-                    class="btn-primary">
+                    class="px-8 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]">
                     {{ translate('register.createAccount') }}
                   </button>
                 </div>
@@ -460,20 +519,20 @@ interface UserRegistration {
               <form [formGroup]="identityForm" (ngSubmit)="onIdentitySubmit()" class="space-y-6">
                 <!-- Passport/ID Number -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.passportIdNumber') }} <span class="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     formControlName="passportIdNumber"
-                    class="input-field"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.passportIdNumberPlaceholder')">
                 </div>
 
                 <!-- Document Upload -->
                 <div class="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.passportFront') }} <span class="text-red-500">*</span>
                     </label>
                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
@@ -497,7 +556,7 @@ interface UserRegistration {
                     </div>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.passportBack') }} <span class="text-red-500">*</span>
                     </label>
                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
@@ -528,7 +587,7 @@ interface UserRegistration {
                     <button
                       type="button"
                       (click)="validateDetails()"
-                      class="btn-primary">
+                      class="px-8 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]">
                       {{ translate('register.validateDetails') }}
                     </button>
                   </div>
@@ -543,7 +602,7 @@ interface UserRegistration {
                     <button
                       type="button"
                       (click)="captureFace()"
-                      class="btn-primary">
+                      class="px-8 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]">
                       {{ translate('register.captureFace') }}
                     </button>
                   </div>
@@ -554,13 +613,13 @@ interface UserRegistration {
                   <button
                     type="button"
                     (click)="goToPreviousStep()"
-                    class="btn-outline">
+                    class="px-8 py-4 text-lg font-semibold text-blue-600 bg-transparent border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[56px]">
                     {{ translate('register.previousStep') }}
                   </button>
                   <button
                     type="submit"
                     [disabled]="!isIdentityValidated()"
-                    class="btn-primary">
+                    class="px-8 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px]">
                     {{ translate('register.completeRegistration') }}
                   </button>
                 </div>
@@ -577,8 +636,9 @@ interface UserRegistration {
 })
 export class RegistrationPageComponent {
   private translationService = inject(TranslationService);
-  private navigationService = inject(NavigationService);
+  private router = inject(Router);
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
 
   currentStep = signal(1);
   usernameError = signal(false);
@@ -590,6 +650,7 @@ export class RegistrationPageComponent {
   passportBackImage = signal<File | null>(null);
   isIdentityValidated = signal(false);
   showFaceCapture = signal(false);
+  isLoading = signal(false);
 
   steps = [
     { id: 1, title: 'register.personalDetails' },
@@ -635,6 +696,49 @@ export class RegistrationPageComponent {
     this.passwordForm.get('password')?.valueChanges.subscribe(password => {
       this.updatePasswordStrength(password);
     });
+  }
+
+  // Social Registration Methods
+  async registerWithGoogle() {
+    this.isLoading.set(true);
+    try {
+      const result = await this.authService.loginWithGoogle();
+      if (result) {
+        this.router.navigate(['/member-settings']);
+      }
+    } catch (error) {
+      console.error('Google registration error:', error);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async registerWithMeta() {
+    this.isLoading.set(true);
+    try {
+      const result = await this.authService.loginWithMeta();
+      if (result) {
+        this.router.navigate(['/member-settings']);
+      }
+    } catch (error) {
+      console.error('Meta registration error:', error);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async registerWithApple() {
+    this.isLoading.set(true);
+    try {
+      const result = await this.authService.loginWithApple();
+      if (result) {
+        this.router.navigate(['/member-settings']);
+      }
+    } catch (error) {
+      console.error('Apple registration error:', error);
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   translate(key: string): string {
@@ -774,7 +878,7 @@ export class RegistrationPageComponent {
 
   completeRegistration() {
     // Navigate to success page or login
-    this.navigationService.navigateTo('home');
+    this.router.navigate(['/']);
   }
 
   goToPreviousStep() {

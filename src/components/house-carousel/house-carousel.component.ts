@@ -19,10 +19,27 @@ import { LotteryService } from '../../services/lottery.service';
                 <!-- Main House Image -->
                 <div class="flex-1 max-w-4xl flex flex-col mb-2">
                   <div class="relative">
-                    <img
-                      [src]="house.images[getImageIndexForHouse(houseIndex)].url" 
-                      [alt]="house.images[getImageIndexForHouse(houseIndex)].alt"
-                      class="w-full h-48 md:h-96 object-cover rounded-xl shadow-lg">
+                    @if (isImageLoaded(house.images[getImageIndexForHouse(houseIndex)].url)) {
+                      <img
+                        [src]="house.images[getImageIndexForHouse(houseIndex)].url" 
+                        [alt]="house.images[getImageIndexForHouse(houseIndex)].alt"
+                        class="w-full h-48 md:h-96 object-cover rounded-xl shadow-lg opacity-100 transition-opacity duration-300"
+                        (load)="onImageLoad($event)"
+                        (error)="onImageError($event)">
+                    } @else {
+                      <div class="w-full h-48 md:h-96 bg-gray-200 dark:bg-gray-700 rounded-xl shadow-lg flex items-center justify-center">
+                        <div class="animate-pulse flex flex-col items-center space-y-2">
+                          <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                          <div class="text-gray-400 dark:text-gray-500 text-sm">Loading...</div>
+                        </div>
+                      </div>
+                      <img
+                        [attr.data-src]="house.images[getImageIndexForHouse(houseIndex)].url" 
+                        [alt]="house.images[getImageIndexForHouse(houseIndex)].alt"
+                        class="w-full h-48 md:h-96 object-cover rounded-xl shadow-lg opacity-0 absolute inset-0 transition-opacity duration-300"
+                        (load)="onImageLoad($event)"
+                        (error)="onImageError($event)">
+                    }
                   </div>
                   
                   <!-- Image Navigation Below Main Image -->
@@ -194,11 +211,11 @@ import { LotteryService } from '../../services/lottery.service';
         
       </div>
       
-      <!-- Desktop Side Navigation Buttons - Outside container, at screen edges -->
+      <!-- Desktop Side Navigation Buttons - Positioned relative to component -->
       <div class="hidden md:block">
         <button 
           (click)="previousSlide()"
-          class="fixed left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-30">
+          class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-30">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
@@ -206,7 +223,7 @@ import { LotteryService } from '../../services/lottery.service';
         
         <button 
           (click)="nextSlide()"
-          class="fixed right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-30">
+          class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 hover:scale-110 z-30">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
           </svg>
@@ -223,6 +240,8 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   currentHouseImageIndex = 0;
   isTransitioning = false;
   private autoSlideInterval: any;
+  private intersectionObserver: IntersectionObserver | null = null;
+  loadedImages = new Set<string>();
 
   houses = [
     {
@@ -313,10 +332,16 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.startAutoSlide();
+    this.setupIntersectionObserver();
+    // Load the first slide images immediately
+    setTimeout(() => this.loadCurrentSlideImages(), 100);
   }
 
   ngOnDestroy() {
     this.stopAutoSlide();
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
+    }
   }
 
   private startAutoSlide() {
@@ -336,6 +361,76 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.startAutoSlide();
   }
 
+  private setupIntersectionObserver() {
+    if (typeof IntersectionObserver !== 'undefined') {
+      this.intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const img = entry.target as HTMLImageElement;
+              const src = img.dataset['src'];
+              if (src && !this.loadedImages.has(src)) {
+                img.src = src;
+                img.classList.remove('opacity-0');
+                img.classList.add('opacity-100');
+                this.loadedImages.add(src);
+                this.intersectionObserver?.unobserve(img);
+              }
+            }
+          });
+        },
+        {
+          rootMargin: '50px 0px',
+          threshold: 0.1
+        }
+      );
+    }
+  }
+
+  isImageLoaded(imageUrl: string): boolean {
+    return this.loadedImages.has(imageUrl);
+  }
+
+  onImageLoad(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.classList.remove('opacity-0');
+    img.classList.add('opacity-100');
+  }
+
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.classList.add('opacity-50');
+    console.warn('Failed to load image:', img.src);
+  }
+
+  private loadCurrentSlideImages() {
+    const currentHouse = this.getCurrentHouse();
+    if (currentHouse) {
+      // Load the current image immediately
+      const currentImageUrl = currentHouse.images[this.currentHouseImageIndex].url;
+      if (!this.loadedImages.has(currentImageUrl)) {
+        this.loadedImages.add(currentImageUrl);
+      }
+      
+      // Preload adjacent images for smoother transitions
+      const nextImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
+      const prevImageIndex = this.currentHouseImageIndex === 0 
+        ? currentHouse.images.length - 1 
+        : this.currentHouseImageIndex - 1;
+      
+      [nextImageIndex, prevImageIndex].forEach(index => {
+        const imageUrl = currentHouse.images[index].url;
+        if (!this.loadedImages.has(imageUrl)) {
+          const img = new Image();
+          img.onload = () => {
+            this.loadedImages.add(imageUrl);
+          };
+          img.src = imageUrl;
+        }
+      });
+    }
+  }
+
   translate(key: string): string {
     return this.translationService.translate(key);
   }
@@ -352,12 +447,14 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.currentSlide = (this.currentSlide + 1) % this.houses.length;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
     this.resetAutoSlide();
+    this.loadCurrentSlideImages();
   }
   
   previousSlide() {
     this.currentSlide = this.currentSlide === 0 ? this.houses.length - 1 : this.currentSlide - 1;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
     this.resetAutoSlide();
+    this.loadCurrentSlideImages();
   }
   
   goToSlide(index: number) {
@@ -365,6 +462,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.currentSlide = index;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
     this.resetAutoSlide();
+    this.loadCurrentSlideImages();
   }
   
   nextHouseImage() {
@@ -384,6 +482,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   goToHouseImage(index: number) {
     this.currentHouseImageIndex = index;
     this.resetAutoSlide();
+    this.loadCurrentSlideImages();
   }
   
   formatPrice(price: number): string {

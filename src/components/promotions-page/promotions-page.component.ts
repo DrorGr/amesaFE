@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
-import { NavigationService } from '../../services/navigation.service';
 
 @Component({
   selector: 'app-promotions-page',
@@ -131,7 +131,7 @@ import { NavigationService } from '../../services/navigation.service';
 })
 export class PromotionsPageComponent {
   private translationService = inject(TranslationService);
-  private navigationService = inject(NavigationService);
+  private router = inject(Router);
 
   translate(key: string): string {
     return this.translationService.translate(key);

@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
-import { NavigationService } from '../../services/navigation.service';
 
 interface ResponsibleGamblingTip {
   icon: string;
@@ -253,7 +253,7 @@ interface SupportResource {
 })
 export class ResponsibleGamblingPageComponent {
   private translationService = inject(TranslationService);
-  private navigationService = inject(NavigationService);
+  private router = inject(Router);
 
   ourPromises = signal<PromiseItem[]>([
     {
@@ -364,11 +364,11 @@ export class ResponsibleGamblingPageComponent {
   }
 
   navigateToHelp() {
-    this.navigationService.navigateTo('help');
+    this.router.navigate(['/help']);
   }
 
   navigateToHome() {
-    this.navigationService.navigateTo('home');
+    this.router.navigate(['/']);
   }
 
   contactSupport() {

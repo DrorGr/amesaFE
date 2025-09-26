@@ -9,18 +9,18 @@ import { TranslationService } from '../../services/translation.service';
   standalone: true,
   imports: [CommonModule, HouseCardComponent],
   template: `
-    <section class="bg-white dark:bg-gray-900 py-20 pb-32 transition-colors duration-300" style="min-height: 100vh; overflow: visible;">
+    <section class="bg-white dark:bg-gray-900 py-8 pb-16 transition-colors duration-300" style="overflow: visible;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="overflow: visible;">
-        <div class="text-center mb-16">
-          <h2 class="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-6 text-balance">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 text-balance">
             {{ translate('houses.title') }}
           </h2>
-          <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed text-balance">
+          <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed text-balance">
             {{ translate('houses.subtitle') }}
           </p>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 3rem; align-items: start; padding-bottom: 4rem; width: 100%;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; align-items: start; padding-bottom: 2rem; width: 100%;">
           @for (house of houses(); track house.id) {
             <div style="display: block; width: 100%; height: auto;">
               <app-house-card [house]="house"></app-house-card>

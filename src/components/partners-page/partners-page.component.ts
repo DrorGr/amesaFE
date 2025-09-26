@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
-import { NavigationService } from '../../services/navigation.service';
 
 interface Partner {
   id: string;
@@ -283,7 +283,7 @@ interface Partner {
 })
 export class PartnersPageComponent {
   private translationService = inject(TranslationService);
-  private navigationService = inject(NavigationService);
+  private router = inject(Router);
 
   translate(key: string): string {
     return this.translationService.translate(key);

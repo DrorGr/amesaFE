@@ -1,8 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
-import { NavigationService } from '../../services/navigation.service';
-import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-hero-section',
@@ -34,11 +33,11 @@ import { inject } from '@angular/core';
             <p class="hero-subtitle mb-8 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
               Enter exclusive house lotteries and get the chance to win amazing properties at a fraction of their market value.
             </p>
-            <div class="flex flex-col sm:flex-row gap-4">
-              <button class="btn-primary text-lg px-8 py-4">
+            <div class="flex flex-col sm:flex-row gap-6">
+              <button class="px-10 py-5 text-xl md:text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[64px] shadow-lg">
                 {{ translate('hero.browseLotteries') }}
               </button>
-              <button (click)="navigateToHowItWorks()" class="btn-outline text-lg px-8 py-4">
+              <button (click)="navigateToHowItWorks()" class="px-10 py-5 text-xl md:text-lg font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[64px] shadow-lg">
                 {{ translate('hero.howItWorks') }}
               </button>
             </div>
@@ -68,13 +67,14 @@ import { inject } from '@angular/core';
     
     @media (max-width: 767px) {
       .hero-title {
-        font-size: 2.5rem;
+        font-size: 3.5rem !important;
         line-height: 1.1;
       }
       
       .hero-subtitle {
-        font-size: 1.125rem;
-        line-height: 1.5;
+        font-size: 1.5rem !important;
+        line-height: 1.4;
+        font-weight: 600;
       }
     }
 
@@ -95,7 +95,7 @@ import { inject } from '@angular/core';
 })
 export class HeroSectionComponent {
   private translationService = inject(TranslationService);
-  private navigationService = inject(NavigationService);
+  private router = inject(Router);
   
   currentSlide = 0;
   currentHouseImageIndex = 0;
@@ -213,7 +213,7 @@ export class HeroSectionComponent {
   }
 
   navigateToHowItWorks() {
-    this.navigationService.navigateTo('how-it-works');
+    this.router.navigate(['/how-it-works']);
     this.scrollToTop();
   }
 
