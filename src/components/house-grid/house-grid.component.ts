@@ -15,7 +15,7 @@ import { TranslationService } from '../../services/translation.service';
           <h2 class="text-4xl md:text-4xl font-black text-gray-900 dark:text-white mb-6 text-balance mobile-grid-title">
             {{ translate('houses.title') }}
           </h2>
-          <p class="text-xl md:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed text-balance mobile-grid-subtitle">
+          <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed text-balance mobile-grid-subtitle">
             {{ translate('houses.subtitle') }}
           </p>
         </div>
@@ -37,7 +37,7 @@ import { TranslationService } from '../../services/translation.service';
             </div>
             <h3 class="text-2xl font-bold text-gray-900 mb-3">No Active Lotteries</h3>
             <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3 mobile-empty-title">{{ translate('houses.noLotteries') }}</h3>
-            <p class="text-lg text-gray-600 dark:text-gray-300 mobile-empty-text">{{ translate('houses.checkBack') }}</p>
+            <p class="text-2xl text-gray-600 dark:text-gray-300 mobile-empty-text">{{ translate('houses.checkBack') }}</p>
           </div>
         }
       </div>

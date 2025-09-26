@@ -16,7 +16,7 @@ import { inject } from '@angular/core';
               <div class="text-4xl md:text-6xl font-black text-gradient mb-1 md:mb-4 stats-value">
                 {{ stat.value }}
               </div>
-              <div class="text-gray-700 dark:text-gray-300 font-semibold text-lg md:text-lg leading-loose md:leading-tight stats-label">
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-2xl md:text-2xl leading-loose md:leading-tight stats-label">
                 {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>
@@ -27,7 +27,7 @@ import { inject } from '@angular/core';
               <div class="text-4xl md:text-6xl font-black text-gradient mb-1 md:mb-4 stats-value">
                 {{ stat.value }}
               </div>
-              <div class="text-gray-700 dark:text-gray-300 font-semibold text-lg md:text-lg leading-loose md:leading-tight stats-label">
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-2xl md:text-2xl leading-loose md:leading-tight stats-label">
                 {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>

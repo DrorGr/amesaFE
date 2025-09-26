@@ -56,7 +56,7 @@ interface SupportResource {
               <h1 class="text-3xl md:text-5xl font-black mb-4 leading-tight mobile-hero-title" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
                 {{ translate('responsible.heroTitle') }}
               </h1>
-              <p class="text-lg md:text-xl leading-relaxed mobile-hero-subtitle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <p class="text-2xl md:text-2xl leading-relaxed mobile-hero-subtitle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('responsible.heroSubtitle') }}
               </p>
             </div>
@@ -129,7 +129,7 @@ interface SupportResource {
                     <span class="text-white text-xl">{{ tip.icon }}</span>
                   </div>
                   <div>
-                    <h3 class="text-lg font-bold text-blue-900 dark:text-blue-100 mb-2 mobile-card-title">
+                    <h3 class="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-2 mobile-card-title">
                       {{ translate(tip.title) }}
                     </h3>
                     <p class="text-blue-700 dark:text-blue-300 leading-relaxed mobile-card-text">

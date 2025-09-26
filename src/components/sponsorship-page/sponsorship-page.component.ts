@@ -30,7 +30,7 @@ import { TranslationService } from '../../services/translation.service';
               <p class="text-xl md:text-2xl mb-8 leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('sponsor.heroSubtitle') }}
               </p>
-              <button class="btn-primary text-lg px-8 py-4 bg-white text-blue-600 hover:bg-gray-100">
+              <button class="btn-primary text-2xl px-8 py-4 bg-white text-blue-600 hover:bg-gray-100">
                 {{ translate('sponsor.becomeSponsor') }}
               </button>
             </div>
@@ -105,7 +105,7 @@ import { TranslationService } from '../../services/translation.service';
               <h3 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
                 {{ translate('sponsor.ourMission') }}
               </h3>
-              <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-4xl mx-auto">
+              <p class="text-2xl md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-4xl mx-auto">
                 {{ translate('sponsor.missionStatement') }}
               </p>
             </div>
@@ -123,10 +123,10 @@ import { TranslationService } from '../../services/translation.service';
 
           <div class="grid md:grid-cols-2 gap-12 items-center">
             <div class="space-y-6">
-              <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
                 {{ translate('sponsor.propertyCircleDesc1') }}
               </p>
-              <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
                 {{ translate('sponsor.propertyCircleDesc2') }}
               </p>
               <div class="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-6">
@@ -166,7 +166,7 @@ import { TranslationService } from '../../services/translation.service';
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
-              <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                 {{ translate('sponsor.realImpact') }}
               </h3>
               <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
@@ -181,7 +181,7 @@ import { TranslationService } from '../../services/translation.service';
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
                 </svg>
               </div>
-              <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                 {{ translate('sponsor.transparency') }}
               </h3>
               <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
@@ -196,7 +196,7 @@ import { TranslationService } from '../../services/translation.service';
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                 </svg>
               </div>
-              <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                 {{ translate('sponsor.sharedPurpose') }}
               </h3>
               <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
@@ -211,7 +211,7 @@ import { TranslationService } from '../../services/translation.service';
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
                 </svg>
               </div>
-              <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                 {{ translate('sponsor.lastingLegacy') }}
               </h3>
               <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
@@ -348,7 +348,7 @@ import { TranslationService } from '../../services/translation.service';
 
           <!-- Impact Statement -->
           <div class="mt-12 text-center">
-            <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-4xl mx-auto">
+            <p class="text-2xl md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-4xl mx-auto">
               {{ translate('sponsor.impactStatement') }}
             </p>
           </div>
@@ -363,14 +363,14 @@ import { TranslationService } from '../../services/translation.service';
             <p class="text-xl mb-8 max-w-3xl mx-auto">
               {{ translate('sponsor.joinUsDescription') }}
             </p>
-            <p class="text-lg mb-8 max-w-4xl mx-auto">
+            <p class="text-2xl mb-8 max-w-4xl mx-auto">
               {{ translate('sponsor.togetherWeCan') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4">
+              <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-2xl px-8 py-4">
                 {{ translate('sponsor.becomeSponsorNow') }}
               </button>
-              <button class="btn-outline border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-4">
+              <button class="btn-outline border-white text-white hover:bg-white hover:text-blue-600 text-2xl px-8 py-4">
                 {{ translate('sponsor.learnMore') }}
               </button>
             </div>

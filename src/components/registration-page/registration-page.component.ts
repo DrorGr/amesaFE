@@ -62,7 +62,7 @@ interface UserRegistration {
               <h1 class="text-3xl md:text-4xl font-black mb-4 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
                 {{ translate('register.heroTitle') }}
               </h1>
-              <p class="text-lg md:text-xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <p class="text-2xl md:text-2xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('register.heroSubtitle') }}
               </p>
             </div>
@@ -162,14 +162,14 @@ interface UserRegistration {
               <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
                 {{ translate('register.personalDetails') }}
               </h2>
-              <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-8">
+              <p class="text-2xl md:text-2xl text-gray-600 dark:text-gray-400 mb-8">
                 {{ translate('register.personalDetailsDesc') }}
               </p>
 
               <form [formGroup]="personalDetailsForm" (ngSubmit)="onPersonalDetailsSubmit()" class="space-y-6">
                 <!-- Username -->
                 <div>
-                  <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                  <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.username') }} <span class="text-red-500">*</span>
                   </label>
                   <input
@@ -203,7 +203,7 @@ interface UserRegistration {
                 <!-- First Name & Last Name -->
                 <div class="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.firstName') }} <span class="text-red-500">*</span>
                     </label>
                     <input
@@ -213,7 +213,7 @@ interface UserRegistration {
                       [placeholder]="translate('register.firstNamePlaceholder')">
                   </div>
                   <div>
-                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.lastName') }} <span class="text-red-500">*</span>
                     </label>
                     <input
@@ -226,7 +226,7 @@ interface UserRegistration {
 
                 <!-- ID Number -->
                 <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.idNumber') }}
                   </label>
                   <input
@@ -239,7 +239,7 @@ interface UserRegistration {
                 <!-- Gender & Date of Birth -->
                 <div class="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.gender') }} <span class="text-red-500">*</span>
                     </label>
                     <select formControlName="gender" class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200">
@@ -250,7 +250,7 @@ interface UserRegistration {
                     </select>
                   </div>
                   <div>
-                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.dateOfBirth') }} <span class="text-red-500">*</span>
                     </label>
                     <input
@@ -262,12 +262,12 @@ interface UserRegistration {
 
                 <!-- Address (Optional) -->
                 <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                     {{ translate('register.address') }} ({{ translate('register.optional') }})
                   </h3>
                   <div class="grid md:grid-cols-2 gap-6">
                     <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         {{ translate('register.country') }}
                       </label>
                       <input
@@ -277,7 +277,7 @@ interface UserRegistration {
                         [placeholder]="translate('register.countryPlaceholder')">
                     </div>
                     <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         {{ translate('register.city') }}
                       </label>
                       <input
@@ -287,7 +287,7 @@ interface UserRegistration {
                         [placeholder]="translate('register.cityPlaceholder')">
                     </div>
                     <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         {{ translate('register.street') }}
                       </label>
                       <input
@@ -297,7 +297,7 @@ interface UserRegistration {
                         [placeholder]="translate('register.streetPlaceholder')">
                     </div>
                     <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         {{ translate('register.houseNumber') }}
                       </label>
                       <input
@@ -307,7 +307,7 @@ interface UserRegistration {
                         [placeholder]="translate('register.houseNumberPlaceholder')">
                     </div>
                     <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         {{ translate('register.zipCode') }}
                       </label>
                       <input
@@ -345,7 +345,7 @@ interface UserRegistration {
               <form [formGroup]="communicationForm" (ngSubmit)="onCommunicationSubmit()" class="space-y-6">
                 <!-- Email -->
                 <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.email') }} <span class="text-red-500">*</span>
                   </label>
                   <input
@@ -365,7 +365,7 @@ interface UserRegistration {
 
                 <!-- Phone Numbers -->
                 <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.phone') }} <span class="text-red-500">*</span>
                   </label>
                   @for (phone of phoneNumbers(); track $index) {
@@ -429,7 +429,7 @@ interface UserRegistration {
               <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()" class="space-y-6">
                 <!-- Password -->
                 <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.password') }} <span class="text-red-500">*</span>
                   </label>
                   <input
@@ -455,7 +455,7 @@ interface UserRegistration {
 
                 <!-- Confirm Password -->
                 <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.confirmPassword') }} <span class="text-red-500">*</span>
                   </label>
                   <input
@@ -506,7 +506,7 @@ interface UserRegistration {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
                   <div>
-                    <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                    <h3 class="text-2xl font-semibold text-blue-800 dark:text-blue-200 mb-2">
                       {{ translate('register.privacyNotice') }}
                     </h3>
                     <p class="text-blue-700 dark:text-blue-300">
@@ -519,7 +519,7 @@ interface UserRegistration {
               <form [formGroup]="identityForm" (ngSubmit)="onIdentitySubmit()" class="space-y-6">
                 <!-- Passport/ID Number -->
                 <div>
-                      <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.passportIdNumber') }} <span class="text-red-500">*</span>
                   </label>
                   <input
@@ -532,7 +532,7 @@ interface UserRegistration {
                 <!-- Document Upload -->
                 <div class="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.passportFront') }} <span class="text-red-500">*</span>
                     </label>
                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
@@ -556,7 +556,7 @@ interface UserRegistration {
                     </div>
                   </div>
                   <div>
-                    <label class="block text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.passportBack') }} <span class="text-red-500">*</span>
                     </label>
                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
@@ -596,7 +596,7 @@ interface UserRegistration {
                 <!-- Face Capture -->
                 @if (showFaceCapture()) {
                   <div class="text-center">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                       {{ translate('register.faceCapture') }}
                     </h3>
                     <button

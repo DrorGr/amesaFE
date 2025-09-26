@@ -22,18 +22,18 @@ import { TranslationService } from '../../services/translation.service';
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="h-16 w-auto hover:opacity-80 transition-opacity duration-200 mobile-logo">
+                class="h-16 md:h-20 h-16 w-auto hover:opacity-80 transition-opacity duration-200">
             </button>
           </div>
 
           <div class="ml-10 flex items-center space-x-8">
-            <button (click)="navigateToHome()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+            <button (click)="navigateToHome()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg md:text-xl font-bold transition-all duration-200 hover:-translate-y-0.5 transform">
               {{ translate('nav.lotteries') }}
             </button>
-                <button (click)="navigateToPromotions()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+                <button (click)="navigateToPromotions()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg md:text-xl font-bold transition-all duration-200 hover:-translate-y-0.5 transform">
                   {{ translate('nav.promotions') }}
                 </button>
-            <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+            <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg md:text-xl font-bold transition-all duration-200 hover:-translate-y-0.5 transform">
               {{ translate('nav.winners') }}
             </a>
           </div>
@@ -59,7 +59,7 @@ import { TranslationService } from '../../services/translation.service';
                   <div class="flex items-center space-x-3">
                     <button
                       (click)="openAuthModal()"
-                      class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-10 py-4 rounded-lg text-lg font-bold transition-all duration-200 hover:shadow-md min-h-[56px] mobile-signin-button">
+                      class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-8 py-2 rounded-lg text-xl md:text-base font-bold transition-all duration-200 hover:shadow-md min-h-[30px]">
                       {{ translate('nav.signIn') }}
                     </button>
                   </div>
@@ -68,20 +68,19 @@ import { TranslationService } from '../../services/translation.service';
         </div>
 
         <!-- Mobile Header -->
-        <div class="md:hidden flex justify-between items-center h-16" style="min-height: 120px !important; font-size: 2rem !important;">
+        <div class="md:hidden flex justify-between items-center h-16">
           <!-- Logo -->
           <div class="flex items-center">
             <button (click)="navigateToHome()" class="focus:outline-none">
-              <img 
-                src="assets/AmesaNoBG.png" 
-                alt="Amesa" 
-                class="h-10 w-auto hover:opacity-80 transition-opacity duration-200 mobile-logo"
-                style="height: 80px !important; width: auto !important;">
+            <img 
+              src="assets/AmesaNoBG.png" 
+              alt="Amesa" 
+              class="h-10 w-auto hover:opacity-80 transition-opacity duration-200">
             </button>
           </div>
 
           <!-- Right side: Theme toggle + Hamburger -->
-          <div class="flex items-center space-x-3 mobile-controls" style="transform: scale(2) !important;">
+          <div class="flex items-center space-x-3">
             <app-language-switcher></app-language-switcher>
             
             <app-theme-toggle></app-theme-toggle>
@@ -89,16 +88,15 @@ import { TranslationService } from '../../services/translation.service';
             <!-- Hamburger Menu Button -->
             <button
               (click)="toggleMobileMenu()"
-              class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
-              style="padding: 2rem !important; min-height: 80px !important; min-width: 80px !important; font-size: 2rem !important;">
+              class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
               @if (!isMobileMenuOpen) {
                 <!-- Hamburger Icon -->
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 3rem !important; height: 3rem !important;">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
               } @else {
                 <!-- Close Icon -->
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 3rem !important; height: 3rem !important;">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
               }
@@ -108,19 +106,16 @@ import { TranslationService } from '../../services/translation.service';
 
         <!-- Mobile Menu -->
         @if (isMobileMenuOpen) {
-          <div class="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-4 animate-fadeIn shadow-lg z-50" style="font-size: 2rem !important;">
+          <div class="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-4 animate-fadeIn shadow-lg z-50">
             <!-- Navigation Links -->
             <div class="space-y-2 mb-6">
-              <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-2xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button"
-                      style="font-size: 3rem !important; padding: 3rem 4rem !important; min-height: 120px !important;">
+              <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px]">
                 {{ translate('nav.lotteries') }}
               </button>
-                  <button (click)="navigateToPromotions()" class="block w-full text-left px-8 py-6 text-2xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button"
-                          style="font-size: 3rem !important; padding: 3rem 4rem !important; min-height: 120px !important;">
+                  <button (click)="navigateToPromotions()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px]">
                     {{ translate('nav.promotions') }}
                   </button>
-              <a href="#" class="block px-8 py-6 text-2xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button"
-                 style="font-size: 3rem !important; padding: 3rem 4rem !important; min-height: 120px !important;">
+              <a href="#" class="block px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px]">
                 {{ translate('nav.winners') }}
               </a>
             </div>
@@ -129,19 +124,17 @@ import { TranslationService } from '../../services/translation.service';
             <div class="px-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   @if (currentUser(); as user) {
                     <div class="space-y-3">
-                      <div class="text-2xl text-gray-700 dark:text-gray-300 font-bold px-8 py-4" style="font-size: 2.5rem !important; padding: 2rem 4rem !important;">
+                      <div class="text-3xl text-gray-700 dark:text-gray-300 font-bold px-8 py-4">
                         {{ translate('nav.welcome') }}, {{ user.name }}
                       </div>
                       <button
                         (click)="navigateToMemberSettings(); toggleMobileMenu()"
-                        class="w-full bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-8 py-6 rounded-lg text-2xl font-bold transition-colors duration-200 min-h-[80px]"
-                        style="font-size: 3rem !important; padding: 3rem 4rem !important; min-height: 120px !important;">
+                        class="w-full bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-8 py-6 rounded-lg text-3xl font-bold transition-colors duration-200 min-h-[80px]">
                         {{ translate('nav.memberSettings') }}
                       </button>
                       <button
                         (click)="logout(); toggleMobileMenu()"
-                        class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-8 py-6 rounded-lg text-2xl font-bold transition-colors duration-200 min-h-[80px]"
-                        style="font-size: 3rem !important; padding: 3rem 4rem !important; min-height: 120px !important;">
+                        class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-8 py-6 rounded-lg text-3xl font-bold transition-colors duration-200 min-h-[80px]">
                         {{ translate('nav.logout') }}
                       </button>
                     </div>
@@ -149,8 +142,7 @@ import { TranslationService } from '../../services/translation.service';
                     <div class="space-y-3">
                       <button
                         (click)="openAuthModal(); toggleMobileMenu()"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-lg text-2xl font-bold transition-colors duration-200 min-h-[80px] mobile-signin-button"
-                        style="font-size: 3rem !important; padding: 3rem 4rem !important; min-height: 120px !important;">
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-lg text-3xl font-bold transition-colors duration-200 min-h-[80px]">
                         {{ translate('nav.signIn') }}
                       </button>
                     </div>
@@ -174,31 +166,6 @@ import { TranslationService } from '../../services/translation.service';
     :host {
       display: block;
     }
-    
-    @media (max-width: 767px) {
-      /* Mobile navigation styling - REASONABLE SIZES */
-      .mobile-nav-button {
-        font-size: 1.5rem !important;
-        padding: 1rem 1.5rem !important;
-        min-height: 60px !important;
-      }
-      
-      .mobile-signin-button {
-        font-size: 1.25rem !important;
-        padding: 1rem 2rem !important;
-        min-height: 56px !important;
-        white-space: nowrap !important;
-      }
-      
-      .mobile-logo {
-        height: 40px !important;
-        width: auto !important;
-      }
-      
-      .mobile-controls {
-        transform: scale(1.2) !important;
-      }
-    }
   `]
 })
 export class TopbarComponent {
@@ -211,6 +178,7 @@ export class TopbarComponent {
   isMobileMenuOpen = false;
   
   currentUser = this.authService.getCurrentUser();
+  
 
   toggleMobileMenu() {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;

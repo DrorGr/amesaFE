@@ -42,7 +42,7 @@ import { CustomPreloadingStrategy } from './app.preloading-strategy';
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
                 class="h-36 w-auto mobile-footer-logo">
-              <p class="text-gray-300 text-lg leading-relaxed mobile-footer-description">
+              <p class="text-gray-300 text-2xl leading-relaxed mobile-footer-description">
                 {{ translate('footer.description') }}
               </p>
             </div>

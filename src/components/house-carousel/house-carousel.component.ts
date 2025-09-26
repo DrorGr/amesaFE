@@ -95,7 +95,7 @@ import { LotteryService } from '../../services/lottery.service';
                 </div>
                 
                 <!-- Property Description and Lottery Info -->
-                <div class="flex-1 max-w-lg text-center lg:text-left flex flex-col justify-between h-auto md:h-96 mx-auto lg:mx-0">
+                <div class="flex-1 max-w-lg text-center lg:text-left flex flex-col justify-between h-auto md:h-120 mx-auto lg:mx-0">
                   <div>
                     <!-- House Title -->
                     <div class="mb-4 md:mb-4">
@@ -113,19 +113,19 @@ import { LotteryService } from '../../services/lottery.service';
                   <div class="space-y-2 md:space-y-2 flex-grow flex flex-col justify-center">
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
                       <span class="text-gray-600 dark:text-gray-400 text-xl md:text-base font-medium">Property Value</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-lg">€{{ formatPrice(house.price) }}</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-2xl">€{{ formatPrice(house.price) }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
                       <span class="text-gray-600 dark:text-gray-400 text-xl md:text-base font-medium">Ticket Price</span>
-                      <span class="font-bold text-blue-600 dark:text-blue-400 text-xl md:text-lg">€{{ house.ticketPrice }}</span>
+                      <span class="font-bold text-blue-600 dark:text-blue-400 text-xl md:text-2xl">€{{ house.ticketPrice }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
                       <span class="text-gray-600 dark:text-gray-400 text-xl md:text-base font-medium">Tickets Sold</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-lg">{{ house.soldTickets }}/{{ house.totalTickets }}</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-2xl">{{ house.soldTickets }}/{{ house.totalTickets }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
                       <span class="text-gray-600 dark:text-gray-400 text-xl md:text-base font-medium">Draw Date</span>
-                      <span class="font-bold text-orange-600 dark:text-orange-400 text-xl md:text-lg">{{ formatDate(house.lotteryEndDate) }}</span>
+                      <span class="font-bold text-orange-600 dark:text-orange-400 text-xl md:text-2xl">{{ formatDate(house.lotteryEndDate) }}</span>
                     </div>
                   
                     <!-- Progress Bar -->
@@ -143,7 +143,7 @@ import { LotteryService } from '../../services/lottery.service';
                     </div>
                     
                     <!-- Buy Ticket Button -->
-                    <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-lg min-h-[72px]">
+                    <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px]">
                       Buy Ticket - €{{ house.ticketPrice }}
                     </button>
                   </div>

@@ -39,7 +39,7 @@ interface Partner {
               <h1 class="text-3xl md:text-5xl font-black mb-4 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
                 {{ translate('partners.heroTitle') }}
               </h1>
-              <p class="text-lg md:text-xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <p class="text-2xl md:text-xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('partners.heroSubtitle') }}
               </p>
             </div>
@@ -91,13 +91,13 @@ interface Partner {
                   <h4 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                     PiK Podatki i Księgowość Sp. z o.o
                   </h4>
-                  <p class="text-lg text-gray-600 dark:text-gray-400 mb-6">
+                  <p class="text-2xl text-gray-600 dark:text-gray-400 mb-6">
                     {{ translate('partners.pikDescription') }}
                   </p>
                   
                   <!-- Specialties -->
                   <div class="mb-6">
-                    <h5 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                    <h5 class="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
                       {{ translate('partners.specialties') }}
                     </h5>
                     <div class="flex flex-wrap gap-2 justify-center lg:justify-start">
@@ -159,13 +159,13 @@ interface Partner {
                   <h4 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                     Zeiba & Partners
                   </h4>
-                  <p class="text-lg text-gray-600 dark:text-gray-400 mb-6">
+                  <p class="text-2xl text-gray-600 dark:text-gray-400 mb-6">
                     {{ translate('partners.zeibaDescription') }}
                   </p>
                   
                   <!-- Specialties -->
                   <div class="mb-6">
-                    <h5 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                    <h5 class="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
                       {{ translate('partners.specialties') }}
                     </h5>
                     <div class="flex flex-wrap gap-2 justify-center lg:justify-start">
@@ -247,7 +247,7 @@ interface Partner {
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
                     </svg>
                   </div>
-                  <h3 class="text-lg font-semibold mb-2">{{ translate('partners.legalCompliance') }}</h3>
+                  <h3 class="text-2xl font-semibold mb-2">{{ translate('partners.legalCompliance') }}</h3>
                   <p class="text-blue-100">{{ translate('partners.legalComplianceDesc') }}</p>
                 </div>
                 
@@ -257,7 +257,7 @@ interface Partner {
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                     </svg>
                   </div>
-                  <h3 class="text-lg font-semibold mb-2">{{ translate('partners.financialSecurity') }}</h3>
+                  <h3 class="text-2xl font-semibold mb-2">{{ translate('partners.financialSecurity') }}</h3>
                   <p class="text-blue-100">{{ translate('partners.financialSecurityDesc') }}</p>
                 </div>
                 
@@ -267,7 +267,7 @@ interface Partner {
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                   </div>
-                  <h3 class="text-lg font-semibold mb-2">{{ translate('partners.expertise') }}</h3>
+                  <h3 class="text-2xl font-semibold mb-2">{{ translate('partners.expertise') }}</h3>
                   <p class="text-blue-100">{{ translate('partners.expertiseDesc') }}</p>
                 </div>
               </div>

@@ -25,7 +25,7 @@ import { TranslationService } from '../../services/translation.service';
               <h1 class="text-3xl md:text-5xl font-black mb-4 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
                 {{ translate('promotions.heroTitle') }}
               </h1>
-              <p class="text-lg md:text-xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <p class="text-2xl md:text-2xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('promotions.heroSubtitle') }}
               </p>
             </div>

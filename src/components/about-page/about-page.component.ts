@@ -48,10 +48,10 @@ import { TranslationService } from '../../services/translation.service';
           
           <div class="grid md:grid-cols-2 gap-12 items-center">
             <div class="space-y-6">
-              <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
                 {{ translate('about.founded') }}
               </p>
-              <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
                 {{ translate('about.coreOffering') }}
               </p>
             </div>
@@ -95,13 +95,13 @@ import { TranslationService } from '../../services/translation.service';
             </div>
             
             <div class="space-y-6">
-              <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
                 {{ translate('about.breakOdds') }}
               </p>
-              <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
                 {{ translate('about.minimumPrice') }}
               </p>
-              <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
                 {{ translate('about.foundedFrom') }}
               </p>
             </div>
@@ -201,10 +201,10 @@ import { TranslationService } from '../../services/translation.service';
               {{ translate('about.joinUsDescription') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4">
+              <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-2xl px-8 py-4">
                 {{ translate('about.browseLotteries') }}
               </button>
-              <button class="btn-outline border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-4">
+              <button class="btn-outline border-white text-white hover:bg-white hover:text-blue-600 text-2xl px-8 py-4">
                 {{ translate('about.learnMore') }}
               </button>
             </div>

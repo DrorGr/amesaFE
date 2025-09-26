@@ -56,7 +56,7 @@ import { TranslationService } from '../../services/translation.service';
                 <button
                   type="submit"
                   [disabled]="isLoading"
-                  class="w-full btn-primary text-lg py-4 disabled:bg-blue-400 disabled:transform-none disabled:shadow-none">
+                  class="w-full btn-primary text-2xl py-4 disabled:bg-blue-400 disabled:transform-none disabled:shadow-none">
                   @if (isLoading) {
                     <span class="flex items-center justify-center">
                       <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -95,7 +95,7 @@ import { TranslationService } from '../../services/translation.service';
                 <button
                   (click)="resendEmail()"
                   [disabled]="isResending"
-                  class="w-full btn-outline text-lg py-3 disabled:opacity-50">
+                  class="w-full btn-outline text-2xl py-3 disabled:opacity-50">
                   @if (isResending) {
                     <span class="flex items-center justify-center">
                       <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

@@ -27,10 +27,10 @@ import { TranslationService } from '../../services/translation.service';
       <div class="p-4 md:p-4 flex flex-col flex-grow min-h-0 overflow-visible">
         <div class="flex-grow flex flex-col min-h-0 overflow-visible">
           <h3 class="text-2xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-3 break-words leading-tight mobile-card-title">{{ translate('house.' + house().id + '.title') }}</h3>
-          <p class="text-gray-600 dark:text-gray-300 text-lg md:text-base mb-4 md:mb-3 line-clamp-2 break-words leading-relaxed mobile-card-text">{{ translate('house.' + house().id + '.description') }}</p>
+          <p class="text-gray-600 dark:text-gray-300 text-2xl md:text-base mb-4 md:mb-3 line-clamp-2 break-words leading-relaxed mobile-card-text">{{ translate('house.' + house().id + '.description') }}</p>
           
           <div class="flex items-center justify-between mb-4 md:mb-3">
-            <div class="flex items-center text-gray-600 dark:text-gray-300 text-lg md:text-base min-w-0 flex-1 mr-2">
+            <div class="flex items-center text-gray-600 dark:text-gray-300 text-2xl md:text-base min-w-0 flex-1 mr-2">
               <svg class="w-6 h-6 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -42,14 +42,14 @@ import { TranslationService } from '../../services/translation.service';
             </div>
           </div>
 
-          <div class="flex items-center justify-between text-lg md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3 mobile-card-details">
+          <div class="flex items-center justify-between text-2xl md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3 mobile-card-details">
             <span>{{ house().bedrooms }} {{ translate('house.bed') }}{{ house().bedrooms > 1 ? 's' : '' }}</span>
             <span>{{ house().bathrooms }} {{ translate('house.bath') }}{{ house().bathrooms > 1 ? 's' : '' }}</span>
             <span>{{ formatSqft(house().sqft) }} {{ translate('house.sqft') }}</span>
           </div>
 
           <div class="mb-3 md:mb-2">
-            <div class="flex justify-between text-lg md:text-base text-gray-600 dark:text-gray-300 mb-3 md:mb-2 mobile-card-details">
+            <div class="flex justify-between text-2xl md:text-base text-gray-600 dark:text-gray-300 mb-3 md:mb-2 mobile-card-details">
               <span>{{ translate('house.ticketsSold') }}</span>
               <span>{{ house().soldTickets }}/{{ house().totalTickets }}</span>
             </div>
@@ -62,7 +62,7 @@ import { TranslationService } from '../../services/translation.service';
           </div>
 
           <div class="text-center mb-4 md:mb-3">
-            <div class="text-lg md:text-base text-gray-600 dark:text-gray-300">{{ translate('house.lotteryEnds') }}</div>
+            <div class="text-2xl md:text-base text-gray-600 dark:text-gray-300">{{ translate('house.lotteryEnds') }}</div>
             <div class="text-xl md:text-xl font-bold text-orange-600 dark:text-orange-400 mobile-card-time">{{ getTimeRemaining() }}</div>
           </div>
         </div>
@@ -85,7 +85,7 @@ import { TranslationService } from '../../services/translation.service';
           </ng-container>
           <ng-template #signInBlock>
             <div class="text-center">
-              <p class="text-lg md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3 mobile-card-text">{{ translate('house.signInToParticipate') }}</p>
+              <p class="text-2xl md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3 mobile-card-text">{{ translate('house.signInToParticipate') }}</p>
               <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400 mobile-card-price">€{{ house().ticketPrice }} {{ translate('house.perTicket') }}</div>
             </div>
           </ng-template>

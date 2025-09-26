@@ -63,7 +63,7 @@ interface StarReward {
               <h1 class="text-3xl md:text-4xl font-black mb-4 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
                 {{ translate('member.heroTitle') }}
               </h1>
-              <p class="text-lg md:text-xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <p class="text-2xl md:text-2xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('member.heroSubtitle') }}
               </p>
             </div>
@@ -120,7 +120,7 @@ interface StarReward {
                   [class]="activeTab() === tab.id ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
                   class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
                   <div class="flex items-center space-x-2">
-                    <span class="text-lg">{{ tab.icon }}</span>
+                    <span class="text-2xl">{{ tab.icon }}</span>
                     <span>{{ translate(tab.title) }}</span>
                   </div>
                 </button>
@@ -205,7 +205,7 @@ interface StarReward {
 
                   <!-- Read-only fields -->
                   <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <h4 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                       {{ translate('member.readOnlyInfo') }}
                     </h4>
                     <div class="grid md:grid-cols-2 gap-6">
@@ -277,7 +277,7 @@ interface StarReward {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                       </svg>
                       <div>
-                        <h4 class="text-lg font-semibold text-yellow-800 dark:text-yellow-200">
+                        <h4 class="text-2xl font-semibold text-yellow-800 dark:text-yellow-200">
                           {{ translate('member.verifyAccount') }}
                         </h4>
                         <p class="text-yellow-700 dark:text-yellow-300">
@@ -308,7 +308,7 @@ interface StarReward {
                     <div class="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
                       <div class="flex items-center justify-between mb-4">
                         <div>
-                          <h4 class="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                          <h4 class="text-2xl font-semibold text-blue-900 dark:text-blue-100">
                             {{ promotion.name }}
                           </h4>
                           <p class="text-blue-700 dark:text-blue-300">
@@ -363,7 +363,7 @@ interface StarReward {
                 <div class="space-y-8">
                   <!-- Basic Settings -->
                   <div>
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <h4 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                       {{ translate('member.basicSettings') }}
                     </h4>
                     <div class="space-y-4">
@@ -429,7 +429,7 @@ interface StarReward {
 
                   <!-- Premium Settings -->
                   <div>
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <h4 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                       {{ translate('member.premiumSettings') }}
                     </h4>
                     <div class="space-y-4">
@@ -493,7 +493,7 @@ interface StarReward {
                 <div class="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl p-6 mb-8 border border-yellow-200 dark:border-yellow-800">
                   <div class="flex items-center justify-between">
                     <div>
-                      <h4 class="text-lg font-semibold text-yellow-900 dark:text-yellow-100">
+                      <h4 class="text-2xl font-semibold text-yellow-900 dark:text-yellow-100">
                         {{ translate('member.totalStars') }}
                       </h4>
                       <p class="text-3xl font-bold text-yellow-800 dark:text-yellow-200">
@@ -513,7 +513,7 @@ interface StarReward {
 
                 <!-- Stars History -->
                 <div class="space-y-4">
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h4 class="text-2xl font-semibold text-gray-900 dark:text-white">
                     {{ translate('member.starsHistory') }}
                   </h4>
                   
@@ -535,7 +535,7 @@ interface StarReward {
                           </div>
                         </div>
                         <div class="text-right">
-                          <p class="text-lg font-semibold text-yellow-600 dark:text-yellow-400">
+                          <p class="text-2xl font-semibold text-yellow-600 dark:text-yellow-400">
                             +{{ star.points }}
                           </p>
                           @if (star.isExpired) {

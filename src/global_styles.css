@@ -200,7 +200,7 @@ html {
     line-height: 1.5;
   }
   
-  /* Mobile-specific improvements */
+  /* Mobile-specific improvements - REASONABLE SIZES */
   .mobile-nav-button {
     font-size: 1.5rem !important;
     padding: 1rem 1.5rem !important;
