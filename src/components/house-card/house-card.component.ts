@@ -11,71 +11,70 @@ import { TranslationService } from '../../services/translation.service';
   imports: [CommonModule],
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div style="background: white; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; overflow: visible; display: flex; flex-direction: column; width: 100%;" 
-         [class.dark:bg-gray-800]="true">
-      <div style="position: relative; height: 12rem; background: #e5e7eb; flex-shrink: 0;">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg transition-all duration-300 overflow-visible flex flex-col w-full">
+      <div class="relative h-48 md:h-48 bg-gray-200 flex-shrink-0">
         <img 
           [src]="house().imageUrl" 
           [alt]="house().title"
-          style="width: 100%; height: 100%; object-fit: cover;">
-        <div style="position: absolute; top: 1rem; right: 1rem;">
-          <span style="background: #10b981; color: white; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;">
+          class="w-full h-full object-cover">
+        <div class="absolute top-4 right-4">
+          <span class="bg-emerald-500 text-white px-3 py-2 rounded-full text-sm md:text-sm font-semibold">
             {{ getStatusText() }}
           </span>
         </div>
       </div>
 
-      <div style="padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; overflow: visible;">
-        <div style="flex-grow: 1; display: flex; flex-direction: column; min-height: 0; overflow: visible;">
-          <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 0.5rem; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto; line-height: 1.4;">{{ translate('house.' + house().id + '.title') }}</h3>
-          <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto; line-height: 1.4;">{{ translate('house.' + house().id + '.description') }}</p>
+      <div class="p-4 md:p-4 flex flex-col flex-grow min-h-0 overflow-visible">
+        <div class="flex-grow flex flex-col min-h-0 overflow-visible">
+          <h3 class="text-2xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-3 break-words leading-tight">{{ translate('house.' + house().id + '.title') }}</h3>
+          <p class="text-gray-600 dark:text-gray-300 text-lg md:text-base mb-4 md:mb-3 line-clamp-2 break-words leading-relaxed">{{ translate('house.' + house().id + '.description') }}</p>
           
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-            <div style="display: flex; align-items: center; color: #6b7280; font-size: 0.875rem; min-width: 0; flex: 1; margin-right: 0.5rem;">
-              <svg style="width: 1rem; height: 1rem; margin-right: 0.25rem; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="flex items-center justify-between mb-4 md:mb-3">
+            <div class="flex items-center text-gray-600 dark:text-gray-300 text-lg md:text-base min-w-0 flex-1 mr-2">
+              <svg class="w-6 h-6 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
               </svg>
-              <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ translate('house.' + house().id + '.location') }}</span>
+              <span class="truncate">{{ translate('house.' + house().id + '.location') }}</span>
             </div>
-            <div style="font-size: 1.125rem; font-weight: 700; color: #2563eb; flex-shrink: 0;">
+            <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400 flex-shrink-0">
               €{{ formatPrice(house().price) }}
             </div>
           </div>
 
-          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">
+          <div class="flex items-center justify-between text-lg md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3">
             <span>{{ house().bedrooms }} {{ translate('house.bed') }}{{ house().bedrooms > 1 ? 's' : '' }}</span>
             <span>{{ house().bathrooms }} {{ translate('house.bath') }}{{ house().bathrooms > 1 ? 's' : '' }}</span>
             <span>{{ formatSqft(house().sqft) }} {{ translate('house.sqft') }}</span>
           </div>
 
-          <div style="margin-bottom: 0.5rem;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem;">
+          <div class="mb-3 md:mb-2">
+            <div class="flex justify-between text-lg md:text-base text-gray-600 dark:text-gray-300 mb-3 md:mb-2">
               <span>{{ translate('house.ticketsSold') }}</span>
               <span>{{ house().soldTickets }}/{{ house().totalTickets }}</span>
             </div>
-            <div style="width: 100%; background: #e5e7eb; border-radius: 9999px; height: 0.5rem;">
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 md:h-2">
               <div 
-                style="background: #2563eb; height: 0.5rem; border-radius: 9999px; transition: all 0.3s ease;"
+                class="bg-blue-600 dark:bg-blue-500 h-3 md:h-2 rounded-full transition-all duration-300"
                 [style.width.%]="getTicketProgress()">
               </div>
             </div>
           </div>
 
-          <div style="text-align: center; margin-bottom: 0.5rem;">
-            <div style="font-size: 0.875rem; color: #6b7280;">{{ translate('house.lotteryEnds') }}</div>
-            <div style="font-size: 1.125rem; font-weight: 700; color: #ea580c;">{{ getTimeRemaining() }}</div>
+          <div class="text-center mb-4 md:mb-3">
+            <div class="text-lg md:text-base text-gray-600 dark:text-gray-300">{{ translate('house.lotteryEnds') }}</div>
+            <div class="text-xl md:text-xl font-bold text-orange-600 dark:text-orange-400">{{ getTimeRemaining() }}</div>
           </div>
         </div>
 
-        <div style="margin-top: auto; flex-shrink: 0;">
+        <div class="mt-auto flex-shrink-0">
           <ng-container *ngIf="currentUser(); else signInBlock">
             <button
               (click)="purchaseTicket()"
               [disabled]="isPurchasing || house().status !== 'active'"
-              style="width: 100%; background: #2563eb; color: white; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.2s ease; border: none; cursor: pointer;"
-              [style.background]="(isPurchasing || house().status !== 'active') ? '#9ca3af' : '#2563eb'"
-              [style.cursor]="(isPurchasing || house().status !== 'active') ? 'not-allowed' : 'pointer'">
+              class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed"
+              [class.bg-gray-400]="(isPurchasing || house().status !== 'active')"
+              [class.cursor-not-allowed]="(isPurchasing || house().status !== 'active')">
               <ng-container *ngIf="isPurchasing; else buyTicketBlock">
                 {{ translate('house.processing') }}
               </ng-container>
@@ -85,9 +84,9 @@ import { TranslationService } from '../../services/translation.service';
             </button>
           </ng-container>
           <ng-template #signInBlock>
-            <div style="text-align: center;">
-              <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">{{ translate('house.signInToParticipate') }}</p>
-              <div style="font-size: 1.125rem; font-weight: 500; color: #2563eb;">€{{ house().ticketPrice }} {{ translate('house.perTicket') }}</div>
+            <div class="text-center">
+              <p class="text-lg md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3">{{ translate('house.signInToParticipate') }}</p>
+              <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400">€{{ house().ticketPrice }} {{ translate('house.perTicket') }}</div>
             </div>
           </ng-template>
         </div>

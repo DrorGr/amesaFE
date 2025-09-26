@@ -8,16 +8,16 @@ import { LotteryService } from '../../services/lottery.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-2 md:py-4 transition-colors duration-300 relative">
+    <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 md:py-4 transition-colors duration-300 relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
         <div class="overflow-hidden">
           <div class="flex transition-transform duration-500 ease-in-out" 
                [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
             @for (house of houses; track house.id; let houseIndex = $index) {
-              <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 relative">
+              <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-6 md:gap-8 relative">
                 <!-- Main House Image -->
-                <div class="flex-1 max-w-4xl flex flex-col mb-2">
+                <div class="flex-1 max-w-4xl flex flex-col mb-4">
                   <div class="relative">
                     @if (isImageLoaded(house.images[getImageIndexForHouse(houseIndex)].url)) {
                       <img
@@ -43,7 +43,7 @@ import { LotteryService } from '../../services/lottery.service';
                   </div>
                   
                   <!-- Image Navigation Below Main Image -->
-                  <div class="flex flex-col items-center mt-3">
+                  <div class="flex flex-col items-center mt-4">
                     <!-- Mobile: Navigation buttons positioned outside thumbnails -->
                     <div class="md:hidden relative w-full flex justify-center">
                       <!-- Thumbnail Images - centered -->
@@ -95,55 +95,55 @@ import { LotteryService } from '../../services/lottery.service';
                 </div>
                 
                 <!-- Property Description and Lottery Info -->
-                <div class="flex-1 max-w-lg text-center lg:text-left flex flex-col justify-between h-auto md:h-96">
+                <div class="flex-1 max-w-lg text-center lg:text-left flex flex-col justify-between h-auto md:h-96 mx-auto lg:mx-0">
                   <div>
                     <!-- House Title -->
-                    <div class="mb-2 md:mb-4">
-                      <h2 class="text-lg md:text-3xl font-bold text-gray-900 dark:text-white text-center">
+                    <div class="mb-4 md:mb-4">
+                      <h2 class="text-4xl md:text-3xl font-bold text-gray-900 dark:text-white text-center">
                         {{ house.name }}
                       </h2>
                     </div>
                     
-                    <p class="text-gray-600 dark:text-gray-300 mb-3 md:mb-6 leading-relaxed text-xs md:text-base">
+                    <p class="text-gray-600 dark:text-gray-300 mb-6 md:mb-6 leading-relaxed text-xl md:text-base">
                       {{ house.description }}
                     </p>
                   </div>
                   
                   <!-- Lottery Information -->
-                  <div class="space-y-1 md:space-y-2 flex-grow flex flex-col justify-center">
-                    <div class="flex justify-between items-center py-1 md:py-2 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-base">Property Value</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-xs md:text-lg">€{{ formatPrice(house.price) }}</span>
+                  <div class="space-y-2 md:space-y-2 flex-grow flex flex-col justify-center">
+                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-base font-medium">Property Value</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-lg">€{{ formatPrice(house.price) }}</span>
                     </div>
-                    <div class="flex justify-between items-center py-1 md:py-2 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-base">Ticket Price</span>
-                      <span class="font-bold text-blue-600 dark:text-blue-400 text-xs md:text-lg">€{{ house.ticketPrice }}</span>
+                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-base font-medium">Ticket Price</span>
+                      <span class="font-bold text-blue-600 dark:text-blue-400 text-xl md:text-lg">€{{ house.ticketPrice }}</span>
                     </div>
-                    <div class="flex justify-between items-center py-1 md:py-2 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-base">Tickets Sold</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-xs md:text-lg">{{ house.soldTickets }}/{{ house.totalTickets }}</span>
+                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-base font-medium">Tickets Sold</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-lg">{{ house.soldTickets }}/{{ house.totalTickets }}</span>
                     </div>
-                    <div class="flex justify-between items-center py-1 md:py-2 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-gray-600 dark:text-gray-400 text-xs md:text-base">Draw Date</span>
-                      <span class="font-bold text-orange-600 dark:text-orange-400 text-xs md:text-lg">{{ formatDate(house.lotteryEndDate) }}</span>
+                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-base font-medium">Draw Date</span>
+                      <span class="font-bold text-orange-600 dark:text-orange-400 text-xl md:text-lg">{{ formatDate(house.lotteryEndDate) }}</span>
                     </div>
                   
                     <!-- Progress Bar -->
-                    <div class="mt-1 md:mt-3">
-                      <div class="flex justify-between text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1 md:mb-2">
+                    <div class="mt-4 md:mt-3">
+                      <div class="flex justify-between text-xl md:text-sm text-gray-600 dark:text-gray-400 mb-3 md:mb-2 font-medium">
                         <span>Progress</span>
                         <span>{{ getTicketProgressForHouse(house) }}%</span>
                       </div>
-                      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 md:h-3">
+                      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 md:h-3">
                         <div 
-                          class="bg-blue-600 dark:bg-blue-500 h-2 md:h-3 rounded-full transition-all duration-300"
+                          class="bg-blue-600 dark:bg-blue-500 h-4 md:h-3 rounded-full transition-all duration-300"
                           [style.width.%]="getTicketProgressForHouse(house)">
                         </div>
                       </div>
                     </div>
                     
                     <!-- Buy Ticket Button -->
-                    <button class="w-full mt-2 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-2 md:py-4 px-4 md:px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-sm md:text-lg">
+                    <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-lg min-h-[72px]">
                       Buy Ticket - €{{ house.ticketPrice }}
                     </button>
                   </div>
@@ -156,12 +156,12 @@ import { LotteryService } from '../../services/lottery.service';
         <!-- Fixed Navigation Controls - Bottom of component -->
         <!-- Mobile Navigation - Bottom -->
         <div class="md:hidden">
-          <div class="flex items-center justify-between px-4 py-4">
+          <div class="flex items-center justify-between px-6 py-6">
             <!-- Left Navigation Button -->
             <button 
               (click)="previousSlide()"
-              class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 min-h-[56px] min-w-[56px]">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
             </button>
@@ -183,8 +183,8 @@ import { LotteryService } from '../../services/lottery.service';
             <!-- Right Navigation Button -->
             <button 
               (click)="nextSlide()"
-              class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-3 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              class="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white p-4 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 shadow-lg border border-gray-200 dark:border-gray-600 min-h-[56px] min-w-[56px]">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </button>

@@ -26,13 +26,13 @@ import { TranslationService } from '../../services/translation.service';
           </div>
 
           <div class="ml-10 flex items-center space-x-8">
-            <button (click)="navigateToHome()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-base font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+            <button (click)="navigateToHome()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform">
               {{ translate('nav.lotteries') }}
             </button>
-                <button (click)="navigateToPromotions()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-base font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+                <button (click)="navigateToPromotions()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform">
                   {{ translate('nav.promotions') }}
                 </button>
-            <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-base font-semibold transition-all duration-200 hover:-translate-y-0.5 transform">
+            <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform">
               {{ translate('nav.winners') }}
             </a>
           </div>
@@ -58,7 +58,7 @@ import { TranslationService } from '../../services/translation.service';
                   <div class="flex items-center space-x-3">
                     <button
                       (click)="openAuthModal()"
-                      class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-lg text-base font-semibold transition-all duration-200 hover:shadow-md min-h-[48px]">
+                      class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-10 py-4 rounded-lg text-lg font-bold transition-all duration-200 hover:shadow-md min-h-[56px]">
                       {{ translate('nav.signIn') }}
                     </button>
                   </div>
@@ -108,13 +108,13 @@ import { TranslationService } from '../../services/translation.service';
           <div class="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-4 animate-fadeIn shadow-lg z-50">
             <!-- Navigation Links -->
             <div class="space-y-2 mb-6">
-              <button (click)="navigateToHome()" class="block w-full text-left px-6 py-4 text-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors duration-200">
+              <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-2xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px]">
                 {{ translate('nav.lotteries') }}
               </button>
-                  <button (click)="navigateToPromotions()" class="block w-full text-left px-6 py-4 text-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors duration-200">
+                  <button (click)="navigateToPromotions()" class="block w-full text-left px-8 py-6 text-2xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px]">
                     {{ translate('nav.promotions') }}
                   </button>
-              <a href="#" class="block px-6 py-4 text-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors duration-200">
+              <a href="#" class="block px-8 py-6 text-2xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px]">
                 {{ translate('nav.winners') }}
               </a>
             </div>
@@ -123,17 +123,17 @@ import { TranslationService } from '../../services/translation.service';
             <div class="px-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   @if (currentUser(); as user) {
                     <div class="space-y-3">
-                      <div class="text-lg text-gray-700 dark:text-gray-300 font-semibold px-6 py-2">
+                      <div class="text-2xl text-gray-700 dark:text-gray-300 font-bold px-8 py-4">
                         {{ translate('nav.welcome') }}, {{ user.name }}
                       </div>
                       <button
                         (click)="navigateToMemberSettings(); toggleMobileMenu()"
-                        class="w-full bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-6 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 min-h-[56px]">
+                        class="w-full bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-8 py-6 rounded-lg text-2xl font-bold transition-colors duration-200 min-h-[80px]">
                         {{ translate('nav.memberSettings') }}
                       </button>
                       <button
                         (click)="logout(); toggleMobileMenu()"
-                        class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 min-h-[56px]">
+                        class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-8 py-6 rounded-lg text-2xl font-bold transition-colors duration-200 min-h-[80px]">
                         {{ translate('nav.logout') }}
                       </button>
                     </div>
@@ -141,7 +141,7 @@ import { TranslationService } from '../../services/translation.service';
                     <div class="space-y-3">
                       <button
                         (click)="openAuthModal(); toggleMobileMenu()"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 min-h-[56px]">
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-lg text-2xl font-bold transition-colors duration-200 min-h-[80px]">
                         {{ translate('nav.signIn') }}
                       </button>
                     </div>

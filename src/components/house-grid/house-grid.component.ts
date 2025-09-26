@@ -12,10 +12,10 @@ import { TranslationService } from '../../services/translation.service';
     <section class="bg-white dark:bg-gray-900 py-8 pb-16 transition-colors duration-300" style="overflow: visible;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="overflow: visible;">
         <div class="text-center mb-8">
-          <h2 class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 text-balance">
+          <h2 class="text-4xl md:text-4xl font-black text-gray-900 dark:text-white mb-6 text-balance">
             {{ translate('houses.title') }}
           </h2>
-          <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed text-balance">
+          <p class="text-xl md:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed text-balance">
             {{ translate('houses.subtitle') }}
           </p>
         </div>
