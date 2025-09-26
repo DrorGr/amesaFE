@@ -10,22 +10,22 @@ import { TranslationService, Language } from '../../services/translation.service
     <div class="relative">
       <button
         (click)="toggleDropdown()"
-        class="flex items-center space-x-2 px-3 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
-        <div class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+        class="flex items-center space-x-2 px-3 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mobile-language-button">
+        <div class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mobile-language-flag">
           <img [src]="getCurrentLanguageFlag()" [alt]="getCurrentLanguageCode()" class="w-full h-full object-cover">
         </div>
-        <span class="text-black dark:text-white font-bold">{{ getCurrentLanguageCode() }}</span>
-        <svg class="w-3 h-3 md:w-4 md:h-4 transition-transform duration-200" [class.rotate-180]="isDropdownOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span class="text-black dark:text-white font-bold mobile-language-text">{{ getCurrentLanguageCode() }}</span>
+        <svg class="w-3 h-3 md:w-4 md:h-4 transition-transform duration-200 mobile-language-arrow" [class.rotate-180]="isDropdownOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </button>
 
       @if (isDropdownOpen) {
-        <div class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+        <div class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50 mobile-language-dropdown">
           @for (language of availableLanguages; track language.code) {
             <button
               (click)="selectLanguage(language.code)"
-              class="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+              class="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 mobile-language-option"
               [class.bg-blue-50]="currentLanguage() === language.code"
               [class.dark:bg-blue-900]="currentLanguage() === language.code"
               [class.text-blue-600]="currentLanguage() === language.code"
@@ -46,6 +46,39 @@ import { TranslationService, Language } from '../../services/translation.service
       }
     </div>
   `,
+  styles: [`
+    @media (max-width: 767px) {
+      .mobile-language-button {
+        padding: 1rem !important;
+        min-height: 80px !important;
+      }
+      
+      .mobile-language-flag {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+      }
+      
+      .mobile-language-text {
+        font-size: 1.5rem !important;
+      }
+      
+      .mobile-language-arrow {
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+      }
+      
+      .mobile-language-dropdown {
+        width: 15rem !important;
+        right: 0 !important;
+      }
+      
+      .mobile-language-option {
+        padding: 1.25rem 1.5rem !important;
+        min-height: 80px !important;
+        font-size: 1.5rem !important;
+      }
+    }
+  `],
   host: {
     '(document:click)': 'onDocumentClick($event)'
   }

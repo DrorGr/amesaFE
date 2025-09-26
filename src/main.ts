@@ -36,19 +36,18 @@ import { CustomPreloadingStrategy } from './app.preloading-strategy';
       <footer class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Logo, Description and Social Media -->
-          <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div class="flex items-center gap-6">
+          <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-6 mobile-footer-header">
+            <div class="flex items-center gap-6 mobile-footer-logo-section">
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="w-auto" 
-                style="height: 7rem;">
-              <p class="text-gray-300 text-lg leading-relaxed">
+                class="h-36 w-auto mobile-footer-logo">
+              <p class="text-gray-300 text-lg leading-relaxed mobile-footer-description">
                 {{ translate('footer.description') }}
               </p>
             </div>
             <!-- Social Media Links -->
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-4 mobile-footer-social">
               <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors duration-200">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
@@ -93,7 +92,7 @@ import { CustomPreloadingStrategy } from './app.preloading-strategy';
           </div>
           
           <!-- Footer Links Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6 mobile-footer-links">
             <!-- Community -->
             <div>
               <h4 class="font-semibold mb-3 text-white">{{ translate('footer.community') }}</h4>

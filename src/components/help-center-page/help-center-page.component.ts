@@ -25,10 +25,10 @@ import { TranslationService } from '../../services/translation.service';
           <!-- Content -->
           <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div class="text-white max-w-4xl">
-              <h1 class="text-3xl md:text-5xl font-black mb-4 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
+              <h1 class="text-3xl md:text-5xl font-black mb-4 leading-tight mobile-hero-title" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
                 {{ translate('help.heroTitle') }}
               </h1>
-              <p class="text-lg md:text-xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <p class="text-lg md:text-xl leading-relaxed mobile-hero-subtitle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('help.heroSubtitle') }}
               </p>
             </div>
@@ -41,7 +41,7 @@ import { TranslationService } from '../../services/translation.service';
         <!-- How Can We Help Section -->
         <section class="mb-16">
           <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 mobile-section-title">
               {{ translate('help.howCanWeHelp') }}
             </h2>
             <div class="w-24 h-1 bg-blue-600 mx-auto rounded-full mb-6"></div>
@@ -54,14 +54,14 @@ import { TranslationService } from '../../services/translation.service';
         <!-- Quick Support Options -->
         <section class="mb-16">
           <div class="text-center mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8 mobile-section-title">
               {{ translate('help.quickSupportOptions') }}
             </h2>
           </div>
 
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mobile-grid">
             <!-- FAQ Link -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-8 text-center">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-8 text-center mobile-padding">
               <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -81,7 +81,7 @@ import { TranslationService } from '../../services/translation.service';
             </div>
 
             <!-- Email Support -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-8 text-center">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-8 text-center mobile-padding">
               <div class="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
@@ -101,7 +101,7 @@ import { TranslationService } from '../../services/translation.service';
             </div>
 
             <!-- Phone Support -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-8 text-center">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-8 text-center mobile-padding">
               <div class="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
@@ -125,7 +125,7 @@ import { TranslationService } from '../../services/translation.service';
         <!-- Topics We Cover -->
         <section class="mb-16">
           <div class="text-center mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8 mobile-section-title">
               {{ translate('help.topicsWeCover') }}
             </h2>
           </div>
@@ -196,7 +196,7 @@ import { TranslationService } from '../../services/translation.service';
         <!-- Our Commitment -->
         <section class="mb-16">
           <div class="text-center mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8 mobile-section-title">
               {{ translate('help.ourCommitment') }}
             </h2>
           </div>
@@ -324,6 +324,48 @@ import { TranslationService } from '../../services/translation.service';
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+    
+    @media (max-width: 767px) {
+      .mobile-hero-title {
+        font-size: 4rem !important;
+        line-height: 1.2 !important;
+      }
+      
+      .mobile-hero-subtitle {
+        font-size: 2rem !important;
+        line-height: 1.5 !important;
+      }
+      
+      .mobile-section-title {
+        font-size: 3rem !important;
+        line-height: 1.3 !important;
+      }
+      
+      .mobile-card-title {
+        font-size: 2rem !important;
+        line-height: 1.4 !important;
+      }
+      
+      .mobile-card-text {
+        font-size: 1.5rem !important;
+        line-height: 1.5 !important;
+      }
+      
+      .mobile-button {
+        font-size: 1.75rem !important;
+        padding: 1.5rem 2.5rem !important;
+        min-height: 80px !important;
+      }
+      
+      .mobile-grid {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+      }
+      
+      .mobile-padding {
+        padding: 2rem !important;
+      }
+    }
   `]
 })
 export class HelpCenterPageComponent {

@@ -26,8 +26,8 @@ import { TranslationService } from '../../services/translation.service';
 
       <div class="p-4 md:p-4 flex flex-col flex-grow min-h-0 overflow-visible">
         <div class="flex-grow flex flex-col min-h-0 overflow-visible">
-          <h3 class="text-2xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-3 break-words leading-tight">{{ translate('house.' + house().id + '.title') }}</h3>
-          <p class="text-gray-600 dark:text-gray-300 text-lg md:text-base mb-4 md:mb-3 line-clamp-2 break-words leading-relaxed">{{ translate('house.' + house().id + '.description') }}</p>
+          <h3 class="text-2xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-3 break-words leading-tight mobile-card-title">{{ translate('house.' + house().id + '.title') }}</h3>
+          <p class="text-gray-600 dark:text-gray-300 text-lg md:text-base mb-4 md:mb-3 line-clamp-2 break-words leading-relaxed mobile-card-text">{{ translate('house.' + house().id + '.description') }}</p>
           
           <div class="flex items-center justify-between mb-4 md:mb-3">
             <div class="flex items-center text-gray-600 dark:text-gray-300 text-lg md:text-base min-w-0 flex-1 mr-2">
@@ -37,23 +37,23 @@ import { TranslationService } from '../../services/translation.service';
               </svg>
               <span class="truncate">{{ translate('house.' + house().id + '.location') }}</span>
             </div>
-            <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400 flex-shrink-0">
+            <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400 flex-shrink-0 mobile-card-price">
               €{{ formatPrice(house().price) }}
             </div>
           </div>
 
-          <div class="flex items-center justify-between text-lg md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3">
+          <div class="flex items-center justify-between text-lg md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3 mobile-card-details">
             <span>{{ house().bedrooms }} {{ translate('house.bed') }}{{ house().bedrooms > 1 ? 's' : '' }}</span>
             <span>{{ house().bathrooms }} {{ translate('house.bath') }}{{ house().bathrooms > 1 ? 's' : '' }}</span>
             <span>{{ formatSqft(house().sqft) }} {{ translate('house.sqft') }}</span>
           </div>
 
           <div class="mb-3 md:mb-2">
-            <div class="flex justify-between text-lg md:text-base text-gray-600 dark:text-gray-300 mb-3 md:mb-2">
+            <div class="flex justify-between text-lg md:text-base text-gray-600 dark:text-gray-300 mb-3 md:mb-2 mobile-card-details">
               <span>{{ translate('house.ticketsSold') }}</span>
               <span>{{ house().soldTickets }}/{{ house().totalTickets }}</span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 md:h-2">
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 md:h-2 mobile-card-progress">
               <div 
                 class="bg-blue-600 dark:bg-blue-500 h-3 md:h-2 rounded-full transition-all duration-300"
                 [style.width.%]="getTicketProgress()">
@@ -63,7 +63,7 @@ import { TranslationService } from '../../services/translation.service';
 
           <div class="text-center mb-4 md:mb-3">
             <div class="text-lg md:text-base text-gray-600 dark:text-gray-300">{{ translate('house.lotteryEnds') }}</div>
-            <div class="text-xl md:text-xl font-bold text-orange-600 dark:text-orange-400">{{ getTimeRemaining() }}</div>
+            <div class="text-xl md:text-xl font-bold text-orange-600 dark:text-orange-400 mobile-card-time">{{ getTimeRemaining() }}</div>
           </div>
         </div>
 
@@ -72,7 +72,7 @@ import { TranslationService } from '../../services/translation.service';
             <button
               (click)="purchaseTicket()"
               [disabled]="isPurchasing || house().status !== 'active'"
-              class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed"
+              class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button"
               [class.bg-gray-400]="(isPurchasing || house().status !== 'active')"
               [class.cursor-not-allowed]="(isPurchasing || house().status !== 'active')">
               <ng-container *ngIf="isPurchasing; else buyTicketBlock">
@@ -85,8 +85,8 @@ import { TranslationService } from '../../services/translation.service';
           </ng-container>
           <ng-template #signInBlock>
             <div class="text-center">
-              <p class="text-lg md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3">{{ translate('house.signInToParticipate') }}</p>
-              <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400">€{{ house().ticketPrice }} {{ translate('house.perTicket') }}</div>
+              <p class="text-lg md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3 mobile-card-text">{{ translate('house.signInToParticipate') }}</p>
+              <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400 mobile-card-price">€{{ house().ticketPrice }} {{ translate('house.perTicket') }}</div>
             </div>
           </ng-template>
         </div>
@@ -102,6 +102,40 @@ import { TranslationService } from '../../services/translation.service';
     
     * {
       box-sizing: border-box !important;
+    }
+    
+    @media (max-width: 767px) {
+      .mobile-card-title {
+        font-size: 2rem !important;
+        line-height: 1.3 !important;
+      }
+      
+      .mobile-card-text {
+        font-size: 1.5rem !important;
+        line-height: 1.5 !important;
+      }
+      
+      .mobile-card-price {
+        font-size: 2rem !important;
+      }
+      
+      .mobile-card-details {
+        font-size: 1.5rem !important;
+      }
+      
+      .mobile-card-button {
+        font-size: 1.75rem !important;
+        padding: 1.5rem 2rem !important;
+        min-height: 80px !important;
+      }
+      
+      .mobile-card-progress {
+        height: 1rem !important;
+      }
+      
+      .mobile-card-time {
+        font-size: 1.75rem !important;
+      }
     }
   `]
 })

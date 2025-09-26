@@ -13,10 +13,10 @@ import { inject } from '@angular/core';
         <div class="flex animate-scroll-stats space-x-8 md:space-x-12">
           @for (stat of stats; track stat.labelKey) {
             <div class="flex-shrink-0 text-center min-w-[120px] md:min-w-[200px]">
-              <div class="text-4xl md:text-6xl font-black text-gradient mb-1 md:mb-4">
+              <div class="text-4xl md:text-6xl font-black text-gradient mb-1 md:mb-4 stats-value">
                 {{ stat.value }}
               </div>
-              <div class="text-gray-700 dark:text-gray-300 font-semibold text-lg md:text-lg leading-loose md:leading-tight">
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-lg md:text-lg leading-loose md:leading-tight stats-label">
                 {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>
@@ -24,10 +24,10 @@ import { inject } from '@angular/core';
           <!-- Duplicate for seamless loop -->
           @for (stat of stats; track stat.labelKey + '-duplicate') {
             <div class="flex-shrink-0 text-center min-w-[120px] md:min-w-[200px]">
-              <div class="text-4xl md:text-6xl font-black text-gradient mb-1 md:mb-4">
+              <div class="text-4xl md:text-6xl font-black text-gradient mb-1 md:mb-4 stats-value">
                 {{ stat.value }}
               </div>
-              <div class="text-gray-700 dark:text-gray-300 font-semibold text-lg md:text-lg leading-loose md:leading-tight">
+              <div class="text-gray-700 dark:text-gray-300 font-semibold text-lg md:text-lg leading-loose md:leading-tight stats-label">
                 {{ getStatLabel(stat.labelKey) }}
               </div>
             </div>
@@ -50,14 +50,25 @@ import { inject } from '@angular/core';
       animation: scroll-stats 8s linear infinite;
     }
     
+    
+    .animate-scroll-stats:hover {
+      animation-play-state: paused;
+    }
+    
     @media (max-width: 767px) {
       .animate-scroll-stats {
         animation: scroll-stats 3s linear infinite;
       }
-    }
-    
-    .animate-scroll-stats:hover {
-      animation-play-state: paused;
+      
+      .stats-value {
+        font-size: 2rem !important;
+        line-height: 1.2 !important;
+      }
+      
+      .stats-label {
+        font-size: 0.875rem !important;
+        line-height: 1.4 !important;
+      }
     }
   `]
 })

@@ -34,10 +34,10 @@ import { TranslationService } from '../../services/translation.service';
               Enter exclusive house lotteries and get the chance to win amazing properties at a fraction of their market value.
             </p>
             <div class="flex flex-col sm:flex-row gap-6">
-              <button class="px-12 py-6 text-3xl md:text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg">
+              <button class="px-12 py-6 text-3xl md:text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button">
                 {{ translate('hero.browseLotteries') }}
               </button>
-              <button (click)="navigateToHowItWorks()" class="px-12 py-6 text-3xl md:text-lg font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg">
+              <button (click)="navigateToHowItWorks()" class="px-12 py-6 text-3xl md:text-lg font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button">
                 {{ translate('hero.howItWorks') }}
               </button>
             </div>
@@ -67,14 +67,19 @@ import { TranslationService } from '../../services/translation.service';
     
     @media (max-width: 767px) {
       .hero-title {
-        font-size: 5rem !important;
+        font-size: 2.5rem !important;
         line-height: 1.1;
       }
       
       .hero-subtitle {
-        font-size: 2.25rem !important;
-        line-height: 1.4;
-        font-weight: 700;
+        font-size: 1.125rem !important;
+        line-height: 1.5;
+      }
+      
+      .hero-button {
+        font-size: 1.5rem !important;
+        padding: 1rem 2rem !important;
+        min-height: 60px !important;
       }
     }
 

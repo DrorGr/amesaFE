@@ -12,15 +12,15 @@ import { TranslationService } from '../../services/translation.service';
     <section class="bg-white dark:bg-gray-900 py-8 pb-16 transition-colors duration-300" style="overflow: visible;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="overflow: visible;">
         <div class="text-center mb-8">
-          <h2 class="text-4xl md:text-4xl font-black text-gray-900 dark:text-white mb-6 text-balance">
+          <h2 class="text-4xl md:text-4xl font-black text-gray-900 dark:text-white mb-6 text-balance mobile-grid-title">
             {{ translate('houses.title') }}
           </h2>
-          <p class="text-xl md:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed text-balance">
+          <p class="text-xl md:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed text-balance mobile-grid-subtitle">
             {{ translate('houses.subtitle') }}
           </p>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; align-items: start; padding-bottom: 2rem; width: 100%;">
+        <div class="mobile-house-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; align-items: start; padding-bottom: 2rem; width: 100%;">
           @for (house of houses(); track house.id) {
             <div style="display: block; width: 100%; height: auto;">
               <app-house-card [house]="house"></app-house-card>
@@ -36,13 +36,41 @@ import { TranslationService } from '../../services/translation.service';
               </svg>
             </div>
             <h3 class="text-2xl font-bold text-gray-900 mb-3">No Active Lotteries</h3>
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">{{ translate('houses.noLotteries') }}</h3>
-            <p class="text-lg text-gray-600 dark:text-gray-300">{{ translate('houses.checkBack') }}</p>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3 mobile-empty-title">{{ translate('houses.noLotteries') }}</h3>
+            <p class="text-lg text-gray-600 dark:text-gray-300 mobile-empty-text">{{ translate('houses.checkBack') }}</p>
           </div>
         }
       </div>
     </section>
-  `
+  `,
+  styles: [`
+    @media (max-width: 767px) {
+      .mobile-grid-title {
+        font-size: 4rem !important;
+        line-height: 1.2 !important;
+      }
+      
+      .mobile-grid-subtitle {
+        font-size: 2rem !important;
+        line-height: 1.5 !important;
+      }
+      
+      .mobile-house-grid {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+      }
+      
+      .mobile-empty-title {
+        font-size: 3rem !important;
+        line-height: 1.3 !important;
+      }
+      
+      .mobile-empty-text {
+        font-size: 1.75rem !important;
+        line-height: 1.5 !important;
+      }
+    }
+  `]
 })
 export class HouseGridComponent {
   private lotteryService = inject(LotteryService);

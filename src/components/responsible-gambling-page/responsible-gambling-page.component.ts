@@ -53,10 +53,10 @@ interface SupportResource {
           <!-- Content -->
           <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div class="text-white max-w-4xl">
-              <h1 class="text-3xl md:text-5xl font-black mb-4 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
+              <h1 class="text-3xl md:text-5xl font-black mb-4 leading-tight mobile-hero-title" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
                 {{ translate('responsible.heroTitle') }}
               </h1>
-              <p class="text-lg md:text-xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <p class="text-lg md:text-xl leading-relaxed mobile-hero-subtitle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('responsible.heroSubtitle') }}
               </p>
             </div>
@@ -69,7 +69,7 @@ interface SupportResource {
         <!-- Introduction -->
         <section class="mb-16">
           <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 mobile-section-title">
               {{ translate('responsible.ourCommitment') }}
             </h2>
             <div class="w-24 h-1 bg-green-600 mx-auto rounded-full mb-6"></div>
@@ -82,7 +82,7 @@ interface SupportResource {
         <!-- Our Promise Section -->
         <section class="mb-20">
           <div class="text-center mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 mobile-section-title">
               {{ translate('responsible.ourPromise') }}
             </h2>
             <p class="text-gray-600 dark:text-gray-400">
@@ -90,18 +90,18 @@ interface SupportResource {
             </p>
           </div>
 
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mobile-grid">
             @for (promise of ourPromises(); track promise.title) {
-              <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-8">
+              <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-8 mobile-padding">
                 <div class="text-center">
                   <div class="w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center"
                        [class]="promise.color">
                     <span class="text-2xl">{{ promise.icon }}</span>
                   </div>
-                  <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 mobile-card-title">
                     {{ translate(promise.title) }}
                   </h3>
-                  <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <p class="text-gray-600 dark:text-gray-400 leading-relaxed mobile-card-text">
                     {{ translate(promise.description) }}
                   </p>
                 </div>
@@ -113,7 +113,7 @@ interface SupportResource {
         <!-- Tips for Responsible Gambling -->
         <section class="mb-20">
           <div class="text-center mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 mobile-section-title">
               {{ translate('responsible.tipsTitle') }}
             </h2>
             <p class="text-gray-600 dark:text-gray-400">
@@ -121,7 +121,7 @@ interface SupportResource {
             </p>
           </div>
 
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mobile-grid">
             @for (tip of responsibleGamblingTips(); track tip.title) {
               <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
                 <div class="flex items-start space-x-4">
@@ -129,10 +129,10 @@ interface SupportResource {
                     <span class="text-white text-xl">{{ tip.icon }}</span>
                   </div>
                   <div>
-                    <h3 class="text-lg font-bold text-blue-900 dark:text-blue-100 mb-2">
+                    <h3 class="text-lg font-bold text-blue-900 dark:text-blue-100 mb-2 mobile-card-title">
                       {{ translate(tip.title) }}
                     </h3>
-                    <p class="text-blue-700 dark:text-blue-300 leading-relaxed">
+                    <p class="text-blue-700 dark:text-blue-300 leading-relaxed mobile-card-text">
                       {{ translate(tip.description) }}
                     </p>
                   </div>
@@ -145,7 +145,7 @@ interface SupportResource {
         <!-- Why Choose Us Section -->
         <section class="mb-20">
           <div class="text-center mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 mobile-section-title">
               {{ translate('responsible.whyChooseUs') }}
             </h2>
             <p class="text-gray-600 dark:text-gray-400">
@@ -160,10 +160,10 @@ interface SupportResource {
                   <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
                     <span class="text-white text-2xl">{{ item.icon }}</span>
                   </div>
-                  <h3 class="text-xl font-bold text-green-900 dark:text-green-100 mb-4">
+                  <h3 class="text-xl font-bold text-green-900 dark:text-green-100 mb-4 mobile-card-title">
                     {{ translate(item.title) }}
                   </h3>
-                  <p class="text-green-700 dark:text-green-300 leading-relaxed">
+                  <p class="text-green-700 dark:text-green-300 leading-relaxed mobile-card-text">
                     {{ translate(item.description) }}
                   </p>
                 </div>
@@ -175,7 +175,7 @@ interface SupportResource {
         <!-- Need Help Section -->
         <section class="mb-16">
           <div class="text-center mb-12">
-            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 mobile-section-title">
               {{ translate('responsible.needHelp') }}
             </h2>
             <p class="text-gray-600 dark:text-gray-400">
@@ -185,12 +185,12 @@ interface SupportResource {
 
           <div class="grid md:grid-cols-3 gap-8">
             @for (resource of supportResources(); track resource.title) {
-              <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-8">
+              <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-8 mobile-padding">
                 <div class="text-center">
                   <div class="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
                     <span class="text-white text-2xl">{{ resource.icon }}</span>
                   </div>
-                  <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 mobile-card-title">
                     {{ translate(resource.title) }}
                   </h3>
                   <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
@@ -249,6 +249,48 @@ interface SupportResource {
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+    
+    @media (max-width: 767px) {
+      .mobile-hero-title {
+        font-size: 2rem !important;
+        line-height: 1.2 !important;
+      }
+      
+      .mobile-hero-subtitle {
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+      }
+      
+      .mobile-section-title {
+        font-size: 1.75rem !important;
+        line-height: 1.3 !important;
+      }
+      
+      .mobile-card-title {
+        font-size: 1.125rem !important;
+        line-height: 1.4 !important;
+      }
+      
+      .mobile-card-text {
+        font-size: 0.875rem !important;
+        line-height: 1.5 !important;
+      }
+      
+      .mobile-button {
+        font-size: 1rem !important;
+        padding: 0.75rem 1.5rem !important;
+        min-height: 44px !important;
+      }
+      
+      .mobile-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+      }
+      
+      .mobile-padding {
+        padding: 1rem !important;
+      }
+    }
   `]
 })
 export class ResponsibleGamblingPageComponent {
