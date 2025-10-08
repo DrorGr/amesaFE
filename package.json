@@ -1,5 +1,6 @@
-{
+﻿{
   "name": "amesa",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "ng": "ng",
@@ -42,15 +43,16 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular/build": "20.2.1",
+    "@angular-devkit/build-angular": "^20.2.1",
     "@angular/cli": "20.2.1",
     "@angular/compiler-cli": "20.2.1",
-    "@testing-library/angular": "^14.0.0",
-    "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/user-event": "^14.0.0",
-    "@types/jest": "^29.5.0",
-    "jest": "^29.5.0",
-    "jest-preset-angular": "^13.0.0",
+    "@types/jasmine": "~5.1.0",
+    "jasmine-core": "~5.1.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "5.9.2"
   }
 }
