@@ -87,13 +87,17 @@ jobs:
           name: dist-files
           path: dist/
 
+      - name: Clean and set AWS credentials
+        run: |
+          # Clean the credentials by removing any extra whitespace or newlines
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS }}" | tr -d '\n\r' >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.ENV }}" | tr -d '\n\r' >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=eu-north-1" >> $GITHUB_ENV
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-north-1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ENV }}
 
       - name: Deploy to AWS S3 (Dev)
         run: |
@@ -120,13 +124,17 @@ jobs:
           name: dist-files
           path: dist/
 
+      - name: Clean and set AWS credentials
+        run: |
+          # Clean the credentials by removing any extra whitespace or newlines
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS }}" | tr -d '\n\r' >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.ENV }}" | tr -d '\n\r' >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=eu-north-1" >> $GITHUB_ENV
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-north-1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ENV }}
 
       - name: Deploy to AWS S3 (Stage)
         run: |
@@ -153,13 +161,17 @@ jobs:
           name: dist-files
           path: dist/
 
+      - name: Clean and set AWS credentials
+        run: |
+          # Clean the credentials by removing any extra whitespace or newlines
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS }}" | tr -d '\n\r' >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.ENV }}" | tr -d '\n\r' >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=eu-north-1" >> $GITHUB_ENV
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-north-1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ENV }}
 
       - name: Deploy to AWS S3 (Production)
         run: |
