@@ -49,25 +49,25 @@ jobs:
         if: github.ref == 'refs/heads/dev'
         run: npm run build
         env:
-          API_URL: ${{ secrets.DEV_API_URL }}
-          BACKEND_URL: ${{ secrets.DEV_BACKEND_URL }}
-          FRONTEND_URL: ${{ secrets.DEV_FRONTEND_URL }}
+          API_URL: ${{ fromJson(secrets.ENV).DEV_API_URL }}
+          BACKEND_URL: ${{ fromJson(secrets.ENV).DEV_BACKEND_URL }}
+          FRONTEND_URL: ${{ fromJson(secrets.ENV).DEV_FRONTEND_URL }}
 
       - name: Build for staging
         if: github.ref == 'refs/heads/stage'
         run: npm run build:prod
         env:
-          API_URL: ${{ secrets.STAGE_API_URL }}
-          BACKEND_URL: ${{ secrets.STAGE_BACKEND_URL }}
-          FRONTEND_URL: ${{ secrets.STAGE_FRONTEND_URL }}
+          API_URL: ${{ fromJson(secrets.ENV).STAGE_API_URL }}
+          BACKEND_URL: ${{ fromJson(secrets.ENV).STAGE_BACKEND_URL }}
+          FRONTEND_URL: ${{ fromJson(secrets.ENV).STAGE_FRONTEND_URL }}
 
       - name: Build for production
         if: github.ref == 'refs/heads/main'
         run: npm run build:prod
         env:
-          API_URL: ${{ secrets.PROD_API_URL }}
-          BACKEND_URL: ${{ secrets.PROD_BACKEND_URL }}
-          FRONTEND_URL: ${{ secrets.PROD_FRONTEND_URL }}
+          API_URL: ${{ fromJson(secrets.ENV).PROD_API_URL }}
+          BACKEND_URL: ${{ fromJson(secrets.ENV).PROD_BACKEND_URL }}
+          FRONTEND_URL: ${{ fromJson(secrets.ENV).PROD_FRONTEND_URL }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -90,21 +90,21 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ fromJson(secrets.AWS).AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ fromJson(secrets.AWS).AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
       - name: Deploy to AWS S3 (Dev)
         run: |
-          echo "🚀 Deploying to S3 bucket: ${{ secrets.DEV_S3_BUCKET }}"
-          aws s3 sync dist/demo s3://${{ secrets.DEV_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
-          aws s3 cp dist/demo/index.html s3://${{ secrets.DEV_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "🚀 Deploying to S3 bucket: ${{ fromJson(secrets.ENV).DEV_S3_BUCKET }}"
+          aws s3 sync dist/demo s3://${{ fromJson(secrets.ENV).DEV_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/index.html s3://${{ fromJson(secrets.ENV).DEV_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
           echo "✅ Dev deployment completed!"
 
       - name: Invalidate CloudFront Cache (Dev)
         run: |
-          echo "🔄 Invalidating CloudFront: ${{ secrets.DEV_CLOUDFRONT_ID }}"
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.DEV_CLOUDFRONT_ID }} --paths "/*"
+          echo "🔄 Invalidating CloudFront: ${{ fromJson(secrets.ENV).DEV_CLOUDFRONT_ID }}"
+          aws cloudfront create-invalidation --distribution-id ${{ fromJson(secrets.ENV).DEV_CLOUDFRONT_ID }} --paths "/*"
           echo "✅ CloudFront cache invalidated!"
 
   deploy-stage:
@@ -122,21 +122,21 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ fromJson(secrets.AWS).AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ fromJson(secrets.AWS).AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
       - name: Deploy to AWS S3 (Stage)
         run: |
-          echo "🚀 Deploying to S3 bucket: ${{ secrets.STAGE_S3_BUCKET }}"
-          aws s3 sync dist/demo s3://${{ secrets.STAGE_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
-          aws s3 cp dist/demo/index.html s3://${{ secrets.STAGE_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "🚀 Deploying to S3 bucket: ${{ fromJson(secrets.ENV).STAGE_S3_BUCKET }}"
+          aws s3 sync dist/demo s3://${{ fromJson(secrets.ENV).STAGE_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/index.html s3://${{ fromJson(secrets.ENV).STAGE_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
           echo "✅ Stage deployment completed!"
 
       - name: Invalidate CloudFront Cache (Stage)
         run: |
-          echo "🔄 Invalidating CloudFront: ${{ secrets.STAGE_CLOUDFRONT_ID }}"
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGE_CLOUDFRONT_ID }} --paths "/*"
+          echo "🔄 Invalidating CloudFront: ${{ fromJson(secrets.ENV).STAGE_CLOUDFRONT_ID }}"
+          aws cloudfront create-invalidation --distribution-id ${{ fromJson(secrets.ENV).STAGE_CLOUDFRONT_ID }} --paths "/*"
           echo "✅ CloudFront cache invalidated!"
 
   deploy-prod:
@@ -154,19 +154,19 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ fromJson(secrets.AWS).AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ fromJson(secrets.AWS).AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
       - name: Deploy to AWS S3 (Production)
         run: |
-          echo "🚀 Deploying to S3 bucket: ${{ secrets.PROD_S3_BUCKET }}"
-          aws s3 sync dist/demo s3://${{ secrets.PROD_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
-          aws s3 cp dist/demo/index.html s3://${{ secrets.PROD_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "🚀 Deploying to S3 bucket: ${{ fromJson(secrets.ENV).PROD_S3_BUCKET }}"
+          aws s3 sync dist/demo s3://${{ fromJson(secrets.ENV).PROD_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/index.html s3://${{ fromJson(secrets.ENV).PROD_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
           echo "✅ Production deployment completed!"
 
       - name: Invalidate CloudFront Cache (Production)
         run: |
-          echo "🔄 Invalidating CloudFront: ${{ secrets.PROD_CLOUDFRONT_ID }}"
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} --paths "/*"
+          echo "🔄 Invalidating CloudFront: ${{ fromJson(secrets.ENV).PROD_CLOUDFRONT_ID }}"
+          aws cloudfront create-invalidation --distribution-id ${{ fromJson(secrets.ENV).PROD_CLOUDFRONT_ID }} --paths "/*"
           echo "✅ CloudFront cache invalidated!"
