@@ -84,11 +84,27 @@ jobs:
       - name: Build for development
         run: npm run build:dev
 
+      - name: Parse AWS credentials
+        id: aws-creds-dev
+        run: |
+          AWS_CREDS="${{ secrets.AWS }}"
+          if [[ "$AWS_CREDS" == *":"* ]]; then
+            # Format: ACCESS_KEY:SECRET_KEY
+            ACCESS_KEY=$(echo "$AWS_CREDS" | cut -d':' -f1)
+            SECRET_KEY=$(echo "$AWS_CREDS" | cut -d':' -f2)
+          else
+            # Assume it's just the access key, secret key in ENV secret
+            ACCESS_KEY="$AWS_CREDS"
+            SECRET_KEY="${{ secrets.ENV }}"
+          fi
+          echo "aws-access-key-id=$ACCESS_KEY" >> $GITHUB_OUTPUT
+          echo "aws-secret-access-key=$SECRET_KEY" >> $GITHUB_OUTPUT
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ steps.aws-creds-dev.outputs.aws-access-key-id }}
+          aws-secret-access-key: ${{ steps.aws-creds-dev.outputs.aws-secret-access-key }}
           aws-region: us-east-1
 
       - name: Deploy to AWS S3 (Dev)
@@ -127,11 +143,27 @@ jobs:
       - name: Build for staging
         run: npm run build:stage
 
+      - name: Parse AWS credentials
+        id: aws-creds-stage
+        run: |
+          AWS_CREDS="${{ secrets.AWS }}"
+          if [[ "$AWS_CREDS" == *":"* ]]; then
+            # Format: ACCESS_KEY:SECRET_KEY
+            ACCESS_KEY=$(echo "$AWS_CREDS" | cut -d':' -f1)
+            SECRET_KEY=$(echo "$AWS_CREDS" | cut -d':' -f2)
+          else
+            # Assume it's just the access key, secret key in ENV secret
+            ACCESS_KEY="$AWS_CREDS"
+            SECRET_KEY="${{ secrets.ENV }}"
+          fi
+          echo "aws-access-key-id=$ACCESS_KEY" >> $GITHUB_OUTPUT
+          echo "aws-secret-access-key=$SECRET_KEY" >> $GITHUB_OUTPUT
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ steps.aws-creds-stage.outputs.aws-access-key-id }}
+          aws-secret-access-key: ${{ steps.aws-creds-stage.outputs.aws-secret-access-key }}
           aws-region: us-east-1
 
       - name: Deploy to AWS S3 (Stage)
@@ -151,7 +183,7 @@ jobs:
     name: Deploy to Production
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
     environment:
       name: production
     steps:
@@ -170,11 +202,27 @@ jobs:
       - name: Build for production
         run: npm run build:prod
 
+      - name: Parse AWS credentials
+        id: aws-creds-prod
+        run: |
+          AWS_CREDS="${{ secrets.AWS }}"
+          if [[ "$AWS_CREDS" == *":"* ]]; then
+            # Format: ACCESS_KEY:SECRET_KEY
+            ACCESS_KEY=$(echo "$AWS_CREDS" | cut -d':' -f1)
+            SECRET_KEY=$(echo "$AWS_CREDS" | cut -d':' -f2)
+          else
+            # Assume it's just the access key, secret key in ENV secret
+            ACCESS_KEY="$AWS_CREDS"
+            SECRET_KEY="${{ secrets.ENV }}"
+          fi
+          echo "aws-access-key-id=$ACCESS_KEY" >> $GITHUB_OUTPUT
+          echo "aws-secret-access-key=$SECRET_KEY" >> $GITHUB_OUTPUT
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ steps.aws-creds-prod.outputs.aws-access-key-id }}
+          aws-secret-access-key: ${{ steps.aws-creds-prod.outputs.aws-secret-access-key }}
           aws-region: us-east-1
 
       - name: Deploy to AWS S3 (Production)
