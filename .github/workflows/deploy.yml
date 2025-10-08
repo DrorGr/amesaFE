@@ -1,0 +1,126 @@
+name: Build and Deploy Frontend
+
+on:
+  push:
+    branches: [main, dev, stage]
+  pull_request:
+    branches: [main, dev, stage]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test:ci
+
+      - name: Build for development
+        if: github.ref == 'refs/heads/dev'
+        run: npm run build
+        env:
+          API_URL: ${{ secrets.DEV_API_URL }}
+          BACKEND_URL: ${{ secrets.DEV_BACKEND_URL }}
+          FRONTEND_URL: ${{ secrets.DEV_FRONTEND_URL }}
+
+      - name: Build for staging
+        if: github.ref == 'refs/heads/stage'
+        run: npm run build:prod
+        env:
+          API_URL: ${{ secrets.STAGE_API_URL }}
+          BACKEND_URL: ${{ secrets.STAGE_BACKEND_URL }}
+          FRONTEND_URL: ${{ secrets.STAGE_FRONTEND_URL }}
+
+      - name: Build for production
+        if: github.ref == 'refs/heads/main'
+        run: npm run build:prod
+        env:
+          API_URL: ${{ secrets.PROD_API_URL }}
+          BACKEND_URL: ${{ secrets.PROD_BACKEND_URL }}
+          FRONTEND_URL: ${{ secrets.PROD_FRONTEND_URL }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-files
+          path: dist/
+
+  deploy-dev:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+          path: dist/
+
+      - name: Deploy to AWS S3 (Dev)
+        run: |
+          aws s3 sync dist/ s3://${{ secrets.DEV_S3_BUCKET }} --delete
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.DEV_CLOUDFRONT_ID }} --paths "/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+
+  deploy-stage:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/stage'
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+          path: dist/
+
+      - name: Deploy to AWS S3 (Stage)
+        run: |
+          aws s3 sync dist/ s3://${{ secrets.STAGE_S3_BUCKET }} --delete
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGE_CLOUDFRONT_ID }} --paths "/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+
+  deploy-prod:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+          path: dist/
+
+      - name: Deploy to AWS S3 (Production)
+        run: |
+          aws s3 sync dist/ s3://${{ secrets.PROD_S3_BUCKET }} --delete
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} --paths "/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
