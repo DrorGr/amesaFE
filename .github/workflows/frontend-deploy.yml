@@ -6,6 +6,16 @@ on:
   pull_request:
     branches: ["main", "dev", "stage"]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
 
 permissions:
   contents: read
@@ -55,7 +65,7 @@ jobs:
     name: Deploy to Development
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/dev' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'development')
     environment:
       name: development
     steps:
@@ -74,16 +84,31 @@ jobs:
       - name: Build for development
         run: npm run build:dev
 
-      - name: Deploy to development
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to AWS S3 (Dev)
         run: |
-          echo "Deploying to development environment..."
-          # Add your development deployment logic here
+          echo "🚀 Deploying to S3 bucket: amesa-frontend-dev"
+          aws s3 sync dist/demo/browser s3://amesa-frontend-dev --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/browser/index.html s3://amesa-frontend-dev/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "✅ Dev deployment completed!"
+
+      - name: Invalidate CloudFront Cache (Dev)
+        run: |
+          echo "🔄 Invalidating CloudFront cache for dev..."
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.DEV_CLOUDFRONT_ID }} --paths "/*"
+          echo "✅ Dev CloudFront cache invalidated!"
 
   deploy-stage:
     name: Deploy to Staging
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/stage'
+    if: github.ref == 'refs/heads/stage' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
     environment:
       name: staging
     steps:
@@ -102,16 +127,31 @@ jobs:
       - name: Build for staging
         run: npm run build:stage
 
-      - name: Deploy to staging
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to AWS S3 (Stage)
         run: |
-          echo "Deploying to staging environment..."
-          # Add your staging deployment logic here
+          echo "🚀 Deploying to S3 bucket: amesa-frontend-stage"
+          aws s3 sync dist/demo/browser s3://amesa-frontend-stage --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/browser/index.html s3://amesa-frontend-stage/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "✅ Stage deployment completed!"
+
+      - name: Invalidate CloudFront Cache (Stage)
+        run: |
+          echo "🔄 Invalidating CloudFront cache for stage..."
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGE_CLOUDFRONT_ID }} --paths "/*"
+          echo "✅ Stage CloudFront cache invalidated!"
 
   deploy-prod:
     name: Deploy to Production
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
     environment:
       name: production
     steps:
@@ -130,10 +170,25 @@ jobs:
       - name: Build for production
         run: npm run build:prod
 
-      - name: Deploy to production
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to AWS S3 (Production)
         run: |
-          echo "Deploying to production environment..."
-          # Add your production deployment logic here
+          echo "🚀 Deploying to S3 bucket: amesa-frontend-prod"
+          aws s3 sync dist/demo/browser s3://amesa-frontend-prod --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/browser/index.html s3://amesa-frontend-prod/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "✅ Production deployment completed!"
+
+      - name: Invalidate CloudFront Cache (Production)
+        run: |
+          echo "🔄 Invalidating CloudFront cache for production..."
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} --paths "/*"
+          echo "✅ Production CloudFront cache invalidated!"
 
   deploy-github-pages:
     name: Deploy to GitHub Pages
