@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 *, ::before, ::after {
   box-sizing: border-box;
@@ -33,58 +36,6 @@ body {
 
 html {
   scroll-behavior: smooth;
-}
-
-/* Accessibility improvements */
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .btn-primary {
-    @apply border-2 border-white;
-  }
-  
-  .btn-secondary {
-    @apply border-4 border-blue-600;
-  }
-}
-
-/* Focus styles for better accessibility */
-*:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-*:focus:not(:focus-visible) {
-  outline: none;
-}
-
-/* Skip link for screen readers */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 6px;
-  background: #000;
-  color: #fff;
-  padding: 8px;
-  text-decoration: none;
-  z-index: 1000;
-}
-
-.skip-link:focus {
-  top: 6px;
 }
 
 .btn-primary {
@@ -228,31 +179,63 @@ html {
 }
 
 
-/* Mobile-specific improvements */
-@media (max-width: 1200px) {
+@media (max-width: 767px) {
+  .md\:text-4xl {
+    font-size: 2rem;
+    line-height: 2.5rem;
+  }
+  
+  .md\:text-6xl {
+    font-size: 3rem;
+    line-height: 1;
+  }
+  
   .hero-title {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     line-height: 1.1;
   }
   
   .hero-subtitle {
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     line-height: 1.5;
   }
   
+  /* Mobile-specific improvements - REASONABLE SIZES */
+  .mobile-nav-button {
+    font-size: 1.5rem !important;
+    padding: 1rem 1.5rem !important;
+    min-height: 60px !important;
+  }
+  
+  .mobile-signin-button {
+    font-size: 1.25rem !important;
+    padding: 1rem 2rem !important;
+    min-height: 56px !important;
+    white-space: nowrap !important;
+  }
+  
+  .mobile-logo {
+    height: 40px !important;
+    width: auto !important;
+  }
+  
+  .mobile-controls {
+    transform: scale(1.2) !important;
+  }
+  
   .hero-button {
-    font-size: 1.75rem !important;
+    font-size: 1.5rem !important;
     padding: 1rem 2rem !important;
     min-height: 60px !important;
   }
   
   .stats-value {
-    font-size: 2.5rem !important;
+    font-size: 2rem !important;
     line-height: 1.2 !important;
   }
   
   .stats-label {
-    font-size: 1.125rem !important;
+    font-size: 0.875rem !important;
     line-height: 1.4 !important;
   }
   
@@ -275,7 +258,7 @@ html {
   }
   
   .mobile-footer-description {
-    font-size: 1.25rem !important;
+    font-size: 1rem !important;
     line-height: 1.6 !important;
     max-width: 100% !important;
   }
@@ -297,7 +280,7 @@ html {
   }
   
   .mobile-footer-links h4 {
-    font-size: 1.375rem !important;
+    font-size: 1.125rem !important;
     margin-bottom: 1rem !important;
   }
   
@@ -306,7 +289,7 @@ html {
   }
   
   .mobile-footer-links li {
-    font-size: 1.5rem !important;
+    font-size: 0.875rem !important;
   }
   
   .mobile-footer-links button,
@@ -315,327 +298,8 @@ html {
     min-height: 44px !important;
     display: flex !important;
     align-items: center !important;
-    font-size: 1.5rem !important;
-  }
-  
-  /* Additional footer mobile text sizes */
-  .mobile-footer-support-cause {
-    font-size: 1.5rem !important;
-    margin-bottom: 1rem !important;
-  }
-  
-  .mobile-footer-support-description {
-    font-size: 1.25rem !important;
-    line-height: 1.6 !important;
-  }
-  
-  .mobile-footer-section-heading {
-    font-size: 1.5rem !important;
-    margin-bottom: 1.5rem !important;
-  }
-  
-  .mobile-footer-link-text {
-    font-size: 1.5rem !important;
-    line-height: 1.5 !important;
-  }
-  
-  .mobile-footer-link-text button,
-  .mobile-footer-link-text a {
-    font-size: 1.5rem !important;
-  }
-  
-  .mobile-footer-copyright {
-    font-size: 1.125rem !important;
-  }
-  
-  /* Override Tailwind text-sm classes specifically for footer links */
-  .mobile-footer-links .text-sm {
-    font-size: 1.5rem !important;
-  }
-  
-  .mobile-footer-links .text-xs {
-    font-size: 1.25rem !important;
-  }
-  
-  /* House Carousel Mobile Improvements */
-  .mobile-carousel-image {
-    height: 20rem !important;
-    object-fit: cover !important;
-    object-position: center !important;
-  }
-  
-  .mobile-carousel-title {
-    font-size: 3rem !important;
-    line-height: 1.2 !important;
-    margin-bottom: 1rem !important;
-  }
-  
-  .mobile-carousel-description {
-    font-size: 1.5rem !important;
-    line-height: 1.6 !important;
-    margin-bottom: 1.5rem !important;
-  }
-  
-  .mobile-carousel-info {
-    font-size: 1.5rem !important;
-    padding: 1rem 0 !important;
-  }
-  
-  .mobile-carousel-info span {
-    font-size: 1.5rem !important;
-  }
-  
-  .mobile-carousel-button {
-    font-size: 2rem !important;
-    padding: 1.5rem 2rem !important;
-    min-height: 80px !important;
-  }
-  
-  .mobile-carousel-progress {
-    height: 1.25rem !important;
-    margin: 1rem 0 !important;
-  }
-  
-  .mobile-carousel-thumbnails {
-    gap: 0.75rem !important;
-  }
-  
-  .mobile-carousel-thumbnail {
-    width: 5rem !important;
-    height: 3rem !important;
-  }
-  
-  /* Override specific Tailwind classes in carousel */
-  .mobile-carousel-content .text-4xl {
-    font-size: 3rem !important;
-  }
-  
-  .mobile-carousel-content .text-xl {
-    font-size: 1.5rem !important;
-  }
-  
-  .mobile-carousel-content .text-base {
-    font-size: 1.5rem !important;
-  }
-  
-  .mobile-carousel-content .text-2xl {
-    font-size: 1.75rem !important;
-  }
-  
-  .mobile-carousel-content .text-sm {
-    font-size: 1.5rem !important;
-  }
-  
-  .mobile-carousel-content .h-4 {
-    height: 1.25rem !important;
-  }
-  
-  .mobile-carousel-content .h-3 {
-    height: 1.25rem !important;
-  }
-  
-  .mobile-carousel-content .py-6 {
-    padding-top: 1.5rem !important;
-    padding-bottom: 1.5rem !important;
-  }
-  
-  .mobile-carousel-content .py-4 {
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-  }
-  
-  .mobile-carousel-content .py-3 {
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-  }
-  
-  .mobile-carousel-content .py-2 {
-    padding-top: 0.75rem !important;
-    padding-bottom: 0.75rem !important;
-  }
-  
-  /* Even more specific targeting for carousel elements */
-  app-house-carousel .mobile-carousel-content h2 {
-    font-size: 3rem !important;
-    line-height: 1.2 !important;
-  }
-  
-  app-house-carousel .mobile-carousel-content p {
-    font-size: 1.5rem !important;
-    line-height: 1.6 !important;
-  }
-  
-  app-house-carousel .mobile-carousel-content .flex.justify-between {
-    font-size: 1.5rem !important;
-  }
-  
-  app-house-carousel .mobile-carousel-content .flex.justify-between span {
-    font-size: 1.5rem !important;
-  }
-  
-  app-house-carousel .mobile-carousel-content button {
-    font-size: 2rem !important;
-    padding: 1.5rem 2rem !important;
-    min-height: 80px !important;
-  }
-  
-  app-house-carousel .mobile-carousel-content img {
-    height: 20rem !important;
-    object-fit: cover !important;
-    object-position: center !important;
-  }
-  
-  /* Mobile bottom navigation dots - target the specific mobile navigation section */
-  app-house-carousel .flex.items-center.justify-between .flex.space-x-2 button {
-    width: 1rem !important;
-    height: 1rem !important;
-    min-width: 1rem !important;
-    min-height: 1rem !important;
-  }
-  
-  /* Override Tailwind w-3 h-3 classes for mobile bottom dots */
-  app-house-carousel .flex.items-center.justify-between .flex.space-x-2 button.w-3 {
-    width: 1rem !important;
-  }
-  
-  app-house-carousel .flex.items-center.justify-between .flex.space-x-2 button.h-3 {
-    height: 1rem !important;
-  }
-  
-  /* Mobile image navigation dots - under main image (always visible) */
-  app-house-carousel .flex.space-x-1.mt-1 button {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
-    min-width: 0.75rem !important;
-    min-height: 0.75rem !important;
-  }
-  
-  /* Override Tailwind w-2 h-2 classes for image dots */
-  app-house-carousel .flex.space-x-1.mt-1 button.w-2 {
-    width: 0.75rem !important;
-  }
-  
-  app-house-carousel .flex.space-x-1.mt-1 button.h-2 {
-    height: 0.75rem !important;
-  }
-  
-  /* Mobile thumbnails - target the mobile thumbnail section */
-  app-house-carousel .mobile-carousel-thumbnails .mobile-carousel-thumbnail {
-    width: 7.5rem !important;
-    height: 4.5rem !important;
-  }
-  
-  /* Override Tailwind thumbnail classes for mobile */
-  app-house-carousel .mobile-carousel-thumbnails .mobile-carousel-thumbnail.w-12 {
-    width: 7.5rem !important;
-  }
-  
-  app-house-carousel .mobile-carousel-thumbnails .mobile-carousel-thumbnail.h-8 {
-    height: 4.5rem !important;
-  }
-  
-  /* Mobile thumbnail images - make them bigger and more visible */
-  app-house-carousel .mobile-thumbnail-image {
-    width: 200% !important;
-    height: 200% !important;
-    object-fit: cover !important;
-    object-position: center !important;
-    border-radius: 0.375rem !important;
-    transform: scale(2) !important;
-    transform-origin: center !important;
-    position: relative !important;
-    z-index: 10 !important;
-    border: 5px solid red !important; /* TEST: Red border to verify CSS is working */
-  }
-  
-  /* Alternative targeting - direct img elements in mobile thumbnails */
-  app-house-carousel .mobile-carousel-thumbnails img {
-    width: 200% !important;
-    height: 200% !important;
-    object-fit: cover !important;
-    object-position: center !important;
-    border-radius: 0.375rem !important;
-    transform: scale(2) !important;
-    transform-origin: center !important;
-    position: relative !important;
-    z-index: 10 !important;
-    border: 5px solid green !important; /* TEST: Green border for alternative targeting */
-  }
-  
-  /* Even more specific targeting */
-  app-house-carousel .mobile-carousel-thumbnail img {
-    width: 200% !important;
-    height: 200% !important;
-    object-fit: cover !important;
-    object-position: center !important;
-    border-radius: 0.375rem !important;
-    transform: scale(2) !important;
-    transform-origin: center !important;
-    position: relative !important;
-    z-index: 10 !important;
-  }
-  
-  /* Mobile footer layout improvements */
-  .mobile-footer-links {
-    gap: 1rem !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-  }
-  
-  .mobile-footer-links > div {
-    margin-bottom: 1rem !important;
-  }
-  
-  .mobile-footer-links h4 {
-    font-size: 1.25rem !important;
-    margin-bottom: 0.75rem !important;
-  }
-  
-  .mobile-footer-links ul {
-    gap: 0.5rem !important;
-  }
-  
-  .mobile-footer-links li {
-    margin-bottom: 0.25rem !important;
-  }
-  
-  /* Make logo 4x bigger on mobile */
-  .mobile-footer-logo {
-    height: 9rem !important;
-    width: auto !important;
-  }
-  
-  /* Compact mobile footer header */
-  .mobile-footer-header {
-    flex-direction: column !important;
-    align-items: center !important;
-    text-align: center !important;
-    gap: 1rem !important;
-  }
-  
-  .mobile-footer-logo-section {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 1rem !important;
-  }
-  
-  .mobile-footer-description {
-    font-size: 1.5rem !important;
-    text-align: center !important;
-    max-width: 100% !important;
-  }
-  
-  .mobile-footer-social {
-    justify-content: center !important;
-  }
-  
-  /* Force 2-column layout on mobile */
-  .grid.grid-cols-2 {
-    grid-template-columns: 1fr 1fr !important;
-    display: grid !important;
   }
 }
-
 
 @media (min-width: 768px) {
   .hero-title {

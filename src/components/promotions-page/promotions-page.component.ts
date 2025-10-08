@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 
 @Component({
@@ -130,6 +131,7 @@ import { TranslationService } from '../../services/translation.service';
 })
 export class PromotionsPageComponent {
   private translationService = inject(TranslationService);
+  private router = inject(Router);
 
   translate(key: string): string {
     return this.translationService.translate(key);

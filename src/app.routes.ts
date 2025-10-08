@@ -48,14 +48,6 @@ export const routes: Routes = [
     loadComponent: () => import('./components/how-it-works-page/how-it-works-page.component').then(m => m.HowItWorksPageComponent)
   },
   {
-    path: 'lottery-results',
-    loadComponent: () => import('./components/lottery-results-page/lottery-results-page.component').then(m => m.LotteryResultsPageComponent)
-  },
-  {
-    path: 'lottery-result/:id',
-    loadComponent: () => import('./components/lottery-result-detail/lottery-result-detail.component').then(m => m.LotteryResultDetailComponent)
-  },
-  {
     path: '**',
     redirectTo: ''
   }
