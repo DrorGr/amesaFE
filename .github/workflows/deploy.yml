@@ -87,13 +87,19 @@ jobs:
           name: dist-files
           path: dist/
 
+      - name: Parse AWS credentials
+        run: |
+          # Parse the AWS secret to extract individual values
+          echo "AWS_ACCESS_KEY_ID=$(echo '${{ secrets.AWS }}' | grep 'AWS_ACCESS_KEY_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo '${{ secrets.AWS }}' | grep 'AWS_SECRET_ACCESS_KEY' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "DEV_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'DEV_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "STAGE_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'STAGE_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "PROD_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'PROD_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-north-1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ENV }}
 
       - name: Deploy to AWS S3 (Dev)
         run: |
@@ -104,8 +110,8 @@ jobs:
 
       - name: Invalidate CloudFront Cache (Dev)
         run: |
-          echo "🔄 Invalidating CloudFront: E2XBDFAUZJTI59"
-          aws cloudfront create-invalidation --distribution-id E2XBDFAUZJTI59 --paths "/*"
+          echo "🔄 Invalidating CloudFront: $DEV_CLOUDFRONT_ID"
+          aws cloudfront create-invalidation --distribution-id $DEV_CLOUDFRONT_ID --paths "/*"
           echo "✅ CloudFront cache invalidated!"
 
   deploy-stage:
@@ -120,13 +126,19 @@ jobs:
           name: dist-files
           path: dist/
 
+      - name: Parse AWS credentials
+        run: |
+          # Parse the AWS secret to extract individual values
+          echo "AWS_ACCESS_KEY_ID=$(echo '${{ secrets.AWS }}' | grep 'AWS_ACCESS_KEY_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo '${{ secrets.AWS }}' | grep 'AWS_SECRET_ACCESS_KEY' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "DEV_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'DEV_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "STAGE_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'STAGE_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "PROD_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'PROD_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-north-1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ENV }}
 
       - name: Deploy to AWS S3 (Stage)
         run: |
@@ -137,8 +149,8 @@ jobs:
 
       - name: Invalidate CloudFront Cache (Stage)
         run: |
-          echo "🔄 Invalidating CloudFront: E1D7XQHFF1469W"
-          aws cloudfront create-invalidation --distribution-id E1D7XQHFF1469W --paths "/*"
+          echo "🔄 Invalidating CloudFront: $STAGE_CLOUDFRONT_ID"
+          aws cloudfront create-invalidation --distribution-id $STAGE_CLOUDFRONT_ID --paths "/*"
           echo "✅ CloudFront cache invalidated!"
 
   deploy-prod:
@@ -153,13 +165,19 @@ jobs:
           name: dist-files
           path: dist/
 
+      - name: Parse AWS credentials
+        run: |
+          # Parse the AWS secret to extract individual values
+          echo "AWS_ACCESS_KEY_ID=$(echo '${{ secrets.AWS }}' | grep 'AWS_ACCESS_KEY_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo '${{ secrets.AWS }}' | grep 'AWS_SECRET_ACCESS_KEY' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "DEV_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'DEV_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "STAGE_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'STAGE_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "PROD_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'PROD_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-north-1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ENV }}
 
       - name: Deploy to AWS S3 (Production)
         run: |
@@ -170,6 +188,6 @@ jobs:
 
       - name: Invalidate CloudFront Cache (Production)
         run: |
-          echo "🔄 Invalidating CloudFront: d3bkt41uo2lxir"
-          aws cloudfront create-invalidation --distribution-id d3bkt41uo2lxir --paths "/*"
+          echo "🔄 Invalidating CloudFront: $PROD_CLOUDFRONT_ID"
+          aws cloudfront create-invalidation --distribution-id $PROD_CLOUDFRONT_ID --paths "/*"
           echo "✅ CloudFront cache invalidated!"
