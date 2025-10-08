@@ -2,9 +2,9 @@ name: Build and Deploy Frontend
 
 on:
   push:
-    branches: ["main", "dev", "stage"]
+    branches: [dev, stage]
   pull_request:
-    branches: ["main", "dev", "stage"]
+    branches: [main, dev, stage]
   workflow_dispatch:
     inputs:
       environment:
@@ -13,32 +13,26 @@ on:
         default: 'production'
         type: choice
         options:
-          - development
-          - staging
-          - production
+        - production
+        - staging
+        - development
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "frontend-deploy"
-  cancel-in-progress: false
+env:
+  NODE_VERSION: '20'
 
 jobs:
   build:
-    name: Build and Test
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -51,45 +45,61 @@ jobs:
         run: npm run test:ci
         continue-on-error: true
 
-      - name: Build Angular
+      - name: Build for development
+        if: github.ref == 'refs/heads/dev'
+        run: npm run build
+        env:
+          API_URL: http://localhost:5000
+          BACKEND_URL: http://localhost:5000
+          FRONTEND_URL: http://localhost:4200
+
+      - name: Build for staging
+        if: github.ref == 'refs/heads/stage'
         run: npm run build:prod
+        env:
+          API_URL: https://stage-api.amesa.com
+          BACKEND_URL: https://stage-api.amesa.com
+          FRONTEND_URL: https://stage.amesa.com
+
+      - name: Build for production
+        if: github.ref == 'refs/heads/main'
+        run: npm run build:prod
+        env:
+          API_URL: https://api.amesa.com
+          BACKEND_URL: https://api.amesa.com
+          FRONTEND_URL: https://amesa.com
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist-files
           path: dist/
-          retention-days: 1
 
   deploy-dev:
-    name: Deploy to Development
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'development')
-    environment:
-      name: development
+    if: github.ref == 'refs/heads/dev'
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
         with:
-          node-version: 20
-          cache: npm
+          name: dist-files
+          path: dist/
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Parse AWS credentials
+        run: |
+          # Parse the AWS secret to extract individual values
+          echo "AWS_ACCESS_KEY_ID=$(echo '${{ secrets.AWS }}' | grep 'AWS_ACCESS_KEY_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo '${{ secrets.AWS }}' | grep 'AWS_SECRET_ACCESS_KEY' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "DEV_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'DEV_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "STAGE_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'STAGE_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "PROD_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'PROD_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
 
-      - name: Build for development
-        run: npm run build:dev
-
-      - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: eu-north-1
 
       - name: Deploy to AWS S3 (Dev)
         run: |
@@ -100,39 +110,35 @@ jobs:
 
       - name: Invalidate CloudFront Cache (Dev)
         run: |
-          echo "🔄 Invalidating CloudFront cache for dev..."
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.DEV_CLOUDFRONT_ID }} --paths "/*"
-          echo "✅ Dev CloudFront cache invalidated!"
+          echo "🔄 Invalidating CloudFront: $DEV_CLOUDFRONT_ID"
+          aws cloudfront create-invalidation --distribution-id $DEV_CLOUDFRONT_ID --paths "/*"
+          echo "✅ CloudFront cache invalidated!"
 
   deploy-stage:
-    name: Deploy to Staging
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/stage' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
-    environment:
-      name: staging
+    if: github.ref == 'refs/heads/stage'
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
         with:
-          node-version: 20
-          cache: npm
+          name: dist-files
+          path: dist/
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Parse AWS credentials
+        run: |
+          # Parse the AWS secret to extract individual values
+          echo "AWS_ACCESS_KEY_ID=$(echo '${{ secrets.AWS }}' | grep 'AWS_ACCESS_KEY_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo '${{ secrets.AWS }}' | grep 'AWS_SECRET_ACCESS_KEY' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "DEV_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'DEV_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "STAGE_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'STAGE_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "PROD_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'PROD_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
 
-      - name: Build for staging
-        run: npm run build:stage
-
-      - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: eu-north-1
 
       - name: Deploy to AWS S3 (Stage)
         run: |
@@ -143,39 +149,35 @@ jobs:
 
       - name: Invalidate CloudFront Cache (Stage)
         run: |
-          echo "🔄 Invalidating CloudFront cache for stage..."
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGE_CLOUDFRONT_ID }} --paths "/*"
-          echo "✅ Stage CloudFront cache invalidated!"
+          echo "🔄 Invalidating CloudFront: $STAGE_CLOUDFRONT_ID"
+          aws cloudfront create-invalidation --distribution-id $STAGE_CLOUDFRONT_ID --paths "/*"
+          echo "✅ CloudFront cache invalidated!"
 
   deploy-prod:
-    name: Deploy to Production
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
-    environment:
-      name: production
+    if: github.ref == 'refs/heads/main'
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
         with:
-          node-version: 20
-          cache: npm
+          name: dist-files
+          path: dist/
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Parse AWS credentials
+        run: |
+          # Parse the AWS secret to extract individual values
+          echo "AWS_ACCESS_KEY_ID=$(echo '${{ secrets.AWS }}' | grep 'AWS_ACCESS_KEY_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo '${{ secrets.AWS }}' | grep 'AWS_SECRET_ACCESS_KEY' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "DEV_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'DEV_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "STAGE_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'STAGE_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "PROD_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'PROD_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
 
-      - name: Build for production
-        run: npm run build:prod
-
-      - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: eu-north-1
 
       - name: Deploy to AWS S3 (Production)
         run: |
@@ -186,48 +188,6 @@ jobs:
 
       - name: Invalidate CloudFront Cache (Production)
         run: |
-          echo "🔄 Invalidating CloudFront cache for production..."
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} --paths "/*"
-          echo "✅ Production CloudFront cache invalidated!"
-
-  deploy-github-pages:
-    name: Deploy to GitHub Pages
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-files
-          path: dist/
-
-      # Resolve the actual dist folder (handles both classic and /browser layout)
-      - name: Resolve dist path
-        id: dist
-        shell: bash
-        run: |
-          DIST_DIR="dist"
-          if [ -d "${DIST_DIR}/demo/browser" ]; then
-            DIST_DIR="${DIST_DIR}/demo/browser"
-          elif [ -d "${DIST_DIR}/demo" ]; then
-            DIST_DIR="${DIST_DIR}/demo"
-          fi
-          echo "dist_dir=${DIST_DIR}" >> "$GITHUB_OUTPUT"
-          echo "Resolved dist: ${DIST_DIR}"
-          ls -la "${DIST_DIR}"
-
-      - name: Add .nojekyll
-        run: touch "${{ steps.dist.outputs.dist_dir }}/.nojekyll"
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ${{ steps.dist.outputs.dist_dir }}
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          echo "🔄 Invalidating CloudFront: $PROD_CLOUDFRONT_ID"
+          aws cloudfront create-invalidation --distribution-id $PROD_CLOUDFRONT_ID --paths "/*"
+          echo "✅ CloudFront cache invalidated!"
