@@ -105,7 +105,7 @@ jobs:
         run: |
           echo "🚀 Deploying to S3 bucket: amesa-frontend-dev"
           aws s3 sync dist/demo s3://amesa-frontend-dev --delete --cache-control "public, max-age=31536000"
-          aws s3 cp dist/demo/index.html s3://amesa-frontend-dev/index.html --cache-control "no-cache, no-store, must-revalidate"
+          aws s3 cp dist/demo/browser/index.html s3://amesa-frontend-dev/index.html --cache-control "no-cache, no-store, must-revalidate"
           echo "✅ Dev deployment completed!"
 
       - name: Invalidate CloudFront Cache (Dev)
