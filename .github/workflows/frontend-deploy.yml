@@ -6,6 +6,16 @@ on:
   pull_request:
     branches: ["main", "dev", "stage"]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
 
 permissions:
   contents: read
@@ -55,7 +65,9 @@ jobs:
     name: Deploy to Development
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/dev' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'development')
+    environment:
+      name: development
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -86,11 +98,19 @@ jobs:
           aws s3 cp dist/demo/browser/index.html s3://amesa-frontend-dev/index.html --cache-control "no-cache, no-store, must-revalidate"
           echo "✅ Dev deployment completed!"
 
+      - name: Invalidate CloudFront Cache (Dev)
+        run: |
+          echo "🔄 Invalidating CloudFront cache for dev..."
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.DEV_CLOUDFRONT_ID }} --paths "/*"
+          echo "✅ Dev CloudFront cache invalidated!"
+
   deploy-stage:
     name: Deploy to Staging
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/stage'
+    if: github.ref == 'refs/heads/stage' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment:
+      name: staging
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -124,14 +144,16 @@ jobs:
       - name: Invalidate CloudFront Cache (Stage)
         run: |
           echo "🔄 Invalidating CloudFront cache for stage..."
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_STAGE_DISTRIBUTION_ID }} --paths "/*"
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGE_CLOUDFRONT_ID }} --paths "/*"
           echo "✅ Stage CloudFront cache invalidated!"
 
   deploy-prod:
     name: Deploy to Production
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -165,7 +187,7 @@ jobs:
       - name: Invalidate CloudFront Cache (Production)
         run: |
           echo "🔄 Invalidating CloudFront cache for production..."
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_PROD_DISTRIBUTION_ID }} --paths "/*"
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} --paths "/*"
           echo "✅ Production CloudFront cache invalidated!"
 
   deploy-github-pages:
