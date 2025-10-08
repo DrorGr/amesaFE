@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
-// Test deployment - CI/CD pipeline test - CloudFront distributions created!
+// Test deployment - CI/CD pipeline test - GitHub Secrets configured!
 import { TopbarComponent } from './components/topbar/topbar.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
