@@ -30,3 +30,21 @@ export interface LotteryTicket {
   purchaseDate: Date;
   ticketNumber: string;
 }
+
+export interface UserDto {
+  id: string;
+  username: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  isEmailVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UpdateUserProfileRequest {
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
