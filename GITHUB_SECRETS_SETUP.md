@@ -1,10 +1,10 @@
 # 🔐 GitHub Secrets Setup Guide for Amesa Frontend
 
-This guide shows you how to configure GitHub Secrets for automatic deployment to AWS.
+This guide shows you how to configure GitHub Secrets for automatic deployment to AWS S3 + CloudFront.
 
 ## 📋 Required GitHub Secrets
 
-### **AWS Credentials (Required for both Frontend and Backend)**
+### **AWS Credentials (Required for all deployments)**
 ```
 AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
@@ -12,30 +12,30 @@ AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 
 ### **Environment-Specific Frontend Secrets**
 
-#### **Development Environment**
+#### **Development Environment (Automatic deployment on dev branch push)**
 ```
-DEV_API_URL=http://localhost:5000
-DEV_BACKEND_URL=http://localhost:5000
-DEV_FRONTEND_URL=http://localhost:4200
-DEV_S3_BUCKET=amesa-frontend-dev-bucket
+DEV_API_URL=https://dev-api.amesa.com
+DEV_BACKEND_URL=https://dev-api.amesa.com
+DEV_FRONTEND_URL=https://dev.amesa.com
+DEV_S3_BUCKET=amesa-frontend-dev
 DEV_CLOUDFRONT_ID=your-dev-cloudfront-distribution-id
 ```
 
-#### **Staging Environment**
+#### **Staging Environment (Automatic deployment on stage branch push)**
 ```
 STAGE_API_URL=https://stage-api.amesa.com
 STAGE_BACKEND_URL=https://stage-api.amesa.com
 STAGE_FRONTEND_URL=https://stage.amesa.com
-STAGE_S3_BUCKET=amesa-frontend-stage-bucket
+STAGE_S3_BUCKET=amesa-frontend-stage
 STAGE_CLOUDFRONT_ID=your-stage-cloudfront-distribution-id
 ```
 
-#### **Production Environment**
+#### **Production Environment (Manual deployment only)**
 ```
 PROD_API_URL=https://api.amesa.com
 PROD_BACKEND_URL=https://api.amesa.com
 PROD_FRONTEND_URL=https://amesa.com
-PROD_S3_BUCKET=amesa-frontend-prod-bucket
+PROD_S3_BUCKET=amesa-frontend-prod
 PROD_CLOUDFRONT_ID=your-prod-cloudfront-distribution-id
 ```
 
@@ -78,14 +78,28 @@ gh secret set PROD_CLOUDFRONT_ID --repo DrorGr/amesaFE
 
 ## 🔧 AWS Setup Requirements
 
-### **S3 Buckets**
+### **S3 Buckets (Static Website Hosting)**
 Create three S3 buckets for static website hosting:
-- `amesa-frontend-dev-bucket`
-- `amesa-frontend-stage-bucket`
-- `amesa-frontend-prod-bucket`
+- `amesa-frontend-dev` - Development environment
+- `amesa-frontend-stage` - Staging environment  
+- `amesa-frontend-prod` - Production environment
+
+**S3 Configuration for each bucket:**
+1. Enable static website hosting
+2. Set index document: `index.html`
+3. Set error document: `index.html` (for Angular routing)
+4. Set bucket policy for public read access
 
 ### **CloudFront Distributions**
-Create CloudFront distributions for each environment pointing to the respective S3 buckets.
+Create CloudFront distributions for each environment:
+- **Dev Distribution**: Points to `amesa-frontend-dev` S3 bucket
+- **Stage Distribution**: Points to `amesa-frontend-stage` S3 bucket
+- **Prod Distribution**: Points to `amesa-frontend-prod` S3 bucket
+
+**CloudFront Configuration:**
+- Origin: S3 bucket website endpoint
+- Default root object: `index.html`
+- Error pages: 404 → 200 → `/index.html` (for Angular routing)
 
 ### **IAM Permissions**
 Your AWS user/role needs these permissions:
@@ -99,17 +113,25 @@ Your AWS user/role needs these permissions:
         "s3:GetObject",
         "s3:PutObject",
         "s3:DeleteObject",
-        "s3:ListBucket"
+        "s3:ListBucket",
+        "s3:GetBucketWebsite",
+        "s3:PutBucketWebsite"
       ],
       "Resource": [
-        "arn:aws:s3:::amesa-frontend-*",
-        "arn:aws:s3:::amesa-frontend-*/*"
+        "arn:aws:s3:::amesa-frontend-dev",
+        "arn:aws:s3:::amesa-frontend-dev/*",
+        "arn:aws:s3:::amesa-frontend-stage",
+        "arn:aws:s3:::amesa-frontend-stage/*",
+        "arn:aws:s3:::amesa-frontend-prod",
+        "arn:aws:s3:::amesa-frontend-prod/*"
       ]
     },
     {
       "Effect": "Allow",
       "Action": [
-        "cloudfront:CreateInvalidation"
+        "cloudfront:CreateInvalidation",
+        "cloudfront:GetInvalidation",
+        "cloudfront:ListInvalidations"
       ],
       "Resource": "*"
     }
@@ -121,9 +143,19 @@ Your AWS user/role needs these permissions:
 
 After setting up all secrets:
 
-1. **Test the workflow**: Make a small change and push to the `dev` branch
-2. **Check the Actions tab**: Verify the workflow runs successfully
-3. **Verify deployment**: Check that your S3 bucket and CloudFront are updated
+1. **Test dev deployment**: Make a small change and push to the `dev` branch
+   - Check GitHub Actions tab for successful workflow
+   - Verify files are uploaded to S3 dev bucket
+   - Check CloudFront dev distribution is updated
+   - Visit your dev CloudFront URL to see the changes
+
+2. **Test stage deployment**: Push to the `stage` branch
+   - Same verification steps as dev
+   - Check stage CloudFront URL
+
+3. **Test production deployment**: Use manual workflow dispatch
+   - Go to Actions → Run workflow → Select production
+   - Verify production S3 bucket and CloudFront
 
 ## 🚨 Security Notes
 

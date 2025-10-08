@@ -17,9 +17,9 @@
 │                    YOUR DEPLOYMENT FLOW                    │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  Push to dev → GitHub Pages (Free) ✅                      │
+│  Push to dev → AWS S3/CloudFront (Dev) ✅                 │
 │      ↓                                                      │
-│  Push to stage → GitHub Pages (Free) ✅                    │
+│  Push to stage → AWS S3/CloudFront (Stage) ✅             │
 │      ↓                                                      │
 │  Manual Trigger → AWS S3/CloudFront (Production) ✅       │
 │                                                             │
@@ -30,10 +30,11 @@
 
 ### **✅ Frontend Repository (amesaFE)**
 - **GitHub Actions workflow** with multi-environment support
-- **Dev/Stage branches** → Automatic deployment to GitHub Pages
+- **Dev/Stage branches** → Automatic deployment to AWS S3/CloudFront
 - **Main branch** → Manual deployment to AWS S3/CloudFront
 - **Environment configurations** for all deployment targets
 - **Complete documentation** and setup guides
+- **S3 bucket creation script** for easy setup
 
 ### **✅ Backend Repository (amesaBE)**
 - **GitHub Actions workflow** with Docker/ECS integration
@@ -59,10 +60,10 @@
 
 ## 💰 **Cost Optimization - ACHIEVED**
 
-- ✅ **Free development** - GitHub Pages for dev/stage (saves $50+/month)
-- ✅ **Professional production** - AWS S3/CloudFront for production
-- ✅ **Efficient resource usage** - Only production uses AWS resources
-- ✅ **Automatic scaling** - ECS handles traffic spikes
+- ✅ **Very low cost** - S3 static hosting ~$1-3/month for all environments
+- ✅ **Professional hosting** - AWS S3/CloudFront for all environments
+- ✅ **Efficient resource usage** - Optimized for static content
+- ✅ **Automatic scaling** - CloudFront handles global traffic
 
 ## 🎮 **How to Use Your New System**
 
@@ -74,7 +75,7 @@ git checkout dev
 git add .
 git commit -m "New feature"
 git push origin dev
-# ✅ Automatically deploys to GitHub Pages!
+# ✅ Automatically deploys to AWS S3/CloudFront!
 ```
 
 ### **Staging Workflow**
@@ -83,7 +84,7 @@ git push origin dev
 git checkout stage
 git merge dev
 git push origin stage
-# ✅ Automatically deploys to GitHub Pages!
+# ✅ Automatically deploys to AWS S3/CloudFront!
 ```
 
 ### **Production Deployment**
@@ -153,9 +154,9 @@ You now have a **professional, enterprise-grade deployment system** with:
 ## 🚀 **Your System is Live and Ready!**
 
 **Frontend URLs:**
-- Dev: `https://drorgr.github.io/amesaFE/dev/` (after first dev push)
-- Stage: `https://drorgr.github.io/amesaFE/stage/` (after first stage push)
-- Production: `https://amesa.com` (after manual deployment)
+- Dev: `https://dev.amesa.com` (CloudFront distribution)
+- Stage: `https://stage.amesa.com` (CloudFront distribution)
+- Production: `https://amesa.com` (CloudFront distribution)
 
 **Backend:**
 - All environments configured for ECS deployment

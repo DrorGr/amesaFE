@@ -92,13 +92,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
-      - name: Deploy to GitHub Pages (Dev)
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/demo
-          destination_dir: dev
-          keep_files: false
+      - name: Deploy to AWS S3 (Dev)
+        run: |
+          echo "🚀 Deploying to S3 bucket: ${{ secrets.DEV_S3_BUCKET }}"
+          aws s3 sync dist/demo s3://${{ secrets.DEV_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/index.html s3://${{ secrets.DEV_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "✅ Dev deployment completed!"
+
+      - name: Invalidate CloudFront Cache (Dev)
+        run: |
+          echo "🔄 Invalidating CloudFront: ${{ secrets.DEV_CLOUDFRONT_ID }}"
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.DEV_CLOUDFRONT_ID }} --paths "/*"
+          echo "✅ CloudFront cache invalidated!"
 
   deploy-stage:
     needs: build
@@ -119,13 +124,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
-      - name: Deploy to GitHub Pages (Stage)
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/demo
-          destination_dir: stage
-          keep_files: false
+      - name: Deploy to AWS S3 (Stage)
+        run: |
+          echo "🚀 Deploying to S3 bucket: ${{ secrets.STAGE_S3_BUCKET }}"
+          aws s3 sync dist/demo s3://${{ secrets.STAGE_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/index.html s3://${{ secrets.STAGE_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "✅ Stage deployment completed!"
+
+      - name: Invalidate CloudFront Cache (Stage)
+        run: |
+          echo "🔄 Invalidating CloudFront: ${{ secrets.STAGE_CLOUDFRONT_ID }}"
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGE_CLOUDFRONT_ID }} --paths "/*"
+          echo "✅ CloudFront cache invalidated!"
 
   deploy-prod:
     needs: build
