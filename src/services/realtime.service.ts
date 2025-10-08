@@ -76,7 +76,7 @@ export class RealtimeService {
           }
         })
         .withAutomaticReconnect({
-          nextRetryDelayInMilliseconds: retryContext => {
+          nextRetryDelayInMilliseconds: (retryContext: any) => {
             if (retryContext.previousRetryCount < 3) {
               return 2000; // 2 seconds
             } else if (retryContext.previousRetryCount < 10) {
@@ -120,19 +120,19 @@ export class RealtimeService {
     if (!this.connection) return;
 
     // Connection state changes
-    this.connection.onclose((error) => {
+    this.connection.onclose((error: any) => {
       console.log('SignalR connection closed:', error);
       this.connectionState.set(HubConnectionState.Disconnected);
       this.isConnected.set(false);
     });
 
-    this.connection.onreconnecting((error) => {
+    this.connection.onreconnecting((error: any) => {
       console.log('SignalR reconnecting:', error);
       this.connectionState.set(HubConnectionState.Reconnecting);
       this.isConnected.set(false);
     });
 
-    this.connection.onreconnected((connectionId) => {
+    this.connection.onreconnected((connectionId: any) => {
       console.log('SignalR reconnected:', connectionId);
       this.connectionState.set(HubConnectionState.Connected);
       this.isConnected.set(true);
