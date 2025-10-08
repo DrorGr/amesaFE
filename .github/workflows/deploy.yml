@@ -74,14 +74,25 @@ jobs:
           name: dist-files
           path: dist/
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
       - name: Deploy to AWS S3 (Dev)
         run: |
-          aws s3 sync dist/ s3://${{ secrets.DEV_S3_BUCKET }} --delete
+          echo "🚀 Deploying to S3 bucket: ${{ secrets.DEV_S3_BUCKET }}"
+          aws s3 sync dist/demo s3://${{ secrets.DEV_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/index.html s3://${{ secrets.DEV_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "✅ Dev deployment completed!"
+
+      - name: Invalidate CloudFront Cache (Dev)
+        run: |
+          echo "🔄 Invalidating CloudFront: ${{ secrets.DEV_CLOUDFRONT_ID }}"
           aws cloudfront create-invalidation --distribution-id ${{ secrets.DEV_CLOUDFRONT_ID }} --paths "/*"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
+          echo "✅ CloudFront cache invalidated!"
 
   deploy-stage:
     needs: build
@@ -95,14 +106,25 @@ jobs:
           name: dist-files
           path: dist/
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
       - name: Deploy to AWS S3 (Stage)
         run: |
-          aws s3 sync dist/ s3://${{ secrets.STAGE_S3_BUCKET }} --delete
+          echo "🚀 Deploying to S3 bucket: ${{ secrets.STAGE_S3_BUCKET }}"
+          aws s3 sync dist/demo s3://${{ secrets.STAGE_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/index.html s3://${{ secrets.STAGE_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "✅ Stage deployment completed!"
+
+      - name: Invalidate CloudFront Cache (Stage)
+        run: |
+          echo "🔄 Invalidating CloudFront: ${{ secrets.STAGE_CLOUDFRONT_ID }}"
           aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGE_CLOUDFRONT_ID }} --paths "/*"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
+          echo "✅ CloudFront cache invalidated!"
 
   deploy-prod:
     needs: build
@@ -116,11 +138,22 @@ jobs:
           name: dist-files
           path: dist/
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
       - name: Deploy to AWS S3 (Production)
         run: |
-          aws s3 sync dist/ s3://${{ secrets.PROD_S3_BUCKET }} --delete
+          echo "🚀 Deploying to S3 bucket: ${{ secrets.PROD_S3_BUCKET }}"
+          aws s3 sync dist/demo s3://${{ secrets.PROD_S3_BUCKET }} --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/index.html s3://${{ secrets.PROD_S3_BUCKET }}/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "✅ Production deployment completed!"
+
+      - name: Invalidate CloudFront Cache (Production)
+        run: |
+          echo "🔄 Invalidating CloudFront: ${{ secrets.PROD_CLOUDFRONT_ID }}"
           aws cloudfront create-invalidation --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} --paths "/*"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
+          echo "✅ CloudFront cache invalidated!"
