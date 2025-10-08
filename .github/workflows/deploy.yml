@@ -104,7 +104,7 @@ jobs:
       - name: Deploy to AWS S3 (Dev)
         run: |
           echo "🚀 Deploying to S3 bucket: amesa-frontend-dev"
-          aws s3 sync dist/demo s3://amesa-frontend-dev --delete --cache-control "public, max-age=31536000"
+          aws s3 sync dist/demo/browser s3://amesa-frontend-dev --delete --cache-control "public, max-age=31536000"
           aws s3 cp dist/demo/browser/index.html s3://amesa-frontend-dev/index.html --cache-control "no-cache, no-store, must-revalidate"
           echo "✅ Dev deployment completed!"
 
@@ -143,8 +143,8 @@ jobs:
       - name: Deploy to AWS S3 (Stage)
         run: |
           echo "🚀 Deploying to S3 bucket: amesa-frontend-stage"
-          aws s3 sync dist/demo s3://amesa-frontend-stage --delete --cache-control "public, max-age=31536000"
-          aws s3 cp dist/demo/index.html s3://amesa-frontend-stage/index.html --cache-control "no-cache, no-store, must-revalidate"
+          aws s3 sync dist/demo/browser s3://amesa-frontend-stage --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/browser/index.html s3://amesa-frontend-stage/index.html --cache-control "no-cache, no-store, must-revalidate"
           echo "✅ Stage deployment completed!"
 
       - name: Invalidate CloudFront Cache (Stage)
@@ -156,7 +156,7 @@ jobs:
   deploy-prod:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
+    if: github.ref == 'refs/heads/main'
     
     steps:
       - name: Download build artifacts
@@ -182,8 +182,8 @@ jobs:
       - name: Deploy to AWS S3 (Production)
         run: |
           echo "🚀 Deploying to S3 bucket: amesa-frontend-prod"
-          aws s3 sync dist/demo s3://amesa-frontend-prod --delete --cache-control "public, max-age=31536000"
-          aws s3 cp dist/demo/index.html s3://amesa-frontend-prod/index.html --cache-control "no-cache, no-store, must-revalidate"
+          aws s3 sync dist/demo/browser s3://amesa-frontend-prod --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/browser/index.html s3://amesa-frontend-prod/index.html --cache-control "no-cache, no-store, must-revalidate"
           echo "✅ Production deployment completed!"
 
       - name: Invalidate CloudFront Cache (Production)
