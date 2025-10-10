@@ -5,7 +5,7 @@
 - **Business Model**: Property lotteries with 4Wins Model (community support)
 - **Repositories**: AmesaFE, AmesaBE, AmesaDevOps
 - **Current Repo**: AmesaFE (Frontend)
-- **Current Branch**: Testing
+- **Current Branch**: dev (synced with stage and main)
 - **Architecture**: Angular 20.2.1 + .NET 8.0 + Aurora PostgreSQL
 - **Deployment**: AWS (S3 + CloudFront + ECS + ALB)
 
@@ -64,18 +64,18 @@ git log --oneline -5
 ```
 
 ## Current Status
-- **Working tree**: Has uncommitted environment file changes
-- **Last activity**: 2025-10-09 - Fixed CloudFront configurations, all environments operational
-- **Current focus**: Infrastructure maintenance and documentation updates
-- **Environment**: All environments (dev/stage/prod) working perfectly
+- **Working tree**: Clean, all changes committed and pushed
+- **Last activity**: 2025-10-10 - Fixed MIME type errors, API routing, and database authentication
+- **Current focus**: System maintenance and team enablement
+- **Environment**: All environments (dev/stage/prod) fully operational with complete API support
 
 ## AWS Infrastructure
 - **Frontend**: S3 + CloudFront (All environments operational ✅)
-- **Backend**: ECS + ALB
-- **Database**: Aurora PostgreSQL (3 separate clusters)
-- **Environments**: dev, stage, prod (All working ✅)
+- **Backend**: ECS + ALB (All environments with API routing ✅)
+- **Database**: Aurora PostgreSQL (3 separate clusters with proper authentication ✅)
+- **Environments**: dev, stage, prod (All working with full API support ✅)
 - **Secrets**: GitHub repository secrets per environment
-- **Recent Fix**: CloudFront origin path configurations updated (2025-10-09)
+- **Recent Fixes**: CloudFront MIME type errors, API routing, database authentication (2025-10-10)
 
 ## When Starting New Chat
 1. Share `PROJECT_OVERVIEW.md`

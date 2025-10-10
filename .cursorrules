@@ -16,17 +16,28 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **Version Control**: Git with GitHub repositories
 - **Package Management**: npm (frontend), NuGet (backend)
 
-## Current Status (2025-10-09)
-- **All environments operational**: Dev, Stage, Production
-- **CloudFront configurations**: Fixed origin path issues
-- **Working tree**: Has uncommitted environment file changes
-- **Branch**: Testing
+## Current Status (2025-10-10)
+- **All environments fully operational**: Dev, Stage, Production
+- **CloudFront configurations**: Fixed origin path issues + added API routing
+- **Backend connectivity**: Database authentication resolved
+- **API endpoints**: All working correctly through CloudFront
+- **Working tree**: Clean, all changes committed
+- **Branch**: dev (synced with stage and main)
 
 ## Environment URLs
 - **Development**: https://d2rmamd755wq7j.cloudfront.net
 - **Staging**: https://d2ejqzjfslo5hs.cloudfront.net
 - **Production**: https://dpqbvdgnenckf.cloudfront.net
-- **Backend API**: https://dgfh2mwcqhlbw.cloudfront.net
+
+## Backend API Endpoints
+- **Development**: amesa-backend-stage-alb-467028641.eu-north-1.elb.amazonaws.com
+- **Staging**: amesa-backend-stage-alb-467028641.eu-north-1.elb.amazonaws.com
+- **Production**: amesa-backend-alb-509078867.eu-north-1.elb.amazonaws.com
+
+## CloudFront Distributions
+- **Development**: E2XBDFAUZJTI59
+- **Staging**: E1D7XQHFF1469W (with API routing configured)
+- **Production**: E3GU3QXUR43ZOH (with API routing configured)
 
 ## Coding Standards
 
@@ -52,9 +63,10 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **Region**: eu-north-1
 - **Account**: 129394705401
 - **S3 Buckets**: amesa-frontend-dev, amesa-frontend-stage, amesa-frontend-prod
-- **CloudFront Distributions**: 5 active distributions for frontend and API
+- **CloudFront Distributions**: 3 active distributions with API routing configured
 - **ECS Cluster**: "Amesa" with Fargate launch type
 - **Aurora PostgreSQL**: Serverless v2 with separate clusters for prod/stage
+- **API Routing**: CloudFront `/api/*` routes proxy to backend ALBs
 
 ## File Structure Guidelines
 - Keep context files updated with current status
@@ -69,9 +81,11 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - Keep deployment status current
 
 ## Important Notes
-- **Angular builds deploy to `browser/` subdirectory** - CloudFront must be configured with `/browser` origin path
-- **Environment files are in `src/environments/`** - Update these when changing API endpoints
-- **All environments use same backend API** - Currently pointing to `dgfh2mwcqhlbw.cloudfront.net`
+- **Angular builds deploy to `browser/` subdirectory** - CloudFront configured without origin path (files at root)
+- **Environment files are in `src/environments/`** - Each environment points to appropriate backend ALB
+- **Development & Staging share backend** - Both use staging ALB for development purposes
+- **Production has separate backend** - Uses dedicated production ALB
+- **CloudFront API routing** - `/api/*` paths automatically proxy to backend ALBs
 
 ## Context Files to Maintain
 - `CONTEXT_QUICK_REFERENCE.md` - Essential project info
@@ -81,6 +95,9 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - `TROUBLESHOOTING.md` - Common issues and solutions
 - `ACTUAL_IMPLEMENTATION_DETAILS.md` - Technical implementation
 - `CURRENT_STATUS_SUMMARY.md` - Latest status overview
+- `ENVIRONMENT_URLS_REFERENCE.md` - Comprehensive environment URLs
+- `ENVIRONMENT_URLS_GRID.csv` - CSV format for team sharing
+- `AmesaEnvironmentGrid.gs` - Google Apps Script for automated grids
 
 ## Agent Instructions
 - Always check context files for current project status
@@ -153,6 +170,13 @@ git checkout main
 - **Theme Support**: Dark/light mode switching
 - **Real-time Features**: SignalR integration for live updates
 
+## Recent Major Fixes (2025-10-10)
+- **Fixed CloudFront MIME type errors** - Removed incorrect origin paths
+- **Fixed Angular runtime errors** - Corrected RoutePerformanceService provider
+- **Fixed backend API routing** - Added CloudFront API proxy configurations
+- **Fixed database authentication** - Resolved staging backend DB connectivity
+- **Updated all branches** - dev, stage, and main synchronized
+
 ---
-**Last Updated**: 2025-10-09
+**Last Updated**: 2025-10-10
 **Note**: This file should be updated whenever project structure, environment configuration, infrastructure, or deployment processes change.
