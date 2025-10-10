@@ -4,7 +4,7 @@ import { AppComponent } from './app.component';
 import { TranslationService } from './services/translation.service';
 import { ThemeService } from './services/theme.service';
 import { RouteLoadingService } from './services/route-loading.service';
-import { RoutePerformanceInterceptor } from './interceptors/route-performance.interceptor';
+import { RoutePerformanceService } from './services/route-performance.service';
 import { MobileDetectionService } from './services/mobile-detection.service';
 import { ErrorHandlingService } from './services/error-handling.service';
 import { LoggingService } from './services/logging.service';
@@ -38,6 +38,7 @@ bootstrapApplication(AppComponent, {
     SecurityService,
     ValidationService,
     AccessibilityService,
+    RoutePerformanceService,
     { provide: ErrorHandler, useClass: ErrorHandlingService },
     {
       provide: APP_INITIALIZER,
@@ -53,7 +54,6 @@ bootstrapApplication(AppComponent, {
         anchorScrolling: 'enabled'
       })
     ),
-    provideHttpClient(),
-    RoutePerformanceInterceptor
+    provideHttpClient()
   ]
 });

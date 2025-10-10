@@ -6,7 +6,7 @@ import { PerformanceService } from '../services/performance.service';
 @Injectable({
   providedIn: 'root'
 })
-export class RoutePerformanceInterceptor {
+export class RoutePerformanceService {
   constructor(
     private router: Router,
     private performanceService: PerformanceService
