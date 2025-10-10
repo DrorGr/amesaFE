@@ -1,18 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 
-interface Partner {
-  id: string;
-  name: string;
-  type: 'accounting' | 'legal' | 'banking';
-  description: string;
-  website: string;
-  logo?: string;
-  specialties: string[];
-  isActive: boolean;
-}
 
 @Component({
   selector: 'app-partners-page',
@@ -283,7 +272,6 @@ interface Partner {
 })
 export class PartnersPageComponent {
   private translationService = inject(TranslationService);
-  private router = inject(Router);
 
   translate(key: string): string {
     return this.translationService.translate(key);

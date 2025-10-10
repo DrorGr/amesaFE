@@ -15,9 +15,6 @@ import { TranslationService } from '../../services/translation.service';
           <h2 class="text-4xl md:text-4xl font-black text-gray-900 dark:text-white mb-6 text-balance mobile-grid-title">
             {{ translate('houses.title') }}
           </h2>
-          <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed text-balance mobile-grid-subtitle">
-            {{ translate('houses.subtitle') }}
-          </p>
         </div>
 
         <div class="mobile-house-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; align-items: start; padding-bottom: 2rem; width: 100%;">
@@ -46,12 +43,12 @@ import { TranslationService } from '../../services/translation.service';
   styles: [`
     @media (max-width: 767px) {
       .mobile-grid-title {
-        font-size: 4rem !important;
+        font-size: 4.5rem !important;
         line-height: 1.2 !important;
       }
       
       .mobile-grid-subtitle {
-        font-size: 2rem !important;
+        font-size: 2.25rem !important;
         line-height: 1.5 !important;
       }
       
@@ -61,13 +58,26 @@ import { TranslationService } from '../../services/translation.service';
       }
       
       .mobile-empty-title {
-        font-size: 3rem !important;
+        font-size: 3.5rem !important;
         line-height: 1.3 !important;
       }
       
       .mobile-empty-text {
-        font-size: 1.75rem !important;
+        font-size: 2rem !important;
         line-height: 1.5 !important;
+      }
+      
+      /* Override Tailwind text classes specifically for house grid */
+      .text-4xl {
+        font-size: 4.5rem !important;
+      }
+      
+      .text-xl {
+        font-size: 2.25rem !important;
+      }
+      
+      .text-2xl {
+        font-size: 2.5rem !important;
       }
     }
   `]

@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
+import { MobileDetectionService } from '../../services/mobile-detection.service';
 
 @Component({
   selector: 'app-hero-section',
@@ -67,17 +68,17 @@ import { TranslationService } from '../../services/translation.service';
     
     @media (max-width: 767px) {
       .hero-title {
-        font-size: 2.5rem !important;
+        font-size: 3.5rem !important;
         line-height: 1.1;
       }
       
       .hero-subtitle {
-        font-size: 1.125rem !important;
+        font-size: 1.5rem !important;
         line-height: 1.5;
       }
       
       .hero-button {
-        font-size: 1.5rem !important;
+        font-size: 1.75rem !important;
         padding: 1rem 2rem !important;
         min-height: 60px !important;
       }
@@ -101,6 +102,10 @@ import { TranslationService } from '../../services/translation.service';
 export class HeroSectionComponent {
   private translationService = inject(TranslationService);
   private router = inject(Router);
+  private mobileDetectionService = inject(MobileDetectionService);
+  
+  // Use global mobile detection
+  isMobile = this.mobileDetectionService.isMobile;
   
   currentSlide = 0;
   currentHouseImageIndex = 0;

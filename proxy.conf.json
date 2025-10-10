@@ -1,0 +1,13 @@
+{
+  "/api/v1/*": {
+    "target": "https://dgfh2mwcqhlbw.cloudfront.net",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "headers": {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization"
+    }
+  }
+}

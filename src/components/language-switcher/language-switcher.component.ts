@@ -1,6 +1,7 @@
 import { Component, inject, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslationService, Language } from '../../services/translation.service';
+import { TranslationService, Language, LanguageInfo } from '../../services/translation.service';
+import { MobileDetectionService } from '../../services/mobile-detection.service';
 
 @Component({
   selector: 'app-language-switcher',
@@ -11,12 +12,12 @@ import { TranslationService, Language } from '../../services/translation.service
     <div class="relative">
       <button
         (click)="toggleDropdown()"
-        class="flex items-center space-x-2 px-3 py-2 text-2xl md:text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
-        <div class="w-12 h-12 md:w-6 md:h-6 rounded-full overflow-hidden flex-shrink-0">
+        class="flex items-center space-x-2 px-3 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 mobile-language-button">
+        <div class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mobile-language-flag">
           <img [src]="getCurrentLanguageFlag()" [alt]="getCurrentLanguageCode()" class="w-full h-full object-cover">
         </div>
-        <span class="text-black dark:text-white font-bold text-2xl md:text-sm">{{ getCurrentLanguageCode() }}</span>
-        <svg class="w-8 h-8 md:w-4 md:h-4 transition-transform duration-200" [class.rotate-180]="isDropdownOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span class="text-black dark:text-white font-bold text-sm mobile-language-text">{{ getCurrentLanguageCode() }}</span>
+        <svg class="w-4 h-4 transition-transform duration-200 mobile-language-arrow" [class.rotate-180]="isDropdownOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </button>
@@ -32,7 +33,7 @@ import { TranslationService, Language } from '../../services/translation.service
               [class.text-blue-600]="currentLanguage() === language.code"
               [class.dark:text-blue-400]="currentLanguage() === language.code">
               <div class="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
-                <img [src]="language.flag" [alt]="language.code" class="w-full h-full object-cover">
+                <img [src]="language.flagUrl" [alt]="language.code" class="w-full h-full object-cover">
               </div>
               <span class="font-medium">{{ language.code.toUpperCase() }}</span>
               <span class="text-xs text-gray-500 dark:text-gray-400 ml-auto">{{ language.name }}</span>
@@ -51,6 +52,29 @@ import { TranslationService, Language } from '../../services/translation.service
     :host {
       display: block;
     }
+    
+    /* Mobile-specific styles */
+    @media (max-width: 767px) {
+      .mobile-language-button {
+        padding: 1rem !important;
+        min-height: 60px !important;
+        font-size: 1.25rem !important;
+      }
+      
+      .mobile-language-flag {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+      }
+      
+      .mobile-language-text {
+        font-size: 1.25rem !important;
+      }
+      
+      .mobile-language-arrow {
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+      }
+    }
   `],
   host: {
     '(document:click)': 'onDocumentClick($event)'
@@ -58,23 +82,27 @@ import { TranslationService, Language } from '../../services/translation.service
 })
 export class LanguageSwitcherComponent {
   private translationService = inject(TranslationService);
+  private mobileDetectionService = inject(MobileDetectionService);
   
   isDropdownOpen = false;
-  currentLanguage = this.translationService.getCurrentLanguage();
-  availableLanguages = this.translationService.getAvailableLanguages();
+  currentLanguage = this.translationService.getCurrentLanguage;
+  availableLanguages: LanguageInfo[] = this.translationService.getAvailableLanguages();
+  
+  // Use global mobile detection
+  isMobile = this.mobileDetectionService.isMobile;
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
-  selectLanguage(language: Language) {
-    this.translationService.setLanguage(language);
+  selectLanguage(languageCode: string) {
+    this.translationService.setLanguage(languageCode as Language);
     this.isDropdownOpen = false;
   }
 
   getCurrentLanguageFlag(): string {
     const current = this.availableLanguages.find(lang => lang.code === this.currentLanguage());
-    return current?.flag || 'https://flagcdn.com/w40/us.png';
+    return current?.flagUrl || 'https://flagcdn.com/w40/us.png';
   }
 
   getCurrentLanguageCode(): string {

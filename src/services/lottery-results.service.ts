@@ -181,7 +181,7 @@ export class LotteryResultsService {
     params.sortBy = currentFilter.sortBy || 'resultDate';
     params.sortDirection = currentFilter.sortDirection || 'desc';
 
-    return this.http.get<any>(`${this.apiService.getBaseUrl()}/api/v1/lotteryresults`, { params }).pipe(
+    return this.http.get<any>(`${this.apiService.getBaseUrl()}/lotteryresults`, { params }).pipe(
       map(response => {
         if (response.success) {
           this._results.set(response.data.results);
@@ -203,7 +203,7 @@ export class LotteryResultsService {
    * Get specific lottery result by ID
    */
   getLotteryResult(id: string): Observable<LotteryResult> {
-    return this.http.get<any>(`${this.apiService.getBaseUrl()}/api/v1/lotteryresults/${id}`).pipe(
+    return this.http.get<any>(`${this.apiService.getBaseUrl()}/lotteryresults/${id}`).pipe(
       map(response => {
         if (response.success) {
           return response.data;
@@ -222,7 +222,7 @@ export class LotteryResultsService {
    * Validate QR code
    */
   validateQRCode(qrCodeData: string): Observable<QRCodeValidation> {
-    return this.http.post<any>(`${this.apiService.getBaseUrl()}/api/v1/lotteryresults/validate-qr`, qrCodeData).pipe(
+    return this.http.post<any>(`${this.apiService.getBaseUrl()}/lotteryresults/validate-qr`, qrCodeData).pipe(
       map(response => {
         if (response.success) {
           return response.data;
@@ -241,7 +241,7 @@ export class LotteryResultsService {
    * Claim a prize
    */
   claimPrize(resultId: string, claimNotes?: string): Observable<LotteryResult> {
-    return this.http.post<any>(`${this.apiService.getBaseUrl()}/api/v1/lotteryresults/claim`, {
+    return this.http.post<any>(`${this.apiService.getBaseUrl()}/lotteryresults/claim`, {
       resultId,
       claimNotes
     }).pipe(
@@ -271,7 +271,7 @@ export class LotteryResultsService {
    * Create prize delivery request
    */
   createPrizeDelivery(request: CreatePrizeDeliveryRequest): Observable<PrizeDelivery> {
-    return this.http.post<any>(`${this.apiService.getBaseUrl()}/api/v1/lotteryresults/delivery`, request).pipe(
+    return this.http.post<any>(`${this.apiService.getBaseUrl()}/lotteryresults/delivery`, request).pipe(
       map(response => {
         if (response.success) {
           return response.data;
@@ -290,7 +290,7 @@ export class LotteryResultsService {
    * Get scratch card results for user
    */
   getScratchCards(userId: string): Observable<ScratchCardResult[]> {
-    return this.http.get<any>(`${this.apiService.getBaseUrl()}/api/v1/scratchcards?userId=${userId}`).pipe(
+    return this.http.get<any>(`${this.apiService.getBaseUrl()}/scratchcards?userId=${userId}`).pipe(
       map(response => {
         if (response.success) {
           return response.data;
@@ -309,7 +309,7 @@ export class LotteryResultsService {
    * Scratch a card
    */
   scratchCard(cardId: string): Observable<ScratchCardResult> {
-    return this.http.post<any>(`${this.apiService.getBaseUrl()}/api/v1/scratchcards/${cardId}/scratch`, {}).pipe(
+    return this.http.post<any>(`${this.apiService.getBaseUrl()}/scratchcards/${cardId}/scratch`, {}).pipe(
       map(response => {
         if (response.success) {
           return response.data;

@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://stage-api.amesa.com',
-  backendUrl: 'https://stage-api.amesa.com',
-  frontendUrl: 'https://stage.amesa.com',
+  apiUrl: 'http://amesa-backend-stage-alb-467028641.eu-north-1.elb.amazonaws.com',
+  backendUrl: 'http://amesa-backend-stage-alb-467028641.eu-north-1.elb.amazonaws.com',
+  frontendUrl: 'https://d2ejqzjfslo5hs.cloudfront.net',
   logLevel: 'warn'
 };

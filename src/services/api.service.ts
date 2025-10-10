@@ -30,7 +30,7 @@ export interface PagedResponse<T> {
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = environment.backendUrl || 'http://localhost:5000/api';
+  private baseUrl = environment.backendUrl || '/api/v1';
   private tokenSubject = new BehaviorSubject<string | null>(this.getStoredToken());
   public token$ = this.tokenSubject.asObservable();
 
@@ -77,7 +77,7 @@ export class ApiService {
       });
     }
 
-    return this.http.get<ApiResponse<T>>(`${this.baseUrl}/api/v1/${endpoint}`, {
+    return this.http.get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, {
       headers: this.getHeaders(),
       params: httpParams
     }).pipe(
@@ -86,7 +86,7 @@ export class ApiService {
   }
 
   post<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
-    return this.http.post<ApiResponse<T>>(`${this.baseUrl}/api/v1/${endpoint}`, data, {
+    return this.http.post<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
       headers: this.getHeaders()
     }).pipe(
       catchError(this.handleError)

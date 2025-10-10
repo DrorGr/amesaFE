@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
+import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { PasswordResetModalComponent } from '../password-reset-modal/password-reset-modal.component';
 
 @Component({
@@ -73,6 +74,18 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
                 </div>
           </div>
 
+          <!-- Error Message Display -->
+          @if (errorMessage) {
+            <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-red-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-red-700 dark:text-red-300 text-sm font-medium">{{ errorMessage }}</p>
+              </div>
+            </div>
+          }
+
           <form (ngSubmit)="onSubmit()" class="space-y-6">
             @if (mode() === 'register') {
               <div>
@@ -83,6 +96,7 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
                   [(ngModel)]="name"
                   name="name"
                   required
+                  (input)="onInputChange()"
                   class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400 mobile-auth-input">
               </div>
             }
@@ -95,6 +109,7 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
                 [(ngModel)]="email"
                 name="email"
                 required
+                (input)="onInputChange()"
                 class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400">
             </div>
 
@@ -106,6 +121,7 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
                 [(ngModel)]="password"
                 name="password"
                 required
+                (input)="onInputChange()"
                 class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400">
             </div>
 
@@ -174,29 +190,29 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
       }
       
       .mobile-auth-title {
-        font-size: 3rem !important;
+        font-size: 3.5rem !important;
         line-height: 1.3 !important;
       }
       
       .mobile-auth-button {
-        font-size: 1.75rem !important;
+        font-size: 2rem !important;
         padding: 1.5rem 2rem !important;
         min-height: 80px !important;
       }
       
       .mobile-auth-input {
-        font-size: 1.5rem !important;
+        font-size: 1.75rem !important;
         padding: 1.5rem !important;
         min-height: 80px !important;
       }
       
       .mobile-auth-label {
-        font-size: 1.25rem !important;
+        font-size: 1.5rem !important;
         margin-bottom: 1rem !important;
       }
       
       .mobile-social-button {
-        font-size: 1.75rem !important;
+        font-size: 2rem !important;
         padding: 1.5rem 2rem !important;
         min-height: 80px !important;
       }
@@ -213,6 +229,10 @@ export class AuthModalComponent {
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private router = inject(Router);
+  private mobileDetectionService = inject(MobileDetectionService);
+  
+  // Use global mobile detection
+  isMobile = this.mobileDetectionService.isMobile;
   
   mode = input.required<'login' | 'register'>();
   close = output<void>();
@@ -223,25 +243,58 @@ export class AuthModalComponent {
   password = '';
   isLoading = false;
   showPasswordResetModal = false;
+  errorMessage = '';
 
   async onSubmit() {
     this.isLoading = true;
+    this.errorMessage = '';
     
     try {
       let result: boolean;
       
       if (this.mode() === 'login') {
-        result = await this.authService.login(this.email, this.password);
+        result = await this.authService.login(this.email, this.password).toPromise() || false;
       } else {
-        result = await this.authService.register(this.name, this.email, this.password);
+        const registerData = { 
+          username: this.name, 
+          email: this.email, 
+          password: this.password,
+          firstName: this.name.split(' ')[0] || this.name,
+          lastName: this.name.split(' ').slice(1).join(' ') || '',
+          authProvider: 'local'
+        };
+        result = await this.authService.register(registerData).toPromise() || false;
       }
       
       if (result) {
         this.success.emit();
         this.resetForm();
+      } else {
+        if (this.mode() === 'login') {
+          this.errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else {
+          this.errorMessage = 'Registration failed. Please try again or contact support.';
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Authentication error:', error);
+      
+      // Handle specific error types
+      if (error.status === 401) {
+        this.errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else if (error.status === 400) {
+        if (this.mode() === 'register') {
+          this.errorMessage = 'Registration failed. Email might already be in use or data is invalid.';
+        } else {
+          this.errorMessage = 'Invalid request. Please check your input and try again.';
+        }
+      } else if (error.status === 500) {
+        this.errorMessage = 'Server error. Please try again later or contact support.';
+      } else if (error.message?.includes('Network')) {
+        this.errorMessage = 'Network error. Please check your connection and try again.';
+      } else {
+        this.errorMessage = 'An unexpected error occurred. Please try again.';
+      }
     } finally {
       this.isLoading = false;
     }
@@ -286,6 +339,14 @@ export class AuthModalComponent {
     this.email = '';
     this.password = '';
     this.isLoading = false;
+    this.errorMessage = '';
+  }
+
+  onInputChange() {
+    // Clear error message when user starts typing
+    if (this.errorMessage) {
+      this.errorMessage = '';
+    }
   }
 
   // Social Login Methods

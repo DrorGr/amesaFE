@@ -1,0 +1,158 @@
+# AmesaBase Project - Cursor Rules
+
+## Project Overview
+AmesaBase is a lottery management system with Angular frontend, .NET backend, and AWS infrastructure. The application is a property lottery platform featuring a "4Wins Model" where profits support community causes.
+
+## Repository Structure
+- **AmesaFE** (Current): Angular 20.2.1 frontend → AWS S3 + CloudFront
+- **AmesaBE**: .NET 8.0 backend → Docker + ECS
+- **AmesaDevOps**: Infrastructure as Code
+
+## Technology Stack
+- **Frontend**: Angular 20.2.1, TypeScript 5.9.2, Tailwind CSS 3.4.3
+- **Backend**: .NET 8.0, Docker, Aurora PostgreSQL
+- **Infrastructure**: AWS (S3, CloudFront, ECS, ALB, Aurora)
+- **CI/CD**: GitHub Actions
+- **Version Control**: Git with GitHub repositories
+- **Package Management**: npm (frontend), NuGet (backend)
+
+## Current Status (2025-10-09)
+- **All environments operational**: Dev, Stage, Production
+- **CloudFront configurations**: Fixed origin path issues
+- **Working tree**: Has uncommitted environment file changes
+- **Branch**: Testing
+
+## Environment URLs
+- **Development**: https://d2rmamd755wq7j.cloudfront.net
+- **Staging**: https://d2ejqzjfslo5hs.cloudfront.net
+- **Production**: https://dpqbvdgnenckf.cloudfront.net
+- **Backend API**: https://dgfh2mwcqhlbw.cloudfront.net
+
+## Coding Standards
+
+### Angular/TypeScript
+- Use standalone components architecture
+- Follow Angular 20.2.1 best practices
+- Implement lazy loading with custom preloading strategy
+- Use TypeScript strict mode
+- Follow Tailwind CSS utility-first approach
+- Implement proper error handling and logging
+
+### Environment Configuration
+- Use external configuration injection
+- Never hardcode environment-specific values
+- Maintain separate configs for dev/stage/prod
+- Use GitHub secrets for sensitive data
+
+### AWS Infrastructure
+- Follow serverless architecture patterns
+- Use proper CloudFront origin path configurations
+- Implement proper cache invalidation strategies
+- Maintain environment isolation
+- **Region**: eu-north-1
+- **Account**: 129394705401
+- **S3 Buckets**: amesa-frontend-dev, amesa-frontend-stage, amesa-frontend-prod
+- **CloudFront Distributions**: 5 active distributions for frontend and API
+- **ECS Cluster**: "Amesa" with Fargate launch type
+- **Aurora PostgreSQL**: Serverless v2 with separate clusters for prod/stage
+
+## File Structure Guidelines
+- Keep context files updated with current status
+- Maintain comprehensive documentation
+- Use consistent naming conventions
+- Organize components by feature
+
+## Documentation Requirements
+- Update context files when making significant changes
+- Document all infrastructure changes
+- Maintain troubleshooting guides
+- Keep deployment status current
+
+## Important Notes
+- **Angular builds deploy to `browser/` subdirectory** - CloudFront must be configured with `/browser` origin path
+- **Environment files are in `src/environments/`** - Update these when changing API endpoints
+- **All environments use same backend API** - Currently pointing to `dgfh2mwcqhlbw.cloudfront.net`
+
+## Context Files to Maintain
+- `CONTEXT_QUICK_REFERENCE.md` - Essential project info
+- `CURRENT_WORK.md` - Current tasks and status
+- `DEPLOYMENT_STATUS_REPORT.md` - Environment status
+- `AWS_INFRASTRUCTURE_DETAILS.md` - Infrastructure details
+- `TROUBLESHOOTING.md` - Common issues and solutions
+- `ACTUAL_IMPLEMENTATION_DETAILS.md` - Technical implementation
+- `CURRENT_STATUS_SUMMARY.md` - Latest status overview
+
+## Agent Instructions
+- Always check context files for current project status
+- Update relevant context files when making changes
+- Follow the established patterns and conventions
+- Maintain environment consistency across dev/stage/prod
+- Document any infrastructure or configuration changes
+- **CRITICAL**: If any changes relate to project structure, environment configuration, infrastructure, or deployment processes, update the appropriate context files and this .cursorrules file
+
+## Architecture Overview
+
+### GitHub Repository Structure
+- **amesaFE**: https://github.com/DrorGr/amesaFE (Frontend)
+- **amesaBE**: https://github.com/DrorGr/amesaBE (Backend)
+- **amesaDevOps**: Infrastructure as Code repository
+
+### AWS Architecture
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Frontend      │    │     Backend      │    │    Database     │
+│                 │    │                  │    │                 │
+│ Angular 20.2.1  │───▶│ .NET 8.0 + Docker│───▶│ Aurora PostgreSQL│
+│ S3 + CloudFront │    │ ECS Fargate      │    │ Serverless v2   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### Deployment Flow
+1. **Development**: Push to dev branch → Auto-deploy to S3/CloudFront
+2. **Staging**: Push to stage branch → Auto-deploy to S3/CloudFront  
+3. **Production**: Manual deployment trigger → Deploy to S3/CloudFront
+
+## Common Commands
+```bash
+# Frontend development
+npm install
+ng serve
+ng build --configuration=production
+ng build --configuration=development
+ng build --configuration=stage
+
+# AWS operations
+aws cloudfront list-distributions
+aws s3 ls s3://amesa-frontend-dev/ --recursive
+aws s3 ls s3://amesa-frontend-stage/ --recursive
+aws s3 ls s3://amesa-frontend-prod/ --recursive
+aws cloudfront create-invalidation --distribution-id E1D7XQHFF1469W --paths "/*"
+aws cloudfront create-invalidation --distribution-id E3GU3QXUR43ZOH --paths "/*"
+aws cloudfront create-invalidation --distribution-id E2XBDFAUZJTI59 --paths "/*"
+
+# ECS operations
+aws ecs list-services --cluster Amesa
+aws ecs describe-services --cluster Amesa --services amesa-backend-service
+
+# Database operations
+aws rds describe-db-clusters --db-cluster-identifier amesadbmain
+
+# Git operations
+git status
+git log --oneline -5
+git checkout dev
+git checkout stage
+git checkout main
+```
+
+## Business Context
+- **4Wins Model**: Winner gets property, community gets support, company gets sustainable business, society gets social impact
+- **Legal Partners**: Zeiba & Partners (legal), PiK Podatki (accounting)
+- **Responsible Gaming**: Built-in responsible gambling features
+- **Multi-language Support**: Internationalization with translation service
+- **Theme Support**: Dark/light mode switching
+- **Real-time Features**: SignalR integration for live updates
+
+---
+**Last Updated**: 2025-10-09
+**Note**: This file should be updated whenever project structure, environment configuration, infrastructure, or deployment processes change.

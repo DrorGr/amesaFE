@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.amesa.com',
-  backendUrl: 'https://api.amesa.com',
-  frontendUrl: 'https://amesa.com',
+  apiUrl: 'http://amesa-backend-alb-509078867.eu-north-1.elb.amazonaws.com',
+  backendUrl: 'http://amesa-backend-alb-509078867.eu-north-1.elb.amazonaws.com',
+  frontendUrl: 'https://dpqbvdgnenckf.cloudfront.net',
   logLevel: 'error'
 };

@@ -5,37 +5,6 @@ import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
 
-interface UserRegistration {
-  // Basic Account
-  username: string;
-  firstName: string;
-  lastName: string;
-  idNumber?: string;
-  gender: 'male' | 'female' | 'other';
-  dateOfBirth: string;
-  address?: {
-    country: string;
-    city: string;
-    street: string;
-    houseNumber: string;
-    zipCode: string;
-  };
-  
-  // Communication
-  email: string;
-  phoneNumbers: string[];
-  
-  // Security
-  password: string;
-  confirmPassword: string;
-  
-  // Premium Account (Identity Validation)
-  passportIdNumber?: string;
-  passportFrontImage?: File;
-  passportBackImage?: File;
-  faceImage?: File;
-  isIdentityValidated?: boolean;
-}
 
 @Component({
   selector: 'app-registration-page',
