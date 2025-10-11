@@ -1,7 +1,14 @@
-# AmesaBase Project - Cursor Rules
+# AmesaBase Project - Frontend - Cursor Rules
 
 ## Project Overview
 AmesaBase is a lottery management system with Angular frontend, .NET backend, and AWS infrastructure. The application is a property lottery platform featuring a "4Wins Model" where profits support community causes.
+
+## Workspace Structure
+**⚠️ This repository is part of the AmesaBase-Monorepo workspace**
+- **Monorepo Root**: `C:\Users\dror0\Curser-Repos\AmesaBase-Monorepo\`
+- **This Repository (FE/)**: Angular frontend → https://github.com/DrorGr/amesaFE
+- **Backend (BE/)**: .NET 8.0 backend → https://github.com/DrorGr/amesaBE
+- **MetaData/**: Cross-cutting docs, scripts, and configs
 
 ## Repository Structure
 - **AmesaFE** (Current): Angular 20.2.1 frontend → AWS S3 + CloudFront
@@ -88,16 +95,21 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **CloudFront API routing** - `/api/*` paths automatically proxy to backend ALBs
 
 ## Context Files to Maintain
-- `CONTEXT_QUICK_REFERENCE.md` - Essential project info
-- `CURRENT_WORK.md` - Current tasks and status
-- `DEPLOYMENT_STATUS_REPORT.md` - Environment status
-- `AWS_INFRASTRUCTURE_DETAILS.md` - Infrastructure details
-- `TROUBLESHOOTING.md` - Common issues and solutions
-- `ACTUAL_IMPLEMENTATION_DETAILS.md` - Technical implementation
-- `CURRENT_STATUS_SUMMARY.md` - Latest status overview
-- `ENVIRONMENT_URLS_REFERENCE.md` - Comprehensive environment URLs
-- `ENVIRONMENT_URLS_GRID.csv` - CSV format for team sharing
-- `AmesaEnvironmentGrid.gs` - Google Apps Script for automated grids
+
+### In This Repository (FE/):
+- `CONTEXT_QUICK_REFERENCE.md` - Frontend quick reference
+- `CURRENT_WORK.md` - Frontend current tasks and status
+- `CURRENT_STATUS_SUMMARY.md` - Frontend latest status overview
+
+### In Monorepo MetaData/ (Cross-cutting):
+- `../MetaData/Documentation/DEPLOYMENT_STATUS_REPORT.md` - All environments status
+- `../MetaData/Documentation/AWS_INFRASTRUCTURE_DETAILS.md` - Infrastructure details
+- `../MetaData/Documentation/TROUBLESHOOTING.md` - Common issues and solutions
+- `../MetaData/Documentation/ENVIRONMENT_URLS_REFERENCE.md` - Comprehensive URLs
+- `../MetaData/Reference/ENVIRONMENT_URLS_GRID.csv` - CSV for team sharing
+- `../MetaData/Reference/AmesaEnvironmentGrid.gs` - Google Apps Script
+- `../MetaData/Scripts/` - Deployment and utility scripts
+- `../MetaData/Configs/` - CloudFront, S3, ECS configurations
 
 ## Agent Instructions
 - Always check context files for current project status

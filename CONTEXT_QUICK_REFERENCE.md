@@ -1,10 +1,11 @@
-# Quick Reference for New Chat Sessions
+# Quick Reference for New Chat Sessions - Frontend
 
 ## Essential Information
 - **Project**: AmesaBase (Lottery Management System)
 - **Business Model**: Property lotteries with 4Wins Model (community support)
-- **Repositories**: AmesaFE, AmesaBE, AmesaDevOps
-- **Current Repo**: AmesaFE (Frontend)
+- **Workspace**: AmesaBase-Monorepo at `C:\Users\dror0\Curser-Repos\AmesaBase-Monorepo\`
+- **This Repository**: FE/ (Frontend) → https://github.com/DrorGr/amesaFE
+- **Backend Repository**: BE/ → https://github.com/DrorGr/amesaBE
 - **Current Branch**: dev (synced with stage and main)
 - **Architecture**: Angular 20.2.1 + .NET 8.0 + Aurora PostgreSQL
 - **Deployment**: AWS (S3 + CloudFront + ECS + ALB)
@@ -78,13 +79,18 @@ git log --oneline -5
 - **Recent Fixes**: CloudFront MIME type errors, API routing, database authentication (2025-10-10)
 
 ## When Starting New Chat
-1. Share `PROJECT_OVERVIEW.md`
-2. Share `CURRENT_WORK.md`
-3. Share `TECH_STACK.md`
-4. Share `REPO_STRUCTURE.md`
-5. Share `SECRETS_MANAGEMENT.md`
-6. Share `ENVIRONMENT_CONFIG.md`
-7. Share `ACTUAL_IMPLEMENTATION_DETAILS.md`
-8. Share `AWS_INFRASTRUCTURE_DETAILS.md`
-9. Mention current repo, branch, and recent changes
-10. Describe what you need help with
+1. **Mention monorepo structure** - This is FE/ in AmesaBase-Monorepo
+2. Share `FE/.cursorrules` - Frontend context
+3. Share `FE/CONTEXT_QUICK_REFERENCE.md` - This file
+4. Share `FE/CURRENT_WORK.md` - Current status
+5. Reference `../MetaData/Documentation/` for cross-cutting docs
+6. Reference `../MetaData/Reference/ENVIRONMENT_URLS_GRID.csv` for URLs
+7. Mention current branch and recent changes
+8. Describe what you need help with
+
+## Monorepo Navigation
+- **Frontend work**: You're here in `FE/`
+- **Backend work**: Switch to `../BE/`
+- **Documentation**: Check `../MetaData/Documentation/`
+- **Scripts**: Check `../MetaData/Scripts/`
+- **Configs**: Check `../MetaData/Configs/`
