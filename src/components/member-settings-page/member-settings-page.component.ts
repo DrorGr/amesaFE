@@ -91,8 +91,15 @@ interface StarReward {
                     </svg>
                   }
                 </h2>
-                <p class="text-gray-600 dark:text-gray-400 capitalize">
-                  {{ translate('member.accountType') }}: {{ translate('member.' + userProfile().accountType) }}
+                <p class="text-gray-600 dark:text-gray-400 mb-2">
+                  {{ translate('member.accountType') }}: 
+                  <span 
+                    class="account-type-badge"
+                    [class.account-type-gold]="userProfile().accountType === 'gold'"
+                    [class.account-type-silver]="userProfile().accountType === 'premium'"
+                    [class.account-type-basic]="userProfile().accountType === 'basic'">
+                    {{ translate('member.' + userProfile().accountType) }}
+                  </span>
                 </p>
                 <p class="text-sm text-gray-500 dark:text-gray-500">
                   {{ translate('member.memberSince') }}: {{ userProfile().joinDate }}
@@ -190,47 +197,54 @@ interface StarReward {
                         [readonly]="!isEditingProfile()">
                     </div>
 
-                    <!-- ID Number -->
-                    <div>
+                    <!-- ID Number with Edit Button -->
+                    <div class="md:col-span-2">
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {{ translate('member.idNumber') }}
                       </label>
                       <input
                         type="text"
                         formControlName="idNumber"
-                        class="input-field"
+                        class="input-field mb-3"
                         [readonly]="!isEditingProfile()">
+                      
+                      <!-- Edit Button Below ID Number (AM-80) -->
+                      @if (!isEditingProfile()) {
+                        <button
+                          type="button"
+                          (click)="startEdit()"
+                          class="btn-primary">
+                          {{ translate('member.editProfile') }}
+                        </button>
+                      }
                     </div>
-                  </div>
-
-                  <!-- Read-only fields -->
-                  <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                    <h4 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                      {{ translate('member.readOnlyInfo') }}
-                    </h4>
-                    <div class="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {{ translate('member.email') }}
-                        </label>
-                        <input
-                          type="email"
-                          [value]="userProfile().email"
-                          class="input-field bg-gray-50 dark:bg-gray-700"
-                          readonly>
-                      </div>
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {{ translate('member.phoneNumbers') }}
-                        </label>
-                        <div class="space-y-2">
-                          @for (phone of userProfile().phoneNumbers; track $index) {
-                            <input
-                              type="tel"
-                              [value]="phone"
-                              class="input-field bg-gray-50 dark:bg-gray-700"
-                              readonly>
-                          }
+                    
+                    <!-- Email and Phone (without header per AM-81) -->
+                    <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-6">
+                      <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ translate('member.email') }}
+                          </label>
+                          <input
+                            type="email"
+                            [value]="userProfile().email"
+                            class="input-field bg-gray-50 dark:bg-gray-700"
+                            readonly>
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {{ translate('member.phoneNumbers') }}
+                          </label>
+                          <div class="space-y-2">
+                            @for (phone of userProfile().phoneNumbers; track $index) {
+                              <input
+                                type="tel"
+                                [value]="phone"
+                                class="input-field bg-gray-50 dark:bg-gray-700"
+                                readonly>
+                            }
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -244,8 +258,8 @@ interface StarReward {
                       class="btn-outline">
                       {{ translate('member.changePassword') }}
                     </button>
-                    <div class="flex space-x-3">
-                      @if (isEditingProfile()) {
+                    @if (isEditingProfile()) {
+                      <div class="flex space-x-3">
                         <button
                           type="button"
                           (click)="cancelEdit()"
@@ -257,15 +271,8 @@ interface StarReward {
                           class="btn-primary">
                           {{ translate('member.saveChanges') }}
                         </button>
-                      } @else {
-                        <button
-                          type="button"
-                          (click)="startEdit()"
-                          class="btn-primary">
-                          {{ translate('member.editProfile') }}
-                        </button>
-                      }
-                    </div>
+                      </div>
+                    }
                   </div>
                 </form>
 
@@ -273,7 +280,7 @@ interface StarReward {
                 @if (!userProfile().isVerified && (userProfile().accountType === 'gold' || userProfile().accountType === 'premium')) {
                   <div class="mt-8 p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                     <div class="flex items-center">
-                      <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="verify-icon text-yellow-600 dark:text-yellow-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                       </svg>
                       <div>
@@ -561,6 +568,47 @@ interface StarReward {
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+    
+    /* AM-77: Bigger font for info tabs */
+    nav button span {
+      font-size: 1.125rem !important;
+      font-weight: 600 !important;
+    }
+    
+    /* AM-75: Account Type - colored rectangles */
+    .account-type-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 700;
+      font-size: 1.125rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .account-type-gold {
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+      color: #78350F;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    }
+    
+    .account-type-silver {
+      background: linear-gradient(135deg, #E5E7EB 0%, #9CA3AF 100%);
+      color: #1F2937;
+      box-shadow: 0 4px 15px rgba(156, 163, 175, 0.4);
+    }
+    
+    .account-type-basic {
+      background: linear-gradient(135deg, #DBEAFE 0%, #93C5FD 100%);
+      color: #1E40AF;
+      box-shadow: 0 4px 15px rgba(147, 197, 253, 0.4);
+    }
+    
+    /* AM-83: Verify account - bigger triangle icon */
+    .verify-icon {
+      width: 2rem !important;
+      height: 2rem !important;
+    }
   `]
 })
 export class MemberSettingsPageComponent {

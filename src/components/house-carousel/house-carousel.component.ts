@@ -20,7 +20,19 @@ import { LotteryService } from '../../services/lottery.service';
                 <!-- Main House Image -->
                 <div class="flex-1 max-w-5xl flex flex-col mb-4">
                   <div class="relative overflow-hidden rounded-xl shadow-lg group">
-                    @if (isImageLoaded(getCurrentMainImage(house, houseIndex).url)) {
+                    <!-- AM-5: Video Support -->
+                    @if (isVideo(getCurrentMainImage(house, houseIndex).url)) {
+                      <video 
+                        [src]="getCurrentMainImage(house, houseIndex).url"
+                        class="w-full h-64 md:h-96 object-cover object-center mobile-carousel-image"
+                        autoplay
+                        muted
+                        loop
+                        playsinline>
+                        <source [src]="getCurrentMainImage(house, houseIndex).url" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                    } @else if (isImageLoaded(getCurrentMainImage(house, houseIndex).url)) {
                         <img
                           [src]="getCurrentMainImage(house, houseIndex).url" 
                           [alt]="getCurrentMainImage(house, houseIndex).alt"
@@ -734,5 +746,11 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       }
     }
     return this.getPrimaryImage(house.images);
+  }
+
+  // AM-5: Check if URL is a video file
+  isVideo(url: string): boolean {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
   }
 }

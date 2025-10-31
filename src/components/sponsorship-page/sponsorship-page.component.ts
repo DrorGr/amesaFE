@@ -27,7 +27,7 @@ import { TranslationService } from '../../services/translation.service';
               <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
                 {{ translate('sponsor.heroTitle') }}
               </h1>
-              <p class="text-xl md:text-2xl mb-8 leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <p class="text-xl md:text-2xl mb-8 sponsor-hero-subtitle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('sponsor.heroSubtitle') }}
               </p>
               <button class="btn-primary text-2xl px-8 py-4 bg-white text-blue-600 hover:bg-gray-100">
@@ -44,7 +44,7 @@ import { TranslationService } from '../../services/translation.service';
         <section class="mb-20">
           <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              {{ translate('sponsor.whyWeExist') }}
+              <span class="section-icon">💡</span>{{ translate('sponsor.whyWeExist') }}
             </h2>
             <div class="w-24 h-1 bg-blue-600 mx-auto rounded-full mb-6"></div>
             <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
@@ -102,12 +102,12 @@ import { TranslationService } from '../../services/translation.service';
           <!-- Mission Statement -->
           <div class="mt-12 bg-gradient-to-r from-blue-50 to-emerald-50 dark:from-blue-900/20 dark:to-emerald-900/20 rounded-2xl p-8 md:p-12">
             <div class="text-center">
-              <h3 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                {{ translate('sponsor.ourMission') }}
-              </h3>
-              <p class="text-2xl md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-4xl mx-auto">
-                {{ translate('sponsor.missionStatement') }}
-              </p>
+                <h3 class="our-main-goal-title text-gray-900 dark:text-white mb-6">
+                  <span class="section-icon">🛡️</span>{{ translate('sponsor.ourMainGoal') }}
+                </h3>
+                <p class="text-2xl md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-4xl mx-auto">
+                  {{ translate('sponsor.missionStatement') }}
+                </p>
             </div>
           </div>
         </section>
@@ -149,77 +149,6 @@ import { TranslationService } from '../../services/translation.service';
           </div>
         </section>
 
-        <!-- Why Become a Sponsor Section -->
-        <section class="mb-20">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              {{ translate('sponsor.whyBecomeSponsor') }}
-            </h2>
-            <div class="w-24 h-1 bg-orange-600 mx-auto rounded-full"></div>
-          </div>
-
-          <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <!-- Real Impact -->
-            <div class="text-center p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                {{ translate('sponsor.realImpact') }}
-              </h3>
-              <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                {{ translate('sponsor.realImpactDesc') }}
-              </p>
-            </div>
-
-            <!-- Transparency -->
-            <div class="text-center p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div class="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
-              </div>
-              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                {{ translate('sponsor.transparency') }}
-              </h3>
-              <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                {{ translate('sponsor.transparencyDesc') }}
-              </p>
-            </div>
-
-            <!-- Shared Purpose -->
-            <div class="text-center p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div class="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
-              </div>
-              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                {{ translate('sponsor.sharedPurpose') }}
-              </h3>
-              <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                {{ translate('sponsor.sharedPurposeDesc') }}
-              </p>
-            </div>
-
-            <!-- Lasting Legacy -->
-            <div class="text-center p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                </svg>
-              </div>
-              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                {{ translate('sponsor.lastingLegacy') }}
-              </h3>
-              <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                {{ translate('sponsor.lastingLegacyDesc') }}
-              </p>
-            </div>
-          </div>
-        </section>
 
         <!-- How Your Sponsorship Helps Section -->
         <section class="mb-20">
@@ -366,14 +295,11 @@ import { TranslationService } from '../../services/translation.service';
             <p class="text-2xl mb-8 max-w-4xl mx-auto">
               {{ translate('sponsor.togetherWeCan') }}
             </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-2xl px-8 py-4">
-                {{ translate('sponsor.becomeSponsorNow') }}
-              </button>
-              <button class="btn-outline border-white text-white hover:bg-white hover:text-blue-600 text-2xl px-8 py-4">
-                {{ translate('sponsor.learnMore') }}
-              </button>
-            </div>
+                <div class="flex justify-center">
+                  <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-2xl px-8 py-4" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);">
+                    {{ translate('sponsor.becomeSponsorNow') }}
+                  </button>
+                </div>
           </div>
         </section>
       </main>
@@ -381,6 +307,36 @@ import { TranslationService } from '../../services/translation.service';
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+    
+    /* AM-40: Header subtitle - make 1 line */
+    .sponsor-hero-subtitle {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    
+    /* AM-44: "Our main goal" - bigger font, 1 line */
+    .our-main-goal-title {
+      font-size: 2rem !important;
+      font-weight: 700 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    
+    @media (min-width: 768px) {
+      .our-main-goal-title {
+        font-size: 2.5rem !important;
+      }
+    }
+    
+    /* Icon styling */
+    .section-icon {
+      font-size: 2rem;
+      margin-right: 1rem;
+      display: inline-block;
+      vertical-align: middle;
+    }
   `]
 })
 export class SponsorshipPageComponent {

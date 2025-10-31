@@ -39,7 +39,7 @@ import { TranslationService } from '../../services/translation.service';
         <section class="mb-16">
           <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              {{ translate('howItWorks.simpleProcess') }}
+              {{ translate('howItWorks.simpleStepsProcess') }}
             </h2>
             <div class="w-24 h-1 bg-blue-600 mx-auto rounded-full mb-6"></div>
             <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
@@ -91,16 +91,17 @@ import { TranslationService } from '../../services/translation.service';
 
         <!-- Call to Action -->
         <section class="text-center">
-          <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 md:p-12 text-white">
-            <h2 class="text-3xl md:text-4xl font-bold mb-6">
+          <div class="cta-section-shrink rounded-2xl text-white">
+            <h2 class="font-bold">
               {{ translate('howItWorks.readyToStart') }}
             </h2>
-            <p class="text-xl mb-8 max-w-3xl mx-auto">
+            <p class="max-w-3xl mx-auto">
               {{ translate('howItWorks.ctaDescription') }}
             </p>
             <button
               (click)="navigateToHome()"
-              class="btn-outline bg-white text-blue-600 hover:bg-gray-100 border-white">
+              class="btn-outline bg-white text-blue-600 hover:bg-gray-100 border-white"
+              style="color: #2563EB;">
               {{ translate('howItWorks.browseLotteries') }}
             </button>
           </div>
@@ -110,6 +111,39 @@ import { TranslationService } from '../../services/translation.service';
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+    
+    /* AM-71: Shrink CTA section + gold background */
+    .cta-section-shrink {
+      padding: 2rem 1.5rem !important;
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+      box-shadow: 0 20px 60px rgba(255, 215, 0, 0.3);
+    }
+    
+    .cta-section-shrink h2 {
+      font-size: 2rem !important;
+      line-height: 1.3 !important;
+      margin-bottom: 1rem !important;
+    }
+    
+    .cta-section-shrink p {
+      font-size: 1.125rem !important;
+      line-height: 1.5 !important;
+      margin-bottom: 1.5rem !important;
+    }
+    
+    @media (min-width: 768px) {
+      .cta-section-shrink {
+        padding: 3rem 2rem !important;
+      }
+      
+      .cta-section-shrink h2 {
+        font-size: 2.5rem !important;
+      }
+      
+      .cta-section-shrink p {
+        font-size: 1.25rem !important;
+      }
+    }
   `]
 })
 export class HowItWorksPageComponent {

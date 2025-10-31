@@ -19,24 +19,24 @@ interface FAQItem {
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <!-- Hero Section -->
       <section class="relative overflow-hidden">
-        <div class="relative h-64 md:h-80">
+        <div class="relative h-48 md:h-56 hero-content">
           <!-- Background Image -->
           <div class="absolute inset-0">
-            <img 
-              src="https://images.pexels.com/photos/1181391/pexels-photo-1181391.jpeg" 
-              alt="FAQ Support" 
+            <img
+              src="https://images.pexels.com/photos/1181391/pexels-photo-1181391.jpeg"
+              alt="FAQ Support"
               class="w-full h-full object-cover">
             <!-- Gradient overlay -->
             <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500 via-blue-400 via-blue-300 via-blue-200 via-blue-100 to-transparent opacity-75"></div>
           </div>
-          
+
           <!-- Content -->
           <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div class="text-white max-w-4xl">
-              <h1 class="text-3xl md:text-5xl font-black mb-4 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
+              <h1 class="text-3xl md:text-5xl font-black faq-hero-title" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
                 {{ translate('faq.heroTitle') }}
               </h1>
-              <p class="text-2xl md:text-xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <p class="text-xl md:text-lg" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('faq.heroSubtitle') }}
               </p>
             </div>
@@ -94,28 +94,29 @@ interface FAQItem {
             <!-- Search Results -->
             <div class="space-y-6">
               @for (faq of filteredFAQs(); track faq.id) {
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-                  <button
-                    (click)="toggleFAQ(faq.id)"
-                    class="w-full px-8 py-6 text-left flex justify-between items-center focus:outline-none">
-                    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white pr-4">
-                      {{ translate(faq.question) }}
-                    </h3>
-                    <svg 
-                      [class.rotate-180]="openFAQs().includes(faq.id)"
-                      class="w-6 h-6 text-blue-600 dark:text-blue-400 transition-transform duration-200 flex-shrink-0" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                  </button>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                      <button
+                        (click)="toggleFAQ(faq.id)"
+                        class="w-full px-8 py-6 text-left flex items-center focus:outline-none">
+                        <span class="question-icon">?</span>
+                        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white flex-1 pr-4">
+                          {{ translate(faq.question) }}
+                        </h3>
+                        <svg
+                          [class.rotate-180]="openFAQs().includes(faq.id)"
+                          class="w-6 h-6 text-blue-600 dark:text-blue-400 transition-transform duration-200 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </button>
                   @if (openFAQs().includes(faq.id)) {
                     <div class="px-8 pb-6">
                       <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                        <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-                          {{ translate(faq.answer) }}
-                        </p>
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line faq-answer">
+                              {{ translate(faq.answer) }}
+                            </p>
                       </div>
                     </div>
                   }
@@ -133,28 +134,29 @@ interface FAQItem {
                   </h2>
                   <div class="space-y-4">
                     @for (faq of getFAQsByCategory(category.id); track faq.id) {
-                      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-                        <button
-                          (click)="toggleFAQ(faq.id)"
-                          class="w-full px-8 py-6 text-left flex justify-between items-center focus:outline-none">
-                          <h3 class="text-2xl font-semibold text-gray-900 dark:text-white pr-4">
-                            {{ translate(faq.question) }}
-                          </h3>
-                          <svg 
-                            [class.rotate-180]="openFAQs().includes(faq.id)"
-                            class="w-6 h-6 text-blue-600 dark:text-blue-400 transition-transform duration-200 flex-shrink-0" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                          </svg>
-                        </button>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                      <button
+                        (click)="toggleFAQ(faq.id)"
+                        class="w-full px-8 py-6 text-left flex items-center focus:outline-none">
+                        <span class="question-icon">?</span>
+                        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white flex-1 pr-4">
+                          {{ translate(faq.question) }}
+                        </h3>
+                        <svg
+                          [class.rotate-180]="openFAQs().includes(faq.id)"
+                          class="w-6 h-6 text-blue-600 dark:text-blue-400 transition-transform duration-200 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </button>
                         @if (openFAQs().includes(faq.id)) {
                           <div class="px-8 pb-6">
                             <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                              <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-                                {{ translate(faq.answer) }}
-                              </p>
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line faq-answer">
+                              {{ translate(faq.answer) }}
+                            </p>
                             </div>
                           </div>
                         }
@@ -169,7 +171,7 @@ interface FAQItem {
 
         <!-- Contact CTA Section -->
         <section class="text-center">
-          <div class="bg-gradient-to-r from-blue-600 to-emerald-600 rounded-2xl p-8 md:p-12 text-white">
+          <div class="gold-cta-section rounded-2xl p-8 md:p-12 text-white">
             <h2 class="text-3xl md:text-4xl font-bold mb-6">
               {{ translate('faq.stillHaveQuestions') }}
             </h2>
@@ -191,6 +193,43 @@ interface FAQItem {
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+    
+    /* AM-57: Bigger font for FAQ answers */
+    .faq-answer {
+      font-size: 1.25rem !important;
+      line-height: 1.75 !important;
+    }
+    
+    /* AM-55: Shrink hero rectangle to 1 line */
+    .hero-content {
+      min-height: auto !important;
+    }
+    
+    /* AM-54: FAQ Header layout - centered and compact */
+    .faq-hero-title {
+      line-height: 1.2 !important;
+      margin-bottom: 0.5rem !important;
+    }
+    
+    /* AM-56: Question icon styling */
+    .question-icon {
+      color: #2563EB;
+      font-size: 1.5rem;
+      margin-right: 0.75rem;
+      flex-shrink: 0;
+    }
+    
+    /* AM-60: Gold background + blur effect for "Still have questions" */
+    .gold-cta-section {
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 20px 60px rgba(255, 215, 0, 0.3);
+    }
+    
+    .gold-cta-section h2,
+    .gold-cta-section p {
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
   `]
 })
 export class FAQPageComponent {

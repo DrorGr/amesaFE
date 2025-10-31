@@ -126,6 +126,32 @@ import { TranslationService } from '../../services/translation.service';
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+    
+    /* AM-23: Special promotion - thicker font */
+    .special-promotion-title {
+      font-weight: 800 !important;
+    }
+    
+    /* AM-25: Available promotions - change font */
+    .available-promotions-title {
+      font-family: 'Kalam', cursive !important;
+      font-weight: 700 !important;
+    }
+    
+    /* AM-27: Make text 1 line */
+    .promotions-intro {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    
+    /* AM-30: Purchased - ensure green background */
+    .purchased-badge {
+      background-color: #DEF7EC !important;
+      color: #03543F !important;
+      padding: 0.5rem 1rem !important;
+      border-radius: 9999px !important;
+    }
   `]
 })
 export class PromotionsPageComponent {

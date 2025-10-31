@@ -201,7 +201,7 @@ import { TranslationService } from '../../services/translation.service';
               {{ translate('about.joinUsDescription') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-2xl px-8 py-4">
+              <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-2xl px-8 py-4" style="color: #2563EB;">
                 {{ translate('about.browseLotteries') }}
               </button>
               <button class="btn-outline border-white text-white hover:bg-white hover:text-blue-600 text-2xl px-8 py-4">
