@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
+import { AnimateOnScrollDirective } from '../../directives/animate-on-scroll.directive';
 
 @Component({
   selector: 'app-hero-section',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AnimateOnScrollDirective],
   template: `
     <section class="relative overflow-hidden">
       <!-- Main Hero with Winner Celebration -->
@@ -28,17 +29,37 @@ import { MobileDetectionService } from '../../services/mobile-detection.service'
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
           <!-- Left side content -->
           <div class="text-white max-w-2xl">
-            <h1 class="hero-title font-black mb-6 leading-tight text-white" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
+            <h1 
+              class="hero-title font-black mb-6 leading-tight text-white" 
+              style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);"
+              appAnimateOnScroll
+              animationTrigger="fadeInUp"
+              animationDuration="0.8s"
+              animationDelay="0.2s"
+              [threshold]="0.2">
               {{ translate('hero.title') }}
             </h1>
-            <p class="hero-subtitle mb-8 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+            <p 
+              class="hero-subtitle mb-8 text-white" 
+              style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);"
+              appAnimateOnScroll
+              animationTrigger="fadeInUp"
+              animationDuration="0.8s"
+              animationDelay="0.4s"
+              [threshold]="0.2">
               Enter exclusive house lotteries and get the chance to win amazing properties at a fraction of their market value.
             </p>
-            <div class="flex flex-col sm:flex-row gap-6">
-              <button class="px-12 py-6 text-3xl md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button">
+            <div 
+              class="flex flex-col sm:flex-row gap-6"
+              appAnimateOnScroll
+              animationTrigger="fadeInUp"
+              animationDuration="0.8s"
+              animationDelay="0.6s"
+              [threshold]="0.2">
+              <button class="px-12 py-6 text-3xl md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hover:shadow-xl hero-button">
                 {{ translate('hero.browseLotteries') }}
               </button>
-              <button (click)="navigateToHowItWorks()" class="px-12 py-6 text-3xl md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button">
+              <button (click)="navigateToHowItWorks()" class="px-12 py-6 text-3xl md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 hover:scale-105 active:scale-95 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hover:shadow-xl hero-button">
                 {{ translate('hero.howItWorks') }}
               </button>
             </div>
