@@ -5,6 +5,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Animations */
+@import './styles/animations.css';
+
 /* Base styles */
 * {
   box-sizing: border-box;
