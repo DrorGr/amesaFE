@@ -65,7 +65,21 @@ import { AnimateOnScrollDirective } from '../../directives/animate-on-scroll.dir
             </div>
           </div>
           
-          <!-- Right side - House Carousel -->
+          <!-- Right side - Featured Winning Home -->
+          <div class="hidden lg:block lg:w-1/3">
+            <div class="relative group">
+              <img 
+                src="assets/am-3.png" 
+                alt="Winning home - Premium property available" 
+                class="rounded-xl shadow-2xl transform group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-xl flex items-end p-6">
+                <div class="text-white">
+                  <p class="text-sm font-semibold mb-1">Featured Property</p>
+                  <p class="text-2xl font-bold">Win Your Dream Home</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
