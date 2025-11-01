@@ -227,6 +227,7 @@ export class TranslationService {
       'promotions.takePart': 'Take Part',
       'promotions.takePartBrief': 'Participate in special events',
       'promotions.learnMore': 'Learn More',
+      'promotions.purchase': 'Purchase',  // AM-28: Changed from "Learn More" to "Purchase"
       'promotions.purchased': 'Purchased',
       'promotions.specialPromotion': 'Special promotion',
       
