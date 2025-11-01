@@ -11,25 +11,40 @@ import { TranslationService } from '../../services/translation.service';
       <!-- Hero Section -->
       <section class="relative overflow-hidden">
         <div class="relative h-96 md:h-[500px]">
-          <!-- Background Image -->
-          <div class="absolute inset-0">
-            <img 
-              src="https://images.pexels.com/photos/1181391/pexels-photo-1181391.jpeg" 
-              alt="About Amesa" 
-              class="w-full h-full object-cover">
-            <!-- Gradient overlay -->
-            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500 via-blue-400 via-blue-300 via-blue-200 via-blue-100 to-transparent opacity-75"></div>
+          <!-- Background with gradient -->
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400">
+            <!-- Subtle pattern overlay -->
+            <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
           </div>
           
           <!-- Content -->
-          <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-            <div class="text-white max-w-4xl">
-              <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
-                {{ translate('about.heroTitle') }}
-              </h1>
-              <p class="text-xl md:text-2xl mb-8 leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
-                {{ translate('about.heroSubtitle') }}
-              </p>
+          <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col items-center justify-center text-center">
+            <!-- AMESA Logo -->
+            <div class="mb-8 transform hover:scale-105 transition-transform duration-300">
+              <img 
+                src="assets/AmesaNoBG.png" 
+                alt="AMESA" 
+                class="h-32 md:h-40 w-auto drop-shadow-2xl">
+            </div>
+            
+            <!-- Title -->
+            <h1 class="text-5xl md:text-7xl font-black mb-4 text-white leading-tight drop-shadow-lg" style="font-family: 'Kalam', cursive;">
+              {{ translate('about.heroTitle') }}
+            </h1>
+            
+            <!-- Subtitle -->
+            <p class="text-xl md:text-2xl mb-8 text-white/95 max-w-3xl leading-relaxed drop-shadow-md">
+              {{ translate('about.heroSubtitle') }}
+            </p>
+            
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 mt-4">
+              <button class="bg-white text-blue-600 hover:bg-gray-100 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                {{ translate('about.browseLotteries') }}
+              </button>
+              <button class="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                {{ translate('about.learnMore') }}
+              </button>
             </div>
           </div>
         </div>
