@@ -273,7 +273,7 @@ export class TranslationService {
       'help.phone': 'Phone',
       
       // About Page
-      'about.heroTitle': 'About Amesa',
+      'about.heroTitle': 'AMESA',
       'about.heroSubtitle': 'Transforming lives through transparent and fair lottery systems',
       'about.ourStory': 'Our Story',
       'about.founded': 'Amesa was founded with a vision to make property ownership accessible to everyone through transparent lottery systems.',
