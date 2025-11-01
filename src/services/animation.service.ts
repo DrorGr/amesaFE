@@ -68,7 +68,7 @@ export class AnimationService {
   /**
    * Parallax scroll effect
    */
-  applyParallax(element: HTMLElement, speed: number = 0.5): void {
+  applyParallax(element: HTMLElement, speed: number = 0.5): () => void {
     const handleScroll = () => {
       const scrolled = window.pageYOffset;
       const rate = scrolled * speed;

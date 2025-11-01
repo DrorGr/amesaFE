@@ -62,7 +62,7 @@ import { AnimationService } from '../../services/animation.service';
                     <button
                       type="button"
                       class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      (click)="close()"
+                      (click)="closeModal()"
                       aria-label="Close modal">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -91,7 +91,7 @@ import { AnimationService } from '../../services/animation.service';
                     <button
                       type="button"
                       class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 transition-colors duration-200"
-                      (click)="close()">
+                      (click)="closeModal()">
                       {{ cancelButtonText }}
                     </button>
                     <button

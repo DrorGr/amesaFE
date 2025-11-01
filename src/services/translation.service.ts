@@ -307,6 +307,7 @@ export class TranslationService {
       
       // Member Settings Page
       'member.heroTitle': 'Account Settings',
+      'member.accountSettings': 'Account Settings',
       'member.heroSubtitle': 'Manage your profile and preferences',
       'member.accountType': 'Account Type',
       'member.basic': 'Basic',
@@ -362,7 +363,7 @@ export class TranslationService {
       'sponsor.heroSubtitle': 'Partner with us to create lasting change in communities',
       'sponsor.becomeSponsor': 'Become a Sponsor',
       'sponsor.whyWeExist': 'Why We Exist',
-      'sponsor.whyWeExistSubtitle': 'Our commitment to making a difference',
+      'sponsor.whyWeExistSubtitle': 'We supported communities',
       'sponsor.homelessShelters': 'Home shelter',
       'sponsor.homelessSheltersDesc': 'Provide dignity and a chance to rebuild lives',
       'sponsor.orphanShelters': 'Orphan Shelters',
@@ -400,8 +401,7 @@ export class TranslationService {
       'sponsor.animalsBenefit4': 'Rescue operations',
       'sponsor.impactStatement': 'Every contribution makes a measurable difference in lives and communities',
       'sponsor.joinUsToday': 'Join Us Today',
-      'sponsor.joinUsDescription': 'Become part of a movement that transforms lives',
-      'sponsor.togetherWeCan': 'Together, we can create lasting change and build a better tomorrow',
+      'sponsor.joinUsDescription': 'Share your legacy and become a sponsor for investing in lives, futures, and hope',
       'sponsor.becomeSponsorNow': 'Become a Sponsor Now',
       
       // FAQ Page

@@ -32,52 +32,30 @@ import { AnimateOnScrollDirective } from '../../directives/animate-on-scroll.dir
             <h1 
               class="hero-title font-black mb-6 leading-tight text-white" 
               style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);"
-              appAnimateOnScroll
-              animationTrigger="fadeInUp"
-              animationDuration="0.8s"
-              animationDelay="0.2s"
-              [threshold]="0.2">
+              animateOnScroll="fade-in"
+              [animationDelay]="200"
+              [animationThreshold]="0.2">
               {{ translate('hero.title') }}
             </h1>
             <p 
               class="hero-subtitle mb-8 text-white" 
               style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);"
-              appAnimateOnScroll
-              animationTrigger="fadeInUp"
-              animationDuration="0.8s"
-              animationDelay="0.4s"
-              [threshold]="0.2">
+              animateOnScroll="fade-in"
+              [animationDelay]="400"
+              [animationThreshold]="0.2">
               Enter exclusive house lotteries and get the chance to win amazing properties at a fraction of their market value.
             </p>
             <div 
               class="flex flex-col sm:flex-row gap-6"
-              appAnimateOnScroll
-              animationTrigger="fadeInUp"
-              animationDuration="0.8s"
-              animationDelay="0.6s"
-              [threshold]="0.2">
+              animateOnScroll="fade-in"
+              [animationDelay]="600"
+              [animationThreshold]="0.2">
               <button class="px-12 py-6 text-3xl md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hover:shadow-xl hero-button">
                 {{ translate('hero.browseLotteries') }}
               </button>
               <button (click)="navigateToHowItWorks()" class="px-12 py-6 text-3xl md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 hover:scale-105 active:scale-95 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hover:shadow-xl hero-button">
                 {{ translate('hero.howItWorks') }}
               </button>
-            </div>
-          </div>
-          
-          <!-- Right side - Featured Winning Home -->
-          <div class="hidden lg:block lg:w-1/3">
-            <div class="relative group">
-              <img 
-                src="assets/am-3.png" 
-                alt="Winning home - Premium property available" 
-                class="rounded-xl shadow-2xl transform group-hover:scale-105 transition-transform duration-300">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-xl flex items-end p-6">
-                <div class="text-white">
-                  <p class="text-sm font-semibold mb-1">Featured Property</p>
-                  <p class="text-2xl font-bold">Win Your Dream Home</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

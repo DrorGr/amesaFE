@@ -89,6 +89,87 @@ import { TranslationService } from '../../services/translation.service';
           </div>
         </section>
 
+        <!-- AM-65, AM-66: Detailed Explanation -->
+        <section class="mb-20">
+          <div class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 md:p-12">
+            <div class="text-center mb-8">
+              <h2 class="text-4xl md:text-5xl font-black text-blue-600 dark:text-blue-400 mb-6">
+                Wow!
+              </h2>
+            </div>
+
+            <div class="space-y-6 text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p>
+                Our innovative idea and top end developments enable us to let you enjoy the entire lottery experience. Once you realize that your odds to fulfil your biggest dreams are the best in the market, and stand on just <strong class="text-blue-600 dark:text-blue-400">1 to 15K</strong> for the biggest and first prize!
+              </p>
+
+              <p class="text-2xl font-bold text-center text-blue-600 dark:text-blue-400 py-4">
+                Take a moment to read it again, just 1 to 15K to win your dream home.
+              </p>
+
+              <p>
+                All you need to do is to buy a ticket to the lottery. Ignoring our launching prices, that are real low, and regardless of the published Promotions and coupons, for just <strong>1 ticket</strong> you get <strong>1 to 15K odds</strong> to win the 1st prize. For <strong>3 tickets</strong> you get a <strong>1 to 5K</strong> to actually be the owner of your own property in a prime location!
+              </p>
+
+              <p>
+                First, we are publishing assets at 1st price. Our assets are going under a full property check and are ready to change ownership as soon as the papers are ready after our attorney office fixes all the papers with your own details. You do not need to do anything but corporate with the legal procedure. <strong>No extra money is needed once you win the lottery.</strong>
+              </p>
+
+              <p>
+                Each lottery will hold its own winner and details. The lottery should take place on its due date if the minimum requirements have reached. If the lottery reaches its maximum capacity, the lottery will take place <strong>96 hours after reaching the bar</strong>. If the lottery didn't reach its minimum requirements, the lottery is cancelled, a new lottery will be re-scheduled and <strong>you are fully refunded!</strong>
+              </p>
+
+              <!-- Prizes Section -->
+              <div class="mt-8 bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+                  Lottery Prizes:
+                </h3>
+                
+                <div class="space-y-4">
+                  <!-- 1st Prize -->
+                  <div class="flex items-center space-x-4 p-4 bg-gradient-to-r from-yellow-100 to-yellow-200 dark:from-yellow-900/30 dark:to-yellow-800/30 rounded-lg">
+                    <div class="flex-shrink-0">
+                      <div class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xl font-bold">🏆</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="text-lg font-bold text-gray-900 dark:text-white">1st Prize</div>
+                      <div class="text-gray-700 dark:text-gray-300">A prime locationed property</div>
+                    </div>
+                  </div>
+
+                  <!-- 2nd Prize -->
+                  <div class="flex items-center space-x-4 p-4 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800/50 dark:to-gray-700/50 rounded-lg">
+                    <div class="flex-shrink-0">
+                      <div class="w-12 h-12 bg-gray-500 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xl font-bold">🥈</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="text-lg font-bold text-gray-900 dark:text-white">2nd Prize</div>
+                      <div class="text-gray-700 dark:text-gray-300">Nintendo Switch / iPad / etc</div>
+                    </div>
+                  </div>
+
+                  <!-- 3rd Prize -->
+                  <div class="flex items-center space-x-4 p-4 bg-gradient-to-r from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 rounded-lg">
+                    <div class="flex-shrink-0">
+                      <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xl font-bold">🥉</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="text-lg font-bold text-gray-900 dark:text-white">3rd Prize</div>
+                      <div class="text-gray-700 dark:text-gray-300">Apple AirPods Pro / etc</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Call to Action -->
         <section class="text-center">
           <div class="cta-section-shrink rounded-2xl text-white">

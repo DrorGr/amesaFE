@@ -30,7 +30,7 @@ export interface PagedResponse<T> {
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = environment.backendUrl || '/api/v1';
+  private baseUrl = environment.apiUrl || '/api/v1';
   private tokenSubject = new BehaviorSubject<string | null>(this.getStoredToken());
   public token$ = this.tokenSubject.asObservable();
 

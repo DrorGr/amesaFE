@@ -292,9 +292,6 @@ import { TranslationService } from '../../services/translation.service';
             <p class="text-xl mb-8 max-w-3xl mx-auto">
               {{ translate('sponsor.joinUsDescription') }}
             </p>
-            <p class="text-2xl mb-8 max-w-4xl mx-auto">
-              {{ translate('sponsor.togetherWeCan') }}
-            </p>
                 <div class="flex justify-center">
                   <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-2xl px-8 py-4" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);">
                     {{ translate('sponsor.becomeSponsorNow') }}
