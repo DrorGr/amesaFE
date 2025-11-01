@@ -48,11 +48,14 @@ import { TranslationService } from '../../services/translation.service';
           
           <div class="grid md:grid-cols-2 gap-12 items-center">
             <div class="space-y-6">
-              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ translate('about.founded') }}
+              <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                {{ translate('about.mainParagraph1') }}
               </p>
-              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ translate('about.coreOffering') }}
+              <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                {{ translate('about.mainParagraph2') }}
+              </p>
+              <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                {{ translate('about.mainParagraph3') }}
               </p>
             </div>
             <div class="relative">
@@ -89,10 +92,7 @@ import { TranslationService } from '../../services/translation.service';
                 </svg>
               </div>
               <p class="text-xl md:text-2xl text-gray-800 dark:text-gray-200 leading-relaxed font-medium">
-                All our profits are re-invested in our <a href="#community" class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 underline font-bold transition-colors duration-200">community</a>
-              </p>
-              <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                Homeless, orphans and animal rescue are our top priorities
+                {{ translate('about.communityProfits') }}
               </p>
             </div>
           </div>
