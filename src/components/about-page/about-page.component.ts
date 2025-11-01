@@ -69,45 +69,6 @@ import { TranslationService } from '../../services/translation.service';
           </div>
         </section>
 
-        <!-- 4Wins Model Section -->
-        <section class="mb-20">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              {{ translate('about.fourWinsModel') }}
-            </h2>
-            <div class="w-24 h-1 bg-emerald-600 mx-auto rounded-full mb-6"></div>
-            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              {{ translate('about.fourWinsSubtitle') }}
-            </p>
-          </div>
-
-          <div class="grid md:grid-cols-2 gap-12 items-center">
-            <div class="relative">
-              <img 
-                src="https://images.pexels.com/photos/1181393/pexels-photo-1181393.jpeg" 
-                alt="Property lottery" 
-                class="rounded-xl shadow-2xl">
-              <div class="absolute -top-6 -left-6 w-24 h-24 bg-emerald-600 rounded-full flex items-center justify-center">
-                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-            </div>
-            
-            <div class="space-y-6">
-              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ translate('about.breakOdds') }}
-              </p>
-              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ translate('about.minimumPrice') }}
-              </p>
-              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ translate('about.foundedFrom') }}
-              </p>
-            </div>
-          </div>
-        </section>
-
         <!-- Social Impact Section -->
         <section class="mb-20">
           <div class="text-center mb-12">
