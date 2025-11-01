@@ -16,8 +16,8 @@ import { AnimateOnScrollDirective } from '../../directives/animate-on-scroll.dir
         <!-- Background Image -->
         <div class="absolute inset-0">
           <img 
-            src="https://images.pexels.com/photos/1157557/pexels-photo-1157557.jpeg" 
-            alt="Winner celebration" 
+            src="assets/AM-2.png" 
+            alt="AMESA lottery winner celebration" 
             class="w-full h-full object-cover">
           <!-- Shaped blue overlay -->
           <div class="absolute inset-0">
