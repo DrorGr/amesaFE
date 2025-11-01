@@ -100,8 +100,7 @@ import { TranslationService } from '../../services/translation.service';
             </p>
             <button
               (click)="navigateToHome()"
-              class="btn-outline bg-white text-blue-600 hover:bg-gray-100 border-white"
-              style="color: #2563EB;">
+              class="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 border-2 border-white">
               {{ translate('howItWorks.browseLotteries') }}
             </button>
           </div>

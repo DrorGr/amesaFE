@@ -201,10 +201,10 @@ import { TranslationService } from '../../services/translation.service';
               {{ translate('about.joinUsDescription') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-2xl px-8 py-4" style="color: #2563EB;">
+              <button class="bg-white text-blue-600 hover:bg-gray-100 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
                 {{ translate('about.browseLotteries') }}
               </button>
-              <button class="btn-outline border-white text-white hover:bg-white hover:text-blue-600 text-2xl px-8 py-4">
+              <button class="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
                 {{ translate('about.learnMore') }}
               </button>
             </div>
