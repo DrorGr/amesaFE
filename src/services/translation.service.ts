@@ -363,7 +363,7 @@ export class TranslationService {
       'sponsor.becomeSponsor': 'Become a Sponsor',
       'sponsor.whyWeExist': 'Why We Exist',
       'sponsor.whyWeExistSubtitle': 'Our commitment to making a difference',
-      'sponsor.homelessShelters': 'Homeless Shelters',
+      'sponsor.homelessShelters': 'Home shelter',
       'sponsor.homelessSheltersDesc': 'Provide dignity and a chance to rebuild lives',
       'sponsor.orphanShelters': 'Orphan Shelters',
       'sponsor.orphanSheltersDesc': 'Give children hope and a brighter future',

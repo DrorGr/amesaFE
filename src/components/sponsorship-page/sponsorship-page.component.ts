@@ -137,8 +137,8 @@ import { TranslationService } from '../../services/translation.service';
             </div>
             <div class="relative">
               <img 
-                src="https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg" 
-                alt="Property ownership" 
+                src="assets/am-39.png" 
+                alt="Sprouting plant - Growth and new beginnings" 
                 class="rounded-xl shadow-2xl">
               <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-emerald-600 rounded-full flex items-center justify-center">
                 <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
