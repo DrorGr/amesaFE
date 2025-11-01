@@ -70,7 +70,7 @@ import { TranslationService } from '../../services/translation.service';
         </section>
 
         <!-- Social Impact Section -->
-        <section class="mb-20">
+        <section class="mb-20" id="community">
           <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {{ translate('about.socialImpact') }}
@@ -82,14 +82,17 @@ import { TranslationService } from '../../services/translation.service';
           </div>
 
           <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl p-8 md:p-12">
-            <div class="text-center">
+            <div class="text-center space-y-4">
               <div class="w-20 h-20 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                 </svg>
               </div>
               <p class="text-xl md:text-2xl text-gray-800 dark:text-gray-200 leading-relaxed font-medium">
-                {{ translate('about.profitsUsage') }}
+                All our profits are re-invested in our <a href="#community" class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 underline font-bold transition-colors duration-200">community</a>
+              </p>
+              <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                Homeless, orphans and animal rescue are our top priorities
               </p>
             </div>
           </div>
