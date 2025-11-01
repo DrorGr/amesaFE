@@ -23,7 +23,7 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **Version Control**: Git with GitHub repositories
 - **Package Management**: npm (frontend), NuGet (backend)
 
-## Current Status (2025-10-31)
+## Current Status (2025-11-01)
 - **All environments fully operational**: Dev, Stage, Production
 - **Backend Admin Panel**: ✅ Deployed and working on all environments
 - **CloudFront configurations**: Fixed origin path issues + added API routing
@@ -32,6 +32,19 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **UI/UX Improvements**: ✅ Tier 1 completed (15 tasks) - See "Recent Changes" below
 - **Working tree**: Clean for Tier 1, continuing with Tier 2-4
 - **Branch**: dev (feature branch for UI improvements)
+
+## 🎯 Current Sprint (Nov 2025) - NEW!
+- **Sprint Plan**: See `../MetaData/Documentation/SPRINT_PLAN_2025_11.md`
+- **Quick Reference**: See `../MetaData/Reference/SPRINT_QUICK_REFERENCE.md`
+- **Total Tasks**: 46 open Jira tasks (all assigned)
+- **This Week Focus**: About Page overhaul (AM-12 + 9 sub-tasks)
+- **Priority Bug**: AM-72 - "Browse available lotteries" text visibility issue
+- **5-Week Roadmap**:
+  - Week 1 (Nov 4-10): About Page + Home Page + Bug Fix
+  - Week 2 (Nov 11-17): Become a Sponsor + How it Works  
+  - Week 3 (Nov 18-24): Promotions System (Revenue Feature)
+  - Week 4 (Nov 25-Dec 1): Help Center + FAQ + Members Page
+  - Week 5 (Dec 2-8): Account Settings + Backend Tasks
 
 ## Environment URLs
 - **Development**: https://d2rmamd755wq7j.cloudfront.net
@@ -197,7 +210,28 @@ git checkout main
 - **Fixed database authentication** - Resolved staging backend DB connectivity
 - **Updated all branches** - dev, stage, and main synchronized
 
-## Recent Changes (2025-10-31) - TIERS 1-3 UI/UX + OAUTH IMPLEMENTATION ✅
+## Recent Changes
+
+### 2025-11-01: Sprint Planning & Jira Organization ✅
+**What was accomplished:**
+- ✅ Connected to Jira and retrieved 47 open tasks
+- ✅ Closed duplicate task AM-19 (duplicate of AM-72)
+- ✅ Assigned all 12 unassigned tasks to Dror Granot
+- ✅ Created comprehensive 5-week sprint plan (46 pages)
+- ✅ Created sprint quick reference card
+- ✅ Updated FE/.cursorrules with sprint information
+
+**Deliverables:**
+- `MetaData/Documentation/SPRINT_PLAN_2025_11.md` - Full sprint plan
+- `MetaData/Reference/SPRINT_QUICK_REFERENCE.md` - Quick reference card
+
+**Next Actions:**
+- 🎯 Start Week 1: About Page overhaul (AM-12 + 9 sub-tasks)
+- 🔴 Priority: Fix AM-72 bug (Browse available lotteries visibility)
+
+---
+
+### 2025-10-31: TIERS 1-3 UI/UX + OAUTH IMPLEMENTATION ✅
 **Status**: Tier 1 ✅ (15/15) | Tier 2 ✅ (18/18) | Tier 3 ✅ (10/16 core features) | OAuth ✅ (Frontend Complete)
 
 ### TIER 1: Translation & Basic Styling (15 tasks) ✅
