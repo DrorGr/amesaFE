@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { ApiService } from './api.service';
+import { environment } from '../environments/environment';
 import { 
   User, 
   UserDto, 
@@ -170,29 +171,171 @@ export class AuthService {
     );
   }
 
-  // Social Login Methods (to be implemented with OAuth providers)
+  // Social Login Methods - OAuth Integration
   async loginWithGoogle(): Promise<boolean> {
-    // TODO: Implement Google OAuth integration
-    console.log('Google login not yet implemented');
-    return Promise.resolve(false);
+    try {
+      const googleAuthUrl = `${environment.backendUrl}/api/oauth/google`;
+      const popup = this.openOAuthPopup(googleAuthUrl, 'Google Login');
+      
+      if (!popup) {
+        console.error('Failed to open OAuth popup. Please check popup blockers.');
+        return false;
+      }
+      
+      const result = await this.waitForOAuthCallback(popup);
+      
+      if (result.success && result.token && result.user) {
+        this.apiService.setToken(result.token);
+        this.setUser(result.user);
+        this.isAuthenticatedSubject.next(true);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Google OAuth error:', error);
+      return false;
+    }
   }
 
   async loginWithMeta(): Promise<boolean> {
-    // TODO: Implement Meta/Facebook OAuth integration
-    console.log('Meta login not yet implemented');
-    return Promise.resolve(false);
+    try {
+      const facebookAuthUrl = `${environment.backendUrl}/api/oauth/facebook`;
+      const popup = this.openOAuthPopup(facebookAuthUrl, 'Facebook Login');
+      
+      if (!popup) {
+        console.error('Failed to open OAuth popup. Please check popup blockers.');
+        return false;
+      }
+      
+      const result = await this.waitForOAuthCallback(popup);
+      
+      if (result.success && result.token && result.user) {
+        this.apiService.setToken(result.token);
+        this.setUser(result.user);
+        this.isAuthenticatedSubject.next(true);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Facebook OAuth error:', error);
+      return false;
+    }
   }
 
   async loginWithApple(): Promise<boolean> {
-    // TODO: Implement Apple OAuth integration
-    console.log('Apple login not yet implemented');
-    return Promise.resolve(false);
+    try {
+      const appleAuthUrl = `${environment.backendUrl}/api/oauth/apple`;
+      const popup = this.openOAuthPopup(appleAuthUrl, 'Apple Login');
+      
+      if (!popup) {
+        console.error('Failed to open OAuth popup. Please check popup blockers.');
+        return false;
+      }
+      
+      const result = await this.waitForOAuthCallback(popup);
+      
+      if (result.success && result.token && result.user) {
+        this.apiService.setToken(result.token);
+        this.setUser(result.user);
+        this.isAuthenticatedSubject.next(true);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Apple OAuth error:', error);
+      return false;
+    }
   }
 
   async loginWithTwitter(): Promise<boolean> {
     // TODO: Implement Twitter OAuth integration
     console.log('Twitter login not yet implemented');
     return Promise.resolve(false);
+  }
+
+  // OAuth Helper Methods
+  private openOAuthPopup(url: string, title: string): Window | null {
+    const width = 600;
+    const height = 700;
+    const left = Math.max(0, (screen.width - width) / 2);
+    const top = Math.max(0, (screen.height - height) / 2);
+    
+    const features = [
+      `width=${width}`,
+      `height=${height}`,
+      `left=${left}`,
+      `top=${top}`,
+      'toolbar=no',
+      'menubar=no',
+      'scrollbars=yes',
+      'resizable=yes',
+      'status=no',
+      'location=yes'
+    ].join(',');
+    
+    try {
+      const popup = window.open(url, title, features);
+      
+      if (popup) {
+        popup.focus();
+      }
+      
+      return popup;
+    } catch (error) {
+      console.error('Failed to open popup:', error);
+      return null;
+    }
+  }
+
+  private waitForOAuthCallback(popup: Window | null): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!popup) {
+        reject(new Error('No popup window available'));
+        return;
+      }
+
+      const timeout = setTimeout(() => {
+        popup?.close();
+        reject(new Error('OAuth authentication timed out. Please try again.'));
+      }, 300000); // 5 minutes
+
+      const checkPopupClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkPopupClosed);
+          clearTimeout(timeout);
+          reject(new Error('Authentication cancelled'));
+        }
+      }, 500);
+
+      const messageHandler = (event: MessageEvent) => {
+        if (event.origin !== window.location.origin) {
+          console.warn('Received message from unauthorized origin:', event.origin);
+          return;
+        }
+
+        if (event.data.type === 'oauth-success') {
+          clearTimeout(timeout);
+          clearInterval(checkPopupClosed);
+          window.removeEventListener('message', messageHandler);
+          
+          popup?.close();
+          resolve(event.data);
+        }
+        else if (event.data.type === 'oauth-error') {
+          clearTimeout(timeout);
+          clearInterval(checkPopupClosed);
+          window.removeEventListener('message', messageHandler);
+          
+          popup?.close();
+          reject(new Error(event.data.message || 'OAuth authentication failed'));
+        }
+      };
+
+      window.addEventListener('message', messageHandler);
+    });
   }
 
   private setUser(userDto: UserDto): void {

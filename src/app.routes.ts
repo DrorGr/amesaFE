@@ -56,6 +56,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/lottery-result-detail/lottery-result-detail.component').then(m => m.LotteryResultDetailComponent)
   },
   {
+    path: 'auth/callback',
+    loadComponent: () => import('./components/oauth-callback/oauth-callback.component').then(m => m.OAuthCallbackComponent)
+  },
+  {
     path: '**',
     redirectTo: ''
   }

@@ -61,7 +61,7 @@ interface StarReward {
           <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div class="text-white max-w-4xl">
               <h1 class="text-3xl md:text-4xl font-black mb-4 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
-                {{ translate('member.heroTitle') }}
+                {{ userProfile().firstName }} {{ translate('member.accountSettings') }}
               </h1>
               <p class="text-2xl md:text-2xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('member.heroSubtitle') }}
@@ -73,38 +73,60 @@ interface StarReward {
 
       <!-- Main Content -->
       <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <!-- User Profile Header -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8">
-          <div class="flex items-center justify-between">
+        <!-- User Profile Header (AM-79: Enhanced Layout) -->
+        <div class="bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-2xl shadow-xl p-8 mb-8 border border-gray-100 dark:border-gray-700">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <!-- Left: Avatar + User Info -->
             <div class="flex items-center space-x-6">
-              <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <span class="text-2xl font-bold text-white">
-                  {{ userProfile().firstName.charAt(0) }}{{ userProfile().lastName.charAt(0) }}
-                </span>
+              <div class="relative">
+                <div class="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-gray-700">
+                  <span class="text-3xl font-bold text-white">
+                    {{ userProfile().firstName.charAt(0) }}{{ userProfile().lastName.charAt(0) }}
+                  </span>
+                </div>
+                @if (userProfile().isVerified) {
+                  <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-700">
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                  </div>
+                }
               </div>
               <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3 flex items-center">
                   {{ userProfile().firstName }} {{ userProfile().lastName }}
-                  @if (userProfile().isVerified) {
-                    <svg class="w-6 h-6 text-green-500 ml-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                  }
                 </h2>
-                <p class="text-gray-600 dark:text-gray-400 capitalize">
-                  {{ translate('member.accountType') }}: {{ translate('member.' + userProfile().accountType) }}
-                </p>
-                <p class="text-sm text-gray-500 dark:text-gray-500">
-                  {{ translate('member.memberSince') }}: {{ userProfile().joinDate }}
+                <div class="mb-3">
+                  <span 
+                    class="account-type-badge"
+                    [class.account-type-gold]="userProfile().accountType === 'gold'"
+                    [class.account-type-silver]="userProfile().accountType === 'premium'"
+                    [class.account-type-basic]="userProfile().accountType === 'basic'">
+                    {{ translate('member.' + userProfile().accountType) }}
+                  </span>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  {{ translate('member.memberSince') }}: {{ formatMemberSince(userProfile().joinDate) }}
                 </p>
               </div>
             </div>
-            <div class="text-right">
-              <div class="text-sm text-gray-500 dark:text-gray-500">
-                {{ translate('member.lastLogin') }}
+            <!-- Right: Last Login Info -->
+            <div class="flex items-center gap-3 bg-white dark:bg-gray-900/50 rounded-xl px-6 py-4 shadow-sm">
+              <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
               </div>
-              <div class="text-gray-900 dark:text-white font-medium">
-                {{ userProfile().lastLogin }}
+              <div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ translate('member.lastLogin') }}
+                </div>
+                <div class="text-gray-900 dark:text-white font-semibold">
+                  {{ userProfile().lastLogin }}
+                </div>
               </div>
             </div>
           </div>
@@ -190,47 +212,55 @@ interface StarReward {
                         [readonly]="!isEditingProfile()">
                     </div>
 
-                    <!-- ID Number -->
-                    <div>
+                    <!-- ID Number with Edit Button -->
+                    <div class="md:col-span-2">
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {{ translate('member.idNumber') }}
                       </label>
                       <input
                         type="text"
                         formControlName="idNumber"
-                        class="input-field"
+                        class="input-field mb-3"
                         [readonly]="!isEditingProfile()">
+                      
+                      <!-- Edit Button Below ID Number (AM-80) -->
+                      @if (!isEditingProfile()) {
+                        <button
+                          type="button"
+                          (click)="startEdit()"
+                          class="btn-primary">
+                          {{ translate('member.editProfile') }}
+                        </button>
+                      }
                     </div>
-                  </div>
-
-                  <!-- Read-only fields -->
-                  <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                    <h4 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                      {{ translate('member.readOnlyInfo') }}
-                    </h4>
-                    <div class="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {{ translate('member.email') }}
-                        </label>
-                        <input
-                          type="email"
-                          [value]="userProfile().email"
-                          class="input-field bg-gray-50 dark:bg-gray-700"
-                          readonly>
-                      </div>
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {{ translate('member.phoneNumbers') }}
-                        </label>
-                        <div class="space-y-2">
-                          @for (phone of userProfile().phoneNumbers; track $index) {
-                            <input
-                              type="tel"
-                              [value]="phone"
-                              class="input-field bg-gray-50 dark:bg-gray-700"
-                              readonly>
-                          }
+                    
+                    <!-- Email and Phone as Info List (AM-82) -->
+                    <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-6">
+                      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 space-y-4">
+                        <!-- Email Info -->
+                        <div class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-0">
+                          <div class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ translate('member.email') }}</span>
+                          </div>
+                          <span class="text-sm text-gray-900 dark:text-white font-medium">{{ userProfile().email }}</span>
+                        </div>
+                        
+                        <!-- Phone Numbers Info -->
+                        <div class="py-3">
+                          <div class="flex items-center space-x-3 mb-3">
+                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ translate('member.phoneNumbers') }}</span>
+                          </div>
+                          <div class="space-y-2 ml-8">
+                            @for (phone of userProfile().phoneNumbers; track $index) {
+                              <div class="text-sm text-gray-900 dark:text-white font-medium">{{ phone }}</div>
+                            }
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -244,8 +274,8 @@ interface StarReward {
                       class="btn-outline">
                       {{ translate('member.changePassword') }}
                     </button>
-                    <div class="flex space-x-3">
-                      @if (isEditingProfile()) {
+                    @if (isEditingProfile()) {
+                      <div class="flex space-x-3">
                         <button
                           type="button"
                           (click)="cancelEdit()"
@@ -257,15 +287,8 @@ interface StarReward {
                           class="btn-primary">
                           {{ translate('member.saveChanges') }}
                         </button>
-                      } @else {
-                        <button
-                          type="button"
-                          (click)="startEdit()"
-                          class="btn-primary">
-                          {{ translate('member.editProfile') }}
-                        </button>
-                      }
-                    </div>
+                      </div>
+                    }
                   </div>
                 </form>
 
@@ -273,7 +296,7 @@ interface StarReward {
                 @if (!userProfile().isVerified && (userProfile().accountType === 'gold' || userProfile().accountType === 'premium')) {
                   <div class="mt-8 p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                     <div class="flex items-center">
-                      <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="verify-icon text-yellow-600 dark:text-yellow-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                       </svg>
                       <div>
@@ -561,6 +584,47 @@ interface StarReward {
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+    
+    /* AM-77: Bigger font for info tabs */
+    nav button span {
+      font-size: 1.125rem !important;
+      font-weight: 600 !important;
+    }
+    
+    /* AM-75: Account Type - colored rectangles */
+    .account-type-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 700;
+      font-size: 1.125rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .account-type-gold {
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+      color: #78350F;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    }
+    
+    .account-type-silver {
+      background: linear-gradient(135deg, #E5E7EB 0%, #9CA3AF 100%);
+      color: #1F2937;
+      box-shadow: 0 4px 15px rgba(156, 163, 175, 0.4);
+    }
+    
+    .account-type-basic {
+      background: linear-gradient(135deg, #DBEAFE 0%, #93C5FD 100%);
+      color: #1E40AF;
+      box-shadow: 0 4px 15px rgba(147, 197, 253, 0.4);
+    }
+    
+    /* AM-83: Verify account - bigger triangle icon */
+    .verify-icon {
+      width: 2rem !important;
+      height: 2rem !important;
+    }
   `]
 })
 export class MemberSettingsPageComponent {
@@ -731,5 +795,13 @@ export class MemberSettingsPageComponent {
     return this.userStars()
       .filter(star => !star.isExpired)
       .reduce((total, star) => total + star.points, 0);
+  }
+
+  // AM-76: Format Member Since date from "2024-01-15" to "January 2025"
+  formatMemberSince(dateString: string): string {
+    const date = new Date(dateString);
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
+    return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
   }
 }
