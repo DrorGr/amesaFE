@@ -174,7 +174,7 @@ export class AuthService {
   // Social Login Methods - OAuth Integration
   async loginWithGoogle(): Promise<boolean> {
     try {
-      const googleAuthUrl = `${environment.backendUrl}/auth/google`;
+      const googleAuthUrl = `${environment.backendUrl}/api/oauth/google`;
       const popup = this.openOAuthPopup(googleAuthUrl, 'Google Login');
       
       if (!popup) {
@@ -200,7 +200,7 @@ export class AuthService {
 
   async loginWithMeta(): Promise<boolean> {
     try {
-      const facebookAuthUrl = `${environment.backendUrl}/auth/facebook`;
+      const facebookAuthUrl = `${environment.backendUrl}/api/oauth/facebook`;
       const popup = this.openOAuthPopup(facebookAuthUrl, 'Facebook Login');
       
       if (!popup) {
@@ -226,7 +226,7 @@ export class AuthService {
 
   async loginWithApple(): Promise<boolean> {
     try {
-      const appleAuthUrl = `${environment.backendUrl}/auth/apple`;
+      const appleAuthUrl = `${environment.backendUrl}/api/oauth/apple`;
       const popup = this.openOAuthPopup(appleAuthUrl, 'Apple Login');
       
       if (!popup) {

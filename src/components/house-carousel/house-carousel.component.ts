@@ -96,8 +96,7 @@ import { LotteryService } from '../../services/lottery.service';
                             [class.border-gray-300]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)"
                             [class.dark:border-blue-400]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
                             [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)">
-                            <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover mobile-thumbnail-image" 
-                               >
+                            <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover mobile-thumbnail-image">
                           </button>
                         }
                       </div>
@@ -114,8 +113,7 @@ import { LotteryService } from '../../services/lottery.service';
                           [class.border-gray-300]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)"
                           [class.dark:border-blue-400]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
                           [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)">
-                          <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover mobile-thumbnail-image" 
-                          >
+                          <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover mobile-thumbnail-image">
                         </button>
                       }
                     </div>
@@ -331,7 +329,6 @@ import { LotteryService } from '../../services/lottery.service';
       .mobile-carousel-thumbnail {
         width: 12rem !important;
         height: 7rem !important;
-
       }
       
       /* Override Tailwind classes directly */
@@ -400,47 +397,36 @@ import { LotteryService } from '../../services/lottery.service';
         width: 7.5rem !important;
       }
       
-      .mobile-carousel-thumbnails .mobile-carousel-thumbnail.h-8 {
+      .mobile-carousel-thumbnails .mobile-carousel-thumbnail.h-12 {
         height: 4.5rem !important;
       }
       
-      /* Mobile thumbnail images - make them bigger and more visible */
-      .mobile-thumbnail-image {
-        width: 200% !important;
-        height: 200% !important;
-        object-fit: cover !important;
-        object-position: center !important;
-        border-radius: 0.375rem !important;
-        transform: scale(2) !important;
-        transform-origin: center !important;
-        position: relative !important;
-        z-index: 10 !important;
+      /* Override Tailwind w-20 h-12 classes for mobile thumbnail buttons */
+      .mobile-carousel-thumbnail.w-20 {
+        width: 8rem !important;
       }
       
-      /* Alternative targeting - direct img elements in mobile thumbnails */
-      .mobile-carousel-thumbnails img {
-        width: 200% !important;
-        height: 200% !important;
-        object-fit: cover !important;
-        object-position: center !important;
-        border-radius: 0.375rem !important;
-        transform: scale(2) !important;
-        transform-origin: center !important;
-        position: relative !important;
-
+      .mobile-carousel-thumbnail.h-12 {
+        height: 5rem !important;
+      }
+    }
+    
+    @media (max-width: 640px) {
+      .mobile-carousel-content .text-4xl {
+        font-size: 2.6rem !important;
       }
       
-      /* Even more specific targeting */
-      .mobile-carousel-thumbnail img {
-        width: 200% !important;
-        height: 200% !important;
-        object-fit: cover !important;
-        object-position: center !important;
-        border-radius: 0.375rem !important;
-        transform: scale(2) !important;
-        transform-origin: center !important;
-        position: relative !important;
-        z-index: 10 !important;
+      .mobile-carousel-content .text-2xl {
+        font-size: 1.6rem !important;
+      }
+      
+      .mobile-carousel-content .text-xl {
+        font-size: 1.35rem !important;
+      }
+      
+      .mobile-carousel-button {
+        font-size: 1.6rem !important;
+        padding: 1.25rem 1.5rem !important;
       }
     }
   `]
@@ -453,304 +439,146 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;
   
+  houses = this.lotteryService.getHouses();
+  
   currentSlide = 0;
-  currentHouseImageIndex = 0;
   currentSecondaryImageIndex = 0;
-  isTransitioning = false;
-  private autoSlideInterval: any;
-  private countdownInterval?: number;
-  private intersectionObserver: IntersectionObserver | null = null;
-  loadedImages = new Set<string>();
-
-  // Use computed signal to get active houses from lottery service
-  houses = computed(() => {
-    const allHouses = this.lotteryService.getHouses()();
-    return allHouses.filter(house => house.status === 'active');
-  });
-
-  ngOnInit() {
-    this.startAutoSlide();
-    this.setupIntersectionObserver();
-    // Load the first slide images immediately
-    setTimeout(() => this.loadCurrentSlideImages(), 100);
-    // Start countdown timer
-    this.countdownInterval = window.setInterval(() => {
-      // Force change detection by updating a property
-    }, 1000);
-  }
-
-  ngOnDestroy() {
-    this.stopAutoSlide();
-    if (this.countdownInterval) {
-      clearInterval(this.countdownInterval);
-    }
-    if (this.intersectionObserver) {
-      this.intersectionObserver.disconnect();
-    }
-  }
-
-
-  private startAutoSlide() {
-    this.autoSlideInterval = setInterval(() => {
-      this.nextSlide();
-    }, 8000);
-  }
-
-  private stopAutoSlide() {
-    if (this.autoSlideInterval) {
-      clearInterval(this.autoSlideInterval);
-    }
-  }
-
-  private resetAutoSlide() {
-    this.stopAutoSlide();
-    this.startAutoSlide();
-  }
-
-  private setupIntersectionObserver() {
-    if (typeof IntersectionObserver !== 'undefined') {
-      this.intersectionObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              const img = entry.target as HTMLImageElement;
-              const src = img.dataset['src'];
-              if (src && !this.loadedImages.has(src)) {
-                img.src = src;
-                img.classList.remove('opacity-0');
-                img.classList.add('opacity-100');
-                this.loadedImages.add(src);
-                this.intersectionObserver?.unobserve(img);
-              }
-            }
-          });
-        },
-        {
-          rootMargin: '50px 0px',
-          threshold: 0.1
-        }
-      );
-    }
-  }
-
-  isImageLoaded(imageUrl: string): boolean {
-    return this.loadedImages.has(imageUrl);
-  }
-
-  onImageLoad(event: Event) {
-    const img = event.target as HTMLImageElement;
-    img.classList.remove('opacity-0');
-    img.classList.add('opacity-100');
-  }
-
-  onImageError(event: Event) {
-    const img = event.target as HTMLImageElement;
-    img.classList.add('opacity-50');
-    console.warn('Failed to load image:', img.src);
-  }
-
-  private loadCurrentSlideImages() {
-    const currentHouse = this.getCurrentHouse();
-    if (currentHouse) {
-      // Load the current image immediately
-      const currentImageUrl = currentHouse.images[this.currentHouseImageIndex].url;
-      if (!this.loadedImages.has(currentImageUrl)) {
-        this.loadedImages.add(currentImageUrl);
-      }
-      
-      // Preload adjacent images for smoother transitions
-      const nextImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
-      const prevImageIndex = this.currentHouseImageIndex === 0 
-        ? currentHouse.images.length - 1 
-        : this.currentHouseImageIndex - 1;
-      
-      [nextImageIndex, prevImageIndex].forEach(index => {
-        const imageUrl = currentHouse.images[index].url;
-        if (!this.loadedImages.has(imageUrl)) {
-          const img = new Image();
-          img.onload = () => {
-            this.loadedImages.add(imageUrl);
-          };
-          img.src = imageUrl;
-        }
-      });
-    }
-  }
-
+  currentHouseImageIndex = 0;
+  autoPlayInterval: any;
+  imageCache = new Map<string, boolean>();
+  
   translate(key: string): string {
     return this.translationService.translate(key);
   }
   
-  getCurrentHouse() {
-    return this.houses()[this.currentSlide];
+  isVideo(url: string): boolean {
+    return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg') || url.endsWith('.mov') || url.endsWith('.avi');
   }
   
-  getCurrentHouseImage() {
-    return this.getCurrentHouse().images[this.currentHouseImageIndex];
+  getSecondaryImages(images: { url: string, alt: string }[]): { url: string, alt: string }[] {
+    return images.slice(1);
   }
   
-  nextSlide() {
-    this.currentSlide = (this.currentSlide + 1) % this.houses().length;
-    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-    this.resetAutoSlide();
-    this.loadCurrentSlideImages();
+  getCurrentMainImage(house: any, index: number) {
+    if (this.currentSlide === index) {
+      return house.images[this.currentHouseImageIndex];
+    }
+    return house.images[0];
   }
   
-  previousSlide() {
-    this.currentSlide = this.currentSlide === 0 ? this.houses().length - 1 : this.currentSlide - 1;
-    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-    this.resetAutoSlide();
-    this.loadCurrentSlideImages();
-  }
-  
-  goToSlide(index: number) {
-    if (index < 0 || index >= this.houses().length) return;
-    this.currentSlide = index;
-    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-    this.resetAutoSlide();
-    this.loadCurrentSlideImages();
-  }
-  
-  nextHouseImage() {
-    const currentHouse = this.getCurrentHouse();
-    this.currentHouseImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
-    this.resetAutoSlide();
-  }
-  
-  previousHouseImage() {
-    const currentHouse = this.getCurrentHouse();
-    this.currentHouseImageIndex = this.currentHouseImageIndex === 0 
-      ? currentHouse.images.length - 1 
-      : this.currentHouseImageIndex - 1;
-    this.resetAutoSlide();
+  goToSecondaryImage(index: number) {
+    this.currentSecondaryImageIndex = index;
+    this.currentHouseImageIndex = index + 1;
   }
   
   goToHouseImage(index: number) {
     this.currentHouseImageIndex = index;
-    this.resetAutoSlide();
-    this.loadCurrentSlideImages();
+  }
+  
+  getStatusText(house: any): string {
+    const status = house.status;
+    switch (status) {
+      case 'active': return this.translate('house.active');
+      case 'ended': return this.translate('house.ended');
+      case 'upcoming': return this.translate('house.upcoming');
+      default: return 'Unknown';
+    }
   }
   
   formatPrice(price: number): string {
     return price.toLocaleString();
   }
-
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  }
-
-  getTicketProgressForHouse(house: any): number {
-    return Math.round((house.soldTickets / house.totalTickets) * 100);
+  
+  getOdds(house: any): string {
+    return `1:${house.totalTickets.toLocaleString()}`;
   }
   
-  getImageIndexForHouse(houseIndex: number): number {
-    return houseIndex === this.currentSlide ? this.currentHouseImageIndex : 0;
+  getTicketsAvailableText(house: any): string {
+    const remaining = house.totalTickets - house.soldTickets;
+    return this.translate('house.onlyTicketsAvailable').replace('{count}', remaining.toLocaleString());
   }
-
-  getOdds(house: any): string {
-    const totalTickets = house.totalTickets;
-    return `1:${totalTickets.toLocaleString()}`;
-  }
-
-  getRemainingTickets(house: any): number {
-    return house.totalTickets - house.soldTickets;
-  }
-
+  
   getLotteryCountdown(house: any): string {
     const now = new Date().getTime();
     const endTime = new Date(house.lotteryEndDate).getTime();
     const timeLeft = endTime - now;
-
+    
     if (timeLeft <= 0) {
       return '00:00:00';
     }
-
+    
     const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
     const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-    // Show seconds only when less than 24 hours left
+    
     if (days === 0 && hours < 24) {
       return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     } else {
       return `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     }
   }
-
+  
   getCurrentViewers(): number {
-    // Generate a random number of viewers between 5-50 for demo purposes
     return Math.floor(Math.random() * 46) + 5;
   }
-
-  getTicketsAvailableText(house: any): string {
-    const remaining = this.getRemainingTickets(house);
-    const template = this.translate('house.onlyTicketsAvailable');
-    return template.replace('{count}', remaining.toLocaleString());
+  
+  nextSlide() {
+    this.currentSlide = (this.currentSlide + 1) % this.houses.length;
+    this.currentHouseImageIndex = 0;
+    this.currentSecondaryImageIndex = 0;
   }
-
-  getStatusText(house: any): string {
-    switch (house.status) {
-      case 'active':
-        return this.translate('house.active');
-      case 'ended':
-        return this.translate('house.ended');
-      case 'upcoming':
-        return this.translate('house.upcoming');
-      default:
-        return this.translate('house.active');
+  
+  previousSlide() {
+    this.currentSlide = this.currentSlide === 0 ? this.houses.length - 1 : this.currentSlide - 1;
+    this.currentHouseImageIndex = 0;
+    this.currentSecondaryImageIndex = 0;
+  }
+  
+  goToSlide(index: number) {
+    this.currentSlide = index;
+    this.currentHouseImageIndex = 0;
+    this.currentSecondaryImageIndex = 0;
+  }
+  
+  isImageLoaded(url: string): boolean {
+    return !!this.imageCache.get(url);
+  }
+  
+  onImageLoad(event: Event) {
+    const target = event.target as HTMLImageElement;
+    const datasetSrc = target.dataset['src'];
+    if (datasetSrc) {
+      this.imageCache.set(datasetSrc, true);
+      target.src = datasetSrc;
+      target.style.opacity = '1';
+    } else {
+      this.imageCache.set(target.src, true);
     }
   }
-
+  
+  onImageError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    target.src = 'https://images.pexels.com/photos/186077/pexels-photo-186077.jpeg';
+  }
+  
   openLocationMap(house: any): void {
     const address = house.address || house.location || house.title;
     const city = house.city || 'New York';
-    
-    // Create a search query for Google Maps
-    const searchQuery = encodeURIComponent(`${address}, ${city}`);
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
-    
-    // Open in a new tab
-    window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
-    
-    console.log(`Opening location map for: ${address}, ${city}`);
+    const destination = encodeURIComponent(`${address}, ${city}`);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${destination}`, '_blank');
   }
-
-  // Get only the secondary (non-primary) images for thumbnails
-  getSecondaryImages(images: any[]): any[] {
-    return images.filter(image => !image.isPrimary);
+  
+  ngOnInit(): void {
+    this.autoPlayInterval = setInterval(() => {
+      this.nextSlide();
+    }, 8000);
   }
-
-  // Get the primary image for the main display
-  getPrimaryImage(images: any[]): any {
-    return images.find(image => image.isPrimary) || images[0];
-  }
-
-  // Navigate to a secondary image
-  goToSecondaryImage(index: number) {
-    this.currentSecondaryImageIndex = index;
-    this.resetAutoSlide();
-    this.loadCurrentSlideImages();
-  }
-
-  // Get the current main image to display (primary by default, or selected secondary)
-  getCurrentMainImage(house: any, houseIndex: number): any {
-    if (houseIndex === this.currentSlide && this.currentSecondaryImageIndex >= 0) {
-      const secondaryImages = this.getSecondaryImages(house.images);
-      if (secondaryImages.length > 0 && this.currentSecondaryImageIndex < secondaryImages.length) {
-        return secondaryImages[this.currentSecondaryImageIndex];
-      }
+  
+  ngOnDestroy(): void {
+    if (this.autoPlayInterval) {
+      clearInterval(this.autoPlayInterval);
     }
-    return this.getPrimaryImage(house.images);
-  }
-
-  // AM-5: Check if URL is a video file
-  isVideo(url: string): boolean {
-    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
-    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
   }
 }
+

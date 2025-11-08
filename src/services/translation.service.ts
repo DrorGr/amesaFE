@@ -119,6 +119,76 @@ export class TranslationService {
       'nav.getStarted': 'Get Started',
       'nav.welcome': 'Welcome',
       'nav.logout': 'Logout',
+
+      // Registration Page
+      'register.heroTitle': 'Create Your Amesa Account',
+      'register.heroSubtitle': 'Unlock access to exclusive property lotteries in just a few steps.',
+      'register.quickRegistration': 'Quick Registration',
+      'register.quickRegistrationDesc': 'Start with a social account or continue with the full registration form.',
+      'register.personalDetails': 'Personal Details',
+      'register.personalDetailsDesc': 'Tell us a bit about yourself to personalize your experience.',
+      'register.username': 'Username',
+      'register.usernamePlaceholder': 'Choose a unique username',
+      'register.usernameExists': 'This username is already taken. Try another one.',
+      'register.suggestedUsernames': 'Suggested usernames',
+      'register.firstName': 'First Name',
+      'register.firstNamePlaceholder': 'Enter your first name',
+      'register.lastName': 'Last Name',
+      'register.lastNamePlaceholder': 'Enter your last name',
+      'register.idNumber': 'ID Number',
+      'register.idNumberPlaceholder': 'Enter your ID or passport number',
+      'register.gender': 'Gender',
+      'register.selectGender': 'Select gender',
+      'register.male': 'Male',
+      'register.female': 'Female',
+      'register.other': 'Other',
+      'register.dateOfBirth': 'Date of Birth',
+      'register.address': 'Address',
+      'register.optional': 'Optional',
+      'register.country': 'Country',
+      'register.countryPlaceholder': 'Enter your country',
+      'register.city': 'City',
+      'register.cityPlaceholder': 'Enter your city',
+      'register.street': 'Street',
+      'register.streetPlaceholder': 'Enter your street',
+      'register.houseNumber': 'House Number',
+      'register.houseNumberPlaceholder': 'Enter your house number',
+      'register.zipCode': 'ZIP Code',
+      'register.zipCodePlaceholder': 'Enter your ZIP or postal code',
+      'register.nextStep': 'Next Step',
+      'register.communication': 'Communication',
+      'register.communicationMethods': 'Contact Preferences',
+      'register.communicationMethodsDesc': 'Choose how we can reach you with important updates.',
+      'register.email': 'Email',
+      'register.emailPlaceholder': 'Enter your email address',
+      'register.emailVerified': 'Email verified',
+      'register.phone': 'Phone Number',
+      'register.phonePlaceholder': 'Enter your phone number',
+      'register.addAnother': 'Add another number',
+      'register.previousStep': 'Previous Step',
+      'register.createPassword': 'Create a Password',
+      'register.createPasswordDesc': 'Secure your account with a strong password.',
+      'register.password': 'Password',
+      'register.passwordPlaceholder': 'Create a password',
+      'register.passwordRequirements': 'Use at least 8 characters with letters, numbers, and symbols.',
+      'register.confirmPassword': 'Confirm Password',
+      'register.confirmPasswordPlaceholder': 'Re-enter your password',
+      'register.passwordsDoNotMatch': 'Passwords do not match.',
+      'register.createAccount': 'Create Account',
+      'register.identityValidation': 'Identity Verification',
+      'register.identityValidationDesc': 'Upload your documents so we can verify your identity.',
+      'register.privacyNotice': 'Privacy Notice',
+      'register.privacyNoticeDesc': 'Your documents are encrypted and used only for verification purposes.',
+      'register.passportIdNumber': 'Passport / ID Number',
+      'register.passportIdNumberPlaceholder': 'Enter the number exactly as it appears on your document',
+      'register.passportFront': 'Passport Front',
+      'register.passportBack': 'Passport Back',
+      'register.uploadImage': 'Upload Image',
+      'register.imageUploaded': 'Image uploaded successfully',
+      'register.validateDetails': 'Validate Details',
+      'register.faceCapture': 'Face Capture',
+      'register.captureFace': 'Capture Face',
+      'register.completeRegistration': 'Complete Registration',
       'hero.title': 'Win Your Dream Home',
       'hero.subtitle': 'Enter exclusive house lotteries and get the chance to win amazing properties at a fraction of their market value.',
       'auth.signIn': 'Sign In',
@@ -767,7 +837,14 @@ export class TranslationService {
    */
   translate(key: string): string {
     const translations = this.currentTranslations();
-    return translations[key] || key; // Return the key if translation not found
+    const translatedValue = translations?.[key];
+
+    if (translatedValue) {
+      return translatedValue;
+    }
+
+    const fallbackValue = this.fallbackTranslations.en?.[key];
+    return fallbackValue || key; // Return the key if translation not found anywhere
   }
 
   /**
