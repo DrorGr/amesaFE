@@ -3,14 +3,21 @@ import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { environment } from '../environments/environment';
-import { 
-  User, 
-  UserDto, 
-  AuthResponse, 
-  RegisterRequest, 
+import {
+  User,
+  UserDto,
+  AuthResponse,
+  RegisterRequest,
   LoginRequest,
-  UpdateUserProfileRequest 
+  UpdateUserProfileRequest
 } from '../models/house.model';
+
+interface OAuthSuccessMessage {
+  type: 'oauth-success';
+  success: true;
+  token: string;
+  user: UserDto;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -290,7 +297,7 @@ export class AuthService {
     }
   }
 
-  private waitForOAuthCallback(popup: Window | null): Promise<any> {
+  private waitForOAuthCallback(popup: Window | null): Promise<OAuthSuccessMessage> {
     return new Promise((resolve, reject) => {
       if (!popup) {
         reject(new Error('No popup window available'));
@@ -302,11 +309,29 @@ export class AuthService {
         reject(new Error('OAuth authentication timed out. Please try again.'));
       }, 300000); // 5 minutes
 
+      let hasCompleted = false;
+      let consecutiveClosedChecks = 0;
+
+      const cleanup = () => {
+        clearTimeout(timeout);
+        clearInterval(checkPopupClosed);
+        window.removeEventListener('message', messageHandler);
+      };
+
       const checkPopupClosed = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkPopupClosed);
-          clearTimeout(timeout);
-          reject(new Error('Authentication cancelled'));
+        try {
+          if (popup.closed) {
+            consecutiveClosedChecks++;
+
+            if (consecutiveClosedChecks >= 3 && !hasCompleted) {
+              cleanup();
+              reject(new Error('Authentication cancelled'));
+            }
+          } else {
+            consecutiveClosedChecks = 0;
+          }
+        } catch (err) {
+          console.warn('Popup closed check failed', err);
         }
       }, 500);
 
@@ -317,18 +342,16 @@ export class AuthService {
         }
 
         if (event.data.type === 'oauth-success') {
-          clearTimeout(timeout);
-          clearInterval(checkPopupClosed);
-          window.removeEventListener('message', messageHandler);
-          
+          hasCompleted = true;
+          cleanup();
+
           popup?.close();
-          resolve(event.data);
+          resolve(event.data as OAuthSuccessMessage);
         }
         else if (event.data.type === 'oauth-error') {
-          clearTimeout(timeout);
-          clearInterval(checkPopupClosed);
-          window.removeEventListener('message', messageHandler);
-          
+          hasCompleted = true;
+          cleanup();
+
           popup?.close();
           reject(new Error(event.data.message || 'OAuth authentication failed'));
         }
@@ -342,12 +365,16 @@ export class AuthService {
     this.currentUserDto.set(userDto);
     
     // Convert UserDto to User for backward compatibility
+    const provider = userDto.authProvider
+      ? (userDto.authProvider.toLowerCase() as User['provider'])
+      : undefined;
+
     const user: User = {
       id: userDto.id,
       name: `${userDto.firstName} ${userDto.lastName}`,
       email: userDto.email,
       isAuthenticated: true,
-      provider: userDto.authProvider as any
+      provider
     };
     
     this.currentUser.set(user);
