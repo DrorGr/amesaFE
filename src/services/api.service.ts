@@ -34,7 +34,19 @@ export class ApiService {
   private tokenSubject = new BehaviorSubject<string | null>(this.getStoredToken());
   public token$ = this.tokenSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // Debug: Log the baseUrl being used
+    console.log('[API Service] Base URL:', this.baseUrl);
+    console.log('[API Service] Environment:', environment);
+    if (!this.baseUrl || this.baseUrl.includes('localhost')) {
+      console.error('[API Service] ERROR: Invalid baseUrl! Using fallback.');
+      // Force production URL if localhost detected
+      if (environment.production) {
+        this.baseUrl = 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
+        console.log('[API Service] Fixed baseUrl to:', this.baseUrl);
+      }
+    }
+  }
 
   private getStoredToken(): string | null {
     return localStorage.getItem('access_token');
