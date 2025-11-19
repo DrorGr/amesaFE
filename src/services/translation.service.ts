@@ -403,7 +403,11 @@ export class TranslationService {
   };
 
   constructor(private apiService: ApiService) {
+    console.log('[Translation Service] Constructor called');
+    console.log('[Translation Service] Initial language:', this.currentLanguage());
+    console.log('[Translation Service] API Service baseUrl:', this.apiService.getBaseUrl());
     // Load initial translations
+    console.log('[Translation Service] Loading initial translations...');
     this.loadTranslations(this.currentLanguage());
   }
 
