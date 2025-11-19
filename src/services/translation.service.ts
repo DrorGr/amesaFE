@@ -512,33 +512,53 @@ export class TranslationService {
    */
   private loadTranslations(language: Language): void {
     if (this.isLoading.value) {
+      console.log(`[Translation Service] Already loading translations for ${language}, skipping...`);
       return; // Already loading
     }
 
+    console.log(`[Translation Service] Loading translations for language: ${language}`);
     this.isLoading.next(true);
     this.error.next(null);
 
-    this.apiService.get<TranslationsResponse>(`translations/${language}`)
+    const url = `translations/${language}`;
+    console.log(`[Translation Service] Making API request to: ${url}`);
+    
+    this.apiService.get<TranslationsResponse>(url)
       .pipe(
+        tap(response => {
+          console.log(`[Translation Service] API Response received:`, response);
+        }),
         map(response => {
           if (response.success && response.data) {
+            console.log(`[Translation Service] Translations data:`, response.data);
+            console.log(`[Translation Service] Translation count:`, Object.keys(response.data.translations || {}).length);
             return response.data;
           }
+          console.error(`[Translation Service] Invalid response format:`, response);
           throw new Error('Invalid response format');
         }),
         tap(data => {
+          console.log(`[Translation Service] Caching translations for ${language}`);
           const newCache = new Map(this.translationsCache());
           newCache.set(language, data.translations);
           this.translationsCache.set(newCache);
           this.lastUpdated.set(language, new Date(data.lastUpdated));
           this.isLoading.next(false);
+          console.log(`[Translation Service] Translations loaded successfully for ${language}`);
         }),
         catchError(error => {
-          console.warn(`Failed to load translations for ${language}, using fallback:`, error);
+          console.error(`[Translation Service] Failed to load translations for ${language}:`, error);
+          console.error(`[Translation Service] Error details:`, {
+            message: error.message,
+            status: error.status,
+            statusText: error.statusText,
+            url: error.url
+          });
           this.error.next(`Failed to load translations for ${language}`);
           this.isLoading.next(false);
           
           // Use fallback translations
+          console.warn(`[Translation Service] Using fallback translations for ${language}`);
           const newCache = new Map(this.translationsCache());
           newCache.set(language, this.fallbackTranslations[language]);
           this.translationsCache.set(newCache);
