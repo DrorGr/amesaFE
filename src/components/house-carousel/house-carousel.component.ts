@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
@@ -449,6 +449,10 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private countdownInterval?: number;
   private intersectionObserver: IntersectionObserver | null = null;
   loadedImages = new Set<string>();
+  
+  // Use signals for values that change over time to avoid change detection errors
+  currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
+  currentTime = signal<number>(Date.now());
 
   // Use computed signal to get active houses from lottery service
   houses = computed(() => {
@@ -461,9 +465,13 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.setupIntersectionObserver();
     // Load the first slide images immediately
     setTimeout(() => this.loadCurrentSlideImages(), 100);
-    // Start countdown timer
+    // Start countdown timer - update signal to trigger change detection properly
     this.countdownInterval = window.setInterval(() => {
-      // Force change detection by updating a property
+      this.currentTime.set(Date.now());
+      // Update viewers count occasionally (every 5 seconds) for realism
+      if (Math.random() < 0.2) {
+        this.currentViewers.set(Math.floor(Math.random() * 46) + 5);
+      }
     }, 1000);
   }
 
@@ -649,7 +657,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   getLotteryCountdown(house: any): string {
-    const now = new Date().getTime();
+    const now = this.currentTime();
     const endTime = new Date(house.lotteryEndDate).getTime();
     const timeLeft = endTime - now;
 
@@ -671,8 +679,8 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   getCurrentViewers(): number {
-    // Generate a random number of viewers between 5-50 for demo purposes
-    return Math.floor(Math.random() * 46) + 5;
+    // Return the signal value to avoid change detection errors
+    return this.currentViewers();
   }
 
   getTicketsAvailableText(house: any): string {

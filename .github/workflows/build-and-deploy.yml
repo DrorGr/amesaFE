@@ -1,0 +1,89 @@
+name: Build and Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:ci
+        continue-on-error: true
+
+      - name: Build for production
+        if: github.ref == 'refs/heads/main'
+        run: npm run build:prod
+        env:
+          API_URL: https://dpqbvdgnenckf.cloudfront.net/api/v1
+          BACKEND_URL: https://dpqbvdgnenckf.cloudfront.net
+          FRONTEND_URL: https://dpqbvdgnenckf.cloudfront.net
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-files
+          path: dist/
+
+  deploy-prod:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+          path: dist/
+
+      - name: Parse AWS credentials
+        run: |
+          echo "AWS_ACCESS_KEY_ID=$(echo '${{ secrets.AWS }}' | grep 'AWS_ACCESS_KEY_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo '${{ secrets.AWS }}' | grep 'AWS_SECRET_ACCESS_KEY' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+          echo "PROD_CLOUDFRONT_ID=$(echo '${{ secrets.AWS }}' | grep 'PROD_CLOUDFRONT_ID' | cut -d'=' -f2 | tr -d ' ')" >> $GITHUB_ENV
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-north-1
+
+      - name: Deploy to AWS S3 (Production)
+        run: |
+          echo "🚀 Deploying to S3 bucket: amesa-frontend-prod"
+          aws s3 sync dist/demo/browser s3://amesa-frontend-prod --delete --cache-control "public, max-age=31536000"
+          aws s3 cp dist/demo/browser/index.html s3://amesa-frontend-prod/index.html --cache-control "no-cache, no-store, must-revalidate"
+          echo "✅ Production deployment completed!"
+
+      - name: Invalidate CloudFront Cache (Production)
+        run: |
+          echo "🔄 Invalidating CloudFront: $PROD_CLOUDFRONT_ID"
+          aws cloudfront create-invalidation --distribution-id $PROD_CLOUDFRONT_ID --paths "/*"
+          echo "✅ CloudFront cache invalidated!"
+

@@ -11,25 +11,40 @@ import { TranslationService } from '../../services/translation.service';
       <!-- Hero Section -->
       <section class="relative overflow-hidden">
         <div class="relative h-96 md:h-[500px]">
-          <!-- Background Image -->
-          <div class="absolute inset-0">
-            <img 
-              src="https://images.pexels.com/photos/1181391/pexels-photo-1181391.jpeg" 
-              alt="About Amesa" 
-              class="w-full h-full object-cover">
-            <!-- Gradient overlay -->
-            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500 via-blue-400 via-blue-300 via-blue-200 via-blue-100 to-transparent opacity-75"></div>
+          <!-- Background with gradient -->
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400">
+            <!-- Subtle pattern overlay -->
+            <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
           </div>
           
           <!-- Content -->
-          <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-            <div class="text-white max-w-4xl">
-              <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
-                {{ translate('about.heroTitle') }}
-              </h1>
-              <p class="text-xl md:text-2xl mb-8 leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
-                {{ translate('about.heroSubtitle') }}
-              </p>
+          <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col items-center justify-center text-center">
+            <!-- AMESA Logo -->
+            <div class="mb-8 transform hover:scale-105 transition-transform duration-300">
+              <img 
+                src="assets/AmesaNoBG.png" 
+                alt="AMESA" 
+                class="h-32 md:h-40 w-auto drop-shadow-2xl">
+            </div>
+            
+            <!-- Title -->
+            <h1 class="text-5xl md:text-7xl font-black mb-4 text-white leading-tight drop-shadow-lg" style="font-family: 'Kalam', cursive;">
+              {{ translate('about.heroTitle') }}
+            </h1>
+            
+          <!-- Subtitle -->
+            <p class="text-xl md:text-2xl mb-8 text-white/95 max-w-3xl leading-relaxed drop-shadow-md">
+              {{ translate('about.heroSubtitle') }}
+            </p>
+            
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 mt-4">
+              <button class="bg-white text-blue-600 hover:bg-gray-100 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                {{ translate('about.browseLotteries') }}
+              </button>
+              <button class="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                {{ translate('about.learnMore') }}
+              </button>
             </div>
           </div>
         </div>
@@ -48,11 +63,14 @@ import { TranslationService } from '../../services/translation.service';
           
           <div class="grid md:grid-cols-2 gap-12 items-center">
             <div class="space-y-6">
-              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ translate('about.founded') }}
+              <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                {{ translate('about.mainParagraph1') }}
               </p>
-              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ translate('about.coreOffering') }}
+              <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                {{ translate('about.mainParagraph2') }}
+              </p>
+              <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                {{ translate('about.mainParagraph3') }}
               </p>
             </div>
             <div class="relative">
@@ -69,47 +87,8 @@ import { TranslationService } from '../../services/translation.service';
           </div>
         </section>
 
-        <!-- 4Wins Model Section -->
-        <section class="mb-20">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              {{ translate('about.fourWinsModel') }}
-            </h2>
-            <div class="w-24 h-1 bg-emerald-600 mx-auto rounded-full mb-6"></div>
-            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              {{ translate('about.fourWinsSubtitle') }}
-            </p>
-          </div>
-
-          <div class="grid md:grid-cols-2 gap-12 items-center">
-            <div class="relative">
-              <img 
-                src="https://images.pexels.com/photos/1181393/pexels-photo-1181393.jpeg" 
-                alt="Property lottery" 
-                class="rounded-xl shadow-2xl">
-              <div class="absolute -top-6 -left-6 w-24 h-24 bg-emerald-600 rounded-full flex items-center justify-center">
-                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-            </div>
-            
-            <div class="space-y-6">
-              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ translate('about.breakOdds') }}
-              </p>
-              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ translate('about.minimumPrice') }}
-              </p>
-              <p class="text-2xl text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ translate('about.foundedFrom') }}
-              </p>
-            </div>
-          </div>
-        </section>
-
         <!-- Social Impact Section -->
-        <section class="mb-20">
+        <section class="mb-20" id="community">
           <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {{ translate('about.socialImpact') }}
@@ -121,14 +100,14 @@ import { TranslationService } from '../../services/translation.service';
           </div>
 
           <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-2xl p-8 md:p-12">
-            <div class="text-center">
+            <div class="text-center space-y-4">
               <div class="w-20 h-20 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                 </svg>
               </div>
               <p class="text-xl md:text-2xl text-gray-800 dark:text-gray-200 leading-relaxed font-medium">
-                {{ translate('about.profitsUsage') }}
+                {{ translate('about.communityProfits') }}
               </p>
             </div>
           </div>
@@ -201,10 +180,10 @@ import { TranslationService } from '../../services/translation.service';
               {{ translate('about.joinUsDescription') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button class="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-2xl px-8 py-4">
+              <button class="bg-white text-blue-600 hover:bg-gray-100 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
                 {{ translate('about.browseLotteries') }}
               </button>
-              <button class="btn-outline border-white text-white hover:bg-white hover:text-blue-600 text-2xl px-8 py-4">
+              <button class="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
                 {{ translate('about.learnMore') }}
               </button>
             </div>

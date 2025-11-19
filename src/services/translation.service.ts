@@ -1,7 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of, catchError, map, tap } from 'rxjs';
-import { environment } from '../environments/environment';
+import { ApiService } from './api.service';
 
 export type Language = 'en' | 'he' | 'ar' | 'es' | 'fr' | 'pl';
 
@@ -403,7 +402,7 @@ export class TranslationService {
     }
   };
 
-  constructor(private http: HttpClient) {
+  constructor(private apiService: ApiService) {
     // Load initial translations
     this.loadTranslations(this.currentLanguage());
   }
@@ -519,9 +518,14 @@ export class TranslationService {
     this.isLoading.next(true);
     this.error.next(null);
 
-    this.http.get<{success: boolean, data: TranslationsResponse}>(`${environment.apiUrl}/translations/${language}`)
+    this.apiService.get<TranslationsResponse>(`translations/${language}`)
       .pipe(
-        map(response => response.data),
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          }
+          throw new Error('Invalid response format');
+        }),
         tap(data => {
           const newCache = new Map(this.translationsCache());
           newCache.set(language, data.translations);
@@ -579,9 +583,14 @@ export class TranslationService {
       return of(this.translationsCache().get(language)!);
     }
 
-    return this.http.get<{success: boolean, data: TranslationsResponse}>(`${environment.apiUrl}/translations/${language}`)
+    return this.apiService.get<TranslationsResponse>(`translations/${language}`)
       .pipe(
-        map(response => response.data.translations),
+        map(response => {
+          if (response.success && response.data) {
+            return response.data.translations;
+          }
+          throw new Error('Invalid response format');
+        }),
         tap(translations => {
           const newCache = new Map(this.translationsCache());
           newCache.set(language, translations);
@@ -599,9 +608,14 @@ export class TranslationService {
    * Get available languages from backend (future enhancement)
    */
   getAvailableLanguagesFromBackend(): Observable<LanguageInfo[]> {
-    return this.http.get<{success: boolean, data: LanguageInfo[]}>(`${environment.apiUrl}/translations/languages`)
+    return this.apiService.get<LanguageInfo[]>(`translations/languages`)
       .pipe(
-        map(response => response.data),
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          }
+          throw new Error('Invalid response format');
+        }),
         tap(languages => {
           // Update available languages from backend
           this.availableLanguages = languages.filter(lang => lang.isActive);

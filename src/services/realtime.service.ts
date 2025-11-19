@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
-import { environment } from '../environments/environment';
+import { ApiService } from './api.service';
 
 export interface RealtimeEvent {
   type: string;
@@ -53,7 +53,7 @@ export class RealtimeService {
   public userStatusUpdates$ = this.userStatusSubject.asObservable();
   public generalEvents$ = this.generalEventSubject.asObservable();
 
-  constructor() {}
+  constructor(private apiService: ApiService) {}
 
   getConnectionState() {
     return this.connectionState.asReadonly();
@@ -69,8 +69,12 @@ export class RealtimeService {
     }
 
     try {
+      // Get base URL and construct SignalR URL (remove /api/v1 for WebSocket endpoint)
+      const baseUrl = this.apiService.getBaseUrl();
+      const wsUrl = baseUrl.replace('/api/v1', '') + '/ws/lottery';
+      
       this.connection = new HubConnectionBuilder()
-        .withUrl(`${environment.backendUrl}/ws/lottery`, {
+        .withUrl(wsUrl, {
           accessTokenFactory: () => {
             return localStorage.getItem('access_token') || '';
           }

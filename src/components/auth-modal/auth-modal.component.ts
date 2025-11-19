@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
+import { ToastService } from '../../services/toast.service';
 import { PasswordResetModalComponent } from '../password-reset-modal/password-reset-modal.component';
 
 @Component({
@@ -230,6 +231,7 @@ export class AuthModalComponent {
   private translationService = inject(TranslationService);
   private router = inject(Router);
   private mobileDetectionService = inject(MobileDetectionService);
+  private toastService = inject(ToastService);
   
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;
@@ -237,6 +239,7 @@ export class AuthModalComponent {
   mode = input.required<'login' | 'register'>();
   close = output<void>();
   success = output<void>();
+  modeChange = output<'login' | 'register'>();
 
   name = '';
   email = '';
@@ -267,6 +270,23 @@ export class AuthModalComponent {
       }
       
       if (result) {
+        // Fetch user profile to update auth state
+        try {
+          await this.authService.getCurrentUserProfile().toPromise();
+        } catch (err) {
+          console.error('Error fetching user profile after login:', err);
+        }
+        
+        // Show success toast
+        if (this.mode() === 'login') {
+          this.toastService.success('Welcome back! You have been logged in successfully.', 3000);
+        } else {
+          this.toastService.success('Account created successfully! Welcome!', 3000);
+        }
+        
+        // Small delay to show toast before closing modal
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         this.success.emit();
         this.resetForm();
       } else {
@@ -281,9 +301,30 @@ export class AuthModalComponent {
       
       // Handle specific error types
       if (error.status === 401) {
+        // Check if user doesn't exist - redirect to signup
+        if (error.error?.error?.code === 'USER_NOT_FOUND' || 
+            error.error?.error?.message?.includes('USER_NOT_FOUND')) {
+          // Show warning toast (yellow) and switch to register mode
+          this.toastService.warning('Account not found. Please sign up first.', 3000);
+          this.modeChange.emit('register'); // Emit event to parent to switch to register mode
+          this.errorMessage = 'Please create an account to continue.';
+          return;
+        }
+        
         this.errorMessage = 'Invalid email or password. Please check your credentials and try again.';
       } else if (error.status === 400) {
         if (this.mode() === 'register') {
+          // Check if user already exists - redirect to login
+          const errorMessage = error.error?.error?.message || '';
+          if (errorMessage.toLowerCase().includes('already exists') || 
+              errorMessage.toLowerCase().includes('email already') ||
+              error.error?.error?.code === 'VALIDATION_ERROR') {
+            // Show warning toast and switch to login mode
+            this.toastService.warning('An account with this email already exists. Please log in instead.', 3000);
+            this.modeChange.emit('login'); // Switch to login mode
+            this.errorMessage = 'This email is already registered. Please log in.';
+            return;
+          }
           this.errorMessage = 'Registration failed. Email might already be in use or data is invalid.';
         } else {
           this.errorMessage = 'Invalid request. Please check your input and try again.';
@@ -318,8 +359,6 @@ export class AuthModalComponent {
     const newMode = this.mode() === 'login' ? 'register' : 'login';
     this.modeChange.emit(newMode);
   }
-
-  modeChange = output<'login' | 'register'>();
 
   private scrollToTop() {
     window.scrollTo({

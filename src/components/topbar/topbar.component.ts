@@ -7,6 +7,7 @@ import { LanguageSwitcherComponent } from '../language-switcher/language-switche
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-topbar',
@@ -205,6 +206,7 @@ export class TopbarComponent implements OnInit {
   private translationService = inject(TranslationService);
   private router = inject(Router);
   private mobileDetectionService = inject(MobileDetectionService);
+  private toastService = inject(ToastService);
   
   showAuthModal = false;
   authMode: 'login' | 'register' = 'login';
@@ -240,6 +242,13 @@ export class TopbarComponent implements OnInit {
 
   onAuthSuccess() {
     this.showAuthModal = false;
+    // Force refresh to ensure UI updates with new auth state
+    // The signal should auto-update, but this ensures change detection
+    setTimeout(() => {
+      // Trigger change detection by accessing the signal
+      const user = this.currentUser();
+      // User will be updated automatically via signal
+    }, 100);
   }
 
   onModeChange(mode: 'login' | 'register') {
@@ -248,6 +257,8 @@ export class TopbarComponent implements OnInit {
 
   logout() {
     this.authService.logout();
+    // Show info toast after logout
+    this.toastService.info('You have been logged out successfully.', 3000);
   }
 
   translate(key: string): string {

@@ -6,7 +6,7 @@
 - **Workspace**: AmesaBase-Monorepo at `C:\Users\dror0\Curser-Repos\AmesaBase-Monorepo\`
 - **This Repository**: FE/ (Frontend) → https://github.com/DrorGr/amesaFE
 - **Backend Repository**: BE/ → https://github.com/DrorGr/amesaBE
-- **Current Branch**: dev (synced with stage and main)
+- **Current Branch**: main
 - **Architecture**: Angular 20.2.1 + .NET 8.0 + Aurora PostgreSQL
 - **Deployment**: AWS (S3 + CloudFront + ECS + ALB)
 
@@ -14,7 +14,7 @@
 - **AmesaFE**: Angular frontend → S3 + CloudFront
 - **AmesaBE**: .NET backend → Docker + ECS
 - **AmesaDevOps**: Infrastructure as Code
-- **Database**: Aurora PostgreSQL (separate clusters: prod/test/dev)
+- **Database**: Aurora PostgreSQL (production cluster)
 - **Secrets**: GitHub repository secrets for AWS credentials
 - **Configuration**: Single codebase with external environment config
 - **CLI Tools**: AWS CLI, Angular CLI, GitHub CLI
@@ -48,12 +48,12 @@ ng build --configuration=test
 dotnet build
 dotnet run
 docker build -t amesa-backend .
-docker build --build-arg ENV=dev -t amesa-backend:dev .
+docker build --build-arg ENV=production -t amesa-backend:local .
 
 # DevOps (AmesaDevOps)
 terraform apply
 ./deploy.sh [environment]
-aws ssm get-parameter --name "/amesa/dev/database-url"
+aws ssm get-parameter --name "/amesa/prod/database-url"
 
 # GitHub CLI
 gh secret list
@@ -66,21 +66,20 @@ git log --oneline -5
 
 ## Current Status
 - **Working tree**: Clean, all changes committed and pushed
-- **Last activity**: 2025-10-12 - Backend admin panel deployed to all environments
-- **Backend Admin Panel**: ✅ Live on dev, stage, and production
-- **Current focus**: System operational with full admin panel management
-- **Environment**: All environments (dev/stage/prod) fully operational with API + Admin Panel
+- **Last activity**: 2025-10-31 - Context files updated, OAuth integration plan created
+- **Backend Admin Panel**: ✅ Live on production
+- **Current focus**: Production environment operational with admin panel
+- **Environment**: Production fully operational with API + Admin Panel
 
 ## AWS Infrastructure
-- **Frontend**: S3 + CloudFront (All environments operational ✅)
-- **Backend**: ECS + ALB (All environments with API routing ✅)
-- **Admin Panel**: Blazor Server deployed to all backend environments ✅ NEW (2025-10-12)
-  - Dev/Stage: http://amesa-backend-stage-alb-467028641.eu-north-1.elb.amazonaws.com/admin
+- **Frontend**: S3 + CloudFront (Production operational ✅)
+- **Backend**: ECS + ALB (Production with API routing ✅)
+- **Admin Panel**: Blazor Server deployed to production ✅
   - Production: http://amesa-backend-alb-509078867.eu-north-1.elb.amazonaws.com/admin
-- **Database**: Aurora PostgreSQL (3 separate clusters with proper authentication ✅)
-- **Environments**: dev, stage, prod (All working with full API support + Admin Panel ✅)
-- **Secrets**: GitHub repository secrets per environment
-- **Recent Deployment**: Admin panel to all environments (2025-10-12)
+- **Database**: Aurora PostgreSQL (Production cluster with proper authentication ✅)
+- **Environments**: Production (Working with full API support + Admin Panel ✅)
+- **Secrets**: GitHub repository secrets for production
+- **Recent Update**: Context files updated, production-only setup (2025-10-31)
 
 ## When Starting New Chat
 1. **Mention monorepo structure** - This is FE/ in AmesaBase-Monorepo

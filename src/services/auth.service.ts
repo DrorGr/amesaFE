@@ -102,6 +102,13 @@ export class AuthService {
 
   getCurrentUserProfile(): Observable<UserDto> {
     return this.apiService.get<UserDto>('auth/me').pipe(
+      tap(response => {
+        // Update auth state when fetching user profile
+        if (response.success && response.data) {
+          this.setUser(response.data);
+          this.isAuthenticatedSubject.next(true);
+        }
+      }),
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -170,17 +177,31 @@ export class AuthService {
     );
   }
 
-  // Social Login Methods (to be implemented with OAuth providers)
+  // Social Login Methods
   async loginWithGoogle(): Promise<boolean> {
-    // TODO: Implement Google OAuth integration
-    console.log('Google login not yet implemented');
-    return Promise.resolve(false);
+    try {
+      // Get base URL which already includes /api/v1
+      const baseUrl = this.apiService.getBaseUrl();
+      // OAuth endpoints are at /api/v1/oauth/*, so baseUrl already has the correct path
+      window.location.href = `${baseUrl}/oauth/google`;
+      return true;
+    } catch (error) {
+      console.error('Error initiating Google login:', error);
+      return false;
+    }
   }
 
   async loginWithMeta(): Promise<boolean> {
-    // TODO: Implement Meta/Facebook OAuth integration
-    console.log('Meta login not yet implemented');
-    return Promise.resolve(false);
+    try {
+      // Get base URL which already includes /api/v1
+      const baseUrl = this.apiService.getBaseUrl();
+      // OAuth endpoints are at /api/v1/oauth/*, so baseUrl already has the correct path
+      window.location.href = `${baseUrl}/oauth/meta`;
+      return true;
+    } catch (error) {
+      console.error('Error initiating Meta login:', error);
+      return false;
+    }
   }
 
   async loginWithApple(): Promise<boolean> {

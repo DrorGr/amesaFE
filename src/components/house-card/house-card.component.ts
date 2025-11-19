@@ -1,4 +1,4 @@
-import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { House } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
@@ -253,6 +253,10 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   isPurchasing = false;
   
   currentUser = this.authService.getCurrentUser();
+  
+  // Use signals for dynamic values to prevent change detection errors
+  currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
+  currentTime = signal<number>(Date.now());
 
   formatPrice(price: number): string {
     return price.toLocaleString();
@@ -345,8 +349,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   getCurrentViewers(): number {
-    // Generate a random number of viewers between 5-50 for demo purposes
-    return Math.floor(Math.random() * 46) + 5;
+    return this.currentViewers();
   }
 
   getTicketsAvailableText(): string {
@@ -358,7 +361,11 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Update countdown every second
     this.countdownInterval = window.setInterval(() => {
-      // Force change detection by updating a property
+      this.currentTime.set(Date.now());
+      // Occasionally update viewers count (every 3-5 seconds)
+      if (Math.random() < 0.2) {
+        this.currentViewers.set(Math.floor(Math.random() * 46) + 5);
+      }
     }, 1000);
   }
 
@@ -369,7 +376,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   getLotteryCountdown(): string {
-    const now = new Date().getTime();
+    const now = this.currentTime();
     const endTime = new Date(this.house().lotteryEndDate).getTime();
     const timeLeft = endTime - now;
 

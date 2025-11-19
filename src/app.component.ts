@@ -1,13 +1,17 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 // Test deployment - CI/CD pipeline test - GitHub Secrets configured!
 import { TopbarComponent } from './components/topbar/topbar.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { AccessibilityWidgetComponent } from './components/accessibility-widget/accessibility-widget.component';
+import { ToastComponent } from './components/toast/toast.component';
 import { TranslationService } from './services/translation.service';
 import { RouteLoadingService } from './services/route-loading.service';
+import { ToastService } from './services/toast.service';
 // Services are available for dependency injection but not used directly in this component
 
 @Component({
@@ -19,7 +23,8 @@ import { RouteLoadingService } from './services/route-loading.service';
     TopbarComponent,
     LoadingComponent,
     ChatbotComponent,
-    AccessibilityWidgetComponent
+    AccessibilityWidgetComponent,
+    ToastComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
@@ -168,18 +173,75 @@ import { RouteLoadingService } from './services/route-loading.service';
       <!-- Fixed Accessibility Widget -->
       <app-accessibility-widget></app-accessibility-widget>
       
+      <!-- Toast Notifications -->
+      <app-toast></app-toast>
+      
     </div>
   `,
   styles: []
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private routeLoadingService = inject(RouteLoadingService);
   private router = inject(Router);
+  private toastService = inject(ToastService);
+  private routerSubscription?: Subscription;
+  
   // Services are injected but not used directly in this component
   // They are available for dependency injection in child components
 
   isLoading = this.routeLoadingService.loading$;
+
+  ngOnInit(): void {
+    // Check for pending OAuth toast on navigation
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        // Small delay to ensure page is rendered
+        setTimeout(() => {
+          const storedToast = localStorage.getItem('oauth_toast');
+          if (storedToast) {
+            const colonIndex = storedToast.indexOf(':');
+            if (colonIndex > 0) {
+              const type = storedToast.substring(0, colonIndex);
+              const message = storedToast.substring(colonIndex + 1);
+              if (type === 'success') {
+                this.toastService.success(message, 3000);
+              } else if (type === 'info') {
+                // Fallback for any 'info' type - treat as success for login scenarios
+                this.toastService.success(message, 3000);
+              }
+              localStorage.removeItem('oauth_toast');
+            }
+          }
+        }, 300);
+      });
+
+    // Also check on initial load
+    setTimeout(() => {
+      const storedToast = localStorage.getItem('oauth_toast');
+      if (storedToast) {
+        const colonIndex = storedToast.indexOf(':');
+        if (colonIndex > 0) {
+          const type = storedToast.substring(0, colonIndex);
+          const message = storedToast.substring(colonIndex + 1);
+          if (type === 'success') {
+            this.toastService.success(message, 3000);
+          } else if (type === 'info') {
+            // Fallback for any 'info' type - treat as success for login scenarios
+            this.toastService.success(message, 3000);
+          }
+          localStorage.removeItem('oauth_toast');
+        }
+      }
+    }, 500);
+  }
+
+  ngOnDestroy(): void {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
 
   translate(key: string): string {
     return this.translationService.translate(key);

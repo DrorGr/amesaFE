@@ -23,34 +23,28 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **Version Control**: Git with GitHub repositories
 - **Package Management**: npm (frontend), NuGet (backend)
 
-## Current Status (2025-10-12)
-- **All environments fully operational**: Dev, Stage, Production
-- **Backend Admin Panel**: ✅ Deployed and working on all environments
-- **CloudFront configurations**: Fixed origin path issues + added API routing
+## Current Status (2025-10-31)
+- **Production environment fully operational** ✅
+- **Backend Admin Panel**: ✅ Deployed and working on production
+- **CloudFront configurations**: API routing configured
 - **Backend connectivity**: Database authentication resolved + Admin panel accessible
 - **API endpoints**: All working correctly through CloudFront
 - **Working tree**: Clean, all changes committed
-- **Branch**: main (all branches synced)
+- **Branch**: main
 
 ## Environment URLs
-- **Development**: https://d2rmamd755wq7j.cloudfront.net
-- **Staging**: https://d2ejqzjfslo5hs.cloudfront.net
 - **Production**: https://dpqbvdgnenckf.cloudfront.net
+- **Local Development**: http://localhost:4200
 
 ## Backend API Endpoints
-- **Development**: 
-  - API: amesa-backend-stage-alb-467028641.eu-north-1.elb.amazonaws.com
-  - Admin Panel: http://amesa-backend-stage-alb-467028641.eu-north-1.elb.amazonaws.com/admin ✅
-- **Staging**: 
-  - API: amesa-backend-stage-alb-467028641.eu-north-1.elb.amazonaws.com (shared with dev)
-  - Admin Panel: http://amesa-backend-stage-alb-467028641.eu-north-1.elb.amazonaws.com/admin ✅
 - **Production**: 
   - API: amesa-backend-alb-509078867.eu-north-1.elb.amazonaws.com
   - Admin Panel: http://amesa-backend-alb-509078867.eu-north-1.elb.amazonaws.com/admin ✅
+- **Local Development**: 
+  - API: http://localhost:5000
+  - Admin Panel: http://localhost:5000/admin
 
 ## CloudFront Distributions
-- **Development**: E2XBDFAUZJTI59
-- **Staging**: E1D7XQHFF1469W (with API routing configured)
 - **Production**: E3GU3QXUR43ZOH (with API routing configured)
 
 ## Coding Standards
@@ -66,7 +60,7 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 ### Environment Configuration
 - Use external configuration injection
 - Never hardcode environment-specific values
-- Maintain separate configs for dev/stage/prod
+- Maintain separate configs for local development and production
 - Use GitHub secrets for sensitive data
 
 ### AWS Infrastructure
@@ -76,11 +70,11 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - Maintain environment isolation
 - **Region**: eu-north-1
 - **Account**: 129394705401
-- **S3 Buckets**: amesa-frontend-dev, amesa-frontend-stage, amesa-frontend-prod
-- **CloudFront Distributions**: 3 active distributions with API routing configured
+- **S3 Buckets**: amesa-frontend-prod
+- **CloudFront Distributions**: Production distribution with API routing configured
 - **ECS Cluster**: "Amesa" with Fargate launch type
-- **Aurora PostgreSQL**: Serverless v2 with separate clusters for prod/stage
-- **API Routing**: CloudFront `/api/*` routes proxy to backend ALBs
+- **Aurora PostgreSQL**: Serverless v2 production cluster
+- **API Routing**: CloudFront `/api/*` routes proxy to backend ALB
 
 ## File Structure Guidelines
 - Keep context files updated with current status
@@ -96,10 +90,10 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 
 ## Important Notes
 - **Angular builds deploy to `browser/` subdirectory** - CloudFront configured without origin path (files at root)
-- **Environment files are in `src/environments/`** - Each environment points to appropriate backend ALB
-- **Development & Staging share backend** - Both use staging ALB for development purposes
-- **Production has separate backend** - Uses dedicated production ALB
-- **CloudFront API routing** - `/api/*` paths automatically proxy to backend ALBs
+- **Environment files are in `src/environments/`** - Local development and production configurations
+- **Local development** - Uses localhost backend (http://localhost:5000)
+- **Production** - Uses dedicated production ALB
+- **CloudFront API routing** - `/api/*` paths automatically proxy to backend ALB
 
 ## Context Files to Maintain
 
@@ -122,7 +116,7 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - Always check context files for current project status
 - Update relevant context files when making changes
 - Follow the established patterns and conventions
-- Maintain environment consistency across dev/stage/prod
+- Maintain environment consistency for local development and production
 - Document any infrastructure or configuration changes
 - **CRITICAL**: If any changes relate to project structure, environment configuration, infrastructure, or deployment processes, update the appropriate context files and this .cursorrules file
 
@@ -144,9 +138,8 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 ```
 
 ### Deployment Flow
-1. **Development**: Push to dev branch → Auto-deploy to S3/CloudFront
-2. **Staging**: Push to stage branch → Auto-deploy to S3/CloudFront  
-3. **Production**: Manual deployment trigger → Deploy to S3/CloudFront
+1. **Production**: Push to main branch → Auto-deploy to S3/CloudFront
+2. **Local Development**: Run `ng serve` for local testing
 
 ## Common Commands
 ```bash
@@ -154,17 +147,11 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 npm install
 ng serve
 ng build --configuration=production
-ng build --configuration=development
-ng build --configuration=stage
 
 # AWS operations
 aws cloudfront list-distributions
-aws s3 ls s3://amesa-frontend-dev/ --recursive
-aws s3 ls s3://amesa-frontend-stage/ --recursive
 aws s3 ls s3://amesa-frontend-prod/ --recursive
-aws cloudfront create-invalidation --distribution-id E1D7XQHFF1469W --paths "/*"
 aws cloudfront create-invalidation --distribution-id E3GU3QXUR43ZOH --paths "/*"
-aws cloudfront create-invalidation --distribution-id E2XBDFAUZJTI59 --paths "/*"
 
 # ECS operations
 aws ecs list-services --cluster Amesa
@@ -176,8 +163,6 @@ aws rds describe-db-clusters --db-cluster-identifier amesadbmain
 # Git operations
 git status
 git log --oneline -5
-git checkout dev
-git checkout stage
 git checkout main
 ```
 
@@ -189,13 +174,11 @@ git checkout main
 - **Theme Support**: Dark/light mode switching
 - **Real-time Features**: SignalR integration for live updates
 
-## Recent Major Fixes (2025-10-10)
-- **Fixed CloudFront MIME type errors** - Removed incorrect origin paths
-- **Fixed Angular runtime errors** - Corrected RoutePerformanceService provider
-- **Fixed backend API routing** - Added CloudFront API proxy configurations
-- **Fixed database authentication** - Resolved staging backend DB connectivity
-- **Updated all branches** - dev, stage, and main synchronized
+## Recent Changes (2025-10-31)
+- **Context Files Updated** - Removed dev/staging references, production-only setup
+- **Environment Configuration Simplified** - Local development and production only
+- **OAuth Integration Plan** - Comprehensive plan document created
 
 ---
-**Last Updated**: 2025-10-10
+**Last Updated**: 2025-10-31
 **Note**: This file should be updated whenever project structure, environment configuration, infrastructure, or deployment processes change.

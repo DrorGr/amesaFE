@@ -141,40 +141,21 @@ export class LotteryService {
   }
 
   // Get user's tickets
+  // NOTE: Backend endpoint not yet available - tickets are accessed via houses/{id}/tickets
+  // This method is kept for future implementation when user tickets endpoint is added
   getUserTicketsFromApi(): Observable<LotteryTicketDto[]> {
-    return this.apiService.get<LotteryTicketDto[]>('lottery/tickets').pipe(
-      tap(response => {
-        if (response.success && response.data) {
-          this.userTickets.set(response.data);
-        }
-      }),
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        }
-        throw new Error('Failed to fetch user tickets');
-      }),
-      catchError(error => {
-        console.error('Error fetching user tickets:', error);
-        return throwError(() => error);
-      })
-    );
+    // TODO: Implement when backend provides /api/v1/tickets or /api/v1/users/me/tickets endpoint
+    console.warn('getUserTicketsFromApi: Endpoint not yet available in backend');
+    return throwError(() => new Error('User tickets endpoint not yet implemented in backend'));
   }
 
   // Get lottery draws
+  // NOTE: Backend endpoint not yet available
+  // This method is kept for future implementation when draws endpoint is added
   getLotteryDraws(): Observable<any[]> {
-    return this.apiService.get<any[]>('lottery/draws').pipe(
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        }
-        throw new Error('Failed to fetch lottery draws');
-      }),
-      catchError(error => {
-        console.error('Error fetching lottery draws:', error);
-        return throwError(() => error);
-      })
-    );
+    // TODO: Implement when backend provides /api/v1/draws endpoint
+    console.warn('getLotteryDraws: Endpoint not yet available in backend');
+    return throwError(() => new Error('Lottery draws endpoint not yet implemented in backend'));
   }
 
   // Legacy methods for backward compatibility

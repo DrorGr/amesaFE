@@ -1,5 +1,4 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
@@ -155,7 +154,7 @@ export class LotteryResultsService {
     };
   });
 
-  constructor(private apiService: ApiService, private http: HttpClient) {}
+  constructor(private apiService: ApiService) {}
 
   /**
    * Get lottery results with filtering and pagination
@@ -181,10 +180,10 @@ export class LotteryResultsService {
     params.sortBy = currentFilter.sortBy || 'resultDate';
     params.sortDirection = currentFilter.sortDirection || 'desc';
 
-    return this.http.get<any>(`${this.apiService.getBaseUrl()}/lotteryresults`, { params }).pipe(
+    return this.apiService.get<any>('lotteryresults', params).pipe(
       map(response => {
-        if (response.success) {
-          this._results.set(response.data.results);
+        if (response.success && response.data) {
+          this._results.set(response.data.results || []);
           this._loading.set(false);
           return response.data;
         } else {
@@ -203,9 +202,9 @@ export class LotteryResultsService {
    * Get specific lottery result by ID
    */
   getLotteryResult(id: string): Observable<LotteryResult> {
-    return this.http.get<any>(`${this.apiService.getBaseUrl()}/lotteryresults/${id}`).pipe(
+    return this.apiService.get<LotteryResult>(`lotteryresults/${id}`).pipe(
       map(response => {
-        if (response.success) {
+        if (response.success && response.data) {
           return response.data;
         } else {
           throw new Error(response.message || 'Failed to fetch lottery result');
@@ -222,9 +221,9 @@ export class LotteryResultsService {
    * Validate QR code
    */
   validateQRCode(qrCodeData: string): Observable<QRCodeValidation> {
-    return this.http.post<any>(`${this.apiService.getBaseUrl()}/lotteryresults/validate-qr`, qrCodeData).pipe(
+    return this.apiService.post<QRCodeValidation>('lotteryresults/validate-qr', { qrCodeData }).pipe(
       map(response => {
-        if (response.success) {
+        if (response.success && response.data) {
           return response.data;
         } else {
           throw new Error(response.message || 'Failed to validate QR code');
@@ -241,12 +240,12 @@ export class LotteryResultsService {
    * Claim a prize
    */
   claimPrize(resultId: string, claimNotes?: string): Observable<LotteryResult> {
-    return this.http.post<any>(`${this.apiService.getBaseUrl()}/lotteryresults/claim`, {
+    return this.apiService.post<LotteryResult>('lotteryresults/claim', {
       resultId,
       claimNotes
     }).pipe(
       map(response => {
-        if (response.success) {
+        if (response.success && response.data) {
           // Update local results
           const currentResults = this._results();
           const updatedResults = currentResults.map(result => 
@@ -271,9 +270,9 @@ export class LotteryResultsService {
    * Create prize delivery request
    */
   createPrizeDelivery(request: CreatePrizeDeliveryRequest): Observable<PrizeDelivery> {
-    return this.http.post<any>(`${this.apiService.getBaseUrl()}/lotteryresults/delivery`, request).pipe(
+    return this.apiService.post<PrizeDelivery>('lotteryresults/delivery', request).pipe(
       map(response => {
-        if (response.success) {
+        if (response.success && response.data) {
           return response.data;
         } else {
           throw new Error(response.message || 'Failed to create prize delivery');
@@ -290,9 +289,9 @@ export class LotteryResultsService {
    * Get scratch card results for user
    */
   getScratchCards(userId: string): Observable<ScratchCardResult[]> {
-    return this.http.get<any>(`${this.apiService.getBaseUrl()}/scratchcards?userId=${userId}`).pipe(
+    return this.apiService.get<ScratchCardResult[]>('scratchcards', { userId }).pipe(
       map(response => {
-        if (response.success) {
+        if (response.success && response.data) {
           return response.data;
         } else {
           throw new Error(response.message || 'Failed to fetch scratch cards');
@@ -309,9 +308,9 @@ export class LotteryResultsService {
    * Scratch a card
    */
   scratchCard(cardId: string): Observable<ScratchCardResult> {
-    return this.http.post<any>(`${this.apiService.getBaseUrl()}/scratchcards/${cardId}/scratch`, {}).pipe(
+    return this.apiService.post<ScratchCardResult>(`scratchcards/${cardId}/scratch`, {}).pipe(
       map(response => {
-        if (response.success) {
+        if (response.success && response.data) {
           return response.data;
         } else {
           throw new Error(response.message || 'Failed to scratch card');

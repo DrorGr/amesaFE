@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
-  apiUrl: '/api/v1',
-  backendUrl: '/api/v1',
+  apiUrl: 'http://localhost:5000/api/v1',
+  backendUrl: 'http://localhost:5000/api/v1',
   frontendUrl: 'http://localhost:4200',
   logLevel: 'debug'
 };
