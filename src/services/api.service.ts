@@ -37,14 +37,15 @@ export class ApiService {
   constructor(private http: HttpClient) {
     // Debug: Log the baseUrl being used
     console.log('[API Service] Base URL:', this.baseUrl);
-    console.log('[API Service] Environment:', environment);
-    if (!this.baseUrl || this.baseUrl.includes('localhost')) {
-      console.error('[API Service] ERROR: Invalid baseUrl! Using fallback.');
-      // Force production URL if localhost detected
-      if (environment.production) {
-        this.baseUrl = 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
-        console.log('[API Service] Fixed baseUrl to:', this.baseUrl);
-      }
+    console.log('[API Service] Environment production:', environment.production);
+    console.log('[API Service] Environment backendUrl:', environment.backendUrl);
+    
+    // Fix: If localhost detected in production OR if baseUrl is relative and we're on CloudFront
+    if (this.baseUrl.includes('localhost') || (!this.baseUrl.startsWith('http') && window.location.hostname.includes('cloudfront.net'))) {
+      console.error('[API Service] ERROR: Invalid baseUrl detected! Fixing...');
+      // Force production URL
+      this.baseUrl = 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
+      console.log('[API Service] Fixed baseUrl to:', this.baseUrl);
     }
   }
 
