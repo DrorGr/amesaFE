@@ -543,6 +543,21 @@ export class TranslationService {
         }),
         tap(data => {
           console.log(`[Translation Service] Caching translations for ${language}`);
+          const translationCount = Object.keys(data.translations || {}).length;
+          console.log(`[Translation Service] Translation count: ${translationCount}`);
+          
+          // If backend returns empty translations, use fallback instead
+          if (translationCount === 0) {
+            console.warn(`[Translation Service] Backend returned empty translations! Using fallback.`);
+            const newCache = new Map(this.translationsCache());
+            newCache.set(language, this.fallbackTranslations[language]);
+            this.translationsCache.set(newCache);
+            this.lastUpdated.set(language, new Date());
+            this.isLoading.next(false);
+            console.log(`[Translation Service] Using fallback translations for ${language}`);
+            return;
+          }
+          
           const newCache = new Map(this.translationsCache());
           newCache.set(language, data.translations);
           this.translationsCache.set(newCache);
