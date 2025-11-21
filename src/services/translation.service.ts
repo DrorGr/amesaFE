@@ -151,11 +151,27 @@ export class TranslationService {
     }
 
     this.logger.info('Switching language', { language }, 'TranslationService');
+    
+    // Always show loader when changing language for better UX
+    this.isLoading.next(true);
+    this.loadingProgress.next(10);
+    this.loadingMessage.next(`Switching to ${language.toUpperCase()}...`);
+    
     this.currentLanguage.set(language);
     
     // Load translations if not in cache or cache is stale
     if (!this.translationsCache().has(language) || this.isCacheStale(language)) {
       this.loadTranslations(language);
+    } else {
+      // Even if cached, show brief loading for smooth UX
+      this.loadingProgress.next(100);
+      this.loadingMessage.next('Language switched successfully!');
+      
+      setTimeout(() => {
+        this.isLoading.next(false);
+        this.loadingProgress.next(0);
+        this.loadingMessage.next('Initializing...');
+      }, 300); // Brief delay to show completion
     }
   }
 

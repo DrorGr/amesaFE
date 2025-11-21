@@ -342,3 +342,4 @@ export interface PreferenceSyncStatus {
   syncError?: string;
   conflictResolution: 'local' | 'remote' | 'merge';
 }
+

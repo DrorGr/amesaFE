@@ -746,3 +746,4 @@ export class UserPreferencesComponent implements OnInit, OnDestroy {
     }
   }
 }
+
