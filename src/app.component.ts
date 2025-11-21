@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 // Test deployment - CI/CD pipeline test - GitHub Secrets configured!
 import { TopbarComponent } from './components/topbar/topbar.component';
 import { LoadingComponent } from './components/loading/loading.component';
+import { TranslationLoaderComponent } from './components/translation-loader/translation-loader.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { AccessibilityWidgetComponent } from './components/accessibility-widget/accessibility-widget.component';
 import { ToastComponent } from './components/toast/toast.component';
@@ -22,12 +23,22 @@ import { ToastService } from './services/toast.service';
     RouterOutlet,
     TopbarComponent,
     LoadingComponent,
+    TranslationLoaderComponent,
     ChatbotComponent,
     AccessibilityWidgetComponent,
     ToastComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
+      <!-- Translation Loader Overlay -->
+      <app-translation-loader
+        [isVisible]="(translationService.isLoading$ | async) ?? false"
+        title="Loading Translations"
+        [message]="(translationService.loadingMessage$ | async) ?? 'Loading...'"
+        [progress]="(translationService.loadingProgress$ | async) ?? 0"
+        [progressText]="((translationService.loadingProgress$ | async) ?? 0) + '%'"
+      ></app-translation-loader>
+      
       <app-topbar></app-topbar>
       
       <div class="transition-all duration-500 ease-in-out">
@@ -181,7 +192,7 @@ import { ToastService } from './services/toast.service';
   styles: []
 })
 export class AppComponent implements OnInit, OnDestroy {
-  private translationService = inject(TranslationService);
+  public translationService = inject(TranslationService);
   private routeLoadingService = inject(RouteLoadingService);
   private router = inject(Router);
   private toastService = inject(ToastService);

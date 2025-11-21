@@ -48,7 +48,7 @@ export class ThemeToggleComponent {
   private themeService = inject(ThemeService);
   private mobileDetectionService = inject(MobileDetectionService);
   
-  currentTheme = this.themeService.getCurrentTheme();
+  currentTheme = this.themeService.currentTheme;
   
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;

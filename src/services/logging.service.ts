@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../environments/environment';
 
 /**
  * Log levels for structured logging
@@ -50,6 +51,13 @@ export class LoggingService {
 
   constructor() {
     this.sessionId = this.generateSessionId();
+    
+    // Set log level based on environment
+    if (environment.production) {
+      this.currentLogLevel = LogLevel.ERROR; // Only errors in production
+    } else {
+      this.currentLogLevel = LogLevel.DEBUG; // All logs in development
+    }
   }
 
   /**
@@ -184,10 +192,15 @@ export class LoggingService {
   }
 
   /**
-   * Outputs log entry to console with appropriate method
+   * Outputs log entry to console with appropriate method (only in development)
    * @param entry - The log entry
    */
   private outputToConsole(entry: LogEntry): void {
+    // Skip console output in production
+    if (environment.production) {
+      return;
+    }
+    
     const timestamp = entry.timestamp.toISOString();
     const contextStr = entry.context ? `[${entry.context}]` : '';
     const message = `${timestamp} ${contextStr} ${entry.message}`;
