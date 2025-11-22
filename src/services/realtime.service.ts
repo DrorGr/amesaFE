@@ -33,6 +33,35 @@ export interface UserStatusEvent {
   lastSeen?: Date;
 }
 
+export interface FavoriteUpdateEvent {
+  houseId: string;
+  updateType: 'added' | 'removed';
+  houseTitle?: string;
+  timestamp: Date;
+}
+
+export interface EntryStatusChangeEvent {
+  ticketId: string;
+  newStatus: 'active' | 'winner' | 'refunded';
+  houseId: string;
+  houseTitle?: string;
+  timestamp: Date;
+}
+
+export interface DrawReminderEvent {
+  houseId: string;
+  houseTitle: string;
+  timeRemaining: number; // seconds
+  timestamp: Date;
+}
+
+export interface RecommendationEvent {
+  newHouseId: string;
+  houseTitle: string;
+  reason: string;
+  timestamp: Date;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -46,12 +75,24 @@ export class RealtimeService {
   private notificationSubject = new Subject<NotificationEvent>();
   private userStatusSubject = new Subject<UserStatusEvent>();
   private generalEventSubject = new Subject<RealtimeEvent>();
+  
+  // Lottery Favorites & Entry Management events
+  private favoriteUpdateSubject = new Subject<FavoriteUpdateEvent>();
+  private entryStatusChangeSubject = new Subject<EntryStatusChangeEvent>();
+  private drawReminderSubject = new Subject<DrawReminderEvent>();
+  private recommendationSubject = new Subject<RecommendationEvent>();
 
   // Public observables
   public lotteryUpdates$ = this.lotteryUpdateSubject.asObservable();
   public notifications$ = this.notificationSubject.asObservable();
   public userStatusUpdates$ = this.userStatusSubject.asObservable();
   public generalEvents$ = this.generalEventSubject.asObservable();
+  
+  // Lottery Favorites & Entry Management observables
+  public favoriteUpdates$ = this.favoriteUpdateSubject.asObservable();
+  public entryStatusChanges$ = this.entryStatusChangeSubject.asObservable();
+  public drawReminders$ = this.drawReminderSubject.asObservable();
+  public recommendations$ = this.recommendationSubject.asObservable();
 
   constructor(private apiService: ApiService) {}
 
@@ -192,6 +233,35 @@ export class RealtimeService {
     // General events
     this.connection.on('GeneralEvent', (data: RealtimeEvent) => {
       this.generalEventSubject.next(data);
+    });
+
+    // Lottery Favorites & Entry Management events (BE-2.3)
+    this.connection.on('FavoriteUpdate', (data: FavoriteUpdateEvent) => {
+      this.favoriteUpdateSubject.next({
+        ...data,
+        timestamp: new Date()
+      });
+    });
+
+    this.connection.on('EntryStatusChange', (data: EntryStatusChangeEvent) => {
+      this.entryStatusChangeSubject.next({
+        ...data,
+        timestamp: new Date()
+      });
+    });
+
+    this.connection.on('DrawReminder', (data: DrawReminderEvent) => {
+      this.drawReminderSubject.next({
+        ...data,
+        timestamp: new Date()
+      });
+    });
+
+    this.connection.on('Recommendation', (data: RecommendationEvent) => {
+      this.recommendationSubject.next({
+        ...data,
+        timestamp: new Date()
+      });
     });
   }
 

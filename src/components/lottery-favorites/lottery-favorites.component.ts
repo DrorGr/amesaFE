@@ -1,0 +1,231 @@
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { LotteryService } from '../../services/lottery.service';
+import { TranslationService } from '../../services/translation.service';
+import { AuthService } from '../../services/auth.service';
+import { HouseDto } from '../../models/house.model';
+import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
+
+@Component({
+  selector: 'app-lottery-favorites',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 md:p-8">
+      <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-4xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            {{ translate(LOTTERY_TRANSLATION_KEYS.favorites.title) }}
+          </h1>
+          <p class="text-lg md:text-base text-gray-600 dark:text-gray-300">
+            {{ translate(LOTTERY_TRANSLATION_KEYS.favorites.emptyDescription) }}
+          </p>
+        </div>
+
+        <!-- Favorites Grid -->
+        <ng-container *ngIf="favoriteHouses().length > 0; else noFavorites">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div 
+              *ngFor="let house of favoriteHouses()" 
+              class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+              <!-- House Image -->
+              <div class="relative h-48 bg-gray-200">
+                <img 
+                  [src]="house.images?.[0]?.imageUrl || house.images?.[0]?.url || ''" 
+                  [alt]="house.title"
+                  class="w-full h-full object-cover">
+                
+                <!-- Favorite Button -->
+                <button
+                  (click)="removeFavorite($event, house.id)"
+                  [class.animate-pulse]="removingFavorites.has(house.id)"
+                  class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10">
+                  <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                  </svg>
+                </button>
+                
+                <!-- Status Badge -->
+                <div class="absolute top-4 left-4">
+                  <span class="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                    {{ house.status }}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- House Details -->
+              <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ house.title }}</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ house.location }}</p>
+                
+                <div class="flex items-center justify-between mb-4">
+                  <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    €{{ formatPrice(house.price) }}
+                  </div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    €{{ formatPrice(house.ticketPrice) }} {{ translate('house.perTicket') }}
+                  </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  <span>{{ house.bedrooms }} {{ translate('house.bed') }}{{ house.bedrooms > 1 ? 's' : '' }}</span>
+                  <span>{{ house.bathrooms }} {{ translate('house.bath') }}{{ house.bathrooms > 1 ? 's' : '' }}</span>
+                  <span *ngIf="house.squareFeet">{{ formatSqft(house.squareFeet) }} {{ translate('house.sqft') }}</span>
+                </div>
+                
+                <!-- Quick Entry Button -->
+                <button
+                  (click)="quickEntry($event, house)"
+                  [disabled]="quickEntering.has(house.id) || house.status !== 'active'"
+                  class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                  <ng-container *ngIf="quickEntering.has(house.id); else quickEntryText">
+                    {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
+                  </ng-container>
+                  <ng-template #quickEntryText>
+                    ⚡ {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
+                  </ng-template>
+                </button>
+                
+                <!-- View Details Link -->
+                <button
+                  (click)="viewDetails($event, house.id)"
+                  class="w-full mt-2 text-blue-600 dark:text-blue-400 hover:underline text-sm">
+                  {{ translate(LOTTERY_TRANSLATION_KEYS.common.view) }} {{ translate('common.details') }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        
+        <ng-template #noFavorites>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 border border-gray-200 dark:border-gray-700 text-center">
+            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            <p class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              {{ translate(LOTTERY_TRANSLATION_KEYS.favorites.empty) }}
+            </p>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+              {{ translate(LOTTERY_TRANSLATION_KEYS.favorites.emptyDescription) }}
+            </p>
+            <button
+              routerLink="/houses"
+              class="px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors">
+              {{ translate('common.browseHouses') }}
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  `,
+  styles: [`
+    :host {
+      display: block;
+      width: 100%;
+    }
+  `]
+})
+export class LotteryFavoritesComponent implements OnInit {
+  private lotteryService = inject(LotteryService);
+  private translationService = inject(TranslationService);
+  private authService = inject(AuthService);
+  
+  currentUser = this.authService.getCurrentUser();
+  favoriteHouses = signal<HouseDto[]>([]);
+  removingFavorites = signal<Set<string>>(new Set());
+  quickEntering = signal<Set<string>>(new Set());
+
+  ngOnInit(): void {
+    this.loadFavorites();
+  }
+
+  async loadFavorites(): Promise<void> {
+    if (!this.currentUser()) {
+      return;
+    }
+
+    try {
+      const houses = await this.lotteryService.getFavoriteHouses().toPromise();
+      if (houses) {
+        this.favoriteHouses.set(houses);
+      }
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+    }
+  }
+
+  async removeFavorite(event: Event, houseId: string): Promise<void> {
+    event.stopPropagation();
+    
+    if (!this.currentUser() || this.removingFavorites().has(houseId)) {
+      return;
+    }
+
+    this.removingFavorites.set(new Set([...this.removingFavorites(), houseId]));
+
+    try {
+      const result = await this.lotteryService.removeHouseFromFavorites(houseId).toPromise();
+      if (result) {
+        // Remove from local list
+        this.favoriteHouses.set(this.favoriteHouses().filter(h => h.id !== houseId));
+        console.log(result.message);
+      }
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    } finally {
+      const newSet = new Set(this.removingFavorites());
+      newSet.delete(houseId);
+      this.removingFavorites.set(newSet);
+    }
+  }
+
+  async quickEntry(event: Event, house: HouseDto): Promise<void> {
+    event.stopPropagation();
+    
+    if (!this.currentUser() || this.quickEntering().has(house.id)) {
+      return;
+    }
+
+    this.quickEntering.set(new Set([...this.quickEntering(), house.id]));
+
+    try {
+      const result = await this.lotteryService.quickEntryFromFavorite({
+        houseId: house.id,
+        quantity: 1,
+        paymentMethodId: 'default'
+      }).toPromise();
+      
+      if (result) {
+        console.log('Quick entry successful!', result);
+        // TODO: Show success notification
+      }
+    } catch (error) {
+      console.error('Error with quick entry:', error);
+      // TODO: Show error notification
+    } finally {
+      const newSet = new Set(this.quickEntering());
+      newSet.delete(house.id);
+      this.quickEntering.set(newSet);
+    }
+  }
+
+  viewDetails(event: Event, houseId: string): void {
+    event.stopPropagation();
+    // Navigation handled by routerLink
+  }
+
+  formatPrice(price: number): string {
+    return price.toLocaleString();
+  }
+
+  formatSqft(sqft: number): string {
+    return sqft.toLocaleString();
+  }
+
+  translate(key: string): string {
+    return this.translationService.translate(key);
+  }
+}
+

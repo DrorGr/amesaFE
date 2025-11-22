@@ -1,5 +1,5 @@
-import { Injectable, signal } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Injectable, signal, inject, OnInit, OnDestroy } from '@angular/core';
+import { Observable, throwError, Subscription } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { ApiService, PagedResponse } from './api.service';
 import { 
@@ -18,11 +18,12 @@ import {
   QuickEntryResponse,
   FavoriteHouseResponse
 } from '../interfaces/lottery.interface';
+import { RealtimeService, FavoriteUpdateEvent, EntryStatusChangeEvent, DrawReminderEvent, RecommendationEvent } from './realtime.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class LotteryService {
+export class LotteryService implements OnInit, OnDestroy {
   private houses = signal<House[]>([]);
   private userTickets = signal<LotteryTicketDto[]>([]);
   
@@ -31,10 +32,69 @@ export class LotteryService {
   private activeEntries = signal<LotteryTicketDto[]>([]);
   private userLotteryStats = signal<UserLotteryStats | null>(null);
   private recommendations = signal<HouseRecommendation[]>([]);
-
+  
+  private realtimeService = inject(RealtimeService, { optional: true });
+  private subscriptions = new Subscription();
+  
   constructor(private apiService: ApiService) {
     // Load houses automatically when service is initialized
     this.loadHousesInternal();
+  }
+  
+  ngOnInit(): void {
+    this.setupRealtimeSubscriptions();
+  }
+  
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+  
+  /**
+   * Setup SignalR subscriptions for real-time updates (FE-2.6)
+   */
+  private setupRealtimeSubscriptions(): void {
+    if (!this.realtimeService) {
+      return;
+    }
+    
+    // Subscribe to favorite updates
+    const favoriteSub = this.realtimeService.favoriteUpdates$.subscribe((event: FavoriteUpdateEvent) => {
+      const currentFavorites = this.favoriteHouseIds();
+      if (event.updateType === 'added' && !currentFavorites.includes(event.houseId)) {
+        this.favoriteHouseIds.set([...currentFavorites, event.houseId]);
+      } else if (event.updateType === 'removed') {
+        this.favoriteHouseIds.set(currentFavorites.filter(id => id !== event.houseId));
+      }
+    });
+    this.subscriptions.add(favoriteSub);
+    
+    // Subscribe to entry status changes
+    const entryStatusSub = this.realtimeService.entryStatusChanges$.subscribe((event: EntryStatusChangeEvent) => {
+      const currentEntries = this.activeEntries();
+      const updatedEntries = currentEntries.map(entry => 
+        entry.id === event.ticketId 
+          ? { ...entry, status: event.newStatus }
+          : entry
+      );
+      this.activeEntries.set(updatedEntries);
+    });
+    this.subscriptions.add(entryStatusSub);
+    
+    // Subscribe to draw reminders
+    const drawReminderSub = this.realtimeService.drawReminders$.subscribe((event: DrawReminderEvent) => {
+      // TODO: Show notification/toast for draw reminder
+      console.log('Draw reminder:', event);
+    });
+    this.subscriptions.add(drawReminderSub);
+    
+    // Subscribe to recommendations
+    const recommendationSub = this.realtimeService.recommendations$.subscribe((event: RecommendationEvent) => {
+      // TODO: Show notification/toast for new recommendation
+      console.log('New recommendation:', event);
+      // Optionally refresh recommendations
+      this.getRecommendations().subscribe();
+    });
+    this.subscriptions.add(recommendationSub);
   }
 
   getHouses() {

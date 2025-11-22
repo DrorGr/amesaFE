@@ -12,6 +12,7 @@ import {
 } from '../models/house.model';
 import { UserLotteryData } from '../interfaces/lottery.interface';
 import { LotteryService } from './lottery.service';
+import { RealtimeService } from './realtime.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +24,7 @@ export class AuthService {
   
   // Inject LotteryService for lottery data loading (circular dependency handled via inject())
   private lotteryService = inject(LotteryService, { optional: true });
+  private realtimeService = inject(RealtimeService, { optional: true });
   
   constructor(private apiService: ApiService) {
     // Check if user is already authenticated on service initialization
@@ -67,6 +69,11 @@ export class AuthService {
           if (response.data.lotteryData && this.lotteryService) {
             this.lotteryService.initializeLotteryData(response.data.lotteryData);
           }
+          
+          // Connect to SignalR for real-time updates (FE-2.6)
+          if (this.realtimeService && response.data.user) {
+            this.connectToSignalR(response.data.user.id);
+          }
         }
       }),
       map(response => response.success),
@@ -109,6 +116,28 @@ export class AuthService {
     if (this.lotteryService) {
       this.lotteryService.clearLotteryData();
     }
+    
+    // Disconnect from SignalR on logout
+    if (this.realtimeService) {
+      this.realtimeService.stopConnection();
+    }
+  }
+  
+  /**
+   * Connect to SignalR and subscribe to user groups for real-time updates
+   */
+  private async connectToSignalR(userId: string): Promise<void> {
+    if (!this.realtimeService) {
+      return;
+    }
+
+    try {
+      await this.realtimeService.startConnection();
+      await this.realtimeService.joinUserGroup(userId);
+      console.log('Connected to SignalR and joined user group');
+    } catch (error) {
+      console.error('Error connecting to SignalR:', error);
+    }
   }
 
   isAuthenticated(): boolean {
@@ -128,6 +157,12 @@ export class AuthService {
           // Load lottery data if available (BE-1.7 enhancement)
           if (response.data.lotteryData && this.lotteryService) {
             this.lotteryService.initializeLotteryData(response.data.lotteryData);
+          }
+          
+          // Connect to SignalR for real-time updates (FE-2.6)
+          const userData = response.data.user || response.data;
+          if (this.realtimeService && userData) {
+            this.connectToSignalR(userData.id);
           }
         }
       }),
