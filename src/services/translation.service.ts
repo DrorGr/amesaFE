@@ -140,15 +140,15 @@ export class TranslationService {
     this.loadingMessage.next(`Switching to ${language.toUpperCase()}...`);
     this.error.next(null); // Clear any previous errors
     
-    // Update language immediately
-    this.currentLanguage.set(language);
-    
     // Load translations if not in cache or cache is stale
     if (!this.translationsCache().has(language) || this.isCacheStale(language)) {
-      // loadTranslations will handle the loader state
-      this.loadTranslations(language);
+      // Load translations first, then switch language when ready
+      this.loadTranslations(language, true); // true = switch language after loading
     } else {
-      // Even if cached, show brief loading for smooth UX
+      // Translations are cached, safe to switch immediately
+      this.currentLanguage.set(language);
+      
+      // Show brief loading for smooth UX
       this.loadingProgress.next(50);
       this.loadingMessage.next('Loading cached translations...');
       
@@ -165,6 +165,7 @@ export class TranslationService {
     }
   }
 
+
   /**
    * Get available languages
    */
@@ -174,8 +175,10 @@ export class TranslationService {
 
   /**
    * Load translations from backend API with timeout and proper error handling
+   * @param language - Language to load translations for
+   * @param switchAfterLoad - If true, switch current language after translations are loaded
    */
-  private loadTranslations(language: Language): void {
+  private loadTranslations(language: Language, switchAfterLoad: boolean = false): void {
     if (this.isLoading.value) {
       this.logger.debug('Already loading translations, skipping', { language }, 'TranslationService');
       return; // Already loading
@@ -236,6 +239,12 @@ export class TranslationService {
           this.translationsCache.set(newCache);
           this.lastUpdated.set(language, new Date(data.lastUpdated));
           
+          // Switch language AFTER translations are cached (if requested)
+          if (switchAfterLoad) {
+            this.currentLanguage.set(language);
+            this.logger.info('Language switched after translations loaded', { language }, 'TranslationService');
+          }
+          
           this.loadingProgress.next(100);
           
           if (translationCount > 0) {
@@ -253,7 +262,7 @@ export class TranslationService {
           }, translationCount > 0 ? 500 : 2000); // Show warning longer if no translations
           
           if (translationCount > 0) {
-            this.logger.info('Translations loaded successfully', { language, translationCount }, 'TranslationService');
+            this.logger.info('Translations loaded successfully', { language, translationCount, switched: switchAfterLoad }, 'TranslationService');
           } else {
             this.logger.warn('Translations loaded but empty', { language }, 'TranslationService');
           }
