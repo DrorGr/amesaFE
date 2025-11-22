@@ -113,12 +113,59 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - `../MetaData/Configs/` - CloudFront, S3, ECS configurations
 
 ## Agent Instructions
+
+### 🚀 **ON AGENT CREATION - MANDATORY FIRST STEPS**
+**CRITICAL**: When a new agent session starts, you MUST:
+1. **Read and review ALL context files** to understand current frontend state:
+   - Read `.cursorrules` (root monorepo context)
+   - Read `FE/.cursorrules` (this file - frontend context)
+   - Review `MetaData/Documentation/` for recent session documentation
+   - Check "Recent Changes" sections
+2. **Understand current frontend status** before starting any work:
+   - Review "Current Status" section
+   - Check deployment status and environment configuration
+   - Review Angular version and dependencies
+   - Identify any ongoing work or pending tasks
+   - Note any known issues or limitations
+3. **Familiarize yourself with frontend architecture**:
+   - Understand Angular 20.2.1 project structure
+   - Know component organization and routing
+   - Understand deployment process (S3, CloudFront)
+   - Review translation service and language support
+
+### 📋 **General Agent Guidelines**
 - Always check context files for current project status
-- Update relevant context files when making changes
 - Follow the established patterns and conventions
 - Maintain environment consistency for local development and production
 - Document any infrastructure or configuration changes
-- **CRITICAL**: If any changes relate to project structure, environment configuration, infrastructure, or deployment processes, update the appropriate context files and this .cursorrules file
+
+### ✅ **TASK COMPLETION PROTOCOL - MANDATORY**
+**CRITICAL**: For every task you start and complete, you MUST:
+1. **Use `todo_write` tool** to track all tasks with clear status updates
+2. **Update context files IMMEDIATELY upon task completion**:
+   - Update `FE/.cursorrules` "Recent Changes" section
+   - Update root `.cursorrules` "Recent Changes" section
+   - Update `CONTEXT_QUICK_REFERENCE.md` if applicable
+   - Document in "Recent Changes" with:
+     - ✅ Status indicators
+     - Clear descriptions of what was fixed/implemented
+     - Technical details for future reference
+     - Date and session information
+3. **Commit context updates** to the FE repository:
+   - All frontend context updates → commit to FE repository
+   - Include context updates in the same commit as code changes when possible
+4. **Provide summary** of what was accomplished for chat continuity
+
+**Why This Matters**: This ensures that when a new agent session starts, the context contains complete, up-to-date information about recent frontend work and current status. Without updating context files, new agents will be working with outdated information.
+
+### 🔧 **CRITICAL UPDATE TRIGGERS**
+**CRITICAL**: If any changes relate to the following, you MUST update context files:
+- Project structure or component organization
+- Environment configuration or build settings
+- Infrastructure or deployment processes
+- Translation system or language support
+- New features or major refactoring
+- Angular version or dependency updates
 
 ## Architecture Overview
 
