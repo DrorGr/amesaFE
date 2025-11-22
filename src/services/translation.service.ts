@@ -138,22 +138,30 @@ export class TranslationService {
     this.isLoading.next(true);
     this.loadingProgress.next(10);
     this.loadingMessage.next(`Switching to ${language.toUpperCase()}...`);
+    this.error.next(null); // Clear any previous errors
     
+    // Update language immediately
     this.currentLanguage.set(language);
     
     // Load translations if not in cache or cache is stale
     if (!this.translationsCache().has(language) || this.isCacheStale(language)) {
+      // loadTranslations will handle the loader state
       this.loadTranslations(language);
     } else {
       // Even if cached, show brief loading for smooth UX
-      this.loadingProgress.next(100);
-      this.loadingMessage.next('Language switched successfully!');
+      this.loadingProgress.next(50);
+      this.loadingMessage.next('Loading cached translations...');
       
       setTimeout(() => {
-        this.isLoading.next(false);
-        this.loadingProgress.next(0);
-        this.loadingMessage.next('Initializing...');
-      }, 300); // Brief delay to show completion
+        this.loadingProgress.next(100);
+        this.loadingMessage.next('Language switched successfully!');
+        
+        setTimeout(() => {
+          this.isLoading.next(false);
+          this.loadingProgress.next(0);
+          this.loadingMessage.next('Initializing...');
+        }, 300);
+      }, 200);
     }
   }
 
@@ -216,22 +224,39 @@ export class TranslationService {
           const translationCount = Object.keys(data.translations || {}).length;
           this.logger.debug('Caching translations', { language, translationCount }, 'TranslationService');
           
+          // Warn if translations are empty
+          if (translationCount === 0) {
+            this.logger.warn('No translations found for language', { language }, 'TranslationService');
+            this.error.next(`No translations available for ${language.toUpperCase()}. Please ensure the database is seeded.`);
+            this.loadingMessage.next(`Warning: No translations found for ${language.toUpperCase()}`);
+          }
+          
           const newCache = new Map(this.translationsCache());
-          newCache.set(language, data.translations);
+          newCache.set(language, data.translations || {});
           this.translationsCache.set(newCache);
           this.lastUpdated.set(language, new Date(data.lastUpdated));
           
           this.loadingProgress.next(100);
-          this.loadingMessage.next('Translations loaded successfully!');
           
-          // Small delay to show completion
+          if (translationCount > 0) {
+            this.loadingMessage.next('Translations loaded successfully!');
+            this.error.next(null);
+          } else {
+            this.loadingMessage.next(`No translations available for ${language.toUpperCase()}`);
+          }
+          
+          // Delay to show completion or warning
           setTimeout(() => {
             this.isLoading.next(false);
             this.loadingProgress.next(0);
             this.loadingMessage.next('Initializing...');
-          }, 500);
+          }, translationCount > 0 ? 500 : 2000); // Show warning longer if no translations
           
-          this.logger.info('Translations loaded successfully', { language, translationCount }, 'TranslationService');
+          if (translationCount > 0) {
+            this.logger.info('Translations loaded successfully', { language, translationCount }, 'TranslationService');
+          } else {
+            this.logger.warn('Translations loaded but empty', { language }, 'TranslationService');
+          }
         }),
         catchError(error => {
           clearTimeout(timeoutTimer);
