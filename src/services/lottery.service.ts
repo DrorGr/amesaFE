@@ -1,4 +1,4 @@
-import { Injectable, signal, inject, OnInit, OnDestroy } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Observable, throwError, Subscription } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { ApiService, PagedResponse } from './api.service';
@@ -23,7 +23,7 @@ import { RealtimeService, FavoriteUpdateEvent, EntryStatusChangeEvent, DrawRemin
 @Injectable({
   providedIn: 'root'
 })
-export class LotteryService implements OnInit, OnDestroy {
+export class LotteryService {
   private houses = signal<House[]>([]);
   private userTickets = signal<LotteryTicketDto[]>([]);
   
@@ -39,14 +39,9 @@ export class LotteryService implements OnInit, OnDestroy {
   constructor(private apiService: ApiService) {
     // Load houses automatically when service is initialized
     this.loadHousesInternal();
-  }
-  
-  ngOnInit(): void {
+    
+    // Setup SignalR subscriptions for real-time updates (FE-2.6)
     this.setupRealtimeSubscriptions();
-  }
-  
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
   }
   
   /**
