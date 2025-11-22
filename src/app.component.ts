@@ -30,13 +30,9 @@ import { ToastService } from './services/toast.service';
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
-      <!-- Translation Loader Overlay -->
+      <!-- Translation Loader Spinner -->
       <app-translation-loader
         [isVisible]="(translationService.isLoading$ | async) ?? false"
-        title="Loading Translations"
-        [message]="(translationService.loadingMessage$ | async) ?? 'Loading...'"
-        [progress]="(translationService.loadingProgress$ | async) ?? 0"
-        [progressText]="((translationService.loadingProgress$ | async) ?? 0) + '%'"
       ></app-translation-loader>
       
       <app-topbar></app-topbar>

@@ -142,7 +142,12 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 ### ✅ **TASK COMPLETION PROTOCOL - MANDATORY**
 **CRITICAL**: For every task you start and complete, you MUST:
 1. **Use `todo_write` tool** to track all tasks with clear status updates
-2. **Update context files IMMEDIATELY upon task completion**:
+2. **BUILD LOCALLY BEFORE PUSHING** - **MANDATORY**:
+   - **ALWAYS run `npm run build`** in the FE directory before committing/pushing
+   - Verify build completes successfully with no errors
+   - Fix any build errors before pushing to repository
+   - This prevents CI/CD failures and broken deployments
+3. **Update context files IMMEDIATELY upon task completion**:
    - Update `FE/.cursorrules` "Recent Changes" section
    - Update root `.cursorrules` "Recent Changes" section
    - Update `CONTEXT_QUICK_REFERENCE.md` if applicable
@@ -151,10 +156,10 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
      - Clear descriptions of what was fixed/implemented
      - Technical details for future reference
      - Date and session information
-3. **Commit context updates** to the FE repository:
+4. **Commit context updates** to the FE repository:
    - All frontend context updates → commit to FE repository
    - Include context updates in the same commit as code changes when possible
-4. **Provide summary** of what was accomplished for chat continuity
+5. **Provide summary** of what was accomplished for chat continuity
 
 **Why This Matters**: This ensures that when a new agent session starts, the context contains complete, up-to-date information about recent frontend work and current status. Without updating context files, new agents will be working with outdated information.
 
