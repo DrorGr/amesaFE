@@ -505,7 +505,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     try {
       const result = await this.lotteryService.quickEntryFromFavorite({
         houseId: this.house().id,
-        quantity: 1,
+        ticketCount: 1, // Changed from 'quantity' to match backend property name 'TicketCount'
         paymentMethodId: 'default' // TODO: Get from user preferences or payment service
       }).toPromise();
       
