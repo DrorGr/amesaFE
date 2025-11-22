@@ -8,6 +8,16 @@ import {
   LotteryTicketDto, 
   PurchaseTicketRequest 
 } from '../models/house.model';
+import {
+  UserLotteryData,
+  UserLotteryStats,
+  HouseRecommendation,
+  EntryFilters,
+  PagedEntryHistoryResponse,
+  QuickEntryRequest,
+  QuickEntryResponse,
+  FavoriteHouseResponse
+} from '../interfaces/lottery.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +25,12 @@ import {
 export class LotteryService {
   private houses = signal<House[]>([]);
   private userTickets = signal<LotteryTicketDto[]>([]);
+  
+  // Lottery Favorites & Entry Management State
+  private favoriteHouseIds = signal<string[]>([]);
+  private activeEntries = signal<LotteryTicketDto[]>([]);
+  private userLotteryStats = signal<UserLotteryStats | null>(null);
+  private recommendations = signal<HouseRecommendation[]>([]);
 
   constructor(private apiService: ApiService) {
     // Load houses automatically when service is initialized
@@ -27,6 +43,28 @@ export class LotteryService {
 
   getUserTickets() {
     return this.userTickets.asReadonly();
+  }
+
+  // Lottery Favorites & Entry Management Getters
+  getFavoriteHouseIds() {
+    return this.favoriteHouseIds.asReadonly();
+  }
+
+  getActiveEntries() {
+    return this.activeEntries.asReadonly();
+  }
+
+  getUserLotteryStats() {
+    return this.userLotteryStats.asReadonly();
+  }
+
+  getRecommendations() {
+    return this.recommendations.asReadonly();
+  }
+
+  // Check if a house is favorited
+  isFavorite(houseId: string): boolean {
+    return this.favoriteHouseIds().includes(houseId);
   }
 
   // Load houses from API and update the signal
@@ -227,6 +265,137 @@ export class LotteryService {
         this.houses.set([]);
       }
     });
+  }
+
+  // ============================================
+  // Lottery Favorites & Entry Management Methods
+  // ============================================
+  // NOTE: These methods will be fully implemented once BE Agent completes BE-1.4 (API endpoints)
+  // Currently preparing structure and state management
+
+  /**
+   * Get user's favorite houses
+   * Endpoint: GET /api/v1/houses/favorites
+   * TODO: Implement when BE-1.4 is complete
+   */
+  getFavoriteHouses(): Observable<HouseDto[]> {
+    // TODO: Implement when backend provides /api/v1/houses/favorites endpoint
+    console.warn('getFavoriteHouses: Endpoint not yet available in backend (waiting for BE-1.4)');
+    return throwError(() => new Error('Favorites endpoint not yet implemented in backend'));
+  }
+
+  /**
+   * Toggle favorite status for a house
+   * Adds if not favorited, removes if already favorited
+   * Endpoint: POST /api/v1/houses/{id}/favorite or DELETE /api/v1/houses/{id}/favorite
+   * TODO: Implement when BE-1.4 is complete
+   */
+  toggleFavorite(houseId: string): Observable<FavoriteHouseResponse> {
+    if (this.isFavorite(houseId)) {
+      return this.removeHouseFromFavorites(houseId);
+    } else {
+      return this.addHouseToFavorites(houseId);
+    }
+  }
+
+  /**
+   * Add house to favorites
+   * Endpoint: POST /api/v1/houses/{id}/favorite
+   * TODO: Implement when BE-1.4 is complete
+   */
+  addHouseToFavorites(houseId: string): Observable<FavoriteHouseResponse> {
+    // TODO: Implement when backend provides POST /api/v1/houses/{id}/favorite endpoint
+    console.warn('addHouseToFavorites: Endpoint not yet available in backend (waiting for BE-1.4)');
+    return throwError(() => new Error('Add favorite endpoint not yet implemented in backend'));
+  }
+
+  /**
+   * Remove house from favorites
+   * Endpoint: DELETE /api/v1/houses/{id}/favorite
+   * TODO: Implement when BE-1.4 is complete
+   */
+  removeHouseFromFavorites(houseId: string): Observable<FavoriteHouseResponse> {
+    // TODO: Implement when backend provides DELETE /api/v1/houses/{id}/favorite endpoint
+    console.warn('removeHouseFromFavorites: Endpoint not yet available in backend (waiting for BE-1.4)');
+    return throwError(() => new Error('Remove favorite endpoint not yet implemented in backend'));
+  }
+
+  /**
+   * Get personalized house recommendations
+   * Endpoint: GET /api/v1/houses/recommendations
+   * TODO: Implement when BE-1.4 is complete
+   */
+  getRecommendations(limit?: number): Observable<HouseRecommendation[]> {
+    // TODO: Implement when backend provides GET /api/v1/houses/recommendations endpoint
+    console.warn('getRecommendations: Endpoint not yet available in backend (waiting for BE-1.4)');
+    return throwError(() => new Error('Recommendations endpoint not yet implemented in backend'));
+  }
+
+  /**
+   * Get user's active lottery entries
+   * Endpoint: GET /api/v1/tickets/active
+   * TODO: Implement when BE-2.1 is complete
+   */
+  getUserActiveEntries(): Observable<LotteryTicketDto[]> {
+    // TODO: Implement when backend provides GET /api/v1/tickets/active endpoint
+    console.warn('getUserActiveEntries: Endpoint not yet available in backend (waiting for BE-2.1)');
+    return throwError(() => new Error('Active entries endpoint not yet implemented in backend'));
+  }
+
+  /**
+   * Get user's entry history with filters
+   * Endpoint: GET /api/v1/tickets/history
+   * TODO: Implement when BE-2.1 is complete
+   */
+  getUserEntryHistory(filters?: EntryFilters): Observable<PagedEntryHistoryResponse> {
+    // TODO: Implement when backend provides GET /api/v1/tickets/history endpoint
+    console.warn('getUserEntryHistory: Endpoint not yet available in backend (waiting for BE-2.1)');
+    return throwError(() => new Error('Entry history endpoint not yet implemented in backend'));
+  }
+
+  /**
+   * Get user's lottery statistics and analytics
+   * Endpoint: GET /api/v1/tickets/analytics
+   * TODO: Implement when BE-2.1 is complete
+   */
+  getLotteryAnalytics(): Observable<UserLotteryStats> {
+    // TODO: Implement when backend provides GET /api/v1/tickets/analytics endpoint
+    console.warn('getLotteryAnalytics: Endpoint not yet available in backend (waiting for BE-2.1)');
+    return throwError(() => new Error('Analytics endpoint not yet implemented in backend'));
+  }
+
+  /**
+   * Quick entry into lottery from favorites
+   * Endpoint: POST /api/v1/tickets/quick-entry
+   * TODO: Implement when BE-2.1 is complete
+   */
+  quickEntryFromFavorite(request: QuickEntryRequest): Observable<QuickEntryResponse> {
+    // TODO: Implement when backend provides POST /api/v1/tickets/quick-entry endpoint
+    console.warn('quickEntryFromFavorite: Endpoint not yet available in backend (waiting for BE-2.1)');
+    return throwError(() => new Error('Quick entry endpoint not yet implemented in backend'));
+  }
+
+  /**
+   * Initialize lottery data from UserLotteryData
+   * Called after login to populate state
+   * TODO: Implement when BE-1.6 is complete
+   */
+  initializeLotteryData(lotteryData: UserLotteryData): void {
+    this.favoriteHouseIds.set(lotteryData.favoriteHouseIds || []);
+    this.activeEntries.set(lotteryData.activeEntries || []);
+    if (lotteryData.stats) {
+      this.userLotteryStats.set(lotteryData.stats);
+    }
+  }
+
+  /**
+   * Clear all lottery data (called on logout)
+   */
+  clearLotteryData(): void {
+    this.favoriteHouseIds.set([]);
+    this.activeEntries.set([]);
+    this.userLotteryStats.set(null);
+    this.recommendations.set([]);
   }
 
 }

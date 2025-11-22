@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { ApiService } from './api.service';
@@ -10,6 +10,8 @@ import {
   LoginRequest,
   UpdateUserProfileRequest 
 } from '../models/house.model';
+import { UserLotteryData } from '../interfaces/lottery.interface';
+import { LotteryService } from './lottery.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +20,9 @@ export class AuthService {
   private currentUser = signal<User | null>(null);
   private currentUserDto = signal<UserDto | null>(null);
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  
+  // Inject LotteryService for lottery data loading (circular dependency handled via inject())
+  private lotteryService = inject(LotteryService, { optional: true });
   
   constructor(private apiService: ApiService) {
     // Check if user is already authenticated on service initialization
@@ -57,6 +62,10 @@ export class AuthService {
           this.apiService.setToken(response.data.accessToken);
           this.setUser(response.data.user);
           this.isAuthenticatedSubject.next(true);
+          
+          // TODO: Load lottery data when BE-1.6 is complete
+          // The AuthResponse will include lotteryData field
+          // this.loadLotteryDataOnLogin(response.data);
         }
       }),
       map(response => response.success),
@@ -94,6 +103,11 @@ export class AuthService {
     this.currentUser.set(null);
     this.currentUserDto.set(null);
     this.isAuthenticatedSubject.next(false);
+    
+    // Clear lottery data on logout
+    if (this.lotteryService) {
+      this.lotteryService.clearLotteryData();
+    }
   }
 
   isAuthenticated(): boolean {
@@ -107,6 +121,10 @@ export class AuthService {
         if (response.success && response.data) {
           this.setUser(response.data);
           this.isAuthenticatedSubject.next(true);
+          
+          // TODO: Load lottery data when BE-1.7 is complete
+          // The /auth/me endpoint will include lotteryData field
+          // this.loadLotteryDataFromProfile(response);
         }
       }),
       map(response => {
@@ -229,5 +247,33 @@ export class AuthService {
     };
     
     this.currentUser.set(user);
+  }
+
+  /**
+   * Load lottery data on login
+   * Called after successful login to initialize lottery state
+   * TODO: Implement when BE-1.6 is complete (AuthService login enhancement)
+   * The AuthResponse will include a lotteryData field of type UserLotteryData
+   */
+  private loadLotteryDataOnLogin(authResponse: AuthResponse): void {
+    // TODO: Extract lotteryData from authResponse when BE-1.6 is complete
+    // if (authResponse.lotteryData && this.lotteryService) {
+    //   this.lotteryService.initializeLotteryData(authResponse.lotteryData);
+    // }
+    console.log('loadLotteryDataOnLogin: Waiting for BE-1.6 (AuthService login enhancement)');
+  }
+
+  /**
+   * Load lottery data from user profile
+   * Called when fetching user profile to initialize lottery state
+   * TODO: Implement when BE-1.7 is complete (AuthController /me endpoint enhancement)
+   * The /auth/me response will include a lotteryData field
+   */
+  private loadLotteryDataFromProfile(profileResponse: any): void {
+    // TODO: Extract lotteryData from profileResponse when BE-1.7 is complete
+    // if (profileResponse.data?.lotteryData && this.lotteryService) {
+    //   this.lotteryService.initializeLotteryData(profileResponse.data.lotteryData);
+    // }
+    console.log('loadLotteryDataFromProfile: Waiting for BE-1.7 (AuthController /me enhancement)');
   }
 }
