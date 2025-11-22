@@ -207,7 +207,7 @@ export class LotteryFavoritesComponent implements OnInit {
     try {
       const result = await this.lotteryService.quickEntryFromFavorite({
         houseId: house.id,
-        ticketCount: 1, // Changed from 'quantity' to match backend property name 'TicketCount'
+        quantity: 1, // API contract specifies "quantity", matches backend [JsonPropertyName("quantity")]
         paymentMethodId: 'default'
       }).toPromise();
       

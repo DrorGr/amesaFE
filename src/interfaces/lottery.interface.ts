@@ -95,7 +95,7 @@ export interface PagedEntryHistoryResponse {
  */
 export interface QuickEntryRequest {
   houseId: string;
-  ticketCount: number; // Changed from 'quantity' to match backend property name 'TicketCount'
+  quantity: number; // API contract specifies "quantity", backend has [JsonPropertyName("quantity")]
   paymentMethodId: string;
 }
 
