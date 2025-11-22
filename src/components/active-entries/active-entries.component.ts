@@ -134,6 +134,9 @@ export class ActiveEntriesComponent implements OnInit {
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
   
+  // Make LOTTERY_TRANSLATION_KEYS available in template
+  readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
+  
   currentUser = this.authService.getCurrentUser();
   activeEntries = this.lotteryService.getActiveEntries();
   

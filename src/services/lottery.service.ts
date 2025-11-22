@@ -87,7 +87,7 @@ export class LotteryService {
       // TODO: Show notification/toast for new recommendation
       console.log('New recommendation:', event);
       // Optionally refresh recommendations
-      this.getRecommendations().subscribe();
+      this.getRecommendations(10).subscribe();
     });
     this.subscriptions.add(recommendationSub);
   }
@@ -113,7 +113,7 @@ export class LotteryService {
     return this.userLotteryStats.asReadonly();
   }
 
-  getRecommendations() {
+  getRecommendationsSignal() {
     return this.recommendations.asReadonly();
   }
 

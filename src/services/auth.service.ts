@@ -160,7 +160,6 @@ export class AuthService {
           }
           
           // Connect to SignalR for real-time updates (FE-2.6)
-          const userData = response.data.user || response.data;
           if (this.realtimeService && userData) {
             this.connectToSignalR(userData.id);
           }

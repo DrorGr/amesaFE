@@ -59,7 +59,8 @@ export const LOTTERY_TRANSLATION_KEYS = {
     confirm: 'lottery.quickEntry.confirm',
     cancel: 'lottery.quickEntry.cancel',
     success: 'lottery.quickEntry.success',
-    error: 'lottery.quickEntry.error'
+    error: 'lottery.quickEntry.error',
+    processing: 'lottery.quickEntry.processing'
   },
 
   // Notifications

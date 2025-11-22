@@ -244,10 +244,13 @@ export class LotteryDashboardComponent implements OnInit, OnDestroy {
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   
+  // Make LOTTERY_TRANSLATION_KEYS available in template
+  readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
+  
   currentUser = this.authService.getCurrentUser();
   activeEntries = this.lotteryService.getActiveEntries();
   stats = this.lotteryService.getUserLotteryStats();
-  recommendations = this.lotteryService.getRecommendations();
+  recommendations = this.lotteryService.getRecommendationsSignal();
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
   
   favoriteHouses = signal<HouseDto[]>([]);

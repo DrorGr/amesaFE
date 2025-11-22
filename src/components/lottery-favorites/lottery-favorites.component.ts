@@ -33,14 +33,14 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
               <!-- House Image -->
               <div class="relative h-48 bg-gray-200">
                 <img 
-                  [src]="house.images?.[0]?.imageUrl || house.images?.[0]?.url || ''" 
+                  [src]="house.images?.[0]?.imageUrl || ''" 
                   [alt]="house.title"
                   class="w-full h-full object-cover">
                 
                 <!-- Favorite Button -->
                 <button
                   (click)="removeFavorite($event, house.id)"
-                  [class.animate-pulse]="removingFavorites.has(house.id)"
+                  [class.animate-pulse]="isRemovingFavorite()(house.id)"
                   class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10">
                   <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
@@ -78,9 +78,9 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                 <!-- Quick Entry Button -->
                 <button
                   (click)="quickEntry($event, house)"
-                  [disabled]="quickEntering.has(house.id) || house.status !== 'active'"
+                  [disabled]="isQuickEntering()(house.id) || house.status !== 'active'"
                   class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                  <ng-container *ngIf="quickEntering.has(house.id); else quickEntryText">
+                  <ng-container *ngIf="isQuickEntering()(house.id); else quickEntryText">
                     {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
                   </ng-container>
                   <ng-template #quickEntryText>
@@ -132,10 +132,24 @@ export class LotteryFavoritesComponent implements OnInit {
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
   
+  // Make LOTTERY_TRANSLATION_KEYS available in template
+  readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
+  
   currentUser = this.authService.getCurrentUser();
   favoriteHouses = signal<HouseDto[]>([]);
   removingFavorites = signal<Set<string>>(new Set());
   quickEntering = signal<Set<string>>(new Set());
+  
+  // Computed signals for Set operations
+  isRemovingFavorite = computed(() => {
+    const set = this.removingFavorites();
+    return (houseId: string) => set.has(houseId);
+  });
+  
+  isQuickEntering = computed(() => {
+    const set = this.quickEntering();
+    return (houseId: string) => set.has(houseId);
+  });
 
   ngOnInit(): void {
     this.loadFavorites();

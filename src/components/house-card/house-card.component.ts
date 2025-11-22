@@ -292,6 +292,9 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   
+  // Make LOTTERY_TRANSLATION_KEYS available in template
+  readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
+  
   house = input.required<House>();
   private countdownInterval?: number;
   isPurchasing = false;
