@@ -2,7 +2,7 @@
 // Comprehensive type definitions for all user preference categories
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
-export type Language = 'en' | 'he' | 'ar' | 'es' | 'fr' | 'pl';
+export type Language = 'en' | 'es' | 'fr' | 'pl';
 export type UIDensity = 'compact' | 'comfortable' | 'spacious';
 export type DateFormat = 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD' | 'DD MMM YYYY';
 export type TimeFormat = '12h' | '24h';

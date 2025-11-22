@@ -3,7 +3,7 @@ import { Observable, BehaviorSubject, of, catchError, map, tap } from 'rxjs';
 import { ApiService } from './api.service';
 import { LoggingService } from './logging.service';
 
-export type Language = 'en' | 'he' | 'ar' | 'es' | 'fr' | 'pl';
+export type Language = 'en' | 'es' | 'fr' | 'pl';
 
 export interface Translations {
   readonly [key: string]: string;
@@ -77,31 +77,13 @@ export class TranslationService {
       displayOrder: 1
     },
     {
-      code: 'he',
-      name: 'Hebrew',
-      nativeName: 'עברית',
-      flagUrl: 'https://flagcdn.com/w40/il.png',
-      isActive: true,
-      isDefault: false,
-      displayOrder: 2
-    },
-    {
-      code: 'ar',
-      name: 'Arabic',
-      nativeName: 'العربية',
-      flagUrl: 'https://flagcdn.com/w40/sa.png',
-      isActive: true,
-      isDefault: false,
-      displayOrder: 3
-    },
-    {
       code: 'es',
       name: 'Spanish',
       nativeName: 'Español',
       flagUrl: 'https://flagcdn.com/w40/es.png',
       isActive: true,
       isDefault: false,
-      displayOrder: 4
+      displayOrder: 2
     },
     {
       code: 'fr',
@@ -110,7 +92,7 @@ export class TranslationService {
       flagUrl: 'https://flagcdn.com/w40/fr.png',
       isActive: true,
       isDefault: false,
-      displayOrder: 5
+      displayOrder: 3
     },
     {
       code: 'pl',
@@ -119,7 +101,7 @@ export class TranslationService {
       flagUrl: 'https://flagcdn.com/w40/pl.png',
       isActive: true,
       isDefault: false,
-      displayOrder: 6
+      displayOrder: 4
     }
   ];
 

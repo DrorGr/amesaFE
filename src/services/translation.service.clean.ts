@@ -3,7 +3,7 @@ import { Observable, BehaviorSubject, of, catchError, map, tap, timeout } from '
 import { ApiService } from './api.service';
 import { LoggingService } from './logging.service';
 
-export type Language = 'en' | 'he' | 'ar' | 'es' | 'fr' | 'pl';
+export type Language = 'en' | 'es' | 'fr' | 'pl';
 
 export interface Translations {
   [key: string]: string;
