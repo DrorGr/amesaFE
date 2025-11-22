@@ -63,9 +63,10 @@ export class AuthService {
           this.setUser(response.data.user);
           this.isAuthenticatedSubject.next(true);
           
-          // TODO: Load lottery data when BE-1.6 is complete
-          // The AuthResponse will include lotteryData field
-          // this.loadLotteryDataOnLogin(response.data);
+          // Load lottery data if available
+          if (response.data.lotteryData && this.lotteryService) {
+            this.lotteryService.initializeLotteryData(response.data.lotteryData);
+          }
         }
       }),
       map(response => response.success),
@@ -115,21 +116,25 @@ export class AuthService {
   }
 
   getCurrentUserProfile(): Observable<UserDto> {
-    return this.apiService.get<UserDto>('auth/me').pipe(
+    return this.apiService.get<any>('auth/me').pipe(
       tap(response => {
         // Update auth state when fetching user profile
         if (response.success && response.data) {
-          this.setUser(response.data);
+          // Handle both old format (UserDto) and new format ({user, lotteryData})
+          const userData = response.data.user || response.data;
+          this.setUser(userData);
           this.isAuthenticatedSubject.next(true);
           
-          // TODO: Load lottery data when BE-1.7 is complete
-          // The /auth/me endpoint will include lotteryData field
-          // this.loadLotteryDataFromProfile(response);
+          // Load lottery data if available (BE-1.7 enhancement)
+          if (response.data.lotteryData && this.lotteryService) {
+            this.lotteryService.initializeLotteryData(response.data.lotteryData);
+          }
         }
       }),
       map(response => {
         if (response.success && response.data) {
-          return response.data;
+          // Return user data (handle both formats)
+          return response.data.user || response.data;
         }
         throw new Error('Failed to get user profile');
       })
@@ -249,31 +254,4 @@ export class AuthService {
     this.currentUser.set(user);
   }
 
-  /**
-   * Load lottery data on login
-   * Called after successful login to initialize lottery state
-   * TODO: Implement when BE-1.6 is complete (AuthService login enhancement)
-   * The AuthResponse will include a lotteryData field of type UserLotteryData
-   */
-  private loadLotteryDataOnLogin(authResponse: AuthResponse): void {
-    // TODO: Extract lotteryData from authResponse when BE-1.6 is complete
-    // if (authResponse.lotteryData && this.lotteryService) {
-    //   this.lotteryService.initializeLotteryData(authResponse.lotteryData);
-    // }
-    console.log('loadLotteryDataOnLogin: Waiting for BE-1.6 (AuthService login enhancement)');
-  }
-
-  /**
-   * Load lottery data from user profile
-   * Called when fetching user profile to initialize lottery state
-   * TODO: Implement when BE-1.7 is complete (AuthController /me endpoint enhancement)
-   * The /auth/me response will include a lotteryData field
-   */
-  private loadLotteryDataFromProfile(profileResponse: any): void {
-    // TODO: Extract lotteryData from profileResponse when BE-1.7 is complete
-    // if (profileResponse.data?.lotteryData && this.lotteryService) {
-    //   this.lotteryService.initializeLotteryData(profileResponse.data.lotteryData);
-    // }
-    console.log('loadLotteryDataFromProfile: Waiting for BE-1.7 (AuthController /me enhancement)');
-  }
 }

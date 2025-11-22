@@ -73,11 +73,14 @@ export interface LotteryTicketDto {
   createdAt: Date;
 }
 
+import { UserLotteryData } from '../interfaces/lottery.interface';
+
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
   expiresAt: Date;
   user: UserDto;
+  lotteryData?: UserLotteryData; // Added in BE-1.6
 }
 
 // Frontend interfaces for backward compatibility
