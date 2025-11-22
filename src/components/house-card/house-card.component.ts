@@ -1,9 +1,10 @@
-import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { House } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
+import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 
 @Component({
   selector: 'app-house-card',
@@ -35,7 +36,33 @@ import { TranslationService } from '../../services/translation.service';
           </svg>
         </button>
         
-        <div class="absolute top-4 right-4 z-20">
+        <!-- Favorite Button -->
+        <button
+          *ngIf="currentUser()"
+          (click)="toggleFavorite()"
+          [class.animate-pulse]="isTogglingFavorite"
+          class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+          [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
+          [title]="isFavorite() ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
+          <svg 
+            class="w-5 h-5 transition-all duration-300"
+            [class.text-red-500]="isFavorite()"
+            [class.text-gray-400]="!isFavorite()"
+            [class.fill-current]="isFavorite()"
+            [class.stroke-current]="!isFavorite()"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24">
+            <path 
+              stroke-linecap="round" 
+              stroke-linejoin="round" 
+              stroke-width="2" 
+              [attr.d]="isFavorite() ? 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' : 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'">
+            </path>
+          </svg>
+        </button>
+        
+        <div class="absolute top-16 right-4 z-20">
           <span class="bg-emerald-500 text-white px-3 py-2 rounded-full text-sm md:text-sm font-semibold shadow-lg">
             {{ getStatusText() }}
           </span>
@@ -101,8 +128,25 @@ import { TranslationService } from '../../services/translation.service';
           </div>
         </div>
 
-        <div class="mt-auto flex-shrink-0">
+        <div class="mt-auto flex-shrink-0 space-y-2">
           <ng-container *ngIf="currentUser(); else signInBlock">
+            <!-- Quick Entry Button (only show if favorited) -->
+            <button
+              *ngIf="isFavorite()"
+              (click)="quickEntry()"
+              [disabled]="isQuickEntering || house().status !== 'active'"
+              class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 md:py-2 px-6 md:px-4 rounded-lg font-semibold transition-all duration-200 border-none cursor-pointer text-lg md:text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+              [class.bg-gray-400]="(isQuickEntering || house().status !== 'active')"
+              [class.cursor-not-allowed]="(isQuickEntering || house().status !== 'active')">
+              <ng-container *ngIf="isQuickEntering; else quickEntryBlock">
+                {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
+              </ng-container>
+              <ng-template #quickEntryBlock>
+                ⚡ {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
+              </ng-template>
+            </button>
+            
+            <!-- Regular Purchase Button -->
             <button
               (click)="purchaseTicket()"
               [disabled]="isPurchasing || house().status !== 'active'"
@@ -251,12 +295,20 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   house = input.required<House>();
   private countdownInterval?: number;
   isPurchasing = false;
+  isTogglingFavorite = false;
+  isQuickEntering = false;
   
   currentUser = this.authService.getCurrentUser();
+  favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
   
   // Use signals for dynamic values to prevent change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
   currentTime = signal<number>(Date.now());
+  
+  // Computed signal to check if this house is favorited
+  isFavorite = computed(() => {
+    return this.favoriteHouseIds().includes(this.house().id);
+  });
 
   formatPrice(price: number): string {
     return price.toLocaleString();
@@ -410,5 +462,59 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
     
     console.log(`Opening location map for: ${address}, ${city}`);
+  }
+
+  /**
+   * Toggle favorite status for this house
+   */
+  async toggleFavorite(): Promise<void> {
+    if (!this.currentUser() || this.isTogglingFavorite) {
+      return;
+    }
+
+    this.isTogglingFavorite = true;
+    
+    try {
+      const result = await this.lotteryService.toggleFavorite(this.house().id).toPromise();
+      
+      if (result) {
+        // State is automatically updated by LotteryService
+        console.log(result.message || (result.added ? 'Added to favorites' : 'Removed from favorites'));
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      // TODO: Show error toast notification
+    } finally {
+      this.isTogglingFavorite = false;
+    }
+  }
+
+  /**
+   * Quick entry from favorites
+   */
+  async quickEntry(): Promise<void> {
+    if (!this.currentUser() || this.isQuickEntering || !this.isFavorite()) {
+      return;
+    }
+
+    this.isQuickEntering = true;
+    
+    try {
+      const result = await this.lotteryService.quickEntryFromFavorite({
+        houseId: this.house().id,
+        quantity: 1,
+        paymentMethodId: 'default' // TODO: Get from user preferences or payment service
+      }).toPromise();
+      
+      if (result && result.ticketsPurchased > 0) {
+        console.log('Quick entry successful!', result);
+        // TODO: Show success toast notification
+      }
+    } catch (error) {
+      console.error('Error with quick entry:', error);
+      // TODO: Show error toast notification
+    } finally {
+      this.isQuickEntering = false;
+    }
   }
 }
