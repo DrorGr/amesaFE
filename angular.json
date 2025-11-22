@@ -20,19 +20,7 @@
               "aot": true,
               "extractLicenses": true,
               "namedChunks": false,
-              "optimization": {
-                "scripts": {
-                  "removeComments": true,
-                  "removeLicenses": true
-                },
-                "styles": {
-                  "minify": true,
-                  "inlineCritical": true
-                },
-                "fonts": {
-                  "inline": true
-                }
-              },
+              "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
               "fileReplacements": [
