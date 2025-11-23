@@ -2,3 +2,6 @@
 dist
 node_modules
 .env
+
+# PowerShell scripts
+*.ps1
