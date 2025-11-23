@@ -200,6 +200,40 @@ export class AppComponent implements OnInit, OnDestroy {
   isLoading = this.routeLoadingService.loading$;
 
   ngOnInit(): void {
+    // Expose debug log viewer to window for console access
+    (window as any).viewOAuthLogs = () => {
+      try {
+        const logs = JSON.parse(localStorage.getItem('oauth_debug_logs') || '[]');
+        console.log('=== OAuth Debug Logs (last 100 entries) ===');
+        logs.forEach((log: any) => {
+          if (log.data) {
+            try {
+              const data = JSON.parse(log.data);
+              console.log(`[${log.timestamp}] ${log.message}`, data);
+            } catch {
+              console.log(`[${log.timestamp}] ${log.message}`, log.data);
+            }
+          } else {
+            console.log(`[${log.timestamp}] ${log.message}`);
+          }
+        });
+        console.log('=== End of OAuth Debug Logs ===');
+        console.log('To clear logs, run: clearOAuthLogs()');
+        return logs;
+      } catch (e) {
+        console.error('Error reading OAuth logs:', e);
+        return [];
+      }
+    };
+    
+    (window as any).clearOAuthLogs = () => {
+      localStorage.removeItem('oauth_debug_logs');
+      console.log('OAuth debug logs cleared');
+    };
+    
+    console.log('OAuth Debug Logs available:');
+    console.log('  - Run viewOAuthLogs() to see all logs');
+    console.log('  - Run clearOAuthLogs() to clear logs');
     // Check for pending OAuth toast on navigation
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))

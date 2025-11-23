@@ -33,20 +33,63 @@ export class ApiService {
   private baseUrl = environment.backendUrl || '/api/v1';
   private tokenSubject = new BehaviorSubject<string | null>(this.getStoredToken());
   public token$ = this.tokenSubject.asObservable();
+  private readonly DEBUG_LOG_KEY = 'oauth_debug_logs';
 
   constructor(private http: HttpClient) {
     // Debug: Log the baseUrl being used
-    console.log('[API Service] Base URL:', this.baseUrl);
-    console.log('[API Service] Environment production:', environment.production);
-    console.log('[API Service] Environment backendUrl:', environment.backendUrl);
+    this.debugLog('[API Service] Base URL:', this.baseUrl);
+    this.debugLog('[API Service] Environment production:', environment.production);
+    this.debugLog('[API Service] Environment backendUrl:', environment.backendUrl);
     
     // Fix: If localhost detected in production OR if baseUrl is relative and we're on CloudFront
     if (this.baseUrl.includes('localhost') || (!this.baseUrl.startsWith('http') && window.location.hostname.includes('cloudfront.net'))) {
-      console.error('[API Service] ERROR: Invalid baseUrl detected! Fixing...');
+      this.debugLog('[API Service] ERROR: Invalid baseUrl detected! Fixing...');
       // Force production URL
       this.baseUrl = 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
-      console.log('[API Service] Fixed baseUrl to:', this.baseUrl);
+      this.debugLog('[API Service] Fixed baseUrl to:', this.baseUrl);
     }
+  }
+
+  private debugLog(message: string, data?: any): void {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+      timestamp,
+      message,
+      data: data !== undefined ? JSON.stringify(data) : undefined
+    };
+    
+    // Console log for immediate visibility
+    if (data !== undefined) {
+      console.log(`[${timestamp}] ${message}`, data);
+    } else {
+      console.log(`[${timestamp}] ${message}`);
+    }
+    
+    // Persist to localStorage (survives navigation)
+    try {
+      const existingLogs = JSON.parse(localStorage.getItem(this.DEBUG_LOG_KEY) || '[]');
+      existingLogs.push(logEntry);
+      // Keep only last 100 entries to avoid localStorage quota issues
+      if (existingLogs.length > 100) {
+        existingLogs.shift();
+      }
+      localStorage.setItem(this.DEBUG_LOG_KEY, JSON.stringify(existingLogs));
+    } catch (e) {
+      // If localStorage is full or unavailable, just use console
+      console.warn('Could not persist debug log to localStorage:', e);
+    }
+  }
+
+  getDebugLogs(): any[] {
+    try {
+      return JSON.parse(localStorage.getItem(this.DEBUG_LOG_KEY) || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  clearDebugLogs(): void {
+    localStorage.removeItem(this.DEBUG_LOG_KEY);
   }
 
   private getStoredToken(): string | null {
@@ -62,16 +105,16 @@ export class ApiService {
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
       // Debug: Log token presence (first 20 chars only for security)
-      console.log('[API Service] Adding Authorization header, token preview:', token.substring(0, 20) + '...');
+      this.debugLog('[API Service] Adding Authorization header', { tokenPreview: token.substring(0, 20) + '...' });
     } else {
-      console.warn('[API Service] No token available for Authorization header');
+      this.debugLog('[API Service] No token available for Authorization header');
     }
 
     return headers;
   }
 
   setToken(token: string): void {
-    console.log('[API Service] setToken called:', {
+    this.debugLog('[API Service] setToken called', {
       tokenLength: token?.length,
       tokenPreview: token?.substring(0, 30) + '...',
       hasTokenBefore: !!this.tokenSubject.value,
@@ -84,7 +127,7 @@ export class ApiService {
     // Verify immediately after setting
     const stored = localStorage.getItem('access_token');
     const inSubject = this.tokenSubject.value;
-    console.log('[API Service] setToken completed, verification:', {
+    this.debugLog('[API Service] setToken completed, verification', {
       inStorage: !!stored,
       inSubject: !!inSubject,
       matches: stored === token && inSubject === token
@@ -116,7 +159,7 @@ export class ApiService {
     // Debug: Log request details for auth/me endpoint
     if (endpoint === 'auth/me') {
       const authHeader = headers.get('Authorization');
-      console.log('[API Service] GET auth/me request:', {
+      this.debugLog('[API Service] GET auth/me request', {
         url,
         hasAuthHeader: !!authHeader,
         authHeaderPreview: authHeader ? authHeader.substring(0, 30) + '...' : 'none',
@@ -139,7 +182,7 @@ export class ApiService {
     
     // Debug: Log OAuth exchange requests
     if (endpoint === 'oauth/exchange') {
-      console.log('[API Service] POST oauth/exchange request:', {
+      this.debugLog('[API Service] POST oauth/exchange request', {
         url,
         codeLength: data?.code?.length,
         codePreview: data?.code ? data.code.substring(0, 20) + '...' : 'none',
@@ -172,7 +215,7 @@ export class ApiService {
   }
 
   private handleError = (error: any): Observable<never> => {
-    console.error('[API Service] API Error:', {
+    this.debugLog('[API Service] API Error', {
       status: error.status,
       statusText: error.statusText,
       url: error.url,
@@ -185,10 +228,10 @@ export class ApiService {
       // Only clear token if it's not an OAuth exchange endpoint
       // OAuth exchange failures shouldn't clear tokens (they don't have tokens yet)
       if (!error.url?.includes('/oauth/exchange')) {
-        console.warn('[API Service] 401 error - clearing token (not OAuth exchange)');
+        this.debugLog('[API Service] 401 error - clearing token (not OAuth exchange)');
         this.clearToken();
       } else {
-        console.warn('[API Service] 401 error on OAuth exchange - NOT clearing token');
+        this.debugLog('[API Service] 401 error on OAuth exchange - NOT clearing token');
       }
     }
 

@@ -6,6 +6,36 @@ import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { firstValueFrom } from 'rxjs';
 
+// Helper function to persist logs to localStorage (survives navigation)
+function debugLog(message: string, data?: any): void {
+  const timestamp = new Date().toISOString();
+  const logEntry = {
+    timestamp,
+    message,
+    data: data !== undefined ? JSON.stringify(data) : undefined
+  };
+  
+  // Console log for immediate visibility
+  if (data !== undefined) {
+    console.log(`[${timestamp}] ${message}`, data);
+  } else {
+    console.log(`[${timestamp}] ${message}`);
+  }
+  
+  // Persist to localStorage (survives navigation)
+  try {
+    const existingLogs = JSON.parse(localStorage.getItem('oauth_debug_logs') || '[]');
+    existingLogs.push(logEntry);
+    // Keep only last 100 entries
+    if (existingLogs.length > 100) {
+      existingLogs.shift();
+    }
+    localStorage.setItem('oauth_debug_logs', JSON.stringify(existingLogs));
+  } catch (e) {
+    console.warn('Could not persist debug log:', e);
+  }
+}
+
 @Component({
   selector: 'app-oauth-callback',
   standalone: true,
@@ -64,7 +94,7 @@ export class OAuthCallbackComponent implements OnInit {
           // Exchange temporary code for JWT tokens
           // Note: OAuth exchange doesn't require authentication, but we use ApiService for consistency
           try {
-            console.log('[OAuth Callback] Exchanging code for tokens, code length:', code.length);
+            debugLog('[OAuth Callback] Exchanging code for tokens', { codeLength: code.length });
             const apiResponse = await firstValueFrom(
               this.apiService.post<{
                 accessToken: string;
@@ -75,12 +105,14 @@ export class OAuthCallbackComponent implements OnInit {
               }>('oauth/exchange', { code })
             );
             
-            console.log('[OAuth Callback] Token exchange response:', {
+            debugLog('[OAuth Callback] Token exchange response', {
               success: apiResponse.success,
               hasData: !!apiResponse.data,
               hasAccessToken: !!(apiResponse.data as any)?.accessToken,
+              hasAccessTokenPascal: !!(apiResponse.data as any)?.AccessToken,
               error: apiResponse.error,
-              rawResponse: apiResponse
+              rawResponseKeys: Object.keys(apiResponse),
+              dataKeys: apiResponse.data ? Object.keys(apiResponse.data as any) : []
             });
             
             // Extract data from ApiResponse wrapper (backend may return wrapped or direct)
@@ -103,7 +135,7 @@ export class OAuthCallbackComponent implements OnInit {
                 isNewUser: data.isNewUser || data.IsNewUser,
                 userAlreadyExists: data.userAlreadyExists || data.UserAlreadyExists
               };
-              console.log('[OAuth Callback] Extracted response (handling both formats):', {
+              debugLog('[OAuth Callback] Extracted response (handling both formats)', {
                 hasAccessToken: !!response.accessToken,
                 accessTokenLength: response.accessToken?.length
               });
@@ -116,16 +148,21 @@ export class OAuthCallbackComponent implements OnInit {
                 isNewUser: (apiResponse as any).isNewUser || (apiResponse as any).IsNewUser,
                 userAlreadyExists: (apiResponse as any).userAlreadyExists || (apiResponse as any).UserAlreadyExists
               };
-              console.log('[OAuth Callback] Extracted from direct response:', {
+              debugLog('[OAuth Callback] Extracted from direct response', {
                 hasAccessToken: !!response.accessToken,
                 accessTokenLength: response.accessToken?.length
               });
             } else {
-              console.error('[OAuth Callback] Could not extract token from response:', apiResponse);
+              debugLog('[OAuth Callback] Could not extract token from response', {
+                apiResponseKeys: Object.keys(apiResponse),
+                hasSuccess: 'success' in apiResponse,
+                hasData: 'data' in apiResponse,
+                rawResponse: JSON.stringify(apiResponse).substring(0, 500)
+              });
             }
 
             if (response && response.accessToken) {
-              console.log('[OAuth Callback] Storing tokens:', {
+              debugLog('[OAuth Callback] Storing tokens', {
                 accessTokenLength: response.accessToken.length,
                 refreshTokenLength: response.refreshToken?.length,
                 expiresAt: response.expiresAt,
@@ -139,7 +176,7 @@ export class OAuthCallbackComponent implements OnInit {
               
               // Verify storage immediately
               const storedToken = localStorage.getItem('access_token');
-              console.log('[OAuth Callback] Token stored, verification:', {
+              debugLog('[OAuth Callback] Token stored, verification', {
                 stored: !!storedToken,
                 length: storedToken?.length,
                 matches: storedToken === response.accessToken
@@ -150,7 +187,7 @@ export class OAuthCallbackComponent implements OnInit {
               
               // Verify token is set in ApiService
               const tokenAfterSet = localStorage.getItem('access_token');
-              console.log('[OAuth Callback] Token set in ApiService, final verification:', {
+              debugLog('[OAuth Callback] Token set in ApiService, final verification', {
                 inStorage: !!tokenAfterSet,
                 inSubject: !!(this.apiService as any)['tokenSubject']?.value,
                 tokenStillMatches: tokenAfterSet === response.accessToken
@@ -162,15 +199,15 @@ export class OAuthCallbackComponent implements OnInit {
 
               // Update auth state - fetch user profile (this will automatically update auth state via tap in getCurrentUserProfile)
               try {
-                console.log('[OAuth Callback] Fetching user profile...');
+                debugLog('[OAuth Callback] Fetching user profile');
                 await this.authService.getCurrentUserProfile().toPromise();
-                console.log('[OAuth Callback] User profile fetched successfully');
+                debugLog('[OAuth Callback] User profile fetched successfully');
               } catch (err: any) {
                 // Check token BEFORE error handler potentially clears it
                 const tokenBeforeError = localStorage.getItem('access_token');
-                const tokenSubjectValue = this.apiService['tokenSubject'].value;
+                const tokenSubjectValue = (this.apiService as any)['tokenSubject']?.value;
                 
-                console.error('[OAuth Callback] Error fetching user profile:', {
+                debugLog('[OAuth Callback] Error fetching user profile', {
                   status: err.status,
                   statusText: err.statusText,
                   message: err.message,
@@ -178,13 +215,15 @@ export class OAuthCallbackComponent implements OnInit {
                   hasTokenInStorage: !!tokenBeforeError,
                   hasTokenInSubject: !!tokenSubjectValue,
                   tokenPreview: tokenBeforeError ? tokenBeforeError.substring(0, 20) + '...' : 'none',
-                  errorDetails: err
+                  errorType: err.constructor?.name
                 });
                 
                 // If token exists but request failed, it might be a validation issue
                 if (tokenBeforeError && err.status === 401) {
-                  console.error('[OAuth Callback] Token exists but 401 - possible token validation issue');
-                  console.error('[OAuth Callback] Token preview:', tokenBeforeError.substring(0, 50));
+                  debugLog('[OAuth Callback] Token exists but 401 - possible token validation issue', {
+                    tokenPreview: tokenBeforeError.substring(0, 50),
+                    tokenLength: tokenBeforeError.length
+                  });
                 }
                 
                 // Don't fail the entire flow - user can still navigate, but data won't be loaded
@@ -203,17 +242,23 @@ export class OAuthCallbackComponent implements OnInit {
               localStorage.removeItem('returnUrl');
               this.router.navigate([returnUrl]);
             } else {
-              console.error('[OAuth Callback] No access token in response:', apiResponse);
+              debugLog('[OAuth Callback] No access token in response', {
+                apiResponseKeys: Object.keys(apiResponse),
+                hasSuccess: 'success' in apiResponse,
+                hasData: 'data' in apiResponse,
+                responsePreview: JSON.stringify(apiResponse).substring(0, 500)
+              });
               this.error = 'Authentication failed: No response from server';
               this.isLoading = false;
             }
           } catch (err: any) {
-            console.error('[OAuth Callback] Error exchanging OAuth code:', {
+            debugLog('[OAuth Callback] Error exchanging OAuth code', {
               status: err.status,
               statusText: err.statusText,
               message: err.message,
               error: err.error,
-              url: err.url
+              url: err.url,
+              errorType: err.constructor?.name
             });
             this.error = err.error?.error || err.message || 'Failed to exchange authentication code';
             this.isLoading = false;
