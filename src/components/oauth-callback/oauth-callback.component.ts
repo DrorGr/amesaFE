@@ -125,15 +125,36 @@ export class OAuthCallbackComponent implements OnInit {
             }
 
             if (response && response.accessToken) {
-              console.log('[OAuth Callback] Storing tokens, accessToken length:', response.accessToken.length);
+              console.log('[OAuth Callback] Storing tokens:', {
+                accessTokenLength: response.accessToken.length,
+                refreshTokenLength: response.refreshToken?.length,
+                expiresAt: response.expiresAt,
+                tokenPreview: response.accessToken.substring(0, 30) + '...'
+              });
+              
               // Store tokens in localStorage
               localStorage.setItem('access_token', response.accessToken);
               localStorage.setItem('refresh_token', response.refreshToken);
               localStorage.setItem('token_expires_at', response.expiresAt);
               
+              // Verify storage immediately
+              const storedToken = localStorage.getItem('access_token');
+              console.log('[OAuth Callback] Token stored, verification:', {
+                stored: !!storedToken,
+                length: storedToken?.length,
+                matches: storedToken === response.accessToken
+              });
+              
               // IMPORTANT: Update ApiService's BehaviorSubject so Authorization header is sent
               this.apiService.setToken(response.accessToken);
-              console.log('[OAuth Callback] Token set in ApiService, verifying token in localStorage:', !!localStorage.getItem('access_token'));
+              
+              // Verify token is set in ApiService
+              const tokenAfterSet = localStorage.getItem('access_token');
+              console.log('[OAuth Callback] Token set in ApiService, final verification:', {
+                inStorage: !!tokenAfterSet,
+                inSubject: !!(this.apiService as any)['tokenSubject']?.value,
+                tokenStillMatches: tokenAfterSet === response.accessToken
+              });
 
               // NOTE: For "user doesn't exist" scenario during login, 
               // that's handled in the regular login flow (auth-modal.component.ts)
@@ -145,13 +166,27 @@ export class OAuthCallbackComponent implements OnInit {
                 await this.authService.getCurrentUserProfile().toPromise();
                 console.log('[OAuth Callback] User profile fetched successfully');
               } catch (err: any) {
+                // Check token BEFORE error handler potentially clears it
+                const tokenBeforeError = localStorage.getItem('access_token');
+                const tokenSubjectValue = this.apiService['tokenSubject'].value;
+                
                 console.error('[OAuth Callback] Error fetching user profile:', {
                   status: err.status,
                   statusText: err.statusText,
                   message: err.message,
                   url: err.url,
-                  hasToken: !!localStorage.getItem('access_token')
+                  hasTokenInStorage: !!tokenBeforeError,
+                  hasTokenInSubject: !!tokenSubjectValue,
+                  tokenPreview: tokenBeforeError ? tokenBeforeError.substring(0, 20) + '...' : 'none',
+                  errorDetails: err
                 });
+                
+                // If token exists but request failed, it might be a validation issue
+                if (tokenBeforeError && err.status === 401) {
+                  console.error('[OAuth Callback] Token exists but 401 - possible token validation issue');
+                  console.error('[OAuth Callback] Token preview:', tokenBeforeError.substring(0, 50));
+                }
+                
                 // Don't fail the entire flow - user can still navigate, but data won't be loaded
               }
 

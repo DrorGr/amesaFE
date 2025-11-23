@@ -71,8 +71,24 @@ export class ApiService {
   }
 
   setToken(token: string): void {
+    console.log('[API Service] setToken called:', {
+      tokenLength: token?.length,
+      tokenPreview: token?.substring(0, 30) + '...',
+      hasTokenBefore: !!this.tokenSubject.value,
+      storageBefore: !!localStorage.getItem('access_token')
+    });
+    
     localStorage.setItem('access_token', token);
     this.tokenSubject.next(token);
+    
+    // Verify immediately after setting
+    const stored = localStorage.getItem('access_token');
+    const inSubject = this.tokenSubject.value;
+    console.log('[API Service] setToken completed, verification:', {
+      inStorage: !!stored,
+      inSubject: !!inSubject,
+      matches: stored === token && inSubject === token
+    });
   }
 
   clearToken(): void {
@@ -118,8 +134,22 @@ export class ApiService {
   }
 
   post<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
-    return this.http.post<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
-      headers: this.getHeaders()
+    const url = `${this.baseUrl}/${endpoint}`;
+    const headers = this.getHeaders();
+    
+    // Debug: Log OAuth exchange requests
+    if (endpoint === 'oauth/exchange') {
+      console.log('[API Service] POST oauth/exchange request:', {
+        url,
+        codeLength: data?.code?.length,
+        codePreview: data?.code ? data.code.substring(0, 20) + '...' : 'none',
+        hasAuthHeader: !!headers.get('Authorization'),
+        // OAuth exchange shouldn't have auth header, but log it anyway
+      });
+    }
+    
+    return this.http.post<ApiResponse<T>>(url, data, {
+      headers
     }).pipe(
       catchError(this.handleError)
     );
@@ -142,12 +172,24 @@ export class ApiService {
   }
 
   private handleError = (error: any): Observable<never> => {
-    console.error('API Error:', error);
+    console.error('[API Service] API Error:', {
+      status: error.status,
+      statusText: error.statusText,
+      url: error.url,
+      message: error.message,
+      hasTokenBeforeClear: !!this.tokenSubject.value,
+      tokenInStorageBeforeClear: !!localStorage.getItem('access_token')
+    });
     
     if (error.status === 401) {
-      // Token expired or invalid
-      this.clearToken();
-      // Redirect to login or emit event
+      // Only clear token if it's not an OAuth exchange endpoint
+      // OAuth exchange failures shouldn't clear tokens (they don't have tokens yet)
+      if (!error.url?.includes('/oauth/exchange')) {
+        console.warn('[API Service] 401 error - clearing token (not OAuth exchange)');
+        this.clearToken();
+      } else {
+        console.warn('[API Service] 401 error on OAuth exchange - NOT clearing token');
+      }
     }
 
     throw error;
