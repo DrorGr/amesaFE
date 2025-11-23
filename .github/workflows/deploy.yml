@@ -17,6 +17,11 @@ on:
         - staging
         - development
 
+# Cancel previous workflow runs when a new one starts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   NODE_VERSION: '20'
 

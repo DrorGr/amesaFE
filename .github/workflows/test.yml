@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main, dev, stage]
 
+# Cancel previous workflow runs when a new one starts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   NODE_VERSION: '20'
 
@@ -110,4 +115,5 @@ jobs:
             http://localhost:4200
           uploadArtifacts: true
           temporaryPublicStorage: true
+
 
