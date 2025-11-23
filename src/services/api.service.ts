@@ -61,6 +61,10 @@ export class ApiService {
 
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
+      // Debug: Log token presence (first 20 chars only for security)
+      console.log('[API Service] Adding Authorization header, token preview:', token.substring(0, 20) + '...');
+    } else {
+      console.warn('[API Service] No token available for Authorization header');
     }
 
     return headers;
@@ -90,8 +94,23 @@ export class ApiService {
       });
     }
 
-    return this.http.get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, {
-      headers: this.getHeaders(),
+    const headers = this.getHeaders();
+    const url = `${this.baseUrl}/${endpoint}`;
+    
+    // Debug: Log request details for auth/me endpoint
+    if (endpoint === 'auth/me') {
+      const authHeader = headers.get('Authorization');
+      console.log('[API Service] GET auth/me request:', {
+        url,
+        hasAuthHeader: !!authHeader,
+        authHeaderPreview: authHeader ? authHeader.substring(0, 30) + '...' : 'none',
+        tokenInStorage: !!localStorage.getItem('access_token'),
+        tokenSubjectValue: !!this.tokenSubject.value
+      });
+    }
+
+    return this.http.get<ApiResponse<T>>(url, {
+      headers,
       params: httpParams
     }).pipe(
       catchError(this.handleError)
