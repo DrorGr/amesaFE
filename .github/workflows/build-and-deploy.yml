@@ -16,10 +16,10 @@ on:
           - production
 
 # Cancel previous workflow runs when a new one starts
-# Use shared group so test and build-deploy workflows cancel each other
+# Use separate group so build-deploy doesn't wait for tests
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: false
+  group: build-deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: "20"
