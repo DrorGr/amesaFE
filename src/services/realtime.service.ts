@@ -112,14 +112,28 @@ export class RealtimeService {
     try {
       // Get base URL and construct SignalR URL (remove /api/v1 for WebSocket endpoint)
       const baseUrl = this.apiService.getBaseUrl();
-      const wsUrl = baseUrl.replace('/api/v1', '') + '/ws/lottery';
+      let wsUrl = baseUrl.replace('/api/v1', '') + '/ws/lottery';
+      
+      // Get token from localStorage and append as query parameter
+      // WebSocket connections don't support Authorization headers, so we must use query parameter
+      const token = localStorage.getItem('access_token');
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:119',message:'SignalR token check',data:{hasToken:!!token,tokenLength:token?.length||0,wsUrlBefore:wsUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4,H5'})}).catch(()=>{});
+      // #endregion
+      if (token) {
+        const separator = wsUrl.includes('?') ? '&' : '?';
+        wsUrl += `${separator}access_token=${encodeURIComponent(token)}`;
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:123',message:'SignalR URL with token',data:{wsUrlAfter:wsUrl,hasAccessTokenParam:wsUrl.includes('access_token')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+        // #endregion
+      } else {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:127',message:'SignalR no token',data:{wsUrlWithoutToken:wsUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+        // #endregion
+      }
       
       this.connection = new HubConnectionBuilder()
-        .withUrl(wsUrl, {
-          accessTokenFactory: () => {
-            return localStorage.getItem('access_token') || '';
-          }
-        })
+        .withUrl(wsUrl)
         .withAutomaticReconnect({
           nextRetryDelayInMilliseconds: retryContext => {
             if (retryContext.previousRetryCount < 3) {
