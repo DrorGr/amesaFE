@@ -32,7 +32,7 @@ import { MobileDetectionService } from '../../services/mobile-detection.service'
               {{ translate('hero.title') }}
             </h1>
             <p class="hero-subtitle mb-8 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
-              Enter exclusive house lotteries and get the chance to win amazing properties at a fraction of their market value.
+              {{ translate('hero.subtitle') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-6">
               <button class="px-12 py-6 text-3xl md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button">
