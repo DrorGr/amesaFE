@@ -10,9 +10,11 @@ import { TranslationLoaderComponent } from './components/translation-loader/tran
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { AccessibilityWidgetComponent } from './components/accessibility-widget/accessibility-widget.component';
 import { ToastComponent } from './components/toast/toast.component';
+import { CookieConsentComponent } from './components/cookie-consent/cookie-consent.component';
 import { TranslationService } from './services/translation.service';
 import { RouteLoadingService } from './services/route-loading.service';
 import { ToastService } from './services/toast.service';
+import { CookieConsentService } from './services/cookie-consent.service';
 // Services are available for dependency injection but not used directly in this component
 
 @Component({
@@ -26,7 +28,8 @@ import { ToastService } from './services/toast.service';
     TranslationLoaderComponent,
     ChatbotComponent,
     AccessibilityWidgetComponent,
-    ToastComponent
+    ToastComponent,
+    CookieConsentComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
@@ -122,6 +125,7 @@ import { ToastService } from './services/toast.service';
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.termsConditions') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.privacyPolicy') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.gdprInfo') }}</a></li>
+                <li><button (click)="openCookiePreferences()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.cookiePreferences') }}</button></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.news') }}</a></li>
               </ul>
             </div>
@@ -183,6 +187,9 @@ import { ToastService } from './services/toast.service';
       <!-- Toast Notifications -->
       <app-toast></app-toast>
       
+      <!-- Cookie Consent Banner -->
+      <app-cookie-consent></app-cookie-consent>
+      
     </div>
   `,
   styles: []
@@ -192,6 +199,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private routeLoadingService = inject(RouteLoadingService);
   private router = inject(Router);
   private toastService = inject(ToastService);
+  private cookieConsentService = inject(CookieConsentService);
   private routerSubscription?: Subscription;
   
   // Services are injected but not used directly in this component
@@ -311,5 +319,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   navigateToFAQ() {
     this.router.navigate(['/faq']);
+  }
+
+  openCookiePreferences() {
+    this.cookieConsentService.openPreferences();
   }
 }

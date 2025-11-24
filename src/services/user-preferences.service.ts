@@ -10,7 +10,8 @@ import {
   Language,
   AppearancePreferences,
   AccessibilityPreferences,
-  NotificationPreferences
+  NotificationPreferences,
+  PrivacyPreferences
 } from '../interfaces/user-preferences.interface';
 import { ApiService } from './api.service';
 import { LoggingService } from './logging.service';
@@ -178,6 +179,16 @@ export class UserPreferencesService {
     };
     this.updatePreferences(updated);
     this.logger.info('Notification preferences updated', notifications, 'UserPreferencesService');
+  }
+
+  public updatePrivacy(privacy: Partial<PrivacyPreferences>): void {
+    const current = this.getPreferences();
+    const updated = {
+      ...current,
+      privacy: { ...current.privacy, ...privacy }
+    };
+    this.updatePreferences(updated);
+    this.logger.info('Privacy preferences updated', privacy, 'UserPreferencesService');
   }
 
   /**
