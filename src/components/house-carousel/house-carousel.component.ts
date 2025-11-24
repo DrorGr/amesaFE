@@ -142,7 +142,7 @@ import { LotteryService } from '../../services/lottery.service';
                   <!-- Lottery Information -->
                   <div class="space-y-2 md:space-y-2 flex-grow flex flex-col justify-center">
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('carousel.propertyValue') }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('common.price') }}</span>
                       <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">€{{ formatPrice(house.price) }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
@@ -154,7 +154,7 @@ import { LotteryService } from '../../services/lottery.service';
                       <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">{{ house.address || '123 Park Ave' }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('carousel.ticketPrice') }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('common.price') }}</span>
                       <span class="font-bold text-blue-600 dark:text-blue-400 text-xl md:text-3xl">€{{ house.ticketPrice }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
@@ -175,7 +175,7 @@ import { LotteryService } from '../../services/lottery.service';
                     
                     <!-- Buy Ticket Button -->
                     <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
-                      {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
+                      {{ translate('house.buyTicket') }} - €{{ house.ticketPrice }}
                     </button>
                   </div>
                 </div>
