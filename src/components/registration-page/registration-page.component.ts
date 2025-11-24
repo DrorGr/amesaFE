@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
+import { IdentityVerificationService } from '../../services/identity-verification.service';
 
 
 @Component({
@@ -551,28 +552,85 @@ import { AuthService } from '../../services/auth.service';
                 </div>
 
                 <!-- Validate Details Button -->
-                @if (canValidateDetails()) {
+                @if (canValidateDetails() && !showFaceCapture()) {
                   <div class="text-center">
                     <button
                       type="button"
                       (click)="validateDetails()"
+                      [disabled]="isVerifying()"
                       class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
-                      {{ translate('register.validateDetails') }}
+                      {{ translate('idVerification.uploadId') }}
                     </button>
                   </div>
                 }
 
+                <!-- Verification Status -->
+                @if (isVerifying()) {
+                  <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 text-center">
+                    <div class="flex items-center justify-center">
+                      <svg class="animate-spin h-8 w-8 text-blue-600 dark:text-blue-400 mr-3" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <p class="text-lg font-semibold text-blue-800 dark:text-blue-200">
+                        {{ translate('idVerification.verifying') }}
+                      </p>
+                    </div>
+                  </div>
+                }
+
+                @if (verificationError()) {
+                  <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+                    <div class="flex items-start">
+                      <svg class="w-6 h-6 text-red-600 dark:text-red-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <div>
+                        <p class="text-red-800 dark:text-red-200 font-semibold mb-2">
+                          {{ translate('idVerification.failed') }}
+                        </p>
+                        <p class="text-red-700 dark:text-red-300 text-sm">
+                          {{ verificationError() }}
+                        </p>
+                        <button
+                          type="button"
+                          (click)="verifyIdentity()"
+                          class="mt-4 px-6 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg">
+                          {{ translate('idVerification.retry') }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                @if (isIdentityValidated()) {
+                  <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
+                    <div class="flex items-center">
+                      <svg class="w-6 h-6 text-green-600 dark:text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <p class="text-green-800 dark:text-green-200 font-semibold">
+                        {{ translate('idVerification.verified') }}
+                      </p>
+                    </div>
+                  </div>
+                }
+
                 <!-- Face Capture -->
-                @if (showFaceCapture()) {
+                @if (showFaceCapture() && !isIdentityValidated()) {
                   <div class="text-center">
                     <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                      {{ translate('register.faceCapture') }}
+                      {{ translate('idVerification.captureSelfie') }}
                     </h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                      {{ translate('idVerification.selfieInstructions') }}
+                    </p>
                     <button
                       type="button"
                       (click)="captureFace()"
+                      [disabled]="isVerifying()"
                       class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
-                      {{ translate('register.captureFace') }}
+                      {{ translate('idVerification.captureSelfie') }}
                     </button>
                   </div>
                 }
@@ -608,6 +666,7 @@ export class RegistrationPageComponent {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private identityVerificationService = inject(IdentityVerificationService);
 
   currentStep = signal(1);
   usernameError = signal(false);
@@ -617,8 +676,11 @@ export class RegistrationPageComponent {
   passwordStrength = signal<boolean[]>([false, false, false, false, false]);
   passportFrontImage = signal<File | null>(null);
   passportBackImage = signal<File | null>(null);
+  selfieImage = signal<string | null>(null); // base64 encoded
   isIdentityValidated = signal(false);
   showFaceCapture = signal(false);
+  isVerifying = signal(false);
+  verificationError = signal<string | null>(null);
   isLoading = signal(false);
 
   steps = [
@@ -831,18 +893,130 @@ export class RegistrationPageComponent {
               this.passportBackImage());
   }
 
-  validateDetails() {
-    // Simulate Regula validation
-    setTimeout(() => {
+  async validateDetails() {
+    if (!this.canValidateDetails()) {
+      return;
+    }
+
+    this.isVerifying.set(true);
+    this.verificationError.set(null);
+
+    try {
+      // Convert images to base64
+      const frontImageBase64 = await this.fileToBase64(this.passportFrontImage()!);
+      const backImageBase64 = this.passportBackImage() ? await this.fileToBase64(this.passportBackImage()!) : undefined;
+      
+      // Show face capture step
       this.showFaceCapture.set(true);
-    }, 1000);
+    } catch (error) {
+      console.error('Error processing images:', error);
+      this.verificationError.set(this.translate('idVerification.error.imageQuality'));
+    } finally {
+      this.isVerifying.set(false);
+    }
   }
 
-  captureFace() {
-    // Simulate face capture and validation
-    setTimeout(() => {
-      this.isIdentityValidated.set(true);
-    }, 2000);
+  async captureFace() {
+    try {
+      // Request camera access
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' } 
+      });
+      
+      // Create video element to capture frame
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+      
+      // Wait for video to be ready
+      await new Promise(resolve => {
+        video.onloadedmetadata = () => {
+          video.width = video.videoWidth;
+          video.height = video.videoHeight;
+          resolve(null);
+        };
+      });
+
+      // Capture frame after a short delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Convert video frame to base64
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(video, 0, 0);
+      const selfieBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+      
+      // Stop camera
+      stream.getTracks().forEach(track => track.stop());
+      
+      this.selfieImage.set(selfieBase64);
+      
+      // Now verify identity
+      await this.verifyIdentity();
+    } catch (error) {
+      console.error('Error capturing face:', error);
+      this.verificationError.set(this.translate('idVerification.error.faceNotDetected'));
+    }
+  }
+
+  async verifyIdentity() {
+    if (!this.passportFrontImage() || !this.selfieImage()) {
+      return;
+    }
+
+    this.isVerifying.set(true);
+    this.verificationError.set(null);
+
+    try {
+      const frontImageBase64 = await this.fileToBase64(this.passportFrontImage()!);
+      const backImageBase64 = this.passportBackImage() ? await this.fileToBase64(this.passportBackImage()!) : undefined;
+      
+      const request = {
+        idFrontImage: frontImageBase64,
+        idBackImage: backImageBase64,
+        selfieImage: this.selfieImage()!,
+        documentType: 'id_card' as const,
+        documentNumber: this.identityForm.get('passportIdNumber')?.value
+      };
+
+      this.identityVerificationService.verifyIdentity(request).subscribe({
+        next: (result) => {
+          if (result.isVerified) {
+            this.isIdentityValidated.set(true);
+            this.verificationError.set(null);
+          } else {
+            this.verificationError.set(result.rejectionReason || this.translate('idVerification.failed'));
+            this.isIdentityValidated.set(false);
+          }
+          this.isVerifying.set(false);
+        },
+        error: (error) => {
+          console.error('Verification error:', error);
+          this.verificationError.set(error.error?.message || this.translate('idVerification.failed'));
+          this.isIdentityValidated.set(false);
+          this.isVerifying.set(false);
+        }
+      });
+    } catch (error) {
+      console.error('Error during verification:', error);
+      this.verificationError.set(this.translate('idVerification.failed'));
+      this.isIdentityValidated.set(false);
+      this.isVerifying.set(false);
+    }
+  }
+
+  private fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
   completeRegistration() {
