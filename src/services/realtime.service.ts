@@ -330,9 +330,6 @@ export class RealtimeService {
   }
 
   async joinUserGroup(userId: string): Promise<void> {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:332',message:'joinUserGroup called (no-op)',data:{userId:userId,connectionState:this.connection?.state,note:'Backend automatically handles user groups in OnConnectedAsync'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     // NOTE: User groups are automatically handled by the backend LotteryHub.OnConnectedAsync()
     // The backend adds users to user_{userId} group automatically when they connect
     // No explicit JoinUserGroup method exists or is needed
@@ -340,9 +337,6 @@ export class RealtimeService {
   }
 
   async leaveUserGroup(userId: string): Promise<void> {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:343',message:'leaveUserGroup called (no-op)',data:{userId:userId,connectionState:this.connection?.state,note:'Backend automatically handles user groups in OnDisconnectedAsync'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     // NOTE: User groups are automatically handled by the backend LotteryHub.OnDisconnectedAsync()
     // The backend removes users from user_{userId} group automatically when they disconnect
     // No explicit LeaveUserGroup method exists or is needed
