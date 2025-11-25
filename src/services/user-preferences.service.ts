@@ -309,9 +309,25 @@ export class UserPreferencesService {
 
     const preferences = this.getPreferences();
     
-    this.apiService.post<UserPreferences>('user/preferences', preferences)
+    // Backend expects { preferences: {...}, version?: string } format
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-preferences.service.ts:310',message:'syncWithServer request payload',data:{preferencesVersion:preferences.version,preferencesKeys:Object.keys(preferences)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
+    const requestBody = {
+      preferences: preferences,
+      version: preferences.version
+    };
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-preferences.service.ts:318',message:'syncWithServer request body',data:{requestBodyKeys:Object.keys(requestBody),hasPreferences:!!requestBody.preferences,hasVersion:!!requestBody.version},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
+    
+    this.apiService.post<UserPreferences>('user/preferences', requestBody)
       .pipe(
         catchError(error => {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-preferences.service.ts:325',message:'syncWithServer error',data:{errorStatus:error?.status,errorMessage:error?.message,errorType:error?.constructor?.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+          // #endregion
           this.logger.error('Failed to sync preferences with server', { error }, 'UserPreferencesService');
           this.syncStatusSubject.next({
             ...syncStatus,
@@ -322,6 +338,9 @@ export class UserPreferencesService {
         })
       )
       .subscribe(response => {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-preferences.service.ts:336',message:'syncWithServer success',data:{responseSuccess:response?.success,hasData:!!response?.data},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
         if (response?.success) {
           this.syncStatusSubject.next({
             lastSync: new Date(),
