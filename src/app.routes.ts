@@ -56,6 +56,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/lottery-result-detail/lottery-result-detail.component').then(m => m.LotteryResultDetailComponent)
   },
   {
+    path: 'lottery/dashboard',
+    loadComponent: () => import('./components/lottery-dashboard/lottery-dashboard.component').then(m => m.LotteryDashboardComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'auth/callback',
     loadComponent: () => import('./components/oauth-callback/oauth-callback.component').then(m => m.OAuthCallbackComponent)
   },

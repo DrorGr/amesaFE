@@ -13,6 +13,7 @@ import {
 import { UserLotteryData } from '../interfaces/lottery.interface';
 import { LotteryService } from './lottery.service';
 import { RealtimeService } from './realtime.service';
+import { LoggingService } from './logging.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,7 @@ export class AuthService {
   // Inject LotteryService for lottery data loading (circular dependency handled via inject())
   private lotteryService = inject(LotteryService, { optional: true });
   private realtimeService = inject(RealtimeService, { optional: true });
+  private logger = inject(LoggingService);
   
   constructor(private apiService: ApiService) {
     // Check if user is already authenticated on service initialization
@@ -78,7 +80,7 @@ export class AuthService {
       }),
       map(response => response.success),
       catchError(error => {
-        console.error('Login error:', error);
+        this.logger.error('Login error', { error }, 'AuthService');
         return throwError(() => error);
       })
     );
@@ -95,7 +97,7 @@ export class AuthService {
       }),
       map(response => response.success),
       catchError(error => {
-        console.error('Registration error:', error);
+        this.logger.error('Registration error', { error }, 'AuthService');
         return throwError(() => error);
       })
     );
@@ -106,6 +108,11 @@ export class AuthService {
     if (refreshToken) {
       this.apiService.post('auth/logout', { refreshToken }).subscribe();
     }
+    
+    // Clear all auth-related localStorage items
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('oauth_debug_logs');
     
     this.apiService.clearToken();
     this.currentUser.set(null);
@@ -134,9 +141,9 @@ export class AuthService {
     try {
       await this.realtimeService.startConnection();
       await this.realtimeService.joinUserGroup(userId);
-      console.log('Connected to SignalR and joined user group');
+      this.logger.info('Connected to SignalR and joined user group', { userId }, 'AuthService');
     } catch (error) {
-      console.error('Error connecting to SignalR:', error);
+      this.logger.error('Error connecting to SignalR', { error, userId }, 'AuthService');
     }
   }
 
@@ -195,7 +202,7 @@ export class AuthService {
     return this.apiService.post('auth/forgot-password', { email }).pipe(
       map(response => response.success),
       catchError(error => {
-        console.error('Password reset request error:', error);
+        this.logger.error('Password reset request error', { error }, 'AuthService');
         return throwError(() => error);
       })
     );
@@ -208,7 +215,7 @@ export class AuthService {
     }).pipe(
       map(response => response.success),
       catchError(error => {
-        console.error('Password reset error:', error);
+        this.logger.error('Password reset error', { error }, 'AuthService');
         return throwError(() => error);
       })
     );
@@ -218,7 +225,7 @@ export class AuthService {
     return this.apiService.post('auth/verify-email', { token }).pipe(
       map(response => response.success),
       catchError(error => {
-        console.error('Email verification error:', error);
+        this.logger.error('Email verification error', { error }, 'AuthService');
         return throwError(() => error);
       })
     );
@@ -228,7 +235,7 @@ export class AuthService {
     return this.apiService.post('auth/verify-phone', { phone, code }).pipe(
       map(response => response.success),
       catchError(error => {
-        console.error('Phone verification error:', error);
+        this.logger.error('Phone verification error', { error }, 'AuthService');
         return throwError(() => error);
       })
     );
@@ -243,7 +250,7 @@ export class AuthService {
       window.location.href = `${baseUrl}/oauth/google`;
       return true;
     } catch (error) {
-      console.error('Error initiating Google login:', error);
+      this.logger.error('Error initiating Google login', { error }, 'AuthService');
       return false;
     }
   }
@@ -256,20 +263,20 @@ export class AuthService {
       window.location.href = `${baseUrl}/oauth/meta`;
       return true;
     } catch (error) {
-      console.error('Error initiating Meta login:', error);
+      this.logger.error('Error initiating Meta login', { error }, 'AuthService');
       return false;
     }
   }
 
   async loginWithApple(): Promise<boolean> {
     // TODO: Implement Apple OAuth integration
-    console.log('Apple login not yet implemented');
+    this.logger.info('Apple login not yet implemented', undefined, 'AuthService');
     return Promise.resolve(false);
   }
 
   async loginWithTwitter(): Promise<boolean> {
     // TODO: Implement Twitter OAuth integration
-    console.log('Twitter login not yet implemented');
+    this.logger.info('Twitter login not yet implemented', undefined, 'AuthService');
     return Promise.resolve(false);
   }
 

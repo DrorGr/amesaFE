@@ -117,27 +117,14 @@ export class RealtimeService {
       // Get token from localStorage and append as query parameter
       // WebSocket connections don't support Authorization headers, so we must use query parameter
       const token = localStorage.getItem('access_token');
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:119',message:'SignalR token check',data:{hasToken:!!token,tokenLength:token?.length||0,wsUrlBefore:wsUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4,H5'})}).catch(()=>{});
-      // #endregion
       if (token) {
         const separator = wsUrl.includes('?') ? '&' : '?';
         wsUrl += `${separator}access_token=${encodeURIComponent(token)}`;
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:123',message:'SignalR URL with token',data:{wsUrlAfter:wsUrl,hasAccessTokenParam:wsUrl.includes('access_token')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
-        // #endregion
-      } else {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:127',message:'SignalR no token',data:{wsUrlWithoutToken:wsUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
-        // #endregion
       }
       
       // Configure SignalR to use LongPolling (works through CloudFront)
       // CloudFront doesn't support WebSocket upgrades, so we skip WebSocket and use LongPolling
       // LongPolling provides real-time updates with 50-200ms latency (acceptable for production)
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:138',message:'SignalR builder config',data:{transport:'LongPolling',skipNegotiation:false,wsUrl:wsUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
       this.connection = new HubConnectionBuilder()
         .withUrl(wsUrl, {
           transport: HttpTransportType.LongPolling, // Skip WebSocket, use LongPolling
@@ -158,21 +145,12 @@ export class RealtimeService {
 
       this.setupEventHandlers();
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:158',message:'SignalR start attempt',data:{stateBefore:this.connection.state},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1,H2'})}).catch(()=>{});
-      // #endregion
       await this.connection.start();
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:161',message:'SignalR start success',data:{stateAfter:this.connection.state,connectionId:this.connection.connectionId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
       this.connectionState.set(this.connection.state);
       this.isConnected.set(true);
       
       console.log('SignalR connection established');
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:167',message:'SignalR start error',data:{errorType:error?.constructor?.name,errorMessage:error instanceof Error?error.message:String(error),errorStack:error instanceof Error?error.stack:undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2,H3'})}).catch(()=>{});
-      // #endregion
       console.error('Error starting SignalR connection:', error);
       this.connectionState.set(HubConnectionState.Disconnected);
       this.isConnected.set(false);
@@ -198,27 +176,18 @@ export class RealtimeService {
 
     // Connection state changes
     this.connection.onclose((error) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:188',message:'SignalR onclose',data:{error:error?.toString()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-      // #endregion
       console.log('SignalR connection closed:', error);
       this.connectionState.set(HubConnectionState.Disconnected);
       this.isConnected.set(false);
     });
 
     this.connection.onreconnecting((error) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:194',message:'SignalR onreconnecting',data:{error:error?.toString()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-      // #endregion
       console.log('SignalR reconnecting:', error);
       this.connectionState.set(HubConnectionState.Reconnecting);
       this.isConnected.set(false);
     });
 
     this.connection.onreconnected((connectionId) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'realtime.service.ts:200',message:'SignalR onreconnected',data:{connectionId:connectionId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
       console.log('SignalR reconnected:', connectionId);
       this.connectionState.set(HubConnectionState.Connected);
       this.isConnected.set(true);

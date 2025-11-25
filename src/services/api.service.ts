@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../environments/environment';
+import { LoggingService } from './logging.service';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -34,6 +35,7 @@ export class ApiService {
   private tokenSubject = new BehaviorSubject<string | null>(this.getStoredToken());
   public token$ = this.tokenSubject.asObservable();
   private readonly DEBUG_LOG_KEY = 'oauth_debug_logs';
+  private logger = inject(LoggingService);
 
   constructor(private http: HttpClient) {
     // Debug: Log the baseUrl being used
@@ -58,14 +60,10 @@ export class ApiService {
       data: data !== undefined ? JSON.stringify(data) : undefined
     };
     
-    // Console log for immediate visibility
-    if (data !== undefined) {
-      console.log(`[${timestamp}] ${message}`, data);
-    } else {
-      console.log(`[${timestamp}] ${message}`);
-    }
+    // Use LoggingService for console output (respects production mode)
+    this.logger.debug(message, data, 'ApiService');
     
-    // Persist to localStorage (survives navigation)
+    // Persist to localStorage (survives navigation) - for OAuth debugging
     try {
       const existingLogs = JSON.parse(localStorage.getItem(this.DEBUG_LOG_KEY) || '[]');
       existingLogs.push(logEntry);
@@ -75,8 +73,8 @@ export class ApiService {
       }
       localStorage.setItem(this.DEBUG_LOG_KEY, JSON.stringify(existingLogs));
     } catch (e) {
-      // If localStorage is full or unavailable, just use console
-      console.warn('Could not persist debug log to localStorage:', e);
+      // If localStorage is full or unavailable, log warning
+      this.logger.warn('Could not persist debug log to localStorage', { error: e }, 'ApiService');
     }
   }
 

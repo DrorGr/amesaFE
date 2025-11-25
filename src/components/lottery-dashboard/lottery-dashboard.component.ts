@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
+import { LoggingService } from '../../services/logging.service';
 import { HouseDto, LotteryTicketDto } from '../../models/house.model';
 import { UserLotteryStats, HouseRecommendation } from '../../interfaces/lottery.interface';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
@@ -243,6 +244,7 @@ export class LotteryDashboardComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
+  private logger = inject(LoggingService);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -288,7 +290,7 @@ export class LotteryDashboardComponent implements OnInit, OnDestroy {
         this.favoriteHouses.set(favorites);
       }
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      this.logger.error('Error loading dashboard data', { error }, 'LotteryDashboardComponent');
     } finally {
       this.isLoading.set(false);
     }
