@@ -1,9 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 import { ThemeService } from '../../services/theme.service';
+import { LotteryService } from '../../services/lottery.service';
+import { LotteryTicketDto } from '../../models/house.model';
 
 interface UserProfile {
   firstName: string;
@@ -41,7 +43,7 @@ interface StarReward {
 @Component({
   selector: 'app-member-settings-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <!-- Hero Section -->
@@ -482,6 +484,156 @@ interface StarReward {
               </div>
             }
 
+            <!-- Lottery History Tab -->
+            @if (activeTab() === 'lotteryHistory') {
+              <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                  {{ translate('member.lotteryHistory') }}
+                </h3>
+
+                <!-- Statistics Section -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                  <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                    <p class="text-sm text-blue-700 dark:text-blue-300 mb-1">
+                      {{ translate('member.totalEntries') }}
+                    </p>
+                    <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                      {{ lotteryStats().totalEntries }}
+                    </p>
+                  </div>
+                  <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                    <p class="text-sm text-green-700 dark:text-green-300 mb-1">
+                      {{ translate('member.totalWins') }}
+                    </p>
+                    <p class="text-2xl font-bold text-green-900 dark:text-green-100">
+                      {{ lotteryStats().totalWins }}
+                    </p>
+                  </div>
+                  <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                    <p class="text-sm text-purple-700 dark:text-purple-300 mb-1">
+                      {{ translate('member.totalSpent') }}
+                    </p>
+                    <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                      €{{ formatPrice(lotteryStats().totalSpent) }}
+                    </p>
+                  </div>
+                  <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
+                    <p class="text-sm text-yellow-700 dark:text-yellow-300 mb-1">
+                      {{ translate('member.winRate') }}
+                    </p>
+                    <p class="text-2xl font-bold text-yellow-900 dark:text-yellow-100">
+                      {{ lotteryStats().winRate }}%
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ translate('member.filterStatus') }}
+                      </label>
+                      <select
+                        [(ngModel)]="lotteryHistoryFilters().status"
+                        (ngModelChange)="applyLotteryHistoryFilters()"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                        <option value="all">{{ translate('member.filterAll') }}</option>
+                        <option value="active">{{ translate('member.filterActive') }}</option>
+                        <option value="past">{{ translate('member.filterPast') }}</option>
+                        <option value="winner">{{ translate('member.filterWinners') }}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ translate('member.filterHouseName') }}
+                      </label>
+                      <input
+                        type="text"
+                        [(ngModel)]="lotteryHistoryFilters().houseName"
+                        (ngModelChange)="applyLotteryHistoryFilters()"
+                        [placeholder]="translate('member.searchHouseName')"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ translate('member.filterDateRange') }}
+                      </label>
+                      <input
+                        type="date"
+                        [(ngModel)]="lotteryHistoryFilters().startDate"
+                        (ngModelChange)="applyLotteryHistoryFilters()"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Entries List -->
+                <div class="space-y-4">
+                  <h4 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    {{ translate('member.allEntries') }}
+                  </h4>
+                  
+                  @if (filteredLotteryEntries().length === 0) {
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-12 border border-gray-200 dark:border-gray-700 text-center">
+                      <p class="text-gray-600 dark:text-gray-400">
+                        {{ translate('member.noEntriesFound') }}
+                      </p>
+                    </div>
+                  } @else {
+                    @for (entry of filteredLotteryEntries(); track entry.id) {
+                      <div 
+                        class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
+                        [routerLink]="['/houses', entry.houseId]">
+                        <div class="flex items-center justify-between">
+                          <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                              <h5 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {{ entry.houseTitle }}
+                              </h5>
+                              <span 
+                                class="px-2 py-1 text-xs rounded-full font-semibold"
+                                [class.bg-green-100]="entry.status === 'active'"
+                                [class.text-green-800]="entry.status === 'active'"
+                                [class.bg-yellow-100]="entry.status === 'winner'"
+                                [class.text-yellow-800]="entry.status === 'winner'"
+                                [class.bg-gray-100]="entry.status === 'past'"
+                                [class.text-gray-800]="entry.status === 'past'">
+                                {{ getEntryStatusText(entry.status) }}
+                              </span>
+                              @if (entry.isWinner) {
+                                <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-xs font-semibold">
+                                  🎉 {{ translate('member.winner') }}
+                                </span>
+                              }
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 dark:text-gray-400">
+                              <div>
+                                <span class="font-semibold">{{ translate('member.ticketNumber') }}:</span>
+                                <span class="ml-2 font-mono">#{{ entry.ticketNumber }}</span>
+                              </div>
+                              <div>
+                                <span class="font-semibold">{{ translate('member.purchaseDate') }}:</span>
+                                <span class="ml-2">{{ formatDate(entry.purchaseDate) }}</span>
+                              </div>
+                              <div>
+                                <span class="font-semibold">{{ translate('member.price') }}:</span>
+                                <span class="ml-2 font-semibold text-blue-600 dark:text-blue-400">€{{ formatPrice(entry.purchasePrice) }}</span>
+                              </div>
+                              <div>
+                                <span class="font-semibold">{{ translate('member.status') }}:</span>
+                                <span class="ml-2">{{ getEntryStatusText(entry.status) }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            }
+
             <!-- Stars Tab -->
             @if (activeTab() === 'stars') {
               <div>
@@ -563,11 +715,12 @@ interface StarReward {
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
   `]
 })
-export class MemberSettingsPageComponent {
+export class MemberSettingsPageComponent implements OnInit {
   private translationService = inject(TranslationService);
   private router = inject(Router);
   private themeService = inject(ThemeService);
   private fb = inject(FormBuilder);
+  private lotteryService = inject(LotteryService);
 
   activeTab = signal('general');
   isEditingProfile = signal(false);
@@ -577,7 +730,8 @@ export class MemberSettingsPageComponent {
     { id: 'general', title: 'member.generalInfo', icon: '👤' },
     { id: 'promotions', title: 'member.promotions', icon: '🎁' },
     { id: 'settings', title: 'member.settings', icon: '⚙️' },
-    { id: 'stars', title: 'member.stars', icon: '⭐' }
+    { id: 'stars', title: 'member.stars', icon: '⭐' },
+    { id: 'lotteryHistory', title: 'member.lotteryHistory', icon: '🎰' }
   ];
 
   userProfile = signal<UserProfile>({
@@ -731,5 +885,109 @@ export class MemberSettingsPageComponent {
     return this.userStars()
       .filter(star => !star.isExpired)
       .reduce((total, star) => total + star.points, 0);
+  }
+
+  // Lottery History
+  lotteryEntries = signal<LotteryTicketDto[]>([]);
+  lotteryHistoryFilters = signal<{
+    status: 'all' | 'active' | 'past' | 'winner';
+    houseName: string;
+    startDate: string;
+  }>({
+    status: 'all',
+    houseName: '',
+    startDate: ''
+  });
+
+  filteredLotteryEntries = computed(() => {
+    let entries = [...this.lotteryEntries()];
+    const filters = this.lotteryHistoryFilters();
+
+    if (filters.status !== 'all') {
+      if (filters.status === 'winner') {
+        entries = entries.filter(e => e.isWinner);
+      } else {
+        entries = entries.filter(e => e.status === filters.status);
+      }
+    }
+
+    if (filters.houseName) {
+      const query = filters.houseName.toLowerCase();
+      entries = entries.filter(e => e.houseTitle.toLowerCase().includes(query));
+    }
+
+    if (filters.startDate) {
+      const filterDate = new Date(filters.startDate);
+      entries = entries.filter(e => new Date(e.purchaseDate) >= filterDate);
+    }
+
+    return entries.sort((a, b) => 
+      new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime()
+    );
+  });
+
+  lotteryStats = computed(() => {
+    const entries = this.lotteryEntries();
+    const totalEntries = entries.length;
+    const totalWins = entries.filter(e => e.isWinner).length;
+    const totalSpent = entries.reduce((sum, e) => sum + e.purchasePrice, 0);
+    const winRate = totalEntries > 0 ? Math.round((totalWins / totalEntries) * 100) : 0;
+
+    return {
+      totalEntries,
+      totalWins,
+      totalSpent,
+      winRate
+    };
+  });
+
+  ngOnInit(): void {
+    this.loadLotteryHistory();
+  }
+
+  async loadLotteryHistory(): Promise<void> {
+    try {
+      // Load active entries
+      const activeEntries = await this.lotteryService.getUserActiveEntries().toPromise();
+      
+      // TODO: Load past entries when endpoint is available
+      // const pastEntries = await this.lotteryService.getUserEntryHistory().toPromise();
+      
+      const allEntries = activeEntries || [];
+      this.lotteryEntries.set(allEntries);
+    } catch (error) {
+      console.error('Error loading lottery history:', error);
+      this.lotteryEntries.set([]);
+    }
+  }
+
+  applyLotteryHistoryFilters(): void {
+    // Computed signal will automatically update
+  }
+
+  getEntryStatusText(status: string): string {
+    switch (status) {
+      case 'active':
+        return this.translate('member.statusActive');
+      case 'winner':
+        return this.translate('member.statusWinner');
+      case 'past':
+        return this.translate('member.statusPast');
+      default:
+        return status;
+    }
+  }
+
+  formatPrice(price: number): string {
+    return price.toLocaleString();
+  }
+
+  formatDate(date: Date | string): string {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   }
 }
