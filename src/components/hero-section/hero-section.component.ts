@@ -55,14 +55,14 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
       <!-- Small Round P Widget -->
       <button 
         (click)="expandPromotionsTab()"
-        class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white w-12 h-12 rounded-full shadow-2xl transition-all duration-300 hover:shadow-purple-500/50 flex items-center justify-center group promotions-p-widget border-2 border-white dark:border-gray-800"
+        class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white w-12 h-12 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 flex items-center justify-center group promotions-p-widget border-2 border-white dark:border-gray-800 animate-widget-appear"
         [attr.aria-label]="translate('nav.promotions')">
         <span class="font-black text-lg drop-shadow-lg">P</span>
       </button>
     } @else if (!promotionsMenuOpen()) {
-      <!-- Expanded Tab (Not Open) -->
-      <div class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800">
-        <div class="flex items-center gap-3 px-6 py-4">
+      <!-- Expanded Tab (Not Open) - Vertical -->
+      <div class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear">
+        <div class="flex flex-col items-center gap-2 px-4 py-6">
           <button 
             (click)="minimizePromotionsTab()"
             class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-30 flex-shrink-0"
@@ -73,17 +73,20 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
           </button>
           <button 
             (click)="togglePromotionsMenu()"
-            class="flex-1 text-left">
-            <span class="font-black text-lg drop-shadow-lg">
+            class="flex flex-col items-center gap-2">
+            <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2m0 0V5.5A2.5 2.5 0 1013.5 8H12m-2 0h2m0 0v13m0-13l-3-3m3 3l3-3"></path>
+            </svg>
+            <span class="font-black text-xs writing-vertical-rl transform rotate-180 drop-shadow-lg">
               {{ translate('nav.promotions') }}
             </span>
           </button>
         </div>
       </div>
     } @else {
-      <!-- Expanded Tab (Menu Open) -->
-      <div class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800">
-        <div class="flex items-center gap-3 px-6 py-4">
+      <!-- Expanded Tab (Menu Open) - Vertical -->
+      <div class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear">
+        <div class="flex flex-col items-center gap-2 px-4 py-6">
           <button 
             (click)="minimizePromotionsTab()"
             class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-30 flex-shrink-0"
@@ -92,9 +95,14 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
-          <span class="font-black text-lg drop-shadow-lg">
-            {{ translate('nav.promotions') }}
-          </span>
+          <div class="flex flex-col items-center gap-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2m0 0V5.5A2.5 2.5 0 1013.5 8H12m-2 0h2m0 0v13m0-13l-3-3m3 3l3-3"></path>
+            </svg>
+            <span class="font-black text-xs writing-vertical-rl transform rotate-180 drop-shadow-lg">
+              {{ translate('nav.promotions') }}
+            </span>
+          </div>
         </div>
       </div>
     }
@@ -204,6 +212,42 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
     
     .promotions-p-widget {
       animation: pulse-glow 2s ease-in-out infinite, pulse-vibrate 4s ease-in-out infinite, color-shift 2.5s ease-in-out infinite;
+    }
+    
+    @keyframes widget-appear {
+      0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.2) rotate(180deg);
+      }
+      100% {
+        transform: scale(1) rotate(360deg);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes tab-appear {
+      0% {
+        transform: scaleX(0) translateX(-100%);
+        opacity: 0;
+      }
+      50% {
+        transform: scaleX(1.1) translateX(0);
+      }
+      100% {
+        transform: scaleX(1) translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    .animate-widget-appear {
+      animation: widget-appear 0.5s ease-out, pulse-glow 2s ease-in-out 0.5s infinite, pulse-vibrate 4s ease-in-out 0.5s infinite, color-shift 2.5s ease-in-out 0.5s infinite;
+    }
+    
+    .animate-tab-appear {
+      animation: tab-appear 0.5s ease-out, pulse-glow 2s ease-in-out 0.5s infinite, color-shift 2.5s ease-in-out 0.5s infinite;
     }
   `]
 })
