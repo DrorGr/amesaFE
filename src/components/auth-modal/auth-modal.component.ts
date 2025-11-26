@@ -182,6 +182,35 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
       display: block;
     }
     
+    .modal-backdrop {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999 !important;
+      overflow-y: auto;
+      padding: 1rem;
+      isolation: isolate;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      width: 100%;
+      max-width: 28rem;
+      max-height: calc(100vh - 2rem);
+      overflow-y: auto;
+      margin: auto;
+      position: relative;
+      z-index: 100000 !important;
+    }
+    
     @media (max-width: 767px) {
       .modal-content {
         margin: 1rem !important;

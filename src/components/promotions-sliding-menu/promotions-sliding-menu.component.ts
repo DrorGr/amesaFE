@@ -27,11 +27,11 @@ interface Promotion {
       </div>
     }
     
-    <!-- Menu -->
-    <div 
-      class="fixed left-0 top-0 h-full w-80 md:w-96 bg-white dark:bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out"
-      [class.translate-x-0]="isOpen()"
-      [class.-translate-x-full]="!isOpen()">
+      <!-- Menu -->
+      <div 
+        class="fixed left-0 top-32 h-[calc(100vh-8rem)] w-80 md:w-96 bg-white dark:bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out"
+        [class.translate-x-0]="isOpen()"
+        [class.-translate-x-full]="!isOpen()">
         <!-- Header -->
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-blue-500">
           <div class="flex justify-between items-center">

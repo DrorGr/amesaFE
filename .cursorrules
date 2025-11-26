@@ -30,15 +30,19 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **CloudFront configurations**: API routing configured
 - **Backend connectivity**: Database authentication resolved + Admin panel accessible
 - **API endpoints**: All working correctly through CloudFront
-- **Translation System**: ✅ **COMPLETE** - 593 keys × 4 languages = 2,372 translations (97-98% coverage)
+- **Translation System**: ✅ **UPDATED** - 538 keys × 4 languages = 2,152 translations (31 missing keys added)
   - Languages: English (en), Spanish (es), French (fr), Polish (pl)
-  - Coverage: Spanish 98%, French 97%, Polish 98%
-  - Master file: `FE/translation-keys.json`
-  - SQL script: `MetaData/Scripts/seed-all-translations.sql`
+  - Total Keys: 538 (updated from 507, added 31 missing keys)
+  - Master file: `FE/translation-keys.json` (updated with missing keys)
+  - SQL scripts: 
+    - `MetaData/Scripts/seed-all-translations.sql` (original 507 keys)
+    - `MetaData/Scripts/add-missing-translations.sql` (31 new keys, 124 translations)
   - Documentation: `MetaData/Documentation/Translation/TRANSLATION_SYSTEM.md`
+  - Missing keys added: userMenu (5), lottery.status (4), member.status (4), preferences.tabs (4), chatbot.response (5), idVerification (9)
 - **Cookie Consent Banner**: ✅ **IMPLEMENTED AND DEPLOYED** - GDPR-compliant, mobile-first, deployed to production
 - **Testing Infrastructure**: Complete (Playwright E2E, Karma/Jasmine unit tests) ✅
-- **CI/CD**: Test workflows integrated, concurrency rules added, tests block deployment ✅
+- **Frontend Tests**: ✅ **FIXED** - Angular 20 compatibility fix applied (--no-watch flag), tests running successfully in GitHub Actions
+- **CI/CD**: Consolidated workflow (build-and-deploy.yml), deployment fix when tests skipped, Chrome installation for tests ✅
 - **Documentation**: Comprehensive revision in progress (API routes documented) ✅
 - **PowerShell Scripts**: Excluded from git tracking (*.ps1 in .gitignore) ✅
 - **Working tree**: Clean, all changes committed
@@ -272,7 +276,70 @@ git checkout main
 - **Theme Support**: Dark/light mode switching
 - **Real-time Features**: SignalR integration for live updates
 
-## Recent Changes (2025-01-XX) - ID VERIFICATION FRONTEND INTEGRATION
+## Recent Changes (2025-01-25) - MISSING TRANSLATION KEYS ADDED
+1. ✅ **Missing Translation Keys Identified and Added** - Complete frontend scan for missing translation keys
+   - **Frontend Scan**: Searched all TypeScript components and templates for translation key usage patterns
+   - **Missing Keys Found**: 31 translation keys used in code but missing from translation-keys.json
+   - **Keys Added**:
+     - **userMenu** (5 keys): accessibility, settings, history, notifications, logout
+     - **lottery.status** (4 keys): active, winner, ended, upcoming
+     - **member.status** (4 keys): status, statusActive, statusWinner, statusPast
+     - **preferences.tabs** (4 keys): appearance, localization, accessibility, notifications
+     - **chatbot.response** (5 keys): help, lottery, tickets, winners, contact
+     - **idVerification** (9 keys): uploadId, verifying, failed, retry, verified, captureSelfie, selfieInstructions, error.imageQuality, error.faceNotDetected
+   - **Files Updated**:
+     - `FE/translation-keys.json` - Added 31 new keys with translations for all 4 languages
+     - Updated totalKeys count from 507 to 538
+     - Updated keysByCategory counts for affected categories
+   - **SQL Script Created**: `MetaData/Scripts/add-missing-translations.sql`
+     - 124 translations (31 keys × 4 languages)
+     - Matches production database schema (amesa_content.translations)
+     - Uses proper column names with quotes and capitalization
+     - Includes ON CONFLICT handling for duplicate keys
+   - **Translation Coverage**: Now complete - all frontend translation keys documented
+   - **Status**: ✅ Complete - Ready for database deployment
+   - **Impact**: All translation keys used in frontend code are now documented and ready for seeding
+
+## Previous Changes (2025-01-25) - FRONTEND TESTS FIX & WORKFLOW FIX
+1. ✅ **Frontend Tests Fixed** - Angular 20 compatibility fix for CI/CD
+   - **Problem**: `ng test --watch=false` failing with "Unknown argument: watch" error in GitHub Actions
+   - **Root Cause**: Angular 20.2.1 removed the `--watch` flag, requires `--no-watch` instead
+   - **Solution**: 
+     - Updated `package.json` test:ci script: `ng test --watch=false` → `ng test --no-watch --browsers=ChromeHeadless`
+     - Added Chrome installation step in `.github/workflows/build-and-deploy.yml` for ChromeHeadless support in CI
+   - **Files Modified**:
+     - `package.json` - Updated test:ci script with correct Angular 20 flags
+     - `.github/workflows/build-and-deploy.yml` - Added Chrome installation for headless testing
+   - **Status**: Committed and pushed (commit 1a1815a)
+   - **Impact**: Frontend unit tests now run successfully in GitHub Actions CI/CD pipeline
+   - **Technical Details**: 
+     - Angular 20+ uses `--no-watch` instead of `--watch=false`
+     - ChromeHeadless requires Chrome to be installed in CI environment
+     - Workflow uses `npm run test:ci` which now executes the corrected command
+2. ✅ **Workflow Fix: Deployment When Tests Are Skipped** - Fixed deployment job to run when tests are skipped
+   - **Problem**: `deploy-prod` job was being skipped when `test` job was skipped, even though `build` succeeded
+   - **Root Cause**: Missing `always()` function and explicit `needs.build.result == 'success'` check
+     - Without `always()`, GitHub Actions skips dependent jobs when dependency chain includes skipped jobs
+     - Without explicit build result check, condition evaluation failed when `build` depended on skipped `test`
+   - **Fix Applied**:
+     - Added `always()` to ensure condition evaluation even with mixed dependency results
+     - Added explicit `needs.build.result == 'success'` check to verify build completed successfully
+     - Updated condition: `always() && github.ref == 'refs/heads/main' && needs.build.result == 'success' && needs.check-skip-deploy.outputs.skip != 'true'`
+   - **Workflow Cleanup**:
+     - Removed obsolete workflows: `deploy.yml` and `test.yml` (replaced by consolidated `build-and-deploy.yml`)
+     - Consolidated all CI/CD functionality into single `build-and-deploy.yml` workflow
+   - **Test Infrastructure Enhancement**:
+     - Added Chrome installation step to test job for better browser testing support
+     - Installs `google-chrome-stable` package before running unit tests
+   - **Files Modified**:
+     - `.github/workflows/build-and-deploy.yml` - Fixed deploy-prod condition, added Chrome installation
+   - **Files Deleted**:
+     - `.github/workflows/deploy.yml` - Obsolete (replaced by build-and-deploy.yml)
+     - `.github/workflows/test.yml` - Obsolete (testing integrated into build-and-deploy.yml)
+   - **Status**: ✅ Fixed, tested, and deployed (commits: 12ff0da, 624be5d, c2e5a06)
+   - **Impact**: Deployments now proceed correctly when tests are skipped, as long as build succeeds and deployment isn't explicitly skipped
+
+## Previous Changes (2025-01-XX) - ID VERIFICATION FRONTEND INTEGRATION
 1. ✅ **ID Verification Frontend Integration** - Complete integration with backend verification API
    - **Identity Verification Service**: Created service for backend API communication
      - `IdentityVerificationService` with verifyIdentity(), getVerificationStatus(), retryVerification() methods
@@ -477,8 +544,11 @@ git checkout main
 - **Commands**: `npm test`, `npm run test:coverage`, `npm run test:ci`
 
 ### CI/CD Integration
-- **Test Workflow**: `.github/workflows/test.yml` (standalone test workflow)
-- **Deploy Workflow**: `.github/workflows/deploy.yml` (tests block deployment)
+- **Build and Deploy Workflow**: `.github/workflows/build-and-deploy.yml` (consolidated workflow)
+  - Tests, builds, and deploys in single workflow
+  - Supports skip_tests and skip_deploy inputs
+  - Deployment proceeds when tests are skipped (if build succeeds)
+  - Chrome installation for headless browser testing
 - **Coverage**: Codecov integration for coverage reporting
 
 ### Test Coverage Status

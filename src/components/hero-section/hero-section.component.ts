@@ -42,22 +42,65 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
               <button (click)="navigateToHowItWorks()" class="px-12 py-6 text-3xl md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button">
                 {{ translate('hero.howItWorks') }}
               </button>
-              <button (click)="togglePromotionsMenu()" class="px-12 py-6 text-3xl md:text-2xl font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:ring-4 focus:ring-purple-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button flex items-center gap-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2m0 0V5.5A2.5 2.5 0 1013.5 8H12m-2 0h2m0 0v13m0-13l-3-3m3 3l3-3"></path>
-                </svg>
-                {{ translate('nav.promotions') }}
-              </button>
             </div>
           </div>
           
           <!-- Right side - House Carousel -->
         </div>
       </div>
-      
-      <!-- Promotions Sliding Menu -->
-      <app-promotions-sliding-menu [isOpen]="promotionsMenuOpen()" (close)="closePromotionsMenu()"></app-promotions-sliding-menu>
     </section>
+    
+    <!-- Floating Promotions Tab (Book Tab Style) - Left Side -->
+    @if (isPromotionsMinimized()) {
+      <!-- Small Round P Widget -->
+      <button 
+        (click)="expandPromotionsTab()"
+        class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white w-12 h-12 rounded-full shadow-2xl transition-all duration-300 hover:shadow-purple-500/50 flex items-center justify-center group promotions-p-widget border-2 border-white dark:border-gray-800"
+        [attr.aria-label]="translate('nav.promotions')">
+        <span class="font-black text-lg drop-shadow-lg">P</span>
+      </button>
+    } @else if (!promotionsMenuOpen()) {
+      <!-- Expanded Tab (Not Open) -->
+      <div class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800">
+        <div class="flex items-center gap-3 px-6 py-4">
+          <button 
+            (click)="minimizePromotionsTab()"
+            class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-30 flex-shrink-0"
+            [attr.aria-label]="translate('common.minimize')">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+          <button 
+            (click)="togglePromotionsMenu()"
+            class="flex-1 text-left">
+            <span class="font-black text-lg drop-shadow-lg">
+              {{ translate('nav.promotions') }}
+            </span>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Expanded Tab (Menu Open) -->
+      <div class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800">
+        <div class="flex items-center gap-3 px-6 py-4">
+          <button 
+            (click)="minimizePromotionsTab()"
+            class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-30 flex-shrink-0"
+            [attr.aria-label]="translate('common.minimize')">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+          <span class="font-black text-lg drop-shadow-lg">
+            {{ translate('nav.promotions') }}
+          </span>
+        </div>
+      </div>
+    }
+    
+    <!-- Promotions Sliding Menu -->
+    <app-promotions-sliding-menu [isOpen]="promotionsMenuOpen()" (close)="closePromotionsMenu()"></app-promotions-sliding-menu>
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
@@ -107,6 +150,61 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         font-weight: 700;
       }
     }
+    
+    /* Writing mode for vertical text */
+    .writing-vertical-rl {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+    
+    /* Promotions Tab Animations */
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 30px rgba(251, 146, 60, 0.8), 0 0 60px rgba(251, 146, 60, 0.6), 0 0 90px rgba(251, 146, 60, 0.4), 0 0 0 4px rgba(251, 146, 60, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 50px rgba(251, 146, 60, 1), 0 0 100px rgba(251, 146, 60, 0.8), 0 0 150px rgba(251, 146, 60, 0.6), 0 0 0 8px rgba(251, 146, 60, 0.5);
+      }
+    }
+    
+    @keyframes pulse-vibrate {
+      0%, 95%, 100% {
+        transform: translateX(0) translateY(0);
+      }
+      96% {
+        transform: translateX(3px) translateY(-2px);
+      }
+      97% {
+        transform: translateX(-3px) translateY(2px);
+      }
+      98% {
+        transform: translateX(2px) translateY(-3px);
+      }
+      99% {
+        transform: translateX(-2px) translateY(3px);
+      }
+    }
+    
+    @keyframes color-shift {
+      0%, 100% {
+        filter: brightness(1) saturate(1);
+      }
+      50% {
+        filter: brightness(1.2) saturate(1.3);
+      }
+    }
+    
+    .promotions-tab-widget {
+      animation: pulse-glow 2s ease-in-out infinite, pulse-vibrate 4s ease-in-out infinite, color-shift 2.5s ease-in-out infinite;
+    }
+    
+    .promotions-tab-expanded {
+      animation: pulse-glow 2s ease-in-out infinite, color-shift 2.5s ease-in-out infinite;
+    }
+    
+    .promotions-p-widget {
+      animation: pulse-glow 2s ease-in-out infinite, pulse-vibrate 4s ease-in-out infinite, color-shift 2.5s ease-in-out infinite;
+    }
   `]
 })
 export class HeroSectionComponent {
@@ -118,6 +216,7 @@ export class HeroSectionComponent {
   isMobile = this.mobileDetectionService.isMobile;
   
   promotionsMenuOpen = signal(false);
+  isPromotionsMinimized = signal(false);
   
   currentSlide = 0;
   currentHouseImageIndex = 0;
@@ -245,6 +344,16 @@ export class HeroSectionComponent {
 
   closePromotionsMenu() {
     this.promotionsMenuOpen.set(false);
+  }
+
+  minimizePromotionsTab() {
+    this.isPromotionsMinimized.set(true);
+    this.promotionsMenuOpen.set(false);
+  }
+
+  expandPromotionsTab() {
+    this.isPromotionsMinimized.set(false);
+    this.promotionsMenuOpen.set(true);
   }
 
   private scrollToTop() {

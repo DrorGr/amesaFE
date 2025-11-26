@@ -194,11 +194,19 @@ export class TopbarComponent implements OnInit {
   }
 
   navigateToDashboard() {
+    if (!this.authService.isAuthenticated()) {
+      this.toastService.info('Please log in first', 3000);
+      return;
+    }
     this.router.navigate(['/lottery/dashboard']);
     this.isMobileMenuOpen = false;
   }
 
   navigateToFavorites() {
+    if (!this.authService.isAuthenticated()) {
+      this.toastService.info('Please log in first', 3000);
+      return;
+    }
     this.router.navigate(['/lottery/favorites']);
     this.isMobileMenuOpen = false;
   }

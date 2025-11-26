@@ -168,7 +168,7 @@ frontendUrl: 'https://amesa.com'
   "build:dev": "ng build --configuration=development", 
   "build:stage": "ng build --configuration=production",
   "build:prod": "ng build --configuration=production",
-  "test:ci": "ng test --watch=false --browsers=ChromeHeadless"
+  "test:ci": "ng test --no-watch --browsers=ChromeHeadless"
 }
 ```
 
