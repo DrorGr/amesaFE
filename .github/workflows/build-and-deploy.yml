@@ -79,33 +79,22 @@ jobs:
       - name: Check if deployment should be skipped
         id: check
         run: |
-          echo "🔍 DEBUG: Checking deployment skip conditions"
-          echo "Workflow input skip_deploy: ${{ inputs.skip_deploy }}"
-          
           # Check workflow input
           if [ "${{ inputs.skip_deploy }}" == "true" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "⏭️ Deployment will be skipped (workflow input)"
-            echo "🔍 DEBUG: Set skip=true due to workflow input"
             exit 0
           fi
           
           # Check commit message for skip patterns
           COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "🔍 DEBUG: Commit message: $COMMIT_MSG"
           if echo "$COMMIT_MSG" | grep -qiE "\[skip\s*deploy\]|\[skip-deploy\]|\[no\s*deploy\]|\[no-deploy\]|skip\s*deploy|no\s*deploy"; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "⏭️ Deployment will be skipped (commit message contains skip pattern)"
-            echo "🔍 DEBUG: Set skip=true due to commit message pattern"
           else
             echo "skip=false" >> $GITHUB_OUTPUT
             echo "✅ Deployment will run"
-            echo "🔍 DEBUG: Set skip=false (no skip conditions found)"
           fi
-          
-      - name: Debug skip output
-        run: |
-          echo "🔍 DEBUG: Final skip output value: ${{ steps.check.outputs.skip }}"
 
   # Tests run before deployment (unless skipped)
   test:
@@ -176,16 +165,6 @@ jobs:
       needs.build.result == 'success' &&
       needs.check-skip-deploy.outputs.skip != 'true'
     steps:
-      - name: Debug deployment condition
-        run: |
-          echo "🔍 DEBUG: Deployment condition evaluation"
-          echo "github.ref: ${{ github.ref }}"
-          echo "github.ref == 'refs/heads/main': ${{ github.ref == 'refs/heads/main' }}"
-          echo "needs.build.result: ${{ needs.build.result }}"
-          echo "needs.build.result == 'success': ${{ needs.build.result == 'success' }}"
-          echo "needs.check-skip-deploy.outputs.skip: ${{ needs.check-skip-deploy.outputs.skip }}"
-          echo "needs.check-skip-deploy.outputs.skip != 'true': ${{ needs.check-skip-deploy.outputs.skip != 'true' }}"
-          echo "✅ All conditions met, deployment proceeding"
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
