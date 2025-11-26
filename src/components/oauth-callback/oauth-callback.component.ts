@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -64,7 +65,8 @@ function debugLog(message: string, data?: any): void {
     </div>
   `
 })
-export class OAuthCallbackComponent implements OnInit {
+export class OAuthCallbackComponent implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -80,7 +82,8 @@ export class OAuthCallbackComponent implements OnInit {
 
   private async handleCallback(): Promise<void> {
     try {
-      this.route.queryParams.subscribe(async (params) => {
+      this.subscriptions.add(
+        this.route.queryParams.subscribe(async (params) => {
         const code = params['code'];
         const error = params['error'];
 
@@ -267,7 +270,8 @@ export class OAuthCallbackComponent implements OnInit {
           this.error = 'Authentication failed: Missing authorization code';
           this.isLoading = false;
         }
-      });
+      })
+      );
     } catch (err) {
       console.error('Error handling OAuth callback:', err);
       this.error = 'An error occurred during authentication';
@@ -277,6 +281,13 @@ export class OAuthCallbackComponent implements OnInit {
 
   goHome(): void {
     this.router.navigate(['/']);
+  }
+  
+  ngOnDestroy(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'oauth-callback.component.ts:ngOnDestroy',message:'Component destroyed',data:{componentName:'OAuthCallbackComponent',subscriptionCount:this.subscriptions.closed?0:'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'H'})}).catch(()=>{});
+    // #endregion
+    this.subscriptions.unsubscribe();
   }
 }
 

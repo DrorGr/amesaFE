@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, effect, EffectRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -109,7 +109,7 @@ import { LotteryTicketDto } from '../../models/house.model';
     }
   `]
 })
-export class ActiveEntriesAccordionComponent implements OnInit {
+export class ActiveEntriesAccordionComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
@@ -121,16 +121,33 @@ export class ActiveEntriesAccordionComponent implements OnInit {
   isExpanded = signal(false);
   
   entriesCount = computed(() => this.entries().length);
+  private autoExpandEffect?: EffectRef;
 
   ngOnInit(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'active-entries-accordion.component.ts:ngOnInit',message:'Component initialized',data:{componentName:'ActiveEntriesAccordionComponent'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+    // #endregion
+    
     this.loadActiveEntries();
     
-    // Auto-expand if user has entries
-    effect(() => {
+    // Auto-expand if user has entries - properly cleanup effect
+    this.autoExpandEffect = effect(() => {
       if (this.entries().length > 0 && !this.isExpanded()) {
         this.isExpanded.set(true);
       }
     });
+  }
+  
+  ngOnDestroy(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'active-entries-accordion.component.ts:ngOnDestroy',message:'Component destroyed',data:{componentName:'ActiveEntriesAccordionComponent',effectCleaned:!!this.autoExpandEffect},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+    // #endregion
+    
+    // Cleanup effect
+    if (this.autoExpandEffect) {
+      this.autoExpandEffect.destroy();
+      this.autoExpandEffect = undefined;
+    }
   }
 
   async loadActiveEntries(): Promise<void> {

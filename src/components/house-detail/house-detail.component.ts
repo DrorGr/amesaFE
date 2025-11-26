@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -306,7 +307,8 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
     }
   `]
 })
-export class HouseDetailComponent implements OnInit {
+export class HouseDetailComponent implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
   private route = inject(ActivatedRoute);
   private lotteryService = inject(LotteryService);
   private authService = inject(AuthService);
@@ -341,20 +343,22 @@ export class HouseDetailComponent implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    this.lotteryService.getHouseById(id).subscribe({
-      next: (house) => {
-        this.house.set(house);
-        if (house.images && house.images.length > 0) {
-          this.selectedImage.set(house.images[0].imageUrl);
+    this.subscriptions.add(
+      this.lotteryService.getHouseById(id).subscribe({
+        next: (house) => {
+          this.house.set(house);
+          if (house.images && house.images.length > 0) {
+            this.selectedImage.set(house.images[0].imageUrl);
+          }
+          this.isLoading.set(false);
+        },
+        error: (error) => {
+          this.logger.error('Error loading house', { error, houseId: id }, 'HouseDetailComponent');
+          this.error.set('Failed to load house details');
+          this.isLoading.set(false);
         }
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        this.logger.error('Error loading house', { error, houseId: id }, 'HouseDetailComponent');
-        this.error.set('Failed to load house details');
-        this.isLoading.set(false);
-      }
-    });
+      })
+    );
   }
 
   isFavorite(): boolean {
@@ -370,25 +374,29 @@ export class HouseDetailComponent implements OnInit {
     this.isTogglingFavorite.set(true);
 
     if (this.isFavorite()) {
-      this.lotteryService.removeHouseFromFavorites(house.id).subscribe({
-        next: () => {
-          this.isTogglingFavorite.set(false);
-        },
-        error: (error: any) => {
-          this.logger.error('Error removing favorite', { error, houseId: house.id }, 'HouseDetailComponent');
-          this.isTogglingFavorite.set(false);
-        }
-      });
+      this.subscriptions.add(
+        this.lotteryService.removeHouseFromFavorites(house.id).subscribe({
+          next: () => {
+            this.isTogglingFavorite.set(false);
+          },
+          error: (error: any) => {
+            this.logger.error('Error removing favorite', { error, houseId: house.id }, 'HouseDetailComponent');
+            this.isTogglingFavorite.set(false);
+          }
+        })
+      );
     } else {
-      this.lotteryService.addHouseToFavorites(house.id).subscribe({
-        next: () => {
-          this.isTogglingFavorite.set(false);
-        },
-        error: (error: any) => {
-          this.logger.error('Error adding favorite', { error, houseId: house.id }, 'HouseDetailComponent');
-          this.isTogglingFavorite.set(false);
-        }
-      });
+      this.subscriptions.add(
+        this.lotteryService.addHouseToFavorites(house.id).subscribe({
+          next: () => {
+            this.isTogglingFavorite.set(false);
+          },
+          error: (error: any) => {
+            this.logger.error('Error adding favorite', { error, houseId: house.id }, 'HouseDetailComponent');
+            this.isTogglingFavorite.set(false);
+          }
+        })
+      );
     }
   }
 
@@ -436,24 +444,26 @@ export class HouseDetailComponent implements OnInit {
 
     this.isPurchasing.set(true);
 
-    this.lotteryService.purchaseTicket({
-      houseId: house.id,
-      quantity: this.ticketQuantity,
-      paymentMethodId: paymentMethodId
-    }).subscribe({
-      next: (result) => {
-        this.logger.info('Tickets purchased successfully', { result, houseId: house.id }, 'HouseDetailComponent');
-        // Reload house to update ticket counts
-        this.loadHouse(house.id);
-        this.isPurchasing.set(false);
-        // TODO: Show success toast/notification
-      },
-      error: (error: any) => {
-        this.logger.error('Error purchasing tickets', { error, houseId: house.id }, 'HouseDetailComponent');
-        this.isPurchasing.set(false);
-        // TODO: Show error toast/notification
-      }
-    });
+    this.subscriptions.add(
+      this.lotteryService.purchaseTicket({
+        houseId: house.id,
+        quantity: this.ticketQuantity,
+        paymentMethodId: paymentMethodId
+      }).subscribe({
+        next: (result) => {
+          this.logger.info('Tickets purchased successfully', { result, houseId: house.id }, 'HouseDetailComponent');
+          // Reload house to update ticket counts
+          this.loadHouse(house.id);
+          this.isPurchasing.set(false);
+          // TODO: Show success toast/notification
+        },
+        error: (error: any) => {
+          this.logger.error('Error purchasing tickets', { error, houseId: house.id }, 'HouseDetailComponent');
+          this.isPurchasing.set(false);
+          // TODO: Show error toast/notification
+        }
+      })
+    );
   }
 
   formatPrice(price: number): string {
@@ -481,6 +491,13 @@ export class HouseDetailComponent implements OnInit {
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+  
+  ngOnDestroy(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'house-detail.component.ts:ngOnDestroy',message:'Component destroyed',data:{componentName:'HouseDetailComponent',subscriptionCount:this.subscriptions.closed?0:'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'H'})}).catch(()=>{});
+    // #endregion
+    this.subscriptions.unsubscribe();
   }
 }
 

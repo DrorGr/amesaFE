@@ -14,6 +14,7 @@ import { ActiveEntriesAccordionComponent } from './components/active-entries-acc
 import { AuthModalComponent } from './components/auth-modal/auth-modal.component';
 import { AuthService } from './services/auth.service';
 import { AuthModalService } from './services/auth-modal.service';
+import { MemoryMonitorService } from './services/memory-monitor.service';
 import { TranslationService } from './services/translation.service';
 import { RouteLoadingService } from './services/route-loading.service';
 import { ToastService } from './services/toast.service';
@@ -213,6 +214,7 @@ export class AppComponent implements OnInit, OnDestroy {
   public translationService = inject(TranslationService);
   public authService = inject(AuthService);
   public authModalService = inject(AuthModalService);
+  private memoryMonitor = inject(MemoryMonitorService);
   private routeLoadingService = inject(RouteLoadingService);
   private router = inject(Router);
   private toastService = inject(ToastService);
@@ -225,6 +227,9 @@ export class AppComponent implements OnInit, OnDestroy {
   isLoading = this.routeLoadingService.loading$;
 
   ngOnInit(): void {
+    // Start memory monitoring
+    this.memoryMonitor.startMonitoring();
+    
     // Expose debug log viewer to window for console access
     (window as any).viewOAuthLogs = () => {
       try {
@@ -308,6 +313,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Stop memory monitoring
+    this.memoryMonitor.stopMonitoring();
+    
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }

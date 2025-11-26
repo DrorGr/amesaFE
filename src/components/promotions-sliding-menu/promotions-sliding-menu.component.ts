@@ -1,4 +1,4 @@
-import { Component, input, output, OnInit, OnChanges, inject, signal, effect } from '@angular/core';
+import { Component, input, output, OnInit, OnDestroy, inject, signal, effect, EffectRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
@@ -114,7 +114,7 @@ interface Promotion {
     }
   `]
 })
-export class PromotionsSlidingMenuComponent implements OnInit {
+export class PromotionsSlidingMenuComponent implements OnInit, OnDestroy {
   isOpen = input.required<boolean>();
   close = output<void>();
   
@@ -122,11 +122,12 @@ export class PromotionsSlidingMenuComponent implements OnInit {
   
   promotions = signal<Promotion[]>([]);
   isLoading = signal(false);
+  private menuOpenEffect?: EffectRef;
 
   constructor() {
     // Watch for menu open state changes and load promotions
-    // Use effect to watch for isOpen() changes
-    effect(() => {
+    // Use effect to watch for isOpen() changes - store cleanup function
+    this.menuOpenEffect = effect(() => {
       const open = this.isOpen();
       if (open) {
         this.loadPromotions();
@@ -135,9 +136,25 @@ export class PromotionsSlidingMenuComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'promotions-sliding-menu.component.ts:ngOnInit',message:'Component initialized',data:{componentName:'PromotionsSlidingMenuComponent'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+    // #endregion
+    
     // Load promotions if menu is already open on init
     if (this.isOpen()) {
       this.loadPromotions();
+    }
+  }
+  
+  ngOnDestroy(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'promotions-sliding-menu.component.ts:ngOnDestroy',message:'Component destroyed',data:{componentName:'PromotionsSlidingMenuComponent',effectCleaned:!!this.menuOpenEffect},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+    // #endregion
+    
+    // Cleanup effect
+    if (this.menuOpenEffect) {
+      this.menuOpenEffect.destroy();
+      this.menuOpenEffect = undefined;
     }
   }
 

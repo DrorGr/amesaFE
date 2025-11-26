@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, effect, OnInit, OnDestroy, EffectRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CookieConsentService } from '../../services/cookie-consent.service';
@@ -284,6 +284,7 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
   isMobile = this.mobileDetectionService.isMobile;
   
   private subscriptions: Subscription[] = [];
+  private preferencesEffect?: EffectRef;
   
   constructor() {
     // Watch for consent changes to update visibility
@@ -298,7 +299,7 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
     });
     
     // Watch for preferences modal state changes to lock/unlock body scroll
-    effect(() => {
+    this.preferencesEffect = effect(() => {
       if (typeof document !== 'undefined') {
         if (this.isPreferencesOpen()) {
           document.body.style.overflow = 'hidden';
@@ -333,8 +334,18 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
   }
   
   ngOnDestroy(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'cookie-consent.component.ts:ngOnDestroy',message:'Component destroyed',data:{componentName:'CookieConsentComponent',subscriptionCount:this.subscriptions.length,effectCleaned:!!this.preferencesEffect},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'G'})}).catch(()=>{});
+    // #endregion
+    
     // Clean up subscriptions
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    
+    // Cleanup effect
+    if (this.preferencesEffect) {
+      this.preferencesEffect.destroy();
+      this.preferencesEffect = undefined;
+    }
     
     // Remove Escape key listener
     if (typeof window !== 'undefined') {

@@ -1,7 +1,8 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { House } from '../../models/house.model';
@@ -288,7 +289,7 @@ interface SearchFilters {
     }
   `]
 })
-export class SearchPageComponent implements OnInit {
+export class SearchPageComponent implements OnInit, OnDestroy {
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   
@@ -367,22 +368,33 @@ export class SearchPageComponent implements OnInit {
     this.loadHouses();
   }
 
+  private subscriptions = new Subscription();
+
   loadHouses(): void {
-    this.lotteryService.getHousesFromApi({}).subscribe({
-      next: (response) => {
-        // getHousesFromApi returns PagedResponse<HouseDto>
-        const houses = response.items.map(dto => 
-          this.lotteryService.convertHouseDtoToHouse(dto)
-        );
-        this.allHouses.set(houses);
-      },
-      error: (error) => {
-        console.error('Error loading houses:', error);
-        // Fallback to using houses from service signal
-        const houses = this.lotteryService.getHouses()();
-        this.allHouses.set(houses);
-      }
-    });
+    this.subscriptions.add(
+      this.lotteryService.getHousesFromApi({}).subscribe({
+        next: (response) => {
+          // getHousesFromApi returns PagedResponse<HouseDto>
+          const houses = response.items.map(dto => 
+            this.lotteryService.convertHouseDtoToHouse(dto)
+          );
+          this.allHouses.set(houses);
+        },
+        error: (error) => {
+          console.error('Error loading houses:', error);
+          // Fallback to using houses from service signal
+          const houses = this.lotteryService.getHouses()();
+          this.allHouses.set(houses);
+        }
+      })
+    );
+  }
+  
+  ngOnDestroy(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'search-page.component.ts:ngOnDestroy',message:'Component destroyed',data:{componentName:'SearchPageComponent',subscriptionCount:this.subscriptions.closed?0:'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'H'})}).catch(()=>{});
+    // #endregion
+    this.subscriptions.unsubscribe();
   }
 
   applyFilters(): void {

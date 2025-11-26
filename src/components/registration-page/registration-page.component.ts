@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
 import { IdentityVerificationService } from '../../services/identity-verification.service';
@@ -661,12 +662,13 @@ import { IdentityVerificationService } from '../../services/identity-verificatio
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
   `]
 })
-export class RegistrationPageComponent {
+export class RegistrationPageComponent implements OnDestroy {
   private translationService = inject(TranslationService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private identityVerificationService = inject(IdentityVerificationService);
+  private subscriptions = new Subscription();
 
   currentStep = signal(1);
   usernameError = signal(false);
@@ -724,9 +726,13 @@ export class RegistrationPageComponent {
     });
 
     // Watch password changes for strength indicator
-    this.passwordForm.get('password')?.valueChanges.subscribe(password => {
-      this.updatePasswordStrength(password);
-    });
+    if (this.passwordForm.get('password')) {
+      this.subscriptions.add(
+        this.passwordForm.get('password')!.valueChanges.subscribe(password => {
+          this.updatePasswordStrength(password);
+        })
+      );
+    }
   }
 
   // Social Registration Methods
@@ -981,24 +987,26 @@ export class RegistrationPageComponent {
         documentNumber: this.identityForm.get('passportIdNumber')?.value
       };
 
-      this.identityVerificationService.verifyIdentity(request).subscribe({
-        next: (result) => {
-          if (result.isVerified) {
-            this.isIdentityValidated.set(true);
-            this.verificationError.set(null);
-          } else {
-            this.verificationError.set(result.rejectionReason || this.translate('idVerification.failed'));
+      this.subscriptions.add(
+        this.identityVerificationService.verifyIdentity(request).subscribe({
+          next: (result) => {
+            if (result.isVerified) {
+              this.isIdentityValidated.set(true);
+              this.verificationError.set(null);
+            } else {
+              this.verificationError.set(result.rejectionReason || this.translate('idVerification.failed'));
+              this.isIdentityValidated.set(false);
+            }
+            this.isVerifying.set(false);
+          },
+          error: (error) => {
+            console.error('Verification error:', error);
+            this.verificationError.set(error.error?.message || this.translate('idVerification.failed'));
             this.isIdentityValidated.set(false);
+            this.isVerifying.set(false);
           }
-          this.isVerifying.set(false);
-        },
-        error: (error) => {
-          console.error('Verification error:', error);
-          this.verificationError.set(error.error?.message || this.translate('idVerification.failed'));
-          this.isIdentityValidated.set(false);
-          this.isVerifying.set(false);
-        }
-      });
+        })
+      );
     } catch (error) {
       console.error('Error during verification:', error);
       this.verificationError.set(this.translate('idVerification.failed'));
@@ -1028,5 +1036,12 @@ export class RegistrationPageComponent {
     if (this.currentStep() > 1) {
       this.currentStep.set(this.currentStep() - 1);
     }
+  }
+  
+  ngOnDestroy(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'registration-page.component.ts:ngOnDestroy',message:'Component destroyed',data:{componentName:'RegistrationPageComponent',subscriptionCount:this.subscriptions.closed?0:'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'H'})}).catch(()=>{});
+    // #endregion
+    this.subscriptions.unsubscribe();
   }
 }
