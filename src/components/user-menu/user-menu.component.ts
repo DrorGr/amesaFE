@@ -2,14 +2,14 @@ import { Component, inject, signal, HostListener, ViewChild, ElementRef } from '
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { AuthModalComponent } from '../auth-modal/auth-modal.component';
+import { AuthModalService } from '../../services/auth-modal.service';
 import { TranslationService } from '../../services/translation.service';
 import { AccessibilityMenuComponent } from '../accessibility-menu/accessibility-menu.component';
 
 @Component({
   selector: 'app-user-menu',
   standalone: true,
-  imports: [CommonModule, RouterModule, AuthModalComponent, AccessibilityMenuComponent],
+  imports: [CommonModule, RouterModule, AccessibilityMenuComponent],
   template: `
     <div class="relative" #userMenuContainer>
       @if (!currentUser()) {
@@ -98,15 +98,6 @@ import { AccessibilityMenuComponent } from '../accessibility-menu/accessibility-
       }
     </div>
 
-    <!-- Auth Modal -->
-    @if (showAuthModal) {
-      <app-auth-modal 
-        [mode]="authMode" 
-        (close)="closeAuthModal()"
-        (success)="onAuthSuccess()"
-        (modeChange)="onModeChange($event)">
-      </app-auth-modal>
-    }
   `,
   styles: [`
     :host {
@@ -116,6 +107,7 @@ import { AccessibilityMenuComponent } from '../accessibility-menu/accessibility-
 })
 export class UserMenuComponent {
   private authService = inject(AuthService);
+  private authModalService = inject(AuthModalService);
   private translationService = inject(TranslationService);
   private router = inject(Router);
   
@@ -123,8 +115,6 @@ export class UserMenuComponent {
   
   currentUser = this.authService.getCurrentUser();
   isDropdownOpen = signal(false);
-  showAuthModal = false;
-  authMode: 'login' | 'register' = 'login';
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -170,26 +160,12 @@ export class UserMenuComponent {
 
   openAuthModal(): void {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-menu.component.ts:171',message:'openAuthModal called',data:{showAuthModalBefore:this.showAuthModal,authMode:this.authMode},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-menu.component.ts:openAuthModal',message:'openAuthModal called via service',data:{serviceIsOpen:this.authModalService.isOpen()},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
     // #endregion
-    this.authMode = 'login';
-    this.showAuthModal = true;
+    this.authModalService.open('login');
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-menu.component.ts:175',message:'openAuthModal after set',data:{showAuthModalAfter:this.showAuthModal,authMode:this.authMode},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-menu.component.ts:openAuthModal',message:'openAuthModal after service call',data:{serviceIsOpen:this.authModalService.isOpen()},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
     // #endregion
-  }
-
-  closeAuthModal(): void {
-    this.showAuthModal = false;
-  }
-
-  onAuthSuccess(): void {
-    this.showAuthModal = false;
-    this.closeDropdown();
-  }
-
-  onModeChange(mode: 'login' | 'register'): void {
-    this.authMode = mode;
   }
 
   navigateToSettings(): void {

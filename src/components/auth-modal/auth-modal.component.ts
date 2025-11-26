@@ -291,7 +291,28 @@ export class AuthModalComponent implements OnInit, AfterViewInit {
       const computedContent = contentEl ? window.getComputedStyle(contentEl) : null;
       const backdropRect = backdropEl?.getBoundingClientRect();
       const contentRect = contentEl?.getBoundingClientRect();
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-modal.component.ts:ngAfterViewInit',message:'Modal after view init',data:{backdropExists:!!backdropEl,contentExists:!!contentEl,backdropZIndex:computedBackdrop?.zIndex,contentZIndex:computedContent?.zIndex,backdropRect:backdropRect?{width:backdropRect.width,height:backdropRect.height,top:backdropRect.top,left:backdropRect.left}:null,contentRect:contentRect?{width:contentRect.width,height:contentRect.height,top:contentRect.top,left:contentRect.left}:null,backdropOpacity:computedBackdrop?.opacity,contentOpacity:computedContent?.opacity},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      
+      // Check parent elements
+      let parent = backdropEl?.parentElement;
+      const parentInfo: any[] = [];
+      let depth = 0;
+      while (parent && depth < 5) {
+        const parentStyle = window.getComputedStyle(parent);
+        parentInfo.push({
+          tag: parent.tagName,
+          className: parent.className,
+          zIndex: parentStyle.zIndex,
+          position: parentStyle.position,
+          overflow: parentStyle.overflow,
+          display: parentStyle.display,
+          visibility: parentStyle.visibility,
+          opacity: parentStyle.opacity
+        });
+        parent = parent.parentElement;
+        depth++;
+      }
+      
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-modal.component.ts:ngAfterViewInit',message:'Modal after view init',data:{backdropExists:!!backdropEl,contentExists:!!contentEl,backdropZIndex:computedBackdrop?.zIndex,contentZIndex:computedContent?.zIndex,backdropRect:backdropRect?{width:backdropRect.width,height:backdropRect.height,top:backdropRect.top,left:backdropRect.left,bottom:backdropRect.bottom,right:backdropRect.right}:null,contentRect:contentRect?{width:contentRect.width,height:contentRect.height,top:contentRect.top,left:contentRect.left,bottom:contentRect.bottom,right:contentRect.right}:null,backdropOpacity:computedBackdrop?.opacity,contentOpacity:computedContent?.opacity,parentElements:parentInfo},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
     }, 100);
     // #endregion
   }
