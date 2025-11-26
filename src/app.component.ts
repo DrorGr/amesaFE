@@ -227,8 +227,8 @@ export class AppComponent implements OnInit, OnDestroy {
   isLoading = this.routeLoadingService.loading$;
 
   ngOnInit(): void {
-    // Start memory monitoring
-    this.memoryMonitor.startMonitoring();
+    // Memory monitoring disabled to reduce network traffic
+    // this.memoryMonitor.startMonitoring();
     
     // Expose debug log viewer to window for console access
     (window as any).viewOAuthLogs = () => {
@@ -313,8 +313,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Stop memory monitoring
-    this.memoryMonitor.stopMonitoring();
+    // Memory monitoring disabled
+    // this.memoryMonitor.stopMonitoring();
     
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
