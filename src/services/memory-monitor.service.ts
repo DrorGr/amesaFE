@@ -28,7 +28,12 @@ export class MemoryMonitorService {
       const componentElements = document.querySelectorAll('[ng-version], app-root, app-*, [class*="ng-"]');
       const componentCount = componentElements.length;
       
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'memory-monitor.service.ts:startMonitoring',message:'Memory monitoring',data:{memoryInfo,domNodeCount,componentCount,timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+      // Throttle memory logging to prevent ERR_INSUFFICIENT_RESOURCES
+      try {
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'memory-monitor.service.ts:startMonitoring',message:'Memory monitoring',data:{memoryInfo,domNodeCount,componentCount},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'G'})}).catch(()=>{});
+      } catch (e) {
+        // Silently ignore fetch errors to prevent console spam
+      }
       // #endregion
     }, 5000); // Every 5 seconds
   }

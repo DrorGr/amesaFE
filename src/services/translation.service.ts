@@ -113,9 +113,10 @@ export class TranslationService {
     const translations = this.currentTranslations();
     const translation = translations[key];
     
-    // #region agent log
-    if (key === 'nav.myLottery' || key.startsWith('auth.')) {
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:translate',message:'Translation lookup',data:{key,lang,hasTranslation:!!translation,translation,isKey:!translation,translationCount:Object.keys(translations).length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #region agent log - throttled to prevent ERR_INSUFFICIENT_RESOURCES
+    if (!translation && (!(window as any).__translationLogThrottle || Date.now() - (window as any).__translationLogThrottle > 1000)) {
+      (window as any).__translationLogThrottle = Date.now();
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:translate',message:'Missing translation',data:{key,lang,translationCount:Object.keys(translations).length},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'C'})}).catch(()=>{});
     }
     // #endregion
     
