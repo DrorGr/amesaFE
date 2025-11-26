@@ -188,27 +188,29 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
       left: 0 !important;
       right: 0 !important;
       bottom: 0 !important;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999 !important;
-      overflow-y: auto;
-      padding: 1rem;
-      isolation: isolate;
+      background-color: rgba(0, 0, 0, 0.5) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 999999 !important;
+      overflow-y: auto !important;
+      padding: 1rem !important;
+      isolation: isolate !important;
+      pointer-events: auto !important;
     }
     
     .modal-content {
-      background-color: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      width: 100%;
-      max-width: 28rem;
-      max-height: calc(100vh - 2rem);
-      overflow-y: auto;
-      margin: auto;
-      position: relative;
-      z-index: 100000 !important;
+      background-color: white !important;
+      border-radius: 0.5rem !important;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+      width: 100% !important;
+      max-width: 28rem !important;
+      max-height: calc(100vh - 2rem) !important;
+      overflow-y: auto !important;
+      margin: auto !important;
+      position: relative !important;
+      z-index: 1000000 !important;
+      pointer-events: auto !important;
     }
     
     @media (max-width: 767px) {
