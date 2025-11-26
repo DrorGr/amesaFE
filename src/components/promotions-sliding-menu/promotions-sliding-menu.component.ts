@@ -19,15 +19,13 @@ interface Promotion {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <!-- Backdrop -->
-    <div 
-      class="fixed inset-0 bg-black z-40 transition-all duration-300 ease-in-out"
-      [class.bg-opacity-50]="isOpen()"
-      [class.bg-opacity-0]="!isOpen()"
-      [class.pointer-events-auto]="isOpen()"
-      [class.pointer-events-none]="!isOpen()"
-      (click)="close.emit()">
-    </div>
+    @if (isOpen()) {
+      <!-- Backdrop -->
+      <div 
+        class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ease-in-out"
+        (click)="close.emit()">
+      </div>
+    }
     
     <!-- Menu -->
     <div 
@@ -127,8 +125,10 @@ export class PromotionsSlidingMenuComponent implements OnInit {
 
   constructor() {
     // Watch for menu open state changes and load promotions
+    // Use effect to watch for isOpen() changes
     effect(() => {
-      if (this.isOpen()) {
+      const open = this.isOpen();
+      if (open) {
         this.loadPromotions();
       }
     });

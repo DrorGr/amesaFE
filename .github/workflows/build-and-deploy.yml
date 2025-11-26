@@ -14,9 +14,18 @@ on:
         type: choice
         options:
           - production
+      skip_tests:
+        description: "Skip running tests before deployment"
+        required: false
+        default: false
+        type: boolean
+      skip_deploy:
+        description: "Skip deployment (build only, no deploy)"
+        required: false
+        default: false
+        type: boolean
 
 # Cancel previous workflow runs when a new one starts
-# Use separate group so build-deploy doesn't wait for tests
 concurrency:
   group: build-deploy-${{ github.ref }}
   cancel-in-progress: true
@@ -25,10 +34,73 @@ env:
   NODE_VERSION: "20"
 
 jobs:
-  # Tests run in parallel but don't block deployment
+  # Check if tests should be skipped
+  check-skip-tests:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check if tests should be skipped
+        id: check
+        run: |
+          # Check workflow input
+          if [ "${{ inputs.skip_tests }}" == "true" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "⏭️ Tests will be skipped (workflow input)"
+            exit 0
+          fi
+          
+          # Check commit message for skip patterns
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if echo "$COMMIT_MSG" | grep -qiE "\[skip\s*tests?\]|\[skip-tests?\]|skip\s*tests"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "⏭️ Tests will be skipped (commit message contains skip pattern)"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "✅ Tests will run"
+          fi
+
+  # Check if deployment should be skipped
+  check-skip-deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check if deployment should be skipped
+        id: check
+        run: |
+          # Check workflow input
+          if [ "${{ inputs.skip_deploy }}" == "true" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "⏭️ Deployment will be skipped (workflow input)"
+            exit 0
+          fi
+          
+          # Check commit message for skip patterns
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if echo "$COMMIT_MSG" | grep -qiE "\[skip\s*deploy\]|\[skip-deploy\]|\[no\s*deploy\]|\[no-deploy\]|skip\s*deploy|no\s*deploy"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "⏭️ Deployment will be skipped (commit message contains skip pattern)"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "✅ Deployment will run"
+          fi
+
+  # Tests run before deployment (unless skipped)
   test:
     runs-on: ubuntu-latest
-    continue-on-error: true
+    needs: check-skip-tests
+    if: needs.check-skip-tests.outputs.skip != 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,13 +114,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
+      - name: Run unit tests
         run: npm run test:ci
-        continue-on-error: true
 
   build:
     runs-on: ubuntu-latest
-    # Don't wait for tests - deploy immediately
+    needs: [check-skip-tests, test]
+    # Run build if:
+    # 1. Tests were skipped (skip == 'true'), OR
+    # 2. Tests ran and passed (test.result == 'success')
+    # Note: When test job is skipped, result will be 'skipped', which we handle with skip check
+    if: |
+      always() && (
+        needs.check-skip-tests.outputs.skip == 'true' ||
+        (needs.test.result == 'success')
+      )
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -77,9 +157,11 @@ jobs:
           path: dist/
 
   deploy-prod:
-    needs: build
+    needs: [build, check-skip-deploy]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: |
+      github.ref == 'refs/heads/main' &&
+      needs.check-skip-deploy.outputs.skip != 'true'
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4

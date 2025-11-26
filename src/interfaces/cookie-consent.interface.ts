@@ -66,3 +66,5 @@ export const DEFAULT_COOKIE_CONSENT: CookieConsent = {
  */
 export type PartialCookieConsent = Partial<Omit<CookieConsent, 'version' | 'timestamp' | 'essential'>>;
 
+
+

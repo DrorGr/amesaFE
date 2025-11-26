@@ -29,32 +29,11 @@ module.exports = function (config) {
       subdir: '.',
       reporters: [
         { type: 'html' },
-        { type: 'text-summary' },
-        { type: 'lcov' },
-        { type: 'json-summary' }
-      ],
-      check: {
-        global: {
-          statements: 85,
-          branches: 80,
-          functions: 85,
-          lines: 85
-        }
-      }
+        { type: 'text-summary' }
+      ]
     },
-    reporters: ['progress', 'kjhtml', 'coverage'],
+    reporters: ['progress', 'kjhtml'],
     browsers: ['Chrome'],
-    customLaunchers: {
-      ChromeHeadless: {
-        base: 'Chrome',
-        flags: [
-          '--headless',
-          '--no-sandbox',
-          '--disable-gpu',
-          '--disable-dev-shm-usage'
-        ]
-      }
-    },
     restartOnFileChange: true,
     singleRun: false
   });

@@ -5,11 +5,12 @@ import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
+import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 
 @Component({
   selector: 'app-house-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, VerificationGateComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="relative bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col w-full transform hover:scale-105">
@@ -130,36 +131,38 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
 
         <div class="mt-auto flex-shrink-0 space-y-2">
           <ng-container *ngIf="currentUser(); else signInBlock">
-            <!-- Quick Entry Button (only show if favorited) -->
-            <button
-              *ngIf="isFavorite()"
-              (click)="quickEntry()"
-              [disabled]="isQuickEntering || house().status !== 'active'"
-              class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 md:py-2 px-6 md:px-4 rounded-lg font-semibold transition-all duration-200 border-none cursor-pointer text-lg md:text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
-              [class.bg-gray-400]="(isQuickEntering || house().status !== 'active')"
-              [class.cursor-not-allowed]="(isQuickEntering || house().status !== 'active')">
-              <ng-container *ngIf="isQuickEntering; else quickEntryBlock">
-                {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
-              </ng-container>
-              <ng-template #quickEntryBlock>
-                ⚡ {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
-              </ng-template>
-            </button>
-            
-            <!-- Regular Purchase Button -->
-            <button
-              (click)="purchaseTicket()"
-              [disabled]="isPurchasing || house().status !== 'active'"
-              class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button"
-              [class.bg-gray-400]="(isPurchasing || house().status !== 'active')"
-              [class.cursor-not-allowed]="(isPurchasing || house().status !== 'active')">
-              <ng-container *ngIf="isPurchasing; else buyTicketBlock">
-                {{ translate('house.processing') }}
-              </ng-container>
-              <ng-template #buyTicketBlock>
-                {{ translate('house.buyTicket') }} - €{{ house().ticketPrice }}
-              </ng-template>
-            </button>
+            <app-verification-gate [isVerificationRequired]="true">
+              <!-- Quick Entry Button (only show if favorited) -->
+              <button
+                *ngIf="isFavorite()"
+                (click)="quickEntry()"
+                [disabled]="isQuickEntering || house().status !== 'active'"
+                class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 md:py-2 px-6 md:px-4 rounded-lg font-semibold transition-all duration-200 border-none cursor-pointer text-lg md:text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+                [class.bg-gray-400]="(isQuickEntering || house().status !== 'active')"
+                [class.cursor-not-allowed]="(isQuickEntering || house().status !== 'active')">
+                <ng-container *ngIf="isQuickEntering; else quickEntryBlock">
+                  {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
+                </ng-container>
+                <ng-template #quickEntryBlock>
+                  ⚡ {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
+                </ng-template>
+              </button>
+              
+              <!-- Regular Purchase Button -->
+              <button
+                (click)="purchaseTicket()"
+                [disabled]="isPurchasing || house().status !== 'active'"
+                class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button"
+                [class.bg-gray-400]="(isPurchasing || house().status !== 'active')"
+                [class.cursor-not-allowed]="(isPurchasing || house().status !== 'active')">
+                <ng-container *ngIf="isPurchasing; else buyTicketBlock">
+                  {{ translate('house.processing') }}
+                </ng-container>
+                <ng-template #buyTicketBlock>
+                  {{ translate('house.buyTicket') }} - €{{ house().ticketPrice }}
+                </ng-template>
+              </button>
+            </app-verification-gate>
           </ng-container>
           <ng-template #signInBlock>
             <div class="text-center">
@@ -375,8 +378,14 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       } else {
         console.log('Failed to purchase ticket');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error purchasing ticket:', error);
+      // Check if it's a verification error
+      if (error?.error?.error?.code === 'ID_VERIFICATION_REQUIRED' || 
+          error?.error?.message?.includes('ID_VERIFICATION_REQUIRED')) {
+        // Verification gate will handle showing the message
+        // User will see the gate component
+      }
     } finally {
       this.isPurchasing = false;
     }
@@ -496,6 +505,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
    * Quick entry from favorites
    */
   async quickEntry(): Promise<void> {
+    // Verification check is handled by backend and verification gate component
     if (!this.currentUser() || this.isQuickEntering || !this.isFavorite()) {
       return;
     }
