@@ -13,8 +13,8 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
   standalone: true,
   imports: [CommonModule, FormsModule, PasswordResetModalComponent],
   template: `
-    <div class="modal-backdrop dark:bg-black dark:bg-opacity-60" (click)="onBackdropClick($event)">
-      <div class="modal-content dark:bg-gray-800">
+    <div class="modal-backdrop" (click)="onBackdropClick($event)">
+      <div class="modal-content">
         <div class="p-8">
           <div class="flex justify-between items-center mb-8">
             <h2 class="text-4xl md:text-3xl font-black text-gray-900 dark:text-white mobile-auth-title">
@@ -199,6 +199,10 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
       pointer-events: auto !important;
     }
     
+    :host-context(.dark) .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.75) !important;
+    }
+    
     .modal-content {
       background-color: white !important;
       border-radius: 0.5rem !important;
@@ -211,6 +215,11 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
       position: relative !important;
       z-index: 1000000 !important;
       pointer-events: auto !important;
+    }
+    
+    :host-context(.dark) .modal-content {
+      background-color: rgb(31, 41, 55) !important; /* gray-800 */
+      color: white !important;
     }
     
     @media (max-width: 767px) {
@@ -292,27 +301,10 @@ export class AuthModalComponent implements OnInit, AfterViewInit {
       const backdropRect = backdropEl?.getBoundingClientRect();
       const contentRect = contentEl?.getBoundingClientRect();
       
-      // Check parent elements
-      let parent = backdropEl?.parentElement;
-      const parentInfo: any[] = [];
-      let depth = 0;
-      while (parent && depth < 5) {
-        const parentStyle = window.getComputedStyle(parent);
-        parentInfo.push({
-          tag: parent.tagName,
-          className: parent.className,
-          zIndex: parentStyle.zIndex,
-          position: parentStyle.position,
-          overflow: parentStyle.overflow,
-          display: parentStyle.display,
-          visibility: parentStyle.visibility,
-          opacity: parentStyle.opacity
-        });
-        parent = parent.parentElement;
-        depth++;
-      }
+      const htmlEl = document.documentElement;
+      const isDark = htmlEl.classList.contains('dark');
       
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-modal.component.ts:ngAfterViewInit',message:'Modal after view init',data:{backdropExists:!!backdropEl,contentExists:!!contentEl,backdropZIndex:computedBackdrop?.zIndex,contentZIndex:computedContent?.zIndex,backdropRect:backdropRect?{width:backdropRect.width,height:backdropRect.height,top:backdropRect.top,left:backdropRect.left,bottom:backdropRect.bottom,right:backdropRect.right}:null,contentRect:contentRect?{width:contentRect.width,height:contentRect.height,top:contentRect.top,left:contentRect.left,bottom:contentRect.bottom,right:contentRect.right}:null,backdropOpacity:computedBackdrop?.opacity,contentOpacity:computedContent?.opacity,parentElements:parentInfo},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-modal.component.ts:ngAfterViewInit',message:'Modal after view init - background colors',data:{backdropExists:!!backdropEl,contentExists:!!contentEl,isDarkMode:isDark,backdropBgColor:computedBackdrop?.backgroundColor,contentBgColor:computedContent?.backgroundColor,backdropRect:backdropRect?{width:backdropRect.width,height:backdropRect.height}:null,contentRect:contentRect?{width:contentRect.width,height:contentRect.height}:null},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'F'})}).catch(()=>{});
     }, 100);
     // #endregion
   }
