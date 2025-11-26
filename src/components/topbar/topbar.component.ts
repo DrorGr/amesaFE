@@ -2,18 +2,17 @@ import { Component, inject, ViewEncapsulation, OnInit, signal } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { AuthModalComponent } from '../auth-modal/auth-modal.component';
 import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { ToastService } from '../../services/toast.service';
-import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promotions-sliding-menu.component';
+import { UserMenuComponent } from '../user-menu/user-menu.component';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, AuthModalComponent, LanguageSwitcherComponent, ThemeToggleComponent, PromotionsSlidingMenuComponent],
+  imports: [CommonModule, LanguageSwitcherComponent, ThemeToggleComponent, UserMenuComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
@@ -40,37 +39,12 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
             <button (click)="navigateToSearch()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
               {{ translate('nav.search') }}
             </button>
-            <button (click)="togglePromotionsMenu()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-              {{ translate('nav.promotions') }}
-            </button>
           </div>
 
           <div class="flex items-center space-x-3 mobile-controls">
             <app-theme-toggle></app-theme-toggle>
             <app-language-switcher></app-language-switcher>
-                @if (currentUser(); as user) {
-                  <div class="flex items-center space-x-3">
-                    <span class="text-gray-700 dark:text-gray-300 text-sm font-medium">{{ translate('nav.welcome') }}, {{ user.name }}</span>
-                    <button
-                      (click)="navigateToMemberSettings()"
-                      class="bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md">
-                      {{ translate('nav.memberSettings') }}
-                    </button>
-                    <button
-                      (click)="logout()"
-                      class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md">
-                      {{ translate('nav.logout') }}
-                    </button>
-                  </div>
-                } @else {
-                  <div class="flex items-center space-x-3">
-                    <button
-                      (click)="openAuthModal()"
-                      class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-8 py-2 rounded-lg text-base font-bold transition-all duration-200 hover:shadow-md min-h-[30px] mobile-signin-button">
-                      {{ translate('nav.signIn') }}
-                    </button>
-                  </div>
-                }
+            <app-user-menu></app-user-menu>
           </div>
         </div>
         }
@@ -92,28 +66,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
             <div class="flex items-center space-x-3 mobile-controls">
               <app-theme-toggle></app-theme-toggle>
               <app-language-switcher></app-language-switcher>
-              
-              @if (currentUser(); as user) {
-                <div class="flex items-center space-x-2">
-                  <span class="text-gray-700 dark:text-gray-300 text-sm font-medium">{{ translate('nav.welcome') }}, {{ user.name }}</span>
-                  <button
-                    (click)="navigateToMemberSettings()"
-                    class="bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 hover:shadow-md">
-                    {{ translate('nav.memberSettings') }}
-                  </button>
-                  <button
-                    (click)="logout()"
-                    class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 hover:shadow-md">
-                    {{ translate('nav.logout') }}
-                  </button>
-                </div>
-              } @else {
-                <button
-                  (click)="openAuthModal()"
-                  class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 hover:shadow-md mobile-signin-button">
-                  {{ translate('nav.signIn') }}
-                </button>
-              }
+              <app-user-menu></app-user-menu>
               
               <!-- Hamburger Menu Button -->
               <button
@@ -149,25 +102,12 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
               <button (click)="navigateToSearch()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
                 {{ translate('nav.search') }}
               </button>
-              <button (click)="togglePromotionsMenu()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
-                {{ translate('nav.promotions') }}
-              </button>
             </div>
           </div>
         }
       </div>
     </nav>
 
-    @if (showAuthModal) {
-      <app-auth-modal 
-        [mode]="authMode" 
-        (close)="closeAuthModal()"
-        (success)="onAuthSuccess()"
-        (modeChange)="onModeChange($event)">
-      </app-auth-modal>
-    }
-
-    <app-promotions-sliding-menu [isOpen]="promotionsMenuOpen()" (close)="closePromotionsMenu()"></app-promotions-sliding-menu>
   `,
   styles: [`
     :host {
@@ -217,10 +157,7 @@ export class TopbarComponent implements OnInit {
   private mobileDetectionService = inject(MobileDetectionService);
   private toastService = inject(ToastService);
   
-  showAuthModal = false;
-  authMode: 'login' | 'register' = 'login';
   isMobileMenuOpen = false;
-  promotionsMenuOpen = signal(false);
   
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;
@@ -241,35 +178,6 @@ export class TopbarComponent implements OnInit {
     }
   }
 
-  openAuthModal() {
-    this.authMode = 'login';
-    this.showAuthModal = true;
-  }
-
-  closeAuthModal() {
-    this.showAuthModal = false;
-  }
-
-  onAuthSuccess() {
-    this.showAuthModal = false;
-    // Force refresh to ensure UI updates with new auth state
-    // The signal should auto-update, but this ensures change detection
-    setTimeout(() => {
-      // Trigger change detection by accessing the signal
-      const user = this.currentUser();
-      // User will be updated automatically via signal
-    }, 100);
-  }
-
-  onModeChange(mode: 'login' | 'register') {
-    this.authMode = mode;
-  }
-
-  logout() {
-    this.authService.logout();
-    // Show info toast after logout
-    this.toastService.info('You have been logged out successfully.', 3000);
-  }
 
   translate(key: string): string {
     return this.translationService.translate(key);
@@ -300,19 +208,6 @@ export class TopbarComponent implements OnInit {
     this.isMobileMenuOpen = false;
   }
 
-  togglePromotionsMenu() {
-    this.promotionsMenuOpen.set(!this.promotionsMenuOpen());
-    this.isMobileMenuOpen = false;
-  }
-
-  closePromotionsMenu() {
-    this.promotionsMenuOpen.set(false);
-  }
-
-  navigateToPromotions() {
-    // Legacy method - kept for compatibility but now opens menu instead
-    this.togglePromotionsMenu();
-  }
 
   navigateToLotteryResults() {
     // Legacy method - kept for compatibility

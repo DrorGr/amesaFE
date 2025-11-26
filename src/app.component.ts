@@ -8,7 +8,6 @@ import { TopbarComponent } from './components/topbar/topbar.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { TranslationLoaderComponent } from './components/translation-loader/translation-loader.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
-import { AccessibilityWidgetComponent } from './components/accessibility-widget/accessibility-widget.component';
 import { ToastComponent } from './components/toast/toast.component';
 import { CookieConsentComponent } from './components/cookie-consent/cookie-consent.component';
 import { ActiveEntriesAccordionComponent } from './components/active-entries-accordion/active-entries-accordion.component';
@@ -29,7 +28,6 @@ import { CookieConsentService } from './services/cookie-consent.service';
     LoadingComponent,
     TranslationLoaderComponent,
     ChatbotComponent,
-    AccessibilityWidgetComponent,
     ToastComponent,
     CookieConsentComponent,
     ActiveEntriesAccordionComponent
@@ -187,9 +185,6 @@ import { CookieConsentService } from './services/cookie-consent.service';
       
       <!-- Fixed Chatbot -->
       <app-chatbot></app-chatbot>
-      
-      <!-- Fixed Accessibility Widget -->
-      <app-accessibility-widget></app-accessibility-widget>
       
       <!-- Toast Notifications -->
       <app-toast></app-toast>

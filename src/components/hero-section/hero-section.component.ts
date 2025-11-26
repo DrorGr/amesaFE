@@ -1,13 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
+import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promotions-sliding-menu.component';
 
 @Component({
   selector: 'app-hero-section',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PromotionsSlidingMenuComponent],
   template: `
     <section class="relative overflow-hidden">
       <!-- Main Hero with Winner Celebration -->
@@ -41,12 +42,21 @@ import { MobileDetectionService } from '../../services/mobile-detection.service'
               <button (click)="navigateToHowItWorks()" class="px-12 py-6 text-3xl md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button">
                 {{ translate('hero.howItWorks') }}
               </button>
+              <button (click)="togglePromotionsMenu()" class="px-12 py-6 text-3xl md:text-2xl font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:ring-4 focus:ring-purple-300 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2m0 0V5.5A2.5 2.5 0 1013.5 8H12m-2 0h2m0 0v13m0-13l-3-3m3 3l3-3"></path>
+                </svg>
+                {{ translate('nav.promotions') }}
+              </button>
             </div>
           </div>
           
           <!-- Right side - House Carousel -->
         </div>
       </div>
+      
+      <!-- Promotions Sliding Menu -->
+      <app-promotions-sliding-menu [isOpen]="promotionsMenuOpen()" (close)="closePromotionsMenu()"></app-promotions-sliding-menu>
     </section>
   `,
   styles: [`
@@ -106,6 +116,8 @@ export class HeroSectionComponent {
   
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;
+  
+  promotionsMenuOpen = signal(false);
   
   currentSlide = 0;
   currentHouseImageIndex = 0;
@@ -225,6 +237,14 @@ export class HeroSectionComponent {
   navigateToHowItWorks() {
     this.router.navigate(['/how-it-works']);
     this.scrollToTop();
+  }
+
+  togglePromotionsMenu() {
+    this.promotionsMenuOpen.set(!this.promotionsMenuOpen());
+  }
+
+  closePromotionsMenu() {
+    this.promotionsMenuOpen.set(false);
   }
 
   private scrollToTop() {

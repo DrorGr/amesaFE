@@ -1,4 +1,4 @@
-import { Component, input, output, OnInit, inject, signal } from '@angular/core';
+import { Component, input, output, OnInit, OnChanges, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
@@ -19,18 +19,21 @@ interface Promotion {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    @if (isOpen()) {
-      <!-- Backdrop -->
-      <div 
-        class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
-        (click)="close.emit()">
-      </div>
-      
-      <!-- Menu -->
-      <div 
-        class="fixed left-0 top-0 h-full w-80 md:w-96 bg-white dark:bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out"
-        [class.translate-x-0]="isOpen()"
-        [class.-translate-x-full]="!isOpen()">
+    <!-- Backdrop -->
+    <div 
+      class="fixed inset-0 bg-black z-40 transition-all duration-300 ease-in-out"
+      [class.bg-opacity-50]="isOpen()"
+      [class.bg-opacity-0]="!isOpen()"
+      [class.pointer-events-auto]="isOpen()"
+      [class.pointer-events-none]="!isOpen()"
+      (click)="close.emit()">
+    </div>
+    
+    <!-- Menu -->
+    <div 
+      class="fixed left-0 top-0 h-full w-80 md:w-96 bg-white dark:bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out"
+      [class.translate-x-0]="isOpen()"
+      [class.-translate-x-full]="!isOpen()">
         <!-- Header -->
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-blue-500">
           <div class="flex justify-between items-center">
@@ -106,7 +109,6 @@ interface Promotion {
           }
         </div>
       </div>
-    }
   `,
   styles: [`
     :host {
@@ -123,8 +125,17 @@ export class PromotionsSlidingMenuComponent implements OnInit {
   promotions = signal<Promotion[]>([]);
   isLoading = signal(false);
 
+  constructor() {
+    // Watch for menu open state changes and load promotions
+    effect(() => {
+      if (this.isOpen()) {
+        this.loadPromotions();
+      }
+    });
+  }
+
   ngOnInit(): void {
-    // Load promotions when menu opens
+    // Load promotions if menu is already open on init
     if (this.isOpen()) {
       this.loadPromotions();
     }
