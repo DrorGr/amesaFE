@@ -123,11 +123,11 @@ jobs:
     # Run build if:
     # 1. Tests were skipped (skip == 'true'), OR
     # 2. Tests ran and passed (test.result == 'success')
-    # Note: When test job is skipped, result will be 'skipped', which we handle with skip check
+    # Note: When test job is skipped, it won't block build from running
     if: |
       always() && (
         needs.check-skip-tests.outputs.skip == 'true' ||
-        (needs.test.result == 'success')
+        (needs.test.result == 'success' || needs.test.result == 'skipped')
       )
     steps:
       - name: Checkout code
