@@ -169,8 +169,14 @@ export class UserMenuComponent {
   }
 
   openAuthModal(): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-menu.component.ts:171',message:'openAuthModal called',data:{showAuthModalBefore:this.showAuthModal,authMode:this.authMode},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     this.authMode = 'login';
     this.showAuthModal = true;
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-menu.component.ts:175',message:'openAuthModal after set',data:{showAuthModalAfter:this.showAuthModal,authMode:this.authMode},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
   }
 
   closeAuthModal(): void {

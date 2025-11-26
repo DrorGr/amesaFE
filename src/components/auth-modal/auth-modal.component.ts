@@ -1,4 +1,4 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, inject, input, output, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -257,7 +257,7 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
     }
   `]
 })
-export class AuthModalComponent {
+export class AuthModalComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private router = inject(Router);
@@ -271,6 +271,30 @@ export class AuthModalComponent {
   close = output<void>();
   success = output<void>();
   modeChange = output<'login' | 'register'>();
+  
+  ngOnInit(): void {
+    // #region agent log
+    const backdropEl = document.querySelector('.modal-backdrop');
+    const contentEl = document.querySelector('.modal-content');
+    const computedBackdrop = backdropEl ? window.getComputedStyle(backdropEl) : null;
+    const computedContent = contentEl ? window.getComputedStyle(contentEl) : null;
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-modal.component.ts:ngOnInit',message:'Modal component initialized',data:{backdropExists:!!backdropEl,contentExists:!!contentEl,backdropZIndex:computedBackdrop?.zIndex,contentZIndex:computedContent?.zIndex,backdropDisplay:computedBackdrop?.display,contentDisplay:computedContent?.display,backdropVisibility:computedBackdrop?.visibility,contentVisibility:computedContent?.visibility},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+  }
+  
+  ngAfterViewInit(): void {
+    // #region agent log
+    setTimeout(() => {
+      const backdropEl = document.querySelector('.modal-backdrop');
+      const contentEl = document.querySelector('.modal-content');
+      const computedBackdrop = backdropEl ? window.getComputedStyle(backdropEl) : null;
+      const computedContent = contentEl ? window.getComputedStyle(contentEl) : null;
+      const backdropRect = backdropEl?.getBoundingClientRect();
+      const contentRect = contentEl?.getBoundingClientRect();
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-modal.component.ts:ngAfterViewInit',message:'Modal after view init',data:{backdropExists:!!backdropEl,contentExists:!!contentEl,backdropZIndex:computedBackdrop?.zIndex,contentZIndex:computedContent?.zIndex,backdropRect:backdropRect?{width:backdropRect.width,height:backdropRect.height,top:backdropRect.top,left:backdropRect.left}:null,contentRect:contentRect?{width:contentRect.width,height:contentRect.height,top:contentRect.top,left:contentRect.left}:null,backdropOpacity:computedBackdrop?.opacity,contentOpacity:computedContent?.opacity},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    }, 100);
+    // #endregion
+  }
 
   name = '';
   email = '';
@@ -475,6 +499,12 @@ export class AuthModalComponent {
   }
 
   translate(key: string): string {
-    return this.translationService.translate(key);
+    // #region agent log
+    const result = this.translationService.translate(key);
+    if (key.startsWith('auth.')) {
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-modal.component.ts:translate',message:'Translation lookup',data:{key,result,isKey:result===key},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    }
+    // #endregion
+    return result;
   }
 }

@@ -180,7 +180,13 @@ export class TopbarComponent implements OnInit {
 
 
   translate(key: string): string {
-    return this.translationService.translate(key);
+    // #region agent log
+    const result = this.translationService.translate(key);
+    if (key === 'nav.myLottery') {
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'topbar.component.ts:translate',message:'nav.myLottery translation lookup',data:{key,result,isKey:result===key},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    }
+    // #endregion
+    return result;
   }
 
   navigateToHome() {
