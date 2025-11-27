@@ -124,6 +124,7 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 
 ### In Monorepo MetaData/ (Cross-cutting):
 - `../MetaData/Documentation/README.md` - Master documentation index
+- `../MetaData/Documentation/REBASE_AND_DELETION_LOG.md` - **CRITICAL**: Log of all rebases, file deletions, and structural changes
 - `../MetaData/Documentation/API/API_REFERENCE_MASTER.md` - Complete API reference (50+ endpoints)
 - `../MetaData/Documentation/API/FRONTEND_ROUTES_REFERENCE.md` - All frontend routes (15 routes)
 - `../MetaData/Documentation/Infrastructure/AWS_INFRASTRUCTURE_DISCOVERY.md` - Actual AWS infrastructure state
@@ -226,6 +227,33 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **Architecture changes** → Update `Architecture/SYSTEM_ARCHITECTURE.md`
 - **New components/features** → Document in appropriate guide
 - **Always** → Update `README.md` master index when adding documents
+
+### 🚨 **REBASE AND DELETION LOGGING - MANDATORY**
+**CRITICAL**: When performing rebases, deleting files, or making structural changes, you MUST log them:
+
+**MANDATORY LOGGING REQUIREMENTS**:
+1. **Before deleting files or rebasing**:
+   - Log the change in `MetaData/Documentation/REBASE_AND_DELETION_LOG.md`
+   - Include: Date, Commit SHA, Type (rebase/deletion/restoration), Reason, Files Affected, Impact
+2. **When restoring deleted files**:
+   - Update the original log entry with restoration information
+   - Include: Restoration date, commit SHA, method used, status
+3. **When performing rebases**:
+   - Log all files affected by the rebase
+   - Document conflicts resolved
+   - Note any features that may have been lost or changed
+4. **Reference in commits**:
+   - Include reference to `REBASE_AND_DELETION_LOG.md` in commit messages when applicable
+   - Example: "fix: Restore deleted features (see REBASE_AND_DELETION_LOG.md)"
+
+**Why This Matters**: 
+- Helps debug issues when features mysteriously disappear
+- Provides audit trail for codebase evolution
+- Makes restoration easier when files are accidentally deleted
+- Documents reasons for structural changes
+- Enables better understanding of codebase history
+
+**Log File Location**: `MetaData/Documentation/REBASE_AND_DELETION_LOG.md`
 
 ## Architecture Overview
 
