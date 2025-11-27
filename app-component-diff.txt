@@ -1,0 +1,85 @@
+﻿diff --git a/src/app.component.ts b/src/app.component.ts
+index 3502c2e..b1d7bba 100644
+--- a/src/app.component.ts
++++ b/src/app.component.ts
+@@ -11,6 +11,10 @@ import { ChatbotComponent } from './components/chatbot/chatbot.component';
+ import { AccessibilityWidgetComponent } from './components/accessibility-widget/accessibility-widget.component';
+ import { ToastComponent } from './components/toast/toast.component';
+ import { CookieConsentComponent } from './components/cookie-consent/cookie-consent.component';
++import { ActiveEntriesAccordionComponent } from './components/active-entries-accordion/active-entries-accordion.component';
++import { PromotionsSlidingMenuComponent } from './components/promotions-sliding-menu/promotions-sliding-menu.component';
++import { PromotionsMenuService } from './services/promotions-menu.service';
++import { AuthService } from './services/auth.service';
+ import { TranslationService } from './services/translation.service';
+ import { RouteLoadingService } from './services/route-loading.service';
+ import { ToastService } from './services/toast.service';
+@@ -29,7 +33,9 @@ import { CookieConsentService } from './services/cookie-consent.service';
+     ChatbotComponent,
+     AccessibilityWidgetComponent,
+     ToastComponent,
+-    CookieConsentComponent
++    CookieConsentComponent,
++    ActiveEntriesAccordionComponent,
++    PromotionsSlidingMenuComponent
+   ],
+   template: `
+     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
+@@ -40,6 +46,10 @@ import { CookieConsentService } from './services/cookie-consent.service';
+       
+       <app-topbar></app-topbar>
+       
++      @if (authService.isAuthenticated()) {
++        <app-active-entries-accordion></app-active-entries-accordion>
++      }
++      
+       <div class="transition-all duration-500 ease-in-out">
+         @if (isLoading | async) {
+           <app-loading></app-loading>
+@@ -190,17 +200,23 @@ import { CookieConsentService } from './services/cookie-consent.service';
+       <!-- Cookie Consent Banner -->
+       <app-cookie-consent></app-cookie-consent>
+       
++      <!-- Promotions Sliding Menu Widget (Fixed on Left Side) -->
++      <app-promotions-sliding-menu [isOpen]="promotionsMenuService.isOpen()" (close)="promotionsMenuService.close()"></app-promotions-sliding-menu>
++      
+     </div>
+   `,
+   styles: []
+ })
+ export class AppComponent implements OnInit, OnDestroy {
+   public translationService = inject(TranslationService);
++  public authService = inject(AuthService);
++  public promotionsMenuService = inject(PromotionsMenuService);
+   private routeLoadingService = inject(RouteLoadingService);
+   private router = inject(Router);
+   private toastService = inject(ToastService);
+   private cookieConsentService = inject(CookieConsentService);
+   private routerSubscription?: Subscription;
++  private promotionsMenuOpenHandler?: () => void;
+   
+   // Services are injected but not used directly in this component
+   // They are available for dependency injection in child components
+@@ -208,6 +224,12 @@ export class AppComponent implements OnInit, OnDestroy {
+   isLoading = this.routeLoadingService.loading$;
+ 
+   ngOnInit(): void {
++    // Listen for promotions widget toggle from minimized tab
++    this.promotionsMenuOpenHandler = () => {
++      this.promotionsMenuService.open();
++    };
++    window.addEventListener('promotions-menu-open', this.promotionsMenuOpenHandler);
++
+     // Expose debug log viewer to window for console access
+     (window as any).viewOAuthLogs = () => {
+       try {
+@@ -287,6 +309,10 @@ export class AppComponent implements OnInit, OnDestroy {
+   }
+ 
+   ngOnDestroy(): void {
++    if (this.promotionsMenuOpenHandler) {
++      window.removeEventListener('promotions-menu-open', this.promotionsMenuOpenHandler);
++    }
++    
+     if (this.routerSubscription) {
+       this.routerSubscription.unsubscribe();
+     }

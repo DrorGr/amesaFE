@@ -1,0 +1,8 @@
+﻿commit 8305639dfc047efb92f98205d2cea523ef743053
+Author: Dror Granot <dror091@gmail.com>
+Date:   Wed Nov 26 22:30:13 2025 +0200
+
+    fix: Disable memory monitoring and add missing translations SQL script [skip tests] - Disable memory monitoring in AppComponent to reduce network traffic - Create SQL script for missing translations (ON CONFLICT DO NOTHING) - Missing keys: nav.activeEntries, nav.enterLotteryToWin, nav.viewLotteries, nav.viewAllEntries, common.minimize, promotions.active, stats.oddsToWin - Script only adds translations that don't already exist
+
+ src/app.component.ts | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
