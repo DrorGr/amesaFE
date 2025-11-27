@@ -41,8 +41,9 @@ describe('CookieConsentComponent', () => {
     translationService = jasmine.createSpyObj('TranslationService', ['translate']);
     translationService.translate.and.returnValue('Test Translation');
 
-    mobileDetectionService = jasmine.createSpyObj('MobileDetectionService', ['isMobile']);
-    mobileDetectionService.isMobile = signal(false);
+    mobileDetectionService = jasmine.createSpyObj('MobileDetectionService', [], {
+      isMobile: signal(false)
+    });
 
     // Setup default return values
     cookieConsentService.shouldShowBanner.and.returnValue(true);
@@ -135,14 +136,20 @@ describe('CookieConsentComponent', () => {
   });
 
   it('should render mobile view when isMobile() returns true', () => {
-    mobileDetectionService.isMobile = signal(true);
+    Object.defineProperty(mobileDetectionService, 'isMobile', {
+      value: signal(true),
+      configurable: true
+    });
     fixture.detectChanges();
     
     expect(component.isMobile()).toBe(true);
   });
 
   it('should render desktop view when isMobile() returns false', () => {
-    mobileDetectionService.isMobile = signal(false);
+    Object.defineProperty(mobileDetectionService, 'isMobile', {
+      value: signal(false),
+      configurable: true
+    });
     fixture.detectChanges();
     
     expect(component.isMobile()).toBe(false);

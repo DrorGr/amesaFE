@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -119,43 +119,51 @@ describe('LotteryResultDetailComponent', () => {
     expect(errorElement).toBeTruthy();
   });
 
-  it('should trigger spin animation', () => {
+  it('should toggle QR code reveal', fakeAsync(() => {
     component.ngOnInit();
     fixture.detectChanges();
     
     expect(component.isSpinning()).toBeFalse();
-    expect(component.showQrCode()).toBeFalse();
+    expect(component.isQRRevealed()).toBeFalse();
     
-    component.triggerSpin();
-    
-    expect(component.isSpinning()).toBeTrue();
-    
-    // Wait for animation to complete
-    setTimeout(() => {
-      expect(component.isSpinning()).toBeFalse();
-      expect(component.showQrCode()).toBeTrue();
-    }, 2000);
-  });
-
-  it('should not trigger spin if already spinning', () => {
-    component.isSpinning.set(true);
-    component.triggerSpin();
+    component.toggleQRCode();
     
     expect(component.isSpinning()).toBeTrue();
-  });
+    
+    // Wait for animation to complete (2 seconds)
+    tick(2000);
+    
+    expect(component.isSpinning()).toBeFalse();
+    expect(component.isQRRevealed()).toBeTrue();
+  }));
 
-  it('should display QR code after spin', () => {
+  it('should hide QR code when toggled again', fakeAsync(() => {
     component.ngOnInit();
     fixture.detectChanges();
     
-    component.triggerSpin();
+    // First reveal
+    component.toggleQRCode();
+    tick(2000);
     
-    setTimeout(() => {
-      fixture.detectChanges();
-      const qrCodeElement = fixture.debugElement.query(By.css('[data-testid="qr-code"]'));
-      expect(qrCodeElement).toBeTruthy();
-    }, 2000);
-  });
+    expect(component.isQRRevealed()).toBeTrue();
+    
+    // Toggle again to hide
+    component.toggleQRCode();
+    expect(component.isQRRevealed()).toBeFalse();
+    expect(component.isSpinning()).toBeFalse();
+  }));
+
+  it('should display QR code after toggle', fakeAsync(() => {
+    component.ngOnInit();
+    fixture.detectChanges();
+    
+    component.toggleQRCode();
+    tick(2000);
+    fixture.detectChanges();
+    
+    const qrCodeElement = fixture.debugElement.query(By.css('[data-testid="qr-code"]'));
+    expect(qrCodeElement).toBeTruthy();
+  }));
 
   it('should download QR code', () => {
     component.ngOnInit();
@@ -167,7 +175,7 @@ describe('LotteryResultDetailComponent', () => {
       click: jasmine.createSpy()
     } as any);
     
-    component.downloadQrCode();
+    component.downloadQRCode();
     
     expect(document.createElement).toHaveBeenCalledWith('a');
   });
@@ -298,16 +306,18 @@ describe('LotteryResultDetailComponent', () => {
     expect(spinButton).toBeTruthy();
   });
 
-  it('should hide spin button when QR code is revealed', () => {
+  it('should hide spin button when QR code is revealed', fakeAsync(() => {
     component.ngOnInit();
     fixture.detectChanges();
     
-    component.showQrCode.set(true);
+    // Simulate QR code revealed by calling toggleQRCode and waiting
+    component.toggleQRCode();
+    tick(2000);
     fixture.detectChanges();
     
     const spinButton = fixture.debugElement.query(By.css('[data-testid="spin-button"]'));
     expect(spinButton).toBeFalsy();
-  });
+  }));
 });
 
 

@@ -70,7 +70,8 @@ describe('LotteryService', () => {
           totalCount: 1,
           page: 1,
           pageSize: 10
-        }
+        },
+        timestamp: new Date().toISOString()
       };
 
       apiService.get.and.returnValue(of(mockResponse));
@@ -102,7 +103,8 @@ describe('LotteryService', () => {
     it('should fetch a single house by ID', (done) => {
       const mockResponse = {
         success: true,
-        data: mockHouseDto
+        data: mockHouseDto,
+        timestamp: new Date().toISOString()
       };
 
       apiService.get.and.returnValue(of(mockResponse));
@@ -121,7 +123,8 @@ describe('LotteryService', () => {
     it('should throw error when house not found', (done) => {
       const mockResponse = {
         success: false,
-        data: null
+        data: null,
+        timestamp: new Date().toISOString()
       };
 
       apiService.get.and.returnValue(of(mockResponse));
@@ -139,7 +142,8 @@ describe('LotteryService', () => {
     it('should purchase tickets successfully', (done) => {
       const purchaseRequest = {
         houseId: 'house-1',
-        quantity: 5
+        quantity: 5,
+        paymentMethodId: 'payment-method-1'
       };
 
       const mockResponse = {
@@ -148,7 +152,8 @@ describe('LotteryService', () => {
           ticketsPurchased: 5,
           totalCost: 50,
           ticketNumbers: ['T1', 'T2', 'T3', 'T4', 'T5']
-        }
+        },
+        timestamp: new Date().toISOString()
       };
 
       apiService.post.and.returnValue(of(mockResponse));
@@ -171,7 +176,8 @@ describe('LotteryService', () => {
     it('should handle purchase errors', (done) => {
       const purchaseRequest = {
         houseId: 'house-1',
-        quantity: 5
+        quantity: 5,
+        paymentMethodId: 'payment-method-1'
       };
 
       apiService.post.and.returnValue(throwError(() => ({ status: 400, message: 'Insufficient tickets' })));
@@ -191,15 +197,17 @@ describe('LotteryService', () => {
         success: true,
         data: {
           houseId: 'house-1',
-          isFavorite: true
-        }
+          added: true,
+          message: 'Added to favorites'
+        },
+        timestamp: new Date().toISOString()
       };
 
       apiService.post.and.returnValue(of(mockResponse));
 
       service.addHouseToFavorites('house-1').subscribe({
         next: (result) => {
-          expect(result.isFavorite).toBe(true);
+          expect(result.houseId).toBe('house-1');
           expect(service.isFavorite('house-1')).toBe(true);
           done();
         }
@@ -212,7 +220,8 @@ describe('LotteryService', () => {
       // First add to favorites
       const addResponse = {
         success: true,
-        data: { houseId: 'house-1', isFavorite: true }
+        data: { houseId: 'house-1', added: true, message: 'Added to favorites' },
+        timestamp: new Date().toISOString()
       };
       apiService.post.and.returnValue(of(addResponse));
       service.addHouseToFavorites('house-1').subscribe();
@@ -220,13 +229,14 @@ describe('LotteryService', () => {
       // Then remove
       const removeResponse = {
         success: true,
-        data: { houseId: 'house-1', isFavorite: false }
+        data: { houseId: 'house-1', removed: true, message: 'Removed from favorites' },
+        timestamp: new Date().toISOString()
       };
       apiService.delete.and.returnValue(of(removeResponse));
 
       service.removeHouseFromFavorites('house-1').subscribe({
         next: (result) => {
-          expect(result.isFavorite).toBe(false);
+          expect(result.removed).toBe(true);
           done();
         }
       });
@@ -237,14 +247,15 @@ describe('LotteryService', () => {
     it('should toggle favorite status', (done) => {
       const mockResponse = {
         success: true,
-        data: { houseId: 'house-1', isFavorite: true }
+        data: { houseId: 'house-1', added: true, message: 'Added to favorites' },
+        timestamp: new Date().toISOString()
       };
 
       apiService.post.and.returnValue(of(mockResponse));
 
       service.toggleFavorite('house-1').subscribe({
         next: (result) => {
-          expect(result.isFavorite).toBe(true);
+          expect(result.added).toBe(true);
           done();
         }
       });
@@ -255,7 +266,8 @@ describe('LotteryService', () => {
     it('should fetch favorite houses', (done) => {
       const mockResponse = {
         success: true,
-        data: [mockHouseDto]
+        data: [mockHouseDto],
+        timestamp: new Date().toISOString()
       };
 
       apiService.get.and.returnValue(of(mockResponse));
@@ -281,7 +293,8 @@ describe('LotteryService', () => {
 
       const mockResponse = {
         success: true,
-        data: mockTickets
+        data: mockTickets,
+        timestamp: new Date().toISOString()
       };
 
       apiService.get.and.returnValue(of(mockResponse));
@@ -301,12 +314,13 @@ describe('LotteryService', () => {
   describe('getRecommendations', () => {
     it('should fetch recommendations', (done) => {
       const mockRecommendations = [
-        { houseId: 'house-1', reason: 'Based on your preferences', score: 0.9 }
+        { id: 'house-1', reason: 'Based on your preferences', score: 0.9, priority: 1 }
       ];
 
       const mockResponse = {
         success: true,
-        data: mockRecommendations
+        data: mockRecommendations,
+        timestamp: new Date().toISOString()
       };
 
       apiService.get.and.returnValue(of(mockResponse));
@@ -314,7 +328,7 @@ describe('LotteryService', () => {
       service.getRecommendations(10).subscribe({
         next: (recommendations) => {
           expect(recommendations.length).toBe(1);
-          expect(recommendations[0].houseId).toBe('house-1');
+          expect(recommendations[0].id).toBe('house-1');
           done();
         }
       });
@@ -327,7 +341,8 @@ describe('LotteryService', () => {
     it('should process quick entry', (done) => {
       const quickEntryRequest = {
         houseId: 'house-1',
-        quantity: 3
+        quantity: 3,
+        paymentMethodId: 'payment-method-1'
       };
 
       const mockResponse = {
@@ -336,11 +351,12 @@ describe('LotteryService', () => {
           ticketsPurchased: 3,
           totalCost: 30,
           ticketNumbers: ['T1', 'T2', 'T3']
-        }
+        },
+        timestamp: new Date().toISOString()
       };
 
       apiService.post.and.returnValue(of(mockResponse));
-      apiService.get.and.returnValue(of({ success: true, data: [] }));
+      apiService.get.and.returnValue(of({ success: true, data: [], timestamp: new Date().toISOString() }));
 
       service.quickEntryFromFavorite(quickEntryRequest).subscribe({
         next: (result) => {
@@ -366,7 +382,8 @@ describe('LotteryService', () => {
     it('should return true if house is favorited', () => {
       const mockResponse = {
         success: true,
-        data: { houseId: 'house-1', isFavorite: true }
+        data: { houseId: 'house-1', added: true, message: 'Added to favorites' },
+        timestamp: new Date().toISOString()
       };
       apiService.post.and.returnValue(of(mockResponse));
       
@@ -379,6 +396,8 @@ describe('LotteryService', () => {
     });
   });
 });
+
+
 
 
 

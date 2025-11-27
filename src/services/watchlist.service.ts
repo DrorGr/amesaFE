@@ -1,7 +1,8 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
-import { ApiService } from './api.service';
+import { ApiService, ApiResponse } from './api.service';
+import { RetryService } from './retry.service';
 import {
   WatchlistItem,
   AddToWatchlistRequest,
@@ -14,6 +15,7 @@ import {
 export class WatchlistService {
   private watchlist = signal<WatchlistItem[]>([]);
   private watchlistCount = signal<number>(0);
+  private retryService = inject(RetryService);
 
   constructor(private apiService: ApiService) {
     // Load watchlist count on initialization
@@ -24,7 +26,16 @@ export class WatchlistService {
    * Get user's watchlist
    */
   getWatchlist(): Observable<WatchlistItem[]> {
-    return this.apiService.get<WatchlistItem[]>('/watchlist').pipe(
+    return this.retryService.retryOnNetworkError(
+      this.apiService.get<WatchlistItem[]>('/watchlist').pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          }
+          throw new Error('Failed to fetch watchlist');
+        })
+      )
+    ).pipe(
       tap(items => {
         this.watchlist.set(items);
         this.watchlistCount.set(items.length);
@@ -49,6 +60,12 @@ export class WatchlistService {
   addToWatchlist(houseId: string, notificationEnabled: boolean = true): Observable<WatchlistItem> {
     const request: AddToWatchlistRequest = { notificationEnabled };
     return this.apiService.post<WatchlistItem>(`/watchlist/${houseId}`, request).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to add to watchlist');
+      }),
       tap(item => {
         const current = this.watchlist();
         this.watchlist.set([...current, item]);
@@ -66,6 +83,13 @@ export class WatchlistService {
    */
   removeFromWatchlist(houseId: string): Observable<void> {
     return this.apiService.delete<void>(`/watchlist/${houseId}`).pipe(
+      map((response) => {
+        // ApiResponse<void> doesn't have data, just return void
+        if (response.success) {
+          return undefined as void;
+        }
+        throw new Error('Failed to remove from watchlist');
+      }),
       tap(() => {
         const current = this.watchlist();
         this.watchlist.set(current.filter(item => item.houseId !== houseId));
@@ -84,6 +108,13 @@ export class WatchlistService {
   toggleNotification(houseId: string, enabled: boolean): Observable<void> {
     const request: ToggleNotificationRequest = { enabled };
     return this.apiService.put<void>(`/watchlist/${houseId}/notification`, request).pipe(
+      map((response) => {
+        // ApiResponse<void> doesn't have data, just return void
+        if (response.success) {
+          return undefined as void;
+        }
+        throw new Error('Failed to toggle notification');
+      }),
       tap(() => {
         const current = this.watchlist();
         this.watchlist.set(
@@ -106,6 +137,12 @@ export class WatchlistService {
    */
   getWatchlistCount(): Observable<number> {
     return this.apiService.get<number>('/watchlist/count').pipe(
+      map(response => {
+        if (response.success && response.data !== undefined) {
+          return response.data;
+        }
+        throw new Error('Failed to fetch watchlist count');
+      }),
       tap(count => {
         this.watchlistCount.set(count);
       }),

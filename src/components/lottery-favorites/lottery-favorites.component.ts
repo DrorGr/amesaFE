@@ -33,7 +33,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
               <!-- House Image -->
               <div class="relative h-48 bg-gray-200">
                 <img 
-                  [src]="house.images?.[0]?.imageUrl || ''" 
+                  [src]="(house.images && house.images[0]) ? house.images[0].imageUrl : ''" 
                   [alt]="house.title"
                   class="w-full h-full object-cover">
                 

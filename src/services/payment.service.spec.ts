@@ -44,7 +44,8 @@ describe('PaymentService', () => {
     it('should fetch payment methods successfully', (done) => {
       const mockResponse = {
         success: true,
-        data: [mockPaymentMethod]
+        data: [mockPaymentMethod],
+        timestamp: new Date().toISOString()
       };
 
       apiService.get.and.returnValue(of(mockResponse));
@@ -87,7 +88,8 @@ describe('PaymentService', () => {
 
       const mockResponse = {
         success: true,
-        data: mockPaymentMethod
+        data: mockPaymentMethod,
+        timestamp: new Date().toISOString()
       };
 
       apiService.post.and.returnValue(of(mockResponse));
@@ -144,7 +146,8 @@ describe('PaymentService', () => {
           transactionId: 'txn-1',
           providerTransactionId: 'stripe-txn-1',
           message: 'Payment processed successfully'
-        }
+        },
+        timestamp: new Date().toISOString()
       };
 
       apiService.post.and.returnValue(of(mockResponse));
@@ -170,7 +173,8 @@ describe('PaymentService', () => {
       const mockResponse = {
         success: false,
         errorCode: 'INSUFFICIENT_FUNDS',
-        message: 'Insufficient funds'
+        message: 'Insufficient funds',
+        timestamp: new Date().toISOString()
       };
 
       apiService.post.and.returnValue(of(mockResponse));
@@ -194,7 +198,8 @@ describe('PaymentService', () => {
       const mockResponse = {
         success: false,
         errorCode: 'CARD_DECLINED',
-        message: 'Card was declined'
+        message: 'Card was declined',
+        timestamp: new Date().toISOString()
       };
 
       apiService.post.and.returnValue(of(mockResponse));
@@ -224,7 +229,8 @@ describe('PaymentService', () => {
 
       const mockResponse = {
         success: true,
-        data: mockTransactions
+        data: mockTransactions,
+        timestamp: new Date().toISOString()
       };
 
       apiService.get.and.returnValue(of(mockResponse));
@@ -241,7 +247,7 @@ describe('PaymentService', () => {
     });
   });
 
-  describe('refundTransaction', () => {
+  describe('requestRefund', () => {
     it('should process refund successfully', (done) => {
       const refundRequest = {
         transactionId: 'txn-1',
@@ -252,17 +258,17 @@ describe('PaymentService', () => {
       const mockResponse = {
         success: true,
         data: {
-          refundId: 'refund-1',
-          amount: 50,
-          status: 'processed'
-        }
+          transactionId: 'txn-1',
+          message: 'Refund processed'
+        },
+        timestamp: new Date().toISOString()
       };
 
       apiService.post.and.returnValue(of(mockResponse));
 
-      service.refundTransaction(refundRequest).subscribe({
+      service.requestRefund(refundRequest).subscribe({
         next: (result) => {
-          expect(result.success).toBe(true);
+          expect(result.transactionId).toBe('txn-1');
           done();
         }
       });
@@ -271,23 +277,28 @@ describe('PaymentService', () => {
     });
   });
 
-  describe('setDefaultPaymentMethod', () => {
-    it('should set default payment method', (done) => {
+  describe('updatePaymentMethod', () => {
+    it('should update payment method to default', (done) => {
+      const updateRequest = {
+        isDefault: true
+      };
+
       const mockResponse = {
         success: true,
-        data: { ...mockPaymentMethod, isDefault: true }
+        data: { ...mockPaymentMethod, isDefault: true },
+        timestamp: new Date().toISOString()
       };
 
       apiService.put.and.returnValue(of(mockResponse));
 
-      service.setDefaultPaymentMethod('pm-1').subscribe({
+      service.updatePaymentMethod('pm-1', updateRequest).subscribe({
         next: (method) => {
           expect(method.isDefault).toBe(true);
           done();
         }
       });
 
-      expect(apiService.put).toHaveBeenCalledWith('payments/methods/pm-1/default', {});
+      expect(apiService.put).toHaveBeenCalledWith('payments/methods/pm-1', updateRequest);
     });
   });
 
@@ -295,14 +306,15 @@ describe('PaymentService', () => {
     it('should delete payment method successfully', (done) => {
       const mockResponse = {
         success: true,
-        message: 'Payment method deleted'
+        message: 'Payment method deleted',
+        timestamp: new Date().toISOString()
       };
 
       apiService.delete.and.returnValue(of(mockResponse));
 
       service.deletePaymentMethod('pm-1').subscribe({
         next: (result) => {
-          expect(result.success).toBe(true);
+          expect(result).toBe(true);
           done();
         }
       });
@@ -311,6 +323,8 @@ describe('PaymentService', () => {
     });
   });
 });
+
+
 
 
 

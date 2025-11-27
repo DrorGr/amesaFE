@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
@@ -227,7 +227,8 @@ describe('LotteryResultsPageComponent', () => {
       click: jasmine.createSpy()
     } as any);
     
-    component.selectedResult.set(result);
+    // Use the component's internal method to set selected result
+    (component as any)._selectedResult.set(result);
     component.downloadQRCode();
     
     expect(document.createElement).toHaveBeenCalledWith('a');
@@ -265,14 +266,12 @@ describe('LotteryResultsPageComponent', () => {
     expect(claimStatuses[1].nativeElement.textContent).toContain('Unclaimed');
   });
 
-  it('should handle filter debouncing', (done) => {
+  it('should handle filter debouncing', fakeAsync(() => {
     component.onFilterChange();
-    
-    setTimeout(() => {
-      expect(mockLotteryResultsService.getLotteryResults).toHaveBeenCalled();
-      done();
-    }, 600); // Wait for debounce timeout
-  });
+    tick(600); // Wait for debounce timeout
+    fixture.detectChanges();
+    expect(mockLotteryResultsService.getLotteryResults).toHaveBeenCalled();
+  }));
 
   it('should display pagination when multiple pages', () => {
     mockLotteryResultsService.getLotteryResults.and.returnValue(of({

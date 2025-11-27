@@ -68,7 +68,7 @@ describe('LotteryResultsService', () => {
       };
 
       service.getLotteryResults(filter).subscribe(response => {
-        expect(response.results).toHaveLength(1);
+        expect(response.results.length).toBe(1);
         expect(response.results[0].id).toBe('1');
         expect(response.totalCount).toBe(1);
       });
@@ -275,7 +275,7 @@ describe('LotteryResultsService', () => {
       };
 
       service.getScratchCards('user-1').subscribe(cards => {
-        expect(cards).toHaveLength(1);
+        expect(cards.length).toBe(1);
         expect(cards[0].cardType).toBe('Gold');
         expect(cards[0].isWinner).toBe(true);
       });

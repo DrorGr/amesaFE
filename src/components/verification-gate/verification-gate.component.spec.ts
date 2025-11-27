@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { VerificationGateComponent } from './verification-gate.component';
 import { IdentityVerificationService } from '../../services/identity-verification.service';
@@ -40,19 +40,20 @@ describe('VerificationGateComponent', () => {
   });
 
   describe('Component Initialization', () => {
-    it('should check verification status when verification is required', () => {
-      component.isVerificationRequired = () => true;
+    it('should check verification status when verification is required', fakeAsync(() => {
+      fixture.componentRef.setInput('isVerificationRequired', true);
       verificationService.getVerificationStatus.and.returnValue(
         of({ verificationStatus: 'verified', verificationAttempts: 1 } as IdentityVerificationStatus)
       );
 
       component.ngOnInit();
+      tick();
 
       expect(verificationService.getVerificationStatus).toHaveBeenCalled();
-    });
+    }));
 
     it('should not check verification status when verification is not required', () => {
-      component.isVerificationRequired = () => false;
+      fixture.componentRef.setInput('isVerificationRequired', false);
 
       component.ngOnInit();
 
@@ -60,8 +61,8 @@ describe('VerificationGateComponent', () => {
       expect(component.isLoading()).toBe(false);
     });
 
-    it('should set isVerified to true when status is verified', (done) => {
-      component.isVerificationRequired = () => true;
+    it('should set isVerified to true when status is verified', fakeAsync(() => {
+      fixture.componentRef.setInput('isVerificationRequired', true);
       const mockStatus: IdentityVerificationStatus = {
         verificationStatus: 'verified',
         verificationAttempts: 1
@@ -69,16 +70,14 @@ describe('VerificationGateComponent', () => {
       verificationService.getVerificationStatus.and.returnValue(of(mockStatus));
 
       component.ngOnInit();
+      tick();
 
-      setTimeout(() => {
-        expect(component.isVerified()).toBe(true);
-        expect(component.isLoading()).toBe(false);
-        done();
-      }, 100);
-    });
+      expect(component.isVerified()).toBe(true);
+      expect(component.isLoading()).toBe(false);
+    }));
 
-    it('should set isVerified to false when status is not verified', (done) => {
-      component.isVerificationRequired = () => true;
+    it('should set isVerified to false when status is not verified', fakeAsync(() => {
+      fixture.componentRef.setInput('isVerificationRequired', true);
       const mockStatus: IdentityVerificationStatus = {
         verificationStatus: 'rejected',
         verificationAttempts: 1
@@ -86,28 +85,24 @@ describe('VerificationGateComponent', () => {
       verificationService.getVerificationStatus.and.returnValue(of(mockStatus));
 
       component.ngOnInit();
+      tick();
 
-      setTimeout(() => {
-        expect(component.isVerified()).toBe(false);
-        expect(component.isLoading()).toBe(false);
-        done();
-      }, 100);
-    });
+      expect(component.isVerified()).toBe(false);
+      expect(component.isLoading()).toBe(false);
+    }));
 
-    it('should handle errors when checking verification status', (done) => {
-      component.isVerificationRequired = () => true;
+    it('should handle errors when checking verification status', fakeAsync(() => {
+      fixture.componentRef.setInput('isVerificationRequired', true);
       verificationService.getVerificationStatus.and.returnValue(
         throwError(() => ({ status: 500, message: 'Server error' }))
       );
 
       component.ngOnInit();
+      tick();
 
-      setTimeout(() => {
-        expect(component.isVerified()).toBe(false);
-        expect(component.isLoading()).toBe(false);
-        done();
-      }, 100);
-    });
+      expect(component.isVerified()).toBe(false);
+      expect(component.isLoading()).toBe(false);
+    }));
   });
 
   describe('Navigation', () => {
@@ -128,61 +123,71 @@ describe('VerificationGateComponent', () => {
   });
 
   describe('shouldBlock', () => {
-    it('should return true when verification is required and not verified', () => {
-      component.isVerificationRequired = () => true;
-      component.isVerified.set(false);
+    it('should return true when verification is required and not verified', fakeAsync(() => {
+      fixture.componentRef.setInput('isVerificationRequired', true);
+      verificationService.getVerificationStatus.and.returnValue(
+        of({ verificationStatus: 'rejected', verificationAttempts: 1 } as IdentityVerificationStatus)
+      );
+      component.ngOnInit();
+      tick();
 
       expect(component.shouldBlock()).toBe(true);
-    });
+    }));
 
-    it('should return false when verification is required and verified', () => {
-      component.isVerificationRequired = () => true;
-      component.isVerified.set(true);
+    it('should return false when verification is required and verified', fakeAsync(() => {
+      fixture.componentRef.setInput('isVerificationRequired', true);
+      verificationService.getVerificationStatus.and.returnValue(
+        of({ verificationStatus: 'verified', verificationAttempts: 1 } as IdentityVerificationStatus)
+      );
+      component.ngOnInit();
+      tick();
 
       expect(component.shouldBlock()).toBe(false);
-    });
+    }));
 
     it('should return false when verification is not required', () => {
-      component.isVerificationRequired = () => false;
-      component.isVerified.set(false);
+      fixture.componentRef.setInput('isVerificationRequired', false);
+      component.ngOnInit();
 
       expect(component.shouldBlock()).toBe(false);
     });
   });
 
   describe('Template Rendering', () => {
-    it('should show verification gate when verification required and not verified', () => {
-      component.isVerificationRequired = () => true;
-      component.isVerified.set(false);
-      component.isLoading.set(false);
-
+    it('should show verification gate when verification required and not verified', fakeAsync(() => {
+      fixture.componentRef.setInput('isVerificationRequired', true);
+      verificationService.getVerificationStatus.and.returnValue(
+        of({ verificationStatus: 'rejected', verificationAttempts: 1 } as IdentityVerificationStatus)
+      );
+      component.ngOnInit();
+      tick();
       fixture.detectChanges();
 
       const gateElement = fixture.nativeElement.querySelector('.bg-yellow-50');
       expect(gateElement).toBeTruthy();
-    });
+    }));
 
     it('should not show verification gate when verification not required', () => {
-      component.isVerificationRequired = () => false;
-      component.isVerified.set(false);
-      component.isLoading.set(false);
-
+      fixture.componentRef.setInput('isVerificationRequired', false);
+      component.ngOnInit();
       fixture.detectChanges();
 
       const gateElement = fixture.nativeElement.querySelector('.bg-yellow-50');
       expect(gateElement).toBeFalsy();
     });
 
-    it('should not show verification gate when verified', () => {
-      component.isVerificationRequired = () => true;
-      component.isVerified.set(true);
-      component.isLoading.set(false);
-
+    it('should not show verification gate when verified', fakeAsync(() => {
+      fixture.componentRef.setInput('isVerificationRequired', true);
+      verificationService.getVerificationStatus.and.returnValue(
+        of({ verificationStatus: 'verified', verificationAttempts: 1 } as IdentityVerificationStatus)
+      );
+      component.ngOnInit();
+      tick();
       fixture.detectChanges();
 
       const gateElement = fixture.nativeElement.querySelector('.bg-yellow-50');
       expect(gateElement).toBeFalsy();
-    });
+    }));
   });
 
   describe('Translation', () => {

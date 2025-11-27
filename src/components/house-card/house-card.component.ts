@@ -8,12 +8,11 @@ import { WatchlistService } from '../../services/watchlist.service';
 import { TranslationService } from '../../services/translation.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
-import { ParticipantStatsComponent } from '../participant-stats/participant-stats.component';
 
 @Component({
   selector: 'app-house-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, VerificationGateComponent, ParticipantStatsComponent],
+  imports: [CommonModule, RouterModule, VerificationGateComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="relative bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col w-full transform hover:scale-105">
@@ -143,16 +142,16 @@ import { ParticipantStatsComponent } from '../participant-stats/participant-stat
           <!-- Participant Stats (if maxParticipants is set) -->
           <div *ngIf="houseDto()?.maxParticipants" class="mb-4 md:mb-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
             <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-              {{ translate('participants.count', { count: houseDto()?.uniqueParticipants || 0 }) }}
+              {{ translateWithParams('participants.count', { count: houseDto()?.uniqueParticipants || 0 }) }}
             </div>
             <div class="text-xs text-gray-500 dark:text-gray-500 mb-2">
-              {{ translate('participants.maxParticipants', { max: houseDto()?.maxParticipants }) }}
+              {{ translateWithParams('participants.maxParticipants', { max: houseDto()?.maxParticipants }) }}
             </div>
             <div *ngIf="houseDto()?.isParticipantCapReached" class="text-xs text-red-600 dark:text-red-400">
               {{ translate('participants.capReached') }}
             </div>
-            <div *ngIf="houseDto()?.remainingParticipantSlots !== undefined && houseDto()?.remainingParticipantSlots !== null && houseDto()?.remainingParticipantSlots > 0" class="text-xs text-green-600 dark:text-green-400">
-              {{ translate('participants.remainingSlots', { count: houseDto()?.remainingParticipantSlots }) }}
+            <div *ngIf="houseDto()?.remainingParticipantSlots !== undefined && houseDto()?.remainingParticipantSlots !== null && houseDto()?.remainingParticipantSlots! > 0" class="text-xs text-green-600 dark:text-green-400">
+              {{ translateWithParams('participants.remainingSlots', { count: houseDto()?.remainingParticipantSlots! }) }}
             </div>
           </div>
 
@@ -491,6 +490,16 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     return this.translationService.translate(key);
   }
 
+  translateWithParams(key: string, params: Record<string, any>): string {
+    let translation = this.translationService.translate(key);
+    if (params) {
+      Object.keys(params).forEach(paramKey => {
+        translation = translation.replace(`{${paramKey}}`, String(params[paramKey]));
+      });
+    }
+    return translation;
+  }
+
   getOdds(): string {
     const totalTickets = this.house().totalTickets;
     return `1:${totalTickets.toLocaleString()}`;
@@ -536,137 +545,13 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   loadHouseDetails(): void {
-    // Convert House to HouseDto format (simplified - would need full conversion)
-    // For now, we'll load participant stats separately
-    this.lotteryService.getParticipantStats(this.house().id).subscribe({
-      next: (stats) => {
-        // Update house DTO with participant stats
-        // Note: This is a simplified approach - ideally we'd have a full HouseDto
+    // Load house details with participant stats
+    this.lotteryService.getHouseById(this.house().id).subscribe({
+      next: (houseDto) => {
+        this.houseDto.set(houseDto);
       },
       error: (error) => {
-        console.error('Error loading participant stats:', error);
-      }
-    });
-  }
-
-  checkCanEnter(): void {
-    this.lotteryService.canEnterLottery(this.house().id).subscribe({
-      next: (response) => {
-        this.canEnter.set(response.canEnter);
-        this.isExistingParticipant.set(response.isExistingParticipant);
-      },
-      error: (error) => {
-        console.error('Error checking if can enter:', error);
-        this.canEnter.set(true); // Default to allowing entry on error
-      }
-    });
-  }
-
-  ngOnDestroy() {
-    if (this.countdownInterval) {
-      clearInterval(this.countdownInterval);
-    }
-  }
-
-  getLotteryCountdown(): string {
-    const now = this.currentTime();
-    const endTime = new Date(this.house().lotteryEndDate).getTime();
-    const timeLeft = endTime - now;
-
-    if (timeLeft <= 0) {
-      return '00:00:00';
-    }
-
-    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-    // Show seconds only when less than 24 hours left
-    if (days === 0 && hours < 24) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    } else {
-      return `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    }
-  }
-
-  openLocationMap(): void {
-    const house = this.house();
-    const address = house.address || house.location || house.title;
-    const city = house.city || 'New York';
-    
-    // Create a search query for Google Maps
-    const searchQuery = encodeURIComponent(`${address}, ${city}`);
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
-    
-    // Open in a new tab
-    window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
-    
-    console.log(`Opening location map for: ${address}, ${city}`);
-  }
-
-  /**
-   * Toggle favorite status for this house
-   */
-  async toggleFavorite(event?: Event): Promise<void> {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    if (!this.currentUser() || this.isTogglingFavorite) {
-      return;
-    }
-
-    this.isTogglingFavorite = true;
-    
-    try {
-      const result = await this.lotteryService.toggleFavorite(this.house().id).toPromise();
-      
-      if (result) {
-        // State is automatically updated by LotteryService
-        console.log(result.message || (result.added ? 'Added to favorites' : 'Removed from favorites'));
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      // TODO: Show error toast notification
-    } finally {
-      this.isTogglingFavorite = false;
-    }
-  }
-
-  /**
-   * Quick entry from favorites
-   */
-  async quickEntry(): Promise<void> {
-    // Verification check is handled by backend and verification gate component
-    if (!this.currentUser() || this.isQuickEntering || !this.isFavorite()) {
-      return;
-    }
-
-    this.isQuickEntering = true;
-    
-    try {
-      const result = await this.lotteryService.quickEntryFromFavorite({
-        houseId: this.house().id,
-        quantity: 1, // API contract specifies "quantity", matches backend [JsonPropertyName("quantity")]
-        paymentMethodId: 'default' // TODO: Get from user preferences or payment service
-      }).toPromise();
-      
-      if (result && result.ticketsPurchased > 0) {
-        console.log('Quick entry successful!', result);
-        // TODO: Show success toast notification
-      }
-    } catch (error) {
-      console.error('Error with quick entry:', error);
-      // TODO: Show error toast notification
-    } finally {
-      this.isQuickEntering = false;
-    }
-  }
-}
-      },
-      error: (error) => {
-        console.error('Error loading participant stats:', error);
+        console.error('Error loading house details:', error);
       }
     });
   }

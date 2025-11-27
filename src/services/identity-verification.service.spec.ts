@@ -13,7 +13,8 @@ describe('IdentityVerificationService', () => {
   const mockApiResponse = <T>(data: T) => ({
     success: true,
     data: data,
-    message: ''
+    message: '',
+    timestamp: new Date().toISOString()
   });
 
   beforeEach(() => {

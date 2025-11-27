@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HouseDto } from '../../models/house.model';
@@ -6,9 +6,12 @@ import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { WatchlistService } from '../../services/watchlist.service';
 import { TranslationService } from '../../services/translation.service';
+import { ErrorMessageService } from '../../services/error-message.service';
+import { ToastService } from '../../services/toast.service';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 import { ParticipantStatsComponent } from '../participant-stats/participant-stats.component';
 import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
+import { QuickEntryRequest } from '../../interfaces/lottery.interface';
 
 @Component({
   selector: 'app-house-detail',
@@ -22,11 +25,19 @@ import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4 md:px-8">
       <div class="max-w-7xl mx-auto">
+        <!-- Status Announcement (aria-live) -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          <span *ngIf="loading()">{{ translate('common.loading') }}</span>
+          <span *ngIf="error()">{{ error() }}</span>
+        </div>
+
         <!-- Back Button -->
         <button
           (click)="goBack()"
-          class="mb-6 flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          (keydown)="handleBackKeyDown($event)"
+          [attr.aria-label]="translate('common.back')"
+          class="mb-6 flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 rounded">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
           <span>{{ translate('common.back') }}</span>
@@ -57,18 +68,23 @@ import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
               <button
                 *ngIf="currentUser()"
                 (click)="toggleWatchlist()"
-                [class.animate-pulse]="isTogglingWatchlist()"
-                class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-3 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                (keydown)="handleWatchlistKeyDown($event)"
+                [disabled]="checkingWatchlist() || isTogglingWatchlist()"
+                [class.animate-pulse]="isTogglingWatchlist() || checkingWatchlist()"
+                class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-3 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 [attr.aria-label]="isInWatchlist() ? 'Remove from watchlist' : 'Add to watchlist'"
                 [title]="isInWatchlist() ? translate('watchlist.remove') : translate('watchlist.add')">
                 <svg 
+                  *ngIf="!checkingWatchlist()"
                   class="w-6 h-6 transition-all duration-300"
                   [class.text-blue-500]="isInWatchlist()"
                   [class.text-gray-400]="!isInWatchlist()"
                   fill="currentColor" 
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                  aria-hidden="true">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
                 </svg>
+                <div *ngIf="checkingWatchlist()" class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
               </button>
 
               <!-- Status Badge -->
@@ -128,7 +144,7 @@ import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
               </div>
 
               <!-- Features -->
-              <div *ngIf="house()!.features && house()!.features.length > 0" class="mb-6">
+              <div *ngIf="house()?.features && (house()?.features?.length ?? 0) > 0" class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ translate('house.features') }}</h2>
                 <div class="flex flex-wrap gap-2">
                   <span
@@ -186,8 +202,12 @@ import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
                 </div>
 
                 <!-- Can Enter Status -->
-                <div *ngIf="currentUser() && canEnterResponse()" class="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div
+                <div *ngIf="currentUser()" class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div *ngIf="checkingCanEnter()" class="flex items-center justify-center py-4">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span class="ml-2 text-gray-600 dark:text-gray-400">{{ translate('common.loading') }}</span>
+                  </div>
+                  <div *ngIf="!checkingCanEnter() && canEnterResponse()"
                     class="p-3 rounded-lg"
                     [class.bg-green-100]="canEnterResponse()!.canEnter"
                     [class.bg-red-100]="!canEnterResponse()!.canEnter"
@@ -219,7 +239,7 @@ import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
                           [class.text-red-800]="!canEnterResponse()!.canEnter"
                           [class.dark:text-green-200]="canEnterResponse()!.canEnter"
                           [class.dark:text-red-200]="!canEnterResponse()!.canEnter">
-                          {{ canEnterResponse()!.canEnter ? translate('entry.canEnter') : translate('entry.cannotEnter', { reason: canEnterResponse()!.reason || '' }) }}
+                          {{ canEnterResponse()!.canEnter ? translate('entry.canEnter') : translateWithParams('entry.cannotEnter', { reason: canEnterResponse()!.reason || '' }) }}
                         </div>
                         <div
                           *ngIf="canEnterResponse()!.isExistingParticipant"
@@ -254,7 +274,7 @@ import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
                   <a
                     [routerLink]="['/register']"
                     class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors">
-                    {{ translate('common.signUp') }}
+                    {{ translate('auth.signUp') }}
                   </a>
                 </div>
               </ng-template>
@@ -279,9 +299,16 @@ import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
                 <!-- Entry Button -->
                 <button
                   (click)="enterLottery()"
-                  [disabled]="house()!.isParticipantCapReached && !canEnterResponse()?.isExistingParticipant"
-                  class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100">
-                  {{ translate('entry.enterLottery') }}
+                  (keydown)="handleEntryKeyDown($event)"
+                  [disabled]="enteringLottery() || (house()!.isParticipantCapReached && !canEnterResponse()?.isExistingParticipant)"
+                  [attr.aria-busy]="enteringLottery()"
+                  [attr.aria-label]="enteringLottery() ? translate('common.loading') : translate('entry.enterLottery')"
+                  class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+                  <span *ngIf="!enteringLottery()">{{ translate('entry.enterLottery') }}</span>
+                  <div *ngIf="enteringLottery()" class="flex items-center">
+                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" aria-hidden="true"></div>
+                    <span>{{ translate('common.loading') }}</span>
+                  </div>
                 </button>
 
                 <!-- Watchlist Indicator -->
@@ -306,6 +333,8 @@ export class HouseDetailComponent implements OnInit {
   private watchlistService = inject(WatchlistService);
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
+  private errorMessageService = inject(ErrorMessageService);
+  private toastService = inject(ToastService);
 
   house = signal<HouseDto | null>(null);
   loading = signal<boolean>(true);
@@ -313,8 +342,13 @@ export class HouseDetailComponent implements OnInit {
   canEnterResponse = signal<CanEnterLotteryResponse | null>(null);
   isInWatchlist = signal<boolean>(false);
   isTogglingWatchlist = signal<boolean>(false);
+  checkingCanEnter = signal<boolean>(false);
+  checkingWatchlist = signal<boolean>(false);
+  enteringLottery = signal<boolean>(false);
 
-  currentUser = computed(() => this.authService.currentUser());
+  currentUser = computed(() => {
+    return this.authService.getCurrentUser()();
+  });
 
   primaryImage = computed(() => {
     const h = this.house();
@@ -323,7 +357,7 @@ export class HouseDetailComponent implements OnInit {
       const primary = h.images.find(img => img.isPrimary);
       return primary ? primary.imageUrl : h.images[0].imageUrl;
     }
-    return h.imageUrl || '';
+    return '';
   });
 
   ngOnInit(): void {
@@ -334,9 +368,8 @@ export class HouseDetailComponent implements OnInit {
       return;
     }
 
+    // Load house first, then check canEnter and watchlist after house loads
     this.loadHouse(houseId);
-    this.checkCanEnter(houseId);
-    this.checkWatchlist(houseId);
   }
 
   loadHouse(houseId: string): void {
@@ -345,10 +378,18 @@ export class HouseDetailComponent implements OnInit {
       next: (house) => {
         this.house.set(house);
         this.loading.set(false);
+        
+        // After house loads successfully, check canEnter and watchlist
+        if (this.currentUser()) {
+          this.checkCanEnter(houseId);
+          this.checkWatchlist(houseId);
+        }
       },
       error: (error) => {
         console.error('Error loading house:', error);
-        this.error.set('Failed to load house details');
+        const errorMessage = this.errorMessageService.getErrorMessage(error);
+        this.error.set(errorMessage);
+        this.toastService.error(errorMessage);
         this.loading.set(false);
       }
     });
@@ -357,12 +398,16 @@ export class HouseDetailComponent implements OnInit {
   checkCanEnter(houseId: string): void {
     if (!this.currentUser()) return;
 
+    this.checkingCanEnter.set(true);
     this.lotteryService.canEnterLottery(houseId).subscribe({
       next: (response) => {
         this.canEnterResponse.set(response);
+        this.checkingCanEnter.set(false);
       },
       error: (error) => {
         console.error('Error checking if can enter:', error);
+        this.checkingCanEnter.set(false);
+        // Don't show error to user, just log it - this is not critical
       }
     });
   }
@@ -370,12 +415,16 @@ export class HouseDetailComponent implements OnInit {
   checkWatchlist(houseId: string): void {
     if (!this.currentUser()) return;
 
+    this.checkingWatchlist.set(true);
     this.watchlistService.isInWatchlist(houseId).subscribe({
       next: (inWatchlist) => {
         this.isInWatchlist.set(inWatchlist);
+        this.checkingWatchlist.set(false);
       },
       error: (error) => {
         console.error('Error checking watchlist:', error);
+        this.checkingWatchlist.set(false);
+        // Don't show error to user, just log it - this is not critical
       }
     });
   }
@@ -414,10 +463,48 @@ export class HouseDetailComponent implements OnInit {
     const h = this.house();
     if (!h || !this.currentUser()) return;
 
-    // Navigate to entry/purchase flow
-    // This would typically open a modal or navigate to a purchase page
-    // For now, we'll just show an alert
-    alert('Entry functionality will be implemented in the purchase flow');
+    // Check if user can enter before proceeding
+    if (this.canEnterResponse() && !this.canEnterResponse()!.canEnter) {
+      // Show error message - cap reached or other reason
+      const reason = this.canEnterResponse()!.reason || 'Unknown reason';
+      const errorMessage = this.translateWithParams('entry.cannotEnter', { reason });
+      this.toastService.error(errorMessage);
+      return;
+    }
+
+    // For now, use quick entry with default 1 ticket
+    // TODO: In the future, this should open a modal to select ticket count and payment method
+    const quickEntryRequest: QuickEntryRequest = {
+      houseId: h.id,
+      quantity: 1, // Default to 1 ticket
+      paymentMethodId: '' // TODO: Get from user preferences or payment setup
+    };
+
+    // Show loading state
+    this.enteringLottery.set(true);
+
+    this.lotteryService.quickEntryFromFavorite(quickEntryRequest).subscribe({
+      next: (response) => {
+        this.enteringLottery.set(false);
+        // Show success message
+        const successMessage = `Successfully entered lottery! Purchased ${response.ticketsPurchased} ticket(s). Transaction ID: ${response.transactionId}`;
+        this.toastService.success(successMessage);
+        // Refresh house data to update participant stats
+        this.loadHouse(h.id);
+        // Refresh canEnter status
+        if (this.currentUser()) {
+          this.checkCanEnter(h.id);
+        }
+      },
+      error: (error) => {
+        this.enteringLottery.set(false);
+        console.error('Error entering lottery:', error);
+        
+        // Show user-friendly error message
+        const errorMessage = this.errorMessageService.getErrorMessage(error);
+        this.toastService.error(errorMessage);
+      }
+    });
   }
 
   goBack(): void {
@@ -447,8 +534,55 @@ export class HouseDetailComponent implements OnInit {
     return new Date(date).toLocaleDateString();
   }
 
-  translate(key: string, params?: Record<string, any>): string {
-    return this.translationService.translate(key, params);
+  translate(key: string): string {
+    return this.translationService.translate(key);
+  }
+
+  translateWithParams(key: string, params: Record<string, any>): string {
+    let translation = this.translationService.translate(key);
+    if (params) {
+      Object.keys(params).forEach(paramKey => {
+        translation = translation.replace(`{${paramKey}}`, String(params[paramKey]));
+      });
+    }
+    return translation;
+  }
+
+  /**
+   * Handle keyboard events for watchlist button
+   */
+  handleWatchlistKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!this.checkingWatchlist() && !this.isTogglingWatchlist()) {
+        this.toggleWatchlist();
+      }
+    }
+  }
+
+  /**
+   * Handle keyboard events for entry button
+   */
+  handleEntryKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!this.enteringLottery() && !(this.house()?.isParticipantCapReached && !this.canEnterResponse()?.isExistingParticipant)) {
+        this.enterLottery();
+      }
+    }
+  }
+
+  /**
+   * Handle keyboard events for back button
+   */
+  handleBackKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.goBack();
+    }
   }
 }
 

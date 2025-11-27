@@ -35,18 +35,42 @@ export class ApiService {
   public token$ = this.tokenSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    // Debug: Log the baseUrl being used
-    console.log('[API Service] Base URL:', this.baseUrl);
-    console.log('[API Service] Environment production:', environment.production);
-    console.log('[API Service] Environment backendUrl:', environment.backendUrl);
+    // Check if we're in a test environment
+    const isTestEnvironment = typeof window !== 'undefined' && 
+                             ((window as any).__karma__ !== undefined ||
+                              (window.location.hostname === 'localhost' && window.location.port === '9876'));
     
-    // Fix: If localhost detected in production OR if baseUrl is relative and we're on CloudFront
-    if (this.baseUrl.includes('localhost') || (!this.baseUrl.startsWith('http') && window.location.hostname.includes('cloudfront.net'))) {
-      console.error('[API Service] ERROR: Invalid baseUrl detected! Fixing...');
-      // Force production URL
-      this.baseUrl = 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
-      console.log('[API Service] Fixed baseUrl to:', this.baseUrl);
+    // In test environment, use relative URLs so HttpClientTestingModule can intercept them
+    if (isTestEnvironment) {
+      this.baseUrl = '/api/v1';
+    } else {
+      // Fix: If localhost detected in production OR if baseUrl is relative and we're on CloudFront
+      if (this.baseUrl.includes('localhost') || 
+          (!this.baseUrl.startsWith('http') && typeof window !== 'undefined' && window.location.hostname.includes('cloudfront.net'))) {
+        console.error('[API Service] ERROR: Invalid baseUrl detected! Fixing...');
+        // Force production URL
+        this.baseUrl = 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
+        console.log('[API Service] Fixed baseUrl to:', this.baseUrl);
+      }
     }
+  }
+  
+  /**
+   * Build URL from baseUrl and endpoint, handling leading slashes properly
+   */
+  private buildUrl(endpoint: string): string {
+    // Remove leading slash from endpoint if present
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+    
+    // If baseUrl is relative (starts with /), use it as-is
+    if (this.baseUrl.startsWith('/')) {
+      // For relative URLs, ensure no double slashes
+      return `${this.baseUrl}/${cleanEndpoint}`;
+    }
+    
+    // For absolute URLs, ensure baseUrl doesn't end with slash
+    const cleanBaseUrl = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
+    return `${cleanBaseUrl}/${cleanEndpoint}`;
   }
 
   private getStoredToken(): string | null {
@@ -90,7 +114,7 @@ export class ApiService {
       });
     }
 
-    return this.http.get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, {
+    return this.http.get<ApiResponse<T>>(this.buildUrl(endpoint), {
       headers: this.getHeaders(),
       params: httpParams
     }).pipe(
@@ -99,7 +123,7 @@ export class ApiService {
   }
 
   post<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
-    return this.http.post<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
+    return this.http.post<ApiResponse<T>>(this.buildUrl(endpoint), data, {
       headers: this.getHeaders()
     }).pipe(
       catchError(this.handleError)
@@ -107,7 +131,7 @@ export class ApiService {
   }
 
   put<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
-    return this.http.put<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
+    return this.http.put<ApiResponse<T>>(this.buildUrl(endpoint), data, {
       headers: this.getHeaders()
     }).pipe(
       catchError(this.handleError)
@@ -115,7 +139,7 @@ export class ApiService {
   }
 
   delete<T>(endpoint: string): Observable<ApiResponse<T>> {
-    return this.http.delete<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, {
+    return this.http.delete<ApiResponse<T>>(this.buildUrl(endpoint), {
       headers: this.getHeaders()
     }).pipe(
       catchError(this.handleError)

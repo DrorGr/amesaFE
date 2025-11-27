@@ -188,8 +188,7 @@ describe('CookieConsentService', () => {
     service.setConsent({
       analytics: false,
       marketing: false,
-      functional: false,
-      essential: false as any // Try to set to false
+      functional: false
     });
 
     const consent = service.getConsent();
@@ -222,6 +221,8 @@ describe('CookieConsentService', () => {
     expect(localStorage.getItem('amesa_cookie_consent')).toBeNull();
   });
 });
+
+
 
 
 

@@ -2,6 +2,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { Observable, throwError, Subscription } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { ApiService, PagedResponse } from './api.service';
+import { RetryService } from './retry.service';
 import { 
   House, 
   HouseDto, 
@@ -39,6 +40,7 @@ export class LotteryService {
   
   private realtimeService = inject(RealtimeService, { optional: true });
   private subscriptions = new Subscription();
+  private retryService = inject(RetryService);
   
   constructor(private apiService: ApiService) {
     // Load houses automatically when service is initialized
@@ -169,7 +171,9 @@ export class LotteryService {
 
   // Get single house by ID
   getHouseById(id: string): Observable<HouseDto> {
-    return this.apiService.get<HouseDto>(`houses/${id}`).pipe(
+    return this.retryService.retryOnNetworkError(
+      this.apiService.get<HouseDto>(`houses/${id}`)
+    ).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -500,7 +504,9 @@ export class LotteryService {
    * Endpoint: POST /api/v1/tickets/quick-entry
    */
   quickEntryFromFavorite(request: QuickEntryRequest): Observable<QuickEntryResponse> {
-    return this.apiService.post<QuickEntryResponse>('tickets/quick-entry', request).pipe(
+    return this.retryService.retryOnNetworkError(
+      this.apiService.post<QuickEntryResponse>('tickets/quick-entry', request)
+    ).pipe(
       map(response => {
         if (response.success && response.data) {
           // Refresh active entries after quick entry
@@ -566,7 +572,9 @@ export class LotteryService {
    * Endpoint: GET /api/v1/houses/{id}/can-enter
    */
   canEnterLottery(houseId: string): Observable<CanEnterLotteryResponse> {
-    return this.apiService.get<CanEnterLotteryResponse>(`houses/${houseId}/can-enter`).pipe(
+    return this.retryService.retryOnNetworkError(
+      this.apiService.get<CanEnterLotteryResponse>(`houses/${houseId}/can-enter`)
+    ).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
