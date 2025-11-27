@@ -125,16 +125,26 @@ export class ApiService {
   post<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
     const url = this.buildUrl(endpoint);
     const token = this.getStoredToken();
-    const headers = this.getHeaders();
     
     // #region agent log
     fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.service.ts:post',message:'POST request',data:{endpoint,url,data,dataIsNull:data===null,dataType:typeof data,hasToken:!!token,tokenLength:token?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
     // #endregion
     
-    // For null/undefined, send empty object {} - Angular HttpClient handles this correctly
-    // Some backends expect {} instead of null for POST requests
-    const body = data === null || data === undefined ? {} : data;
+    // For null/undefined, determine if we should send no body or empty object
+    // For favorites endpoint, backend accepts both, but let's try sending null (no body) for better compatibility
+    const hasNoBody = data === null || data === undefined;
+    const body = hasNoBody ? null : data;
     
+    // Build headers - if no body, we can optionally omit Content-Type
+    // But Angular HttpClient will add it anyway, so we'll keep it for consistency
+    let headers = this.getHeaders();
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.service.ts:post:body-decision',message:'POST body decision',data:{endpoint,hasNoBody,bodyIsNull:body===null,bodyType:typeof body,bodyValue:body},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
+    // Angular HttpClient will send null as empty body (no Content-Length header)
+    // This is better than {} for endpoints that don't expect a body
     return this.http.post<ApiResponse<T>>(url, body, {
       headers: headers
     }).pipe(
