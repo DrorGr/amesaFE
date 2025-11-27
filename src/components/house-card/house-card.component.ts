@@ -44,17 +44,19 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
           </svg>
         </button>
         
-        <!-- Favorite Button (Always visible) - Matching promotions styling -->
+        <!-- Favorite Button (Always visible) - Matching promotions styling with glow -->
         <button
           (click)="toggleFavorite($event)"
-          [class.animate-pulse]="isTogglingFavorite"
+          [class.favorite-button-pulse]="isTogglingFavorite || isFavorite()"
+          [class.favorite-button-glow]="isFavorite()"
           class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button"
           [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
           [title]="isFavorite() ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
           <svg 
-            class="w-6 h-6 transition-all duration-500"
+            class="w-6 h-6 transition-all duration-500 favorite-heart"
             [class.text-red-500]="isFavorite()"
             [class.text-white]="!isFavorite()"
+            [class.heart-fill-animation]="isFavorite()"
             [attr.fill]="isFavorite() ? 'currentColor' : 'none'"
             [attr.stroke]="!isFavorite() ? 'currentColor' : 'none'"
             stroke-width="2"
@@ -201,6 +203,52 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
     
     * {
       box-sizing: border-box !important;
+    }
+
+    /* Favorite Button Animations - Matching promotions glow */
+    @keyframes favorite-pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.8), 0 0 40px rgba(139, 92, 246, 0.6), 0 0 60px rgba(139, 92, 246, 0.4), 0 0 0 3px rgba(139, 92, 246, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(139, 92, 246, 1), 0 0 60px rgba(139, 92, 246, 0.8), 0 0 90px rgba(139, 92, 246, 0.6), 0 0 0 6px rgba(139, 92, 246, 0.5);
+      }
+    }
+
+    @keyframes favorite-red-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.4), 0 0 0 3px rgba(239, 68, 68, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(239, 68, 68, 1), 0 0 60px rgba(239, 68, 68, 0.8), 0 0 90px rgba(239, 68, 68, 0.6), 0 0 0 6px rgba(239, 68, 68, 0.5);
+      }
+    }
+
+    @keyframes heart-fill {
+      0% {
+        transform: scale(1);
+        opacity: 0.5;
+      }
+      50% {
+        transform: scale(1.3);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .favorite-button-pulse {
+      animation: favorite-pulse-glow 2s ease-in-out infinite;
+    }
+
+    .favorite-button-glow {
+      animation: favorite-red-glow 2s ease-in-out infinite;
+    }
+
+    .heart-fill-animation {
+      animation: heart-fill 0.6s ease-out;
     }
     
     @media (max-width: 767px) {
