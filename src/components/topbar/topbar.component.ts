@@ -2,19 +2,17 @@ import { Component, inject, ViewEncapsulation, OnInit, signal } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { AuthModalComponent } from '../auth-modal/auth-modal.component';
 import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { ToastService } from '../../services/toast.service';
-import { PromotionsMenuService } from '../../services/promotions-menu.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, AuthModalComponent, LanguageSwitcherComponent, ThemeToggleComponent, UserMenuComponent],
+  imports: [CommonModule, LanguageSwitcherComponent, ThemeToggleComponent, UserMenuComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
@@ -40,9 +38,6 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
             </button>
             <button (click)="navigateToSearch()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
               {{ translate('nav.search') }}
-            </button>
-            <button (click)="togglePromotionsMenu()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-              {{ translate('nav.promotions') }}
             </button>
           </div>
 
@@ -107,23 +102,11 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
               <button (click)="navigateToSearch()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
                 {{ translate('nav.search') }}
               </button>
-              <button (click)="togglePromotionsMenu()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
-                {{ translate('nav.promotions') }}
-              </button>
             </div>
           </div>
         }
       </div>
     </nav>
-
-    @if (showAuthModal) {
-      <app-auth-modal 
-        [mode]="authMode" 
-        (close)="closeAuthModal()"
-        (success)="onAuthSuccess()"
-        (modeChange)="onModeChange($event)">
-      </app-auth-modal>
-    }
   `,
   styles: [`
     :host {
@@ -172,10 +155,7 @@ export class TopbarComponent implements OnInit {
   private router = inject(Router);
   private mobileDetectionService = inject(MobileDetectionService);
   private toastService = inject(ToastService);
-  private promotionsMenuService = inject(PromotionsMenuService);
   
-  showAuthModal = false;
-  authMode: 'login' | 'register' = 'login';
   isMobileMenuOpen = false;
   
   // Use global mobile detection
@@ -192,23 +172,6 @@ export class TopbarComponent implements OnInit {
     if (!isMobile && this.isMobileMenuOpen) {
       this.isMobileMenuOpen = false;
     }
-  }
-
-  openAuthModal() {
-    this.authMode = 'login';
-    this.showAuthModal = true;
-  }
-
-  closeAuthModal() {
-    this.showAuthModal = false;
-  }
-
-  onAuthSuccess() {
-    this.showAuthModal = false;
-  }
-
-  onModeChange(mode: 'login' | 'register') {
-    this.authMode = mode;
   }
 
   translate(key: string): string {
@@ -233,17 +196,6 @@ export class TopbarComponent implements OnInit {
   navigateToSearch() {
     this.router.navigate(['/search']);
     this.isMobileMenuOpen = false;
-  }
-
-
-  togglePromotionsMenu() {
-    this.promotionsMenuService.toggle();
-    this.isMobileMenuOpen = false;
-  }
-
-  navigateToPromotions() {
-    // Opens promotions menu instead of navigating
-    this.promotionsMenuService.toggle();
   }
 
   navigateToLotteryResults() {

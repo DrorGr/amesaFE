@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+﻿import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
@@ -49,11 +49,11 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         </div>
       </div>
     </section>
-
+    
     <!-- Floating Promotions Tab (Book Tab Style) - Left Side -->
     @if (isPromotionsMinimized()) {
       <!-- Small Round P Widget -->
-      <button
+      <button 
         (click)="expandPromotionsTab()"
         class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white w-12 h-12 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 flex items-center justify-center group promotions-p-widget border-2 border-white dark:border-gray-800 animate-widget-appear"
         [attr.aria-label]="translate('nav.promotions')">
@@ -63,7 +63,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
       <!-- Expanded Tab (Not Open) - Vertical -->
       <div class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear">
         <div class="flex flex-col items-center gap-2 px-4 py-6">
-          <button
+          <button 
             (click)="minimizePromotionsTab()"
             class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-30 flex-shrink-0"
             [attr.aria-label]="translate('common.minimize')">
@@ -71,7 +71,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
-          <button
+          <button 
             (click)="togglePromotionsMenu()"
             class="flex flex-col items-center gap-2">
             <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
@@ -87,7 +87,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
       <!-- Expanded Tab (Menu Open) - Vertical -->
       <div class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear">
         <div class="flex flex-col items-center gap-2 px-4 py-6">
-          <button
+          <button 
             (click)="minimizePromotionsTab()"
             class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-30 flex-shrink-0"
             [attr.aria-label]="translate('common.minimize')">
@@ -106,7 +106,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         </div>
       </div>
     }
-
+    
     <!-- Promotions Sliding Menu -->
     <app-promotions-sliding-menu [isOpen]="promotionsMenuOpen()" (close)="closePromotionsMenu()"></app-promotions-sliding-menu>
   `,
@@ -158,13 +158,13 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         font-weight: 700;
       }
     }
-
+    
     /* Writing mode for vertical text */
     .writing-vertical-rl {
       writing-mode: vertical-rl;
       text-orientation: mixed;
     }
-
+    
     /* Promotions Tab Animations */
     @keyframes pulse-glow {
       0%, 100% {
@@ -174,7 +174,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         box-shadow: 0 0 50px rgba(251, 146, 60, 1), 0 0 100px rgba(251, 146, 60, 0.8), 0 0 150px rgba(251, 146, 60, 0.6), 0 0 0 8px rgba(251, 146, 60, 0.5);
       }
     }
-
+    
     @keyframes pulse-vibrate {
       0%, 95%, 100% {
         transform: translateX(0) translateY(0);
@@ -192,7 +192,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         transform: translateX(-2px) translateY(3px);
       }
     }
-
+    
     @keyframes color-shift {
       0%, 100% {
         filter: brightness(1) saturate(1);
@@ -201,19 +201,19 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         filter: brightness(1.2) saturate(1.3);
       }
     }
-
+    
     .promotions-tab-widget {
       animation: pulse-glow 2s ease-in-out infinite, pulse-vibrate 4s ease-in-out infinite, color-shift 2.5s ease-in-out infinite;
     }
-
+    
     .promotions-tab-expanded {
       animation: pulse-glow 2s ease-in-out infinite, color-shift 2.5s ease-in-out infinite;
     }
-
+    
     .promotions-p-widget {
       animation: pulse-glow 2s ease-in-out infinite, pulse-vibrate 4s ease-in-out infinite, color-shift 2.5s ease-in-out infinite;
     }
-
+    
     @keyframes widget-appear {
       0% {
         transform: scale(0) rotate(0deg);
@@ -227,7 +227,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         opacity: 1;
       }
     }
-
+    
     @keyframes tab-appear {
       0% {
         transform: scaleX(0) translateX(-100%);
@@ -241,11 +241,11 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         opacity: 1;
       }
     }
-
+    
     .animate-widget-appear {
       animation: widget-appear 0.5s ease-out, pulse-glow 2s ease-in-out 0.5s infinite, pulse-vibrate 4s ease-in-out 0.5s infinite, color-shift 2.5s ease-in-out 0.5s infinite;
     }
-
+    
     .animate-tab-appear {
       animation: tab-appear 0.5s ease-out, pulse-glow 2s ease-in-out 0.5s infinite, color-shift 2.5s ease-in-out 0.5s infinite;
     }
@@ -258,7 +258,7 @@ export class HeroSectionComponent {
   
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;
-
+  
   promotionsMenuOpen = signal(false);
   isPromotionsMinimized = signal(false);
   

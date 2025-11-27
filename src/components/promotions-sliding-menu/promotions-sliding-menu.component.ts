@@ -19,31 +19,6 @@ interface Promotion {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <!-- Minimized Tab Widget (Always Visible) -->
-    <div 
-      class="fixed left-0 top-1/2 -translate-y-1/2 z-40 transition-all duration-300 ease-in-out"
-      [class.translate-x-0]="!isOpen()"
-      [class.translate-x-80]="isOpen()"
-      [class.md:translate-x-96]="isOpen()">
-      <button
-        (click)="toggleWidget()"
-        class="bg-gradient-to-b from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-8 rounded-r-lg shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center gap-2 min-w-[60px] group relative overflow-hidden"
-        [class.animate-pulse]="!isOpen()">
-        <!-- Pulsing glow effect -->
-        <div class="absolute inset-0 bg-orange-400 opacity-0 group-hover:opacity-30 transition-opacity duration-300 animate-pulse"></div>
-        <!-- Vertical "P" or "Promotions" text -->
-        <span class="text-2xl font-bold transform -rotate-90 whitespace-nowrap relative z-10">
-          {{ translate('nav.promotions') }}
-        </span>
-        <!-- Expand icon when minimized -->
-        @if (!isOpen()) {
-          <svg class="w-5 h-5 transform rotate-90 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        }
-      </button>
-    </div>
-
     @if (isOpen()) {
       <!-- Backdrop -->
       <div 
@@ -148,16 +123,6 @@ export class PromotionsSlidingMenuComponent implements OnInit, OnDestroy {
   promotions = signal<Promotion[]>([]);
   isLoading = signal(false);
   private menuOpenEffect?: EffectRef;
-
-  toggleWidget() {
-    if (this.isOpen()) {
-      this.close.emit();
-    } else {
-      // Emit open event - parent component should handle this via service
-      // For now, we'll use a custom event
-      window.dispatchEvent(new CustomEvent('promotions-menu-open'));
-    }
-  }
 
   constructor() {
     // Watch for menu open state changes and load promotions
