@@ -309,6 +309,40 @@ git checkout main
 - **Theme Support**: Dark/light mode switching
 - **Real-time Features**: SignalR integration for live updates
 
+## Recent Changes (2025-11-27) - FAVORITES FEATURE SYSTEMIC FIX
+1. ✅ **Favorites Feature - Complete Systemic Fix** - Fixed database structure and backend serialization issues
+   - **Database Migration**: Executed migration script to add `lotteryPreferences` structure to all existing users
+     - Script: `MetaData/Scripts/migrate-all-users-lottery-preferences.sql`
+     - All users now have `lotteryPreferences.favoriteHouseIds` array structure
+     - One-time fix, permanent for all users in database at migration time
+   - **Backend Serialization Fix**: Fixed JSON serialization bug in `AddHouseToFavoritesAsync` and `RemoveHouseFromFavoritesAsync`
+     - Changed from `Dictionary<string, JsonElement>` to `Dictionary<string, object>`
+     - Properly deserialize entire preferences JSON before modification
+     - File: `BE/AmesaBackend.Auth/Services/UserPreferencesService.cs`
+     - Commit: `32d565f` - "fix: Fix JSON serialization issue in AddHouseToFavoritesAsync and RemoveHouseFromFavoritesAsync"
+   - **Default Preferences Fix**: Added `lotteryPreferences` to default user preferences structure
+     - File: `BE/AmesaBackend.Auth/Controllers/UserPreferencesController.cs`
+     - Method: `CreateDefaultPreferences` - Now includes `lotteryPreferences` with empty `favoriteHouseIds` array
+     - Commit: `fadd9d6` - "fix: Add lotteryPreferences to default user preferences structure"
+   - **UpdateUserPreferencesAsync Fix**: Ensured `lotteryPreferences` structure in all code paths
+     - File: `BE/AmesaBackend.Auth/Services/UserPreferencesService.cs`
+     - Method: `UpdateUserPreferencesAsync` - Creates structure if missing when creating new preferences
+     - Commit: `97de6f6` - "fix: Ensure lotteryPreferences structure in all new user preferences"
+   - **Null Reference Fix**: Added null check to prevent compiler warning
+     - File: `BE/AmesaBackend.Auth/Services/UserPreferencesService.cs`
+     - Commit: `8bfc16b` - "fix: Add null check to prevent null reference warning in AddHouseToFavoritesAsync"
+   - **Systemic Protection**: All three code paths that create user preferences now include `lotteryPreferences`:
+     1. User Registration → `CreateDefaultPreferences` → ✅ Includes structure
+     2. First Preferences Update → `UpdateUserPreferencesAsync` → ✅ Creates structure if missing
+     3. Adding First Favorite → `AddHouseToFavoritesAsync` → ✅ Creates structure if missing
+   - **Documentation Created**:
+     - `MetaData/Documentation/FAVORITES_FEATURE_STATUS.md` - Complete status report
+     - `MetaData/Documentation/FAVORITES_BACKEND_BUG.md` - Detailed bug analysis
+     - `MetaData/Scripts/migrate-all-users-lottery-preferences.sql` - Migration script
+     - `MetaData/Scripts/verify-user-favorites.sql` - Verification queries
+   - **Status**: ✅ **COMPLETE** - All fixes committed and pushed, awaiting backend deployment
+   - **Impact**: Favorites feature will work for all users (old and new) after backend deployment
+
 ## Recent Changes (2025-01-27) - TEST INFRASTRUCTURE UPDATES & KARMA RESOURCE OPTIMIZATION
 1. ✅ **Karma Resource Usage Optimized** - Tests configured with resource limits and CI/local differentiation
    - **Local Development**: 3x resources (3 browsers parallel, 1536MB memory, 90s timeouts)
