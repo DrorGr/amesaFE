@@ -155,6 +155,7 @@ export interface UpdateUserProfileRequest {
   lastName?: string;
   dateOfBirth?: Date;
   gender?: string;
+  idNumber?: string;
   preferredLanguage?: string;
   timezone?: string;
 }

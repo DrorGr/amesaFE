@@ -166,7 +166,7 @@ export class UserService {
   }
 
   updateUserProfile(updateData: UpdateUserProfileRequest): Observable<UserDto> {
-    return this.apiService.put<UserDto>('users/profile', updateData).pipe(
+    return this.apiService.put<UserDto>('auth/profile', updateData).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;

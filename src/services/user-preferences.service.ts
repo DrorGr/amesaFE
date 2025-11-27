@@ -309,13 +309,7 @@ export class UserPreferencesService {
 
     const preferences = this.getPreferences();
     
-    // Backend expects { preferences: {...}, version?: string } format
-    const requestBody = {
-      preferences: preferences,
-      version: preferences.version
-    };
-    
-    this.apiService.post<UserPreferences>('user/preferences', requestBody)
+    this.apiService.post<UserPreferences>('user/preferences', preferences)
       .pipe(
         catchError(error => {
           this.logger.error('Failed to sync preferences with server', { error }, 'UserPreferencesService');
