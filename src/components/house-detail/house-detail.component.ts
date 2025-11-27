@@ -8,7 +8,6 @@ import { WatchlistService } from '../../services/watchlist.service';
 import { TranslationService } from '../../services/translation.service';
 import { ErrorMessageService } from '../../services/error-message.service';
 import { ToastService } from '../../services/toast.service';
-import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 import { ParticipantStatsComponent } from '../participant-stats/participant-stats.component';
 import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
 import { QuickEntryRequest } from '../../interfaces/lottery.interface';
@@ -19,7 +18,6 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
   imports: [
     CommonModule,
     RouterModule,
-    VerificationGateComponent,
     ParticipantStatsComponent
   ],
   template: `
@@ -64,6 +62,33 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                 [alt]="house()!.title"
                 class="w-full h-full object-cover">
               
+              <!-- Favorite Button (Always visible) -->
+              <button
+                (click)="toggleFavorite()"
+                [disabled]="isTogglingFavorite()"
+                [class.animate-pulse]="isTogglingFavorite()"
+                class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-3 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
+                [title]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')">
+                <svg 
+                  class="w-6 h-6 transition-all duration-300"
+                  [class.text-red-500]="isFavorite()"
+                  [class.text-gray-400]="!isFavorite()"
+                  [class.fill-current]="isFavorite()"
+                  [class.stroke-current]="!isFavorite()"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                  aria-hidden="true">
+                  <path 
+                    stroke-linecap="round" 
+                    stroke-linejoin="round" 
+                    stroke-width="2" 
+                    [attr.d]="isFavorite() ? 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' : 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'">
+                  </path>
+                </svg>
+              </button>
+
               <!-- Watchlist Button -->
               <button
                 *ngIf="currentUser()"
@@ -71,7 +96,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                 (keydown)="handleWatchlistKeyDown($event)"
                 [disabled]="checkingWatchlist() || isTogglingWatchlist()"
                 [class.animate-pulse]="isTogglingWatchlist() || checkingWatchlist()"
-                class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-3 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="absolute top-20 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-3 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 [attr.aria-label]="isInWatchlist() ? 'Remove from watchlist' : 'Add to watchlist'"
                 [title]="isInWatchlist() ? translate('watchlist.remove') : translate('watchlist.add')">
                 <svg 
@@ -264,21 +289,21 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
               {{ translate('house.enterLottery') }}
             </h2>
 
-            <app-verification-gate>
+            <ng-container *ngIf="currentUser(); else signInBlock">
               <ng-container *ngTemplateOutlet="entryBlock"></ng-container>
-              <ng-template #signInBlock>
-                <div class="text-center py-8">
-                  <p class="text-xl text-gray-600 dark:text-gray-300 mb-4">
-                    {{ translate('house.signInToParticipate') }}
-                  </p>
-                  <a
-                    [routerLink]="['/register']"
-                    class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors">
-                    {{ translate('auth.signUp') }}
-                  </a>
-                </div>
-              </ng-template>
-            </app-verification-gate>
+            </ng-container>
+            <ng-template #signInBlock>
+              <div class="text-center py-8">
+                <p class="text-xl text-gray-600 dark:text-gray-300 mb-4">
+                  {{ translate('house.signInToParticipate') }}
+                </p>
+                <a
+                  [routerLink]="['/register']"
+                  class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors">
+                  {{ translate('auth.signUp') }}
+                </a>
+              </div>
+            </ng-template>
 
             <ng-template #entryBlock>
               <div class="space-y-4">
@@ -342,9 +367,17 @@ export class HouseDetailComponent implements OnInit {
   canEnterResponse = signal<CanEnterLotteryResponse | null>(null);
   isInWatchlist = signal<boolean>(false);
   isTogglingWatchlist = signal<boolean>(false);
+  isTogglingFavorite = signal<boolean>(false);
   checkingCanEnter = signal<boolean>(false);
   checkingWatchlist = signal<boolean>(false);
   enteringLottery = signal<boolean>(false);
+  
+  // Favorites
+  favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
+  isFavorite = computed(() => {
+    const h = this.house();
+    return h ? this.favoriteHouseIds().includes(h.id) : false;
+  });
 
   currentUser = computed(() => {
     return this.authService.getCurrentUser()();
@@ -429,6 +462,52 @@ export class HouseDetailComponent implements OnInit {
     });
   }
 
+  toggleFavorite(): void {
+    const h = this.house();
+    if (!h) return;
+    
+    // Check if user is logged in
+    if (!this.currentUser() || !this.currentUser()?.isAuthenticated) {
+      this.toastService.error('Please log in to add favorites.', 4000);
+      return;
+    }
+    
+    if (this.isTogglingFavorite()) {
+      return;
+    }
+
+    this.isTogglingFavorite.set(true);
+    
+    // Check if already in favorites
+    const isCurrentlyFavorite = this.isFavorite();
+    
+    this.lotteryService.toggleFavorite(h.id).subscribe({
+      next: (result) => {
+        this.isTogglingFavorite.set(false);
+        if (result) {
+          if (result.added) {
+            this.toastService.success('Added to favorites!', 3000);
+          } else {
+            this.toastService.success('Removed from favorites', 3000);
+          }
+        } else if (isCurrentlyFavorite) {
+          // Already in favorites - this shouldn't happen, but handle gracefully
+          this.toastService.info('Already in favorites', 2000);
+        }
+      },
+      error: (error: any) => {
+        this.isTogglingFavorite.set(false);
+        console.error('Error toggling favorite:', error);
+        // Check if error is because already in favorites
+        if (error?.error?.message?.includes('already') || error?.error?.message?.includes('favorite')) {
+          this.toastService.info('Already in favorites', 2000);
+        } else {
+          this.toastService.error('Failed to update favorites. Please try again.', 4000);
+        }
+      }
+    });
+  }
+
   toggleWatchlist(): void {
     const h = this.house();
     if (!h || !this.currentUser()) return;
@@ -439,10 +518,12 @@ export class HouseDetailComponent implements OnInit {
         next: () => {
           this.isInWatchlist.set(false);
           this.isTogglingWatchlist.set(false);
+          this.toastService.success('Removed from watchlist', 3000);
         },
         error: (error) => {
           console.error('Error removing from watchlist:', error);
           this.isTogglingWatchlist.set(false);
+          this.toastService.error('Failed to remove from watchlist. Please try again.', 4000);
         }
       });
     } else {
@@ -450,10 +531,12 @@ export class HouseDetailComponent implements OnInit {
         next: () => {
           this.isInWatchlist.set(true);
           this.isTogglingWatchlist.set(false);
+          this.toastService.success('Added to watchlist', 3000);
         },
         error: (error) => {
           console.error('Error adding to watchlist:', error);
           this.isTogglingWatchlist.set(false);
+          this.toastService.error('Failed to add to watchlist. Please try again.', 4000);
         }
       });
     }
@@ -461,7 +544,12 @@ export class HouseDetailComponent implements OnInit {
 
   enterLottery(): void {
     const h = this.house();
-    if (!h || !this.currentUser()) return;
+    if (!h) return;
+    
+    if (!this.currentUser() || !this.currentUser()?.isAuthenticated) {
+      this.toastService.error('Please log in to enter the lottery.', 4000);
+      return;
+    }
 
     // Check if user can enter before proceeding
     if (this.canEnterResponse() && !this.canEnterResponse()!.canEnter) {

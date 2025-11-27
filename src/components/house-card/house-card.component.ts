@@ -6,13 +6,13 @@ import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { WatchlistService } from '../../services/watchlist.service';
 import { TranslationService } from '../../services/translation.service';
+import { ToastService } from '../../services/toast.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
-import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 
 @Component({
   selector: 'app-house-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, VerificationGateComponent],
+  imports: [CommonModule, RouterModule],
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="relative bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col w-full transform hover:scale-105">
@@ -45,9 +45,8 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
           </svg>
         </button>
         
-        <!-- Favorite Button -->
+        <!-- Favorite Button (Always visible) -->
         <button
-          *ngIf="currentUser()"
           (click)="toggleFavorite($event)"
           [class.animate-pulse]="isTogglingFavorite"
           class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
@@ -173,38 +172,36 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
 
         <div class="mt-auto flex-shrink-0 space-y-2">
           <ng-container *ngIf="currentUser(); else signInBlock">
-            <app-verification-gate [isVerificationRequired]="true">
-              <!-- Quick Entry Button (only show if favorited) -->
-              <button
-                *ngIf="isFavorite()"
-                (click)="quickEntry()"
-                [disabled]="isQuickEntering || house().status !== 'active'"
-                class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 md:py-2 px-6 md:px-4 rounded-lg font-semibold transition-all duration-200 border-none cursor-pointer text-lg md:text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
-                [class.bg-gray-400]="(isQuickEntering || house().status !== 'active')"
-                [class.cursor-not-allowed]="(isQuickEntering || house().status !== 'active')">
-                <ng-container *ngIf="isQuickEntering; else quickEntryBlock">
-                  {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
-                </ng-container>
-                <ng-template #quickEntryBlock>
-                  ⚡ {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
-                </ng-template>
-              </button>
-              
-              <!-- Regular Purchase Button -->
-              <button
-                (click)="purchaseTicket()"
-                [disabled]="isPurchasing || house().status !== 'active'"
-                class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button"
-                [class.bg-gray-400]="(isPurchasing || house().status !== 'active')"
-                [class.cursor-not-allowed]="(isPurchasing || house().status !== 'active')">
-                <ng-container *ngIf="isPurchasing; else buyTicketBlock">
-                  {{ translate('house.processing') }}
-                </ng-container>
-                <ng-template #buyTicketBlock>
-                  {{ translate('house.buyTicket') }} - €{{ house().ticketPrice }}
-                </ng-template>
-              </button>
-            </app-verification-gate>
+            <!-- Quick Entry Button (only show if favorited) -->
+            <button
+              *ngIf="isFavorite()"
+              (click)="quickEntry()"
+              [disabled]="isQuickEntering || house().status !== 'active'"
+              class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 md:py-2 px-6 md:px-4 rounded-lg font-semibold transition-all duration-200 border-none cursor-pointer text-lg md:text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+              [class.bg-gray-400]="(isQuickEntering || house().status !== 'active')"
+              [class.cursor-not-allowed]="(isQuickEntering || house().status !== 'active')">
+              <ng-container *ngIf="isQuickEntering; else quickEntryBlock">
+                {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
+              </ng-container>
+              <ng-template #quickEntryBlock>
+                ⚡ {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
+              </ng-template>
+            </button>
+            
+            <!-- Regular Purchase Button -->
+            <button
+              (click)="purchaseTicket()"
+              [disabled]="isPurchasing || house().status !== 'active'"
+              class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button"
+              [class.bg-gray-400]="(isPurchasing || house().status !== 'active')"
+              [class.cursor-not-allowed]="(isPurchasing || house().status !== 'active')">
+              <ng-container *ngIf="isPurchasing; else buyTicketBlock">
+                {{ translate('house.processing') }}
+              </ng-container>
+              <ng-template #buyTicketBlock>
+                {{ translate('house.buyTicket') }} - €{{ house().ticketPrice }}
+              </ng-template>
+            </button>
           </ng-container>
           <ng-template #signInBlock>
             <div class="text-center">
@@ -337,6 +334,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   private lotteryService = inject(LotteryService);
   private watchlistService = inject(WatchlistService);
   private translationService = inject(TranslationService);
+  private toastService = inject(ToastService);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -413,14 +411,18 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   async purchaseTicket() {
-    if (!this.currentUser() || this.isPurchasing) {
+    if (!this.currentUser() || !this.currentUser()?.isAuthenticated) {
+      this.toastService.error('Please log in to purchase tickets.', 4000);
+      return;
+    }
+    
+    if (this.isPurchasing) {
       return;
     }
 
     // Check if user can enter (participant cap check)
     if (!this.canEnter() && !this.isExistingParticipant()) {
-      console.warn('Cannot enter lottery: participant cap reached');
-      // TODO: Show error toast
+      this.toastService.error('Participant cap reached for this lottery.', 4000);
       return;
     }
 
@@ -434,24 +436,26 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       }).toPromise();
       
       if (result && result.ticketsPurchased > 0) {
-        console.log('Ticket purchased successfully!');
+        this.toastService.success(`Successfully purchased ${result.ticketsPurchased} ticket(s)!`, 3000);
         // Refresh can enter status
         this.checkCanEnter();
       } else {
-        console.log('Failed to purchase ticket');
+        this.toastService.error('Failed to purchase ticket. Please try again.', 4000);
       }
     } catch (error: any) {
       console.error('Error purchasing ticket:', error);
       // Check if it's a verification error
       if (error?.error?.error?.code === 'ID_VERIFICATION_REQUIRED' || 
-          error?.error?.message?.includes('ID_VERIFICATION_REQUIRED')) {
-        // Verification gate will handle showing the message
-        // User will see the gate component
+          error?.error?.message?.includes('ID_VERIFICATION_REQUIRED') ||
+          error?.error?.message?.includes('verification')) {
+        this.toastService.error('Please validate your account to purchase tickets.', 4000);
       }
       // Check if it's a participant cap error
-      if (error?.error?.error?.code === 'PARTICIPANT_CAP_REACHED') {
+      else if (error?.error?.error?.code === 'PARTICIPANT_CAP_REACHED') {
         this.canEnter.set(false);
-        // TODO: Show error toast
+        this.toastService.error('Participant cap reached for this lottery.', 4000);
+      } else {
+        this.toastService.error('Failed to purchase ticket. Please try again.', 4000);
       }
     } finally {
       this.isPurchasing = false;
@@ -620,22 +624,44 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (!this.currentUser() || this.isTogglingFavorite) {
+    
+    // Check if user is logged in
+    if (!this.currentUser() || !this.currentUser()?.isAuthenticated) {
+      this.toastService.error('Please log in to add favorites.', 4000);
+      return;
+    }
+    
+    if (this.isTogglingFavorite) {
       return;
     }
 
     this.isTogglingFavorite = true;
     
     try {
+      // Check if already in favorites
+      const isCurrentlyFavorite = this.isFavorite();
+      
       const result = await this.lotteryService.toggleFavorite(this.house().id).toPromise();
       
       if (result) {
         // State is automatically updated by LotteryService
-        console.log(result.message || (result.added ? 'Added to favorites' : 'Removed from favorites'));
+        if (result.added) {
+          this.toastService.success('Added to favorites!', 3000);
+        } else {
+          this.toastService.success('Removed from favorites', 3000);
+        }
+      } else if (isCurrentlyFavorite) {
+        // Already in favorites - this shouldn't happen, but handle gracefully
+        this.toastService.info('Already in favorites', 2000);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling favorite:', error);
-      // TODO: Show error toast notification
+      // Check if error is because already in favorites
+      if (error?.error?.message?.includes('already') || error?.error?.message?.includes('favorite')) {
+        this.toastService.info('Already in favorites', 2000);
+      } else {
+        this.toastService.error('Failed to update favorites. Please try again.', 4000);
+      }
     } finally {
       this.isTogglingFavorite = false;
     }
@@ -645,8 +671,12 @@ export class HouseCardComponent implements OnInit, OnDestroy {
    * Quick entry from favorites
    */
   async quickEntry(): Promise<void> {
-    // Verification check is handled by backend and verification gate component
-    if (!this.currentUser() || this.isQuickEntering || !this.isFavorite()) {
+    if (!this.currentUser() || !this.currentUser()?.isAuthenticated) {
+      this.toastService.error('Please log in to enter the lottery.', 4000);
+      return;
+    }
+    
+    if (this.isQuickEntering || !this.isFavorite()) {
       return;
     }
 
@@ -660,12 +690,20 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       }).toPromise();
       
       if (result && result.ticketsPurchased > 0) {
-        console.log('Quick entry successful!', result);
-        // TODO: Show success toast notification
+        this.toastService.success(`Quick entry successful! Purchased ${result.ticketsPurchased} ticket(s).`, 3000);
+      } else {
+        this.toastService.error('Failed to complete quick entry. Please try again.', 4000);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error with quick entry:', error);
-      // TODO: Show error toast notification
+      // Check if it's a verification error
+      if (error?.error?.error?.code === 'ID_VERIFICATION_REQUIRED' || 
+          error?.error?.message?.includes('ID_VERIFICATION_REQUIRED') ||
+          error?.error?.message?.includes('verification')) {
+        this.toastService.error('Please validate your account to enter the lottery.', 4000);
+      } else {
+        this.toastService.error('Failed to complete quick entry. Please try again.', 4000);
+      }
     } finally {
       this.isQuickEntering = false;
     }
