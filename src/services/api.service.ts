@@ -188,16 +188,28 @@ export class ApiService {
     }
     
     // Log 400 errors with full details for debugging
+    // BUT: Suppress expected 400 errors for favorites endpoints (already in favorites / not in favorites)
     if (error.status === 400) {
-      console.error('API 400 Error - Full Details:', {
-        url: error.url,
-        status: error.status,
-        statusText: error.statusText,
-        error: error.error,
-        errorMessage: error.error?.message || 'No error message',
-        errorCode: error.error?.error?.code || error.error?.code || 'No error code',
-        fullErrorResponse: error.error
-      });
+      const errorMessage = error.error?.message || '';
+      const isFavoritesEndpoint = error.url?.includes('/favorite');
+      const isExpectedError = isFavoritesEndpoint && (
+        errorMessage.includes('already be in favorites') ||
+        errorMessage.includes('may not exist or already be in favorites') ||
+        errorMessage.includes('may not be in favorites')
+      );
+      
+      // Only log unexpected 400 errors
+      if (!isExpectedError) {
+        console.error('API 400 Error - Full Details:', {
+          url: error.url,
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error,
+          errorMessage: error.error?.message || 'No error message',
+          errorCode: error.error?.error?.code || error.error?.code || 'No error code',
+          fullErrorResponse: error.error
+        });
+      }
     } else if (error.status === 401 || error.status === 403) {
       // Don't log auth errors - handled elsewhere
     } else {

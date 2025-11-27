@@ -1,6 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { Observable, throwError, Subscription, of, Subject } from 'rxjs';
-import { map, catchError, tap, debounceTime, filter, switchMap } from 'rxjs/operators';
+import { Observable, throwError, Subscription, of } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
 import { ApiService, PagedResponse } from './api.service';
 import { RetryService } from './retry.service';
 import { 
@@ -39,10 +39,9 @@ export class LotteryService {
   private recommendations = signal<HouseRecommendation[]>([]);
   
   // Debouncing for favorites operations (prevent rapid clicks/exploits)
+  // Uses pending request tracking to prevent duplicate requests for the same house
   private pendingFavoriteAdds = new Map<string, boolean>();
   private pendingFavoriteRemoves = new Map<string, boolean>();
-  private favoriteAddSubject = new Subject<{ houseId: string; timestamp: number }>();
-  private favoriteRemoveSubject = new Subject<{ houseId: string; timestamp: number }>();
   
   private realtimeService = inject(RealtimeService, { optional: true });
   private subscriptions = new Subscription();
@@ -425,9 +424,9 @@ export class LotteryService {
     this.pendingFavoriteAdds.set(houseId, true);
     
     // Backend expects no body (null) for POST /api/v1/houses/{id}/favorite
+    // Note: debounceTime is not used here because we debounce at the request level (pending request tracking)
+    // debounceTime on the response would delay the response, not prevent duplicate requests
     return this.apiService.post<FavoriteHouseResponse>(`houses/${houseId}/favorite`, null).pipe(
-      // Add debounce delay (500ms) to prevent rapid successive requests
-      debounceTime(500),
       map(response => {
         // Backend returns success: false with message for "already in favorites" case
         // Check the message to handle this gracefully
