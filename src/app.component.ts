@@ -216,6 +216,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private cookieConsentService = inject(CookieConsentService);
   private routerSubscription?: Subscription;
+  private promotionsMenuOpenHandler?: () => void;
   
   // Services are injected but not used directly in this component
   // They are available for dependency injection in child components
@@ -223,6 +224,12 @@ export class AppComponent implements OnInit, OnDestroy {
   isLoading = this.routeLoadingService.loading$;
 
   ngOnInit(): void {
+    // Listen for promotions widget toggle from minimized tab
+    this.promotionsMenuOpenHandler = () => {
+      this.promotionsMenuService.open();
+    };
+    window.addEventListener('promotions-menu-open', this.promotionsMenuOpenHandler);
+
     // Expose debug log viewer to window for console access
     (window as any).viewOAuthLogs = () => {
       try {
@@ -302,6 +309,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.promotionsMenuOpenHandler) {
+      window.removeEventListener('promotions-menu-open', this.promotionsMenuOpenHandler);
+    }
+    
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
