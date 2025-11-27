@@ -123,10 +123,20 @@ export class ApiService {
   }
 
   post<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
-    // Handle null body - send as null instead of empty object
-    const body = data === null ? null : (data || {});
-    return this.http.post<ApiResponse<T>>(this.buildUrl(endpoint), body, {
-      headers: this.getHeaders()
+    const url = this.buildUrl(endpoint);
+    const token = this.getStoredToken();
+    const headers = this.getHeaders();
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.service.ts:post',message:'POST request',data:{endpoint,url,data,dataIsNull:data===null,dataType:typeof data,hasToken:!!token,tokenLength:token?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
+    // For null/undefined, send empty object {} - Angular HttpClient handles this correctly
+    // Some backends expect {} instead of null for POST requests
+    const body = data === null || data === undefined ? {} : data;
+    
+    return this.http.post<ApiResponse<T>>(url, body, {
+      headers: headers
     }).pipe(
       catchError(this.handleError)
     );
@@ -141,8 +151,16 @@ export class ApiService {
   }
 
   delete<T>(endpoint: string): Observable<ApiResponse<T>> {
-    return this.http.delete<ApiResponse<T>>(this.buildUrl(endpoint), {
-      headers: this.getHeaders()
+    const url = this.buildUrl(endpoint);
+    const headers = this.getHeaders();
+    const token = this.getStoredToken();
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.service.ts:delete',message:'DELETE request',data:{endpoint,url,hasToken:!!token,tokenLength:token?.length||0,headers:Object.fromEntries(headers.keys().map(k=>[k,headers.get(k)]))},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
+    return this.http.delete<ApiResponse<T>>(url, {
+      headers: headers
     }).pipe(
       catchError(this.handleError)
     );

@@ -309,6 +309,10 @@ export class UserPreferencesService {
 
     const preferences = this.getPreferences();
     
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-preferences.service.ts:syncWithServer',message:'Syncing preferences',data:{preferencesKeys:Object.keys(preferences),preferencesSize:JSON.stringify(preferences).length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
+    
     this.apiService.post<UserPreferences>('user/preferences', preferences)
       .pipe(
         catchError(error => {

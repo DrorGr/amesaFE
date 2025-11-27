@@ -375,9 +375,15 @@ export class LotteryService {
    * Endpoint: POST /api/v1/houses/{id}/favorite
    */
   addHouseToFavorites(houseId: string): Observable<FavoriteHouseResponse> {
-    // Try with empty object first (backend might expect empty body)
-    return this.apiService.post<FavoriteHouseResponse>(`houses/${houseId}/favorite`, {}).pipe(
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites',message:'Adding house to favorites',data:{houseId,currentFavorites:this.favoriteHouseIds(),isAlreadyFavorite:this.favoriteHouseIds().includes(houseId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
+    
+    // Backend expects no body (null) for POST /api/v1/houses/{id}/favorite
+    return this.apiService.post<FavoriteHouseResponse>(`houses/${houseId}/favorite`, null).pipe(
       map(response => {
+        // Backend returns success: false with message for "already in favorites" case
+        // Check the message to handle this gracefully
         if (response.success && response.data) {
           // Update favorite IDs signal
           const currentFavorites = this.favoriteHouseIds();
@@ -385,32 +391,56 @@ export class LotteryService {
             this.favoriteHouseIds.set([...currentFavorites, houseId]);
           }
           return response.data;
+        } else if (!response.success && response.message) {
+          // Backend returned success: false with a message
+          const message = response.message.toLowerCase();
+          if (message.includes('already') || message.includes('already be in favorites')) {
+            // Already in favorites - treat as success and ADD to favorites list
+            // This ensures the UI shows it as favorited even if backend says it's already there
+            const currentFavorites = this.favoriteHouseIds();
+            if (!currentFavorites.includes(houseId)) {
+              this.favoriteHouseIds.set([...currentFavorites, houseId]);
+            }
+            return {
+              houseId: houseId,
+              added: true, // Set to true so UI shows it as added
+              message: 'Added to favorites'
+            };
+          }
         }
-        throw new Error('Failed to add house to favorites');
+        throw new Error(response.message || 'Failed to add house to favorites');
       }),
       catchError(error => {
-        // Handle 400 errors gracefully - might be validation or already favorited
+        // #region agent log
+        const errorDetails = {
+          houseId,
+          status: error.status,
+          statusText: error.statusText,
+          errorMessage: error.error?.message || error.error?.error?.message || error.message || '',
+          errorCode: error.error?.error?.code || error.error?.code || '',
+          fullError: JSON.stringify(error.error || {}).substring(0, 500),
+          currentFavorites: this.favoriteHouseIds()
+        };
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:catchError',message:'Error adding to favorites',data:errorDetails,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
+        
+        // Handle 400 errors gracefully - backend returns success: false with message
         if (error.status === 400) {
-          // Check if it's because already in favorites
-          const errorMessage = error.error?.message || error.error?.error?.message || '';
-          const errorCode = error.error?.error?.code || error.error?.code || '';
+          const errorMessage = (error.error?.message || error.message || '').toLowerCase();
           
-          if (errorMessage.toLowerCase().includes('already') || 
-              errorMessage.toLowerCase().includes('favorite') ||
-              errorCode.toLowerCase().includes('already')) {
-            // Already favorited - return success response and update state
+          if (errorMessage.includes('already') || errorMessage.includes('already be in favorites')) {
+            // Already favorited - ADD to favorites list and return success response
+            // This ensures the UI shows it as favorited even if backend says it's already there
             const currentFavorites = this.favoriteHouseIds();
             if (!currentFavorites.includes(houseId)) {
               this.favoriteHouseIds.set([...currentFavorites, houseId]);
             }
             return of({
               houseId: houseId,
-              added: false,
-              message: 'Already in favorites'
+              added: true, // Set to true so UI shows it as added
+              message: 'Added to favorites'
             });
           }
-          // Other 400 errors - don't log to console, just return error
-          // This prevents console spam for validation errors
         } else if (error.status !== 401 && error.status !== 403) {
           // Only log non-auth errors
           console.error('Error adding house to favorites:', error.status, error.statusText);
@@ -425,18 +455,65 @@ export class LotteryService {
    * Endpoint: DELETE /api/v1/houses/{id}/favorite
    */
   removeHouseFromFavorites(houseId: string): Observable<FavoriteHouseResponse> {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites',message:'Removing house from favorites',data:{houseId,currentFavorites:this.favoriteHouseIds(),isInFavorites:this.favoriteHouseIds().includes(houseId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
+    
     return this.apiService.delete<FavoriteHouseResponse>(`houses/${houseId}/favorite`).pipe(
       map(response => {
+        // Backend returns success: false with message for "not in favorites" case
         if (response.success && response.data) {
           // Update favorite IDs signal
           const currentFavorites = this.favoriteHouseIds();
           this.favoriteHouseIds.set(currentFavorites.filter(id => id !== houseId));
           return response.data;
+        } else if (!response.success && response.message) {
+          // Backend returned success: false with a message
+          const message = response.message.toLowerCase();
+          if (message.includes('not be in favorites') || message.includes('may not be in favorites')) {
+            // Not in favorites - treat as success (already removed)
+            const currentFavorites = this.favoriteHouseIds();
+            this.favoriteHouseIds.set(currentFavorites.filter(id => id !== houseId));
+            return {
+              houseId: houseId,
+              removed: false,
+              message: 'Not in favorites'
+            };
+          }
         }
-        throw new Error('Failed to remove house from favorites');
+        throw new Error(response.message || 'Failed to remove house from favorites');
       }),
       catchError(error => {
-        console.error('Error removing house from favorites:', error);
+        // #region agent log
+        const errorDetails = {
+          houseId,
+          status: error.status,
+          statusText: error.statusText,
+          errorMessage: error.error?.message || error.error?.error?.message || error.message || '',
+          errorCode: error.error?.error?.code || error.error?.code || '',
+          fullError: JSON.stringify(error.error || {}).substring(0, 500),
+          currentFavorites: this.favoriteHouseIds()
+        };
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:catchError',message:'Error removing from favorites',data:errorDetails,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
+        
+        // Handle 400 errors gracefully - backend returns success: false with message
+        if (error.status === 400) {
+          const errorMessage = (error.error?.message || error.message || '').toLowerCase();
+          
+          if (errorMessage.includes('not be in favorites') || errorMessage.includes('may not be in favorites')) {
+            // Not in favorites - treat as success (already removed)
+            const currentFavorites = this.favoriteHouseIds();
+            this.favoriteHouseIds.set(currentFavorites.filter(id => id !== houseId));
+            return of({
+              houseId: houseId,
+              removed: false,
+              message: 'Not in favorites'
+            });
+          }
+        } else if (error.status !== 401 && error.status !== 403) {
+          console.error('Error removing house from favorites:', error.status, error.statusText);
+        }
         return throwError(() => error);
       })
     );
