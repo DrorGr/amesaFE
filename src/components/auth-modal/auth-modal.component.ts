@@ -1,4 +1,4 @@
-import { Component, inject, input, output, OnInit, AfterViewInit } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,8 +13,8 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
   standalone: true,
   imports: [CommonModule, FormsModule, PasswordResetModalComponent],
   template: `
-    <div class="modal-backdrop" (click)="onBackdropClick($event)">
-      <div class="modal-content">
+    <div class="modal-backdrop dark:bg-black dark:bg-opacity-60" (click)="onBackdropClick($event)">
+      <div class="modal-content dark:bg-gray-800">
         <div class="p-8">
           <div class="flex justify-between items-center mb-8">
             <h2 class="text-4xl md:text-3xl font-black text-gray-900 dark:text-white mobile-auth-title">
@@ -182,46 +182,6 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
       display: block;
     }
     
-    .modal-backdrop {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      bottom: 0 !important;
-      background-color: rgba(0, 0, 0, 0.5) !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      z-index: 999999 !important;
-      overflow-y: auto !important;
-      padding: 1rem !important;
-      isolation: isolate !important;
-      pointer-events: auto !important;
-    }
-    
-    :host-context(.dark) .modal-backdrop {
-      background-color: rgba(0, 0, 0, 0.75) !important;
-    }
-    
-    .modal-content {
-      background-color: white !important;
-      border-radius: 0.5rem !important;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-      width: 100% !important;
-      max-width: 28rem !important;
-      max-height: calc(100vh - 2rem) !important;
-      overflow-y: auto !important;
-      margin: auto !important;
-      position: relative !important;
-      z-index: 1000000 !important;
-      pointer-events: auto !important;
-    }
-    
-    :host-context(.dark) .modal-content {
-      background-color: rgb(31, 41, 55) !important; /* gray-800 */
-      color: white !important;
-    }
-    
     @media (max-width: 767px) {
       .modal-content {
         margin: 1rem !important;
@@ -266,7 +226,7 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
     }
   `]
 })
-export class AuthModalComponent implements OnInit, AfterViewInit {
+export class AuthModalComponent {
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private router = inject(Router);
@@ -280,34 +240,6 @@ export class AuthModalComponent implements OnInit, AfterViewInit {
   close = output<void>();
   success = output<void>();
   modeChange = output<'login' | 'register'>();
-  
-  ngOnInit(): void {
-    // #region agent log
-    const backdropEl = document.querySelector('.modal-backdrop');
-    const contentEl = document.querySelector('.modal-content');
-    const computedBackdrop = backdropEl ? window.getComputedStyle(backdropEl) : null;
-    const computedContent = contentEl ? window.getComputedStyle(contentEl) : null;
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-modal.component.ts:ngOnInit',message:'Modal component initialized',data:{backdropExists:!!backdropEl,contentExists:!!contentEl,backdropZIndex:computedBackdrop?.zIndex,contentZIndex:computedContent?.zIndex,backdropDisplay:computedBackdrop?.display,contentDisplay:computedContent?.display,backdropVisibility:computedBackdrop?.visibility,contentVisibility:computedContent?.visibility},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-  }
-  
-  ngAfterViewInit(): void {
-    // #region agent log
-    setTimeout(() => {
-      const backdropEl = document.querySelector('.modal-backdrop');
-      const contentEl = document.querySelector('.modal-content');
-      const computedBackdrop = backdropEl ? window.getComputedStyle(backdropEl) : null;
-      const computedContent = contentEl ? window.getComputedStyle(contentEl) : null;
-      const backdropRect = backdropEl?.getBoundingClientRect();
-      const contentRect = contentEl?.getBoundingClientRect();
-      
-      const htmlEl = document.documentElement;
-      const isDark = htmlEl.classList.contains('dark');
-      
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-modal.component.ts:ngAfterViewInit',message:'Modal after view init - background colors',data:{backdropExists:!!backdropEl,contentExists:!!contentEl,isDarkMode:isDark,backdropBgColor:computedBackdrop?.backgroundColor,contentBgColor:computedContent?.backgroundColor,backdropRect:backdropRect?{width:backdropRect.width,height:backdropRect.height}:null,contentRect:contentRect?{width:contentRect.width,height:contentRect.height}:null},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'F'})}).catch(()=>{});
-    }, 100);
-    // #endregion
-  }
 
   name = '';
   email = '';
@@ -512,12 +444,6 @@ export class AuthModalComponent implements OnInit, AfterViewInit {
   }
 
   translate(key: string): string {
-    // #region agent log
-    const result = this.translationService.translate(key);
-    if (key.startsWith('auth.')) {
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-modal.component.ts:translate',message:'Translation lookup',data:{key,result,isKey:result===key},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-    }
-    // #endregion
-    return result;
+    return this.translationService.translate(key);
   }
 }

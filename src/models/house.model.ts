@@ -35,6 +35,10 @@ export interface HouseDto {
   ticketsSold: number;
   participationPercentage: number;
   canExecute: boolean;
+  maxParticipants?: number;
+  uniqueParticipants: number;
+  isParticipantCapReached: boolean;
+  remainingParticipantSlots?: number;
   images: HouseImageDto[];
   createdAt: Date;
 }
@@ -154,6 +158,11 @@ export interface UpdateUserProfileRequest {
   firstName?: string;
   lastName?: string;
   dateOfBirth?: Date;
+  gender?: string;
+  idNumber?: string;
+  preferredLanguage?: string;
+  timezone?: string;
+}
   gender?: string;
   idNumber?: string;
   preferredLanguage?: string;

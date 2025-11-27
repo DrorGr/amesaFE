@@ -8,13 +8,9 @@ import { TopbarComponent } from './components/topbar/topbar.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { TranslationLoaderComponent } from './components/translation-loader/translation-loader.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
+import { AccessibilityWidgetComponent } from './components/accessibility-widget/accessibility-widget.component';
 import { ToastComponent } from './components/toast/toast.component';
 import { CookieConsentComponent } from './components/cookie-consent/cookie-consent.component';
-import { ActiveEntriesAccordionComponent } from './components/active-entries-accordion/active-entries-accordion.component';
-import { AuthModalComponent } from './components/auth-modal/auth-modal.component';
-import { AuthService } from './services/auth.service';
-import { AuthModalService } from './services/auth-modal.service';
-import { MemoryMonitorService } from './services/memory-monitor.service';
 import { TranslationService } from './services/translation.service';
 import { RouteLoadingService } from './services/route-loading.service';
 import { ToastService } from './services/toast.service';
@@ -31,10 +27,9 @@ import { CookieConsentService } from './services/cookie-consent.service';
     LoadingComponent,
     TranslationLoaderComponent,
     ChatbotComponent,
+    AccessibilityWidgetComponent,
     ToastComponent,
-    CookieConsentComponent,
-    ActiveEntriesAccordionComponent,
-    AuthModalComponent
+    CookieConsentComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
@@ -44,10 +39,6 @@ import { CookieConsentService } from './services/cookie-consent.service';
       ></app-translation-loader>
       
       <app-topbar></app-topbar>
-      
-      @if (authService.isAuthenticated()) {
-        <app-active-entries-accordion></app-active-entries-accordion>
-      }
       
       <div class="transition-all duration-500 ease-in-out">
         @if (isLoading | async) {
@@ -190,21 +181,14 @@ import { CookieConsentService } from './services/cookie-consent.service';
       <!-- Fixed Chatbot -->
       <app-chatbot></app-chatbot>
       
+      <!-- Fixed Accessibility Widget -->
+      <app-accessibility-widget></app-accessibility-widget>
+      
       <!-- Toast Notifications -->
       <app-toast></app-toast>
       
       <!-- Cookie Consent Banner -->
       <app-cookie-consent></app-cookie-consent>
-      
-      <!-- Auth Modal (rendered at root level to avoid parent constraints) -->
-      @if (authModalService.isOpen()) {
-        <app-auth-modal 
-          [mode]="authModalService.mode()" 
-          (close)="authModalService.close()"
-          (success)="onAuthSuccess()"
-          (modeChange)="authModalService.setMode($event)">
-        </app-auth-modal>
-      }
       
     </div>
   `,
@@ -212,9 +196,6 @@ import { CookieConsentService } from './services/cookie-consent.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
   public translationService = inject(TranslationService);
-  public authService = inject(AuthService);
-  public authModalService = inject(AuthModalService);
-  private memoryMonitor = inject(MemoryMonitorService);
   private routeLoadingService = inject(RouteLoadingService);
   private router = inject(Router);
   private toastService = inject(ToastService);
@@ -227,9 +208,6 @@ export class AppComponent implements OnInit, OnDestroy {
   isLoading = this.routeLoadingService.loading$;
 
   ngOnInit(): void {
-    // Memory monitoring disabled to reduce network traffic
-    // this.memoryMonitor.startMonitoring();
-    
     // Expose debug log viewer to window for console access
     (window as any).viewOAuthLogs = () => {
       try {
@@ -308,14 +286,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }, 500);
   }
 
-  onAuthSuccess(): void {
-    this.authModalService.close();
-  }
-
   ngOnDestroy(): void {
-    // Memory monitoring disabled
-    // this.memoryMonitor.stopMonitoring();
-    
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }

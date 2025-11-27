@@ -32,6 +32,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'watchlist',
+    loadComponent: () => import('./components/watchlist/watchlist.component').then(m => m.WatchlistComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'partners',
     loadComponent: () => import('./components/partners-page/partners-page.component').then(m => m.PartnersPageComponent)
   },
@@ -56,32 +61,8 @@ export const routes: Routes = [
     loadComponent: () => import('./components/lottery-result-detail/lottery-result-detail.component').then(m => m.LotteryResultDetailComponent)
   },
   {
-    path: 'lottery/dashboard',
-    loadComponent: () => import('./components/lottery-dashboard/lottery-dashboard.component').then(m => m.LotteryDashboardComponent),
-    canActivate: [AuthGuard]
-  },
-  {
-    path: 'lottery/favorites',
-    loadComponent: () => import('./components/lottery-favorites/lottery-favorites.component').then(m => m.LotteryFavoritesComponent),
-    canActivate: [AuthGuard]
-  },
-  {
-    path: 'lottery/entries/active',
-    loadComponent: () => import('./components/active-entries/active-entries.component').then(m => m.ActiveEntriesComponent),
-    canActivate: [AuthGuard]
-  },
-  {
-    path: 'lottery/entries/history',
-    loadComponent: () => import('./components/entry-history/entry-history.component').then(m => m.EntryHistoryComponent),
-    canActivate: [AuthGuard]
-  },
-  {
-    path: 'houses/:id',
+    path: 'house/:id',
     loadComponent: () => import('./components/house-detail/house-detail.component').then(m => m.HouseDetailComponent)
-  },
-  {
-    path: 'search',
-    loadComponent: () => import('./components/search-page/search-page.component').then(m => m.SearchPageComponent)
   },
   {
     path: 'auth/callback',

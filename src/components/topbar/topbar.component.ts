@@ -1,18 +1,18 @@
-import { Component, inject, ViewEncapsulation, OnInit, signal } from '@angular/core';
+import { Component, inject, ViewEncapsulation, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { AuthModalComponent } from '../auth-modal/auth-modal.component';
 import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { ToastService } from '../../services/toast.service';
-import { UserMenuComponent } from '../user-menu/user-menu.component';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, LanguageSwitcherComponent, ThemeToggleComponent, UserMenuComponent],
+  imports: [CommonModule, AuthModalComponent, LanguageSwitcherComponent, ThemeToggleComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
@@ -30,21 +30,43 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
           </div>
 
           <div class="ml-10 flex items-center space-x-8">
-            <button (click)="navigateToDashboard()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-              {{ translate('nav.myLottery') }}
+            <button (click)="navigateToHome()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+              {{ translate('nav.lotteries') }}
             </button>
-            <button (click)="navigateToFavorites()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-              {{ translate('nav.favorites') }}
+                <button (click)="navigateToPromotions()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+                  {{ translate('nav.promotions') }}
                 </button>
-            <button (click)="navigateToSearch()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-              {{ translate('nav.search') }}
+            <button (click)="navigateToLotteryResults()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+              {{ translate('nav.winners') }}
             </button>
           </div>
 
           <div class="flex items-center space-x-3 mobile-controls">
             <app-theme-toggle></app-theme-toggle>
             <app-language-switcher></app-language-switcher>
-            <app-user-menu></app-user-menu>
+                @if (currentUser(); as user) {
+                  <div class="flex items-center space-x-3">
+                    <span class="text-gray-700 dark:text-gray-300 text-sm font-medium">{{ translate('nav.welcome') }}, {{ user.name }}</span>
+                    <button
+                      (click)="navigateToMemberSettings()"
+                      class="bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md">
+                      {{ translate('nav.memberSettings') }}
+                    </button>
+                    <button
+                      (click)="logout()"
+                      class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md">
+                      {{ translate('nav.logout') }}
+                    </button>
+                  </div>
+                } @else {
+                  <div class="flex items-center space-x-3">
+                    <button
+                      (click)="openAuthModal()"
+                      class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-8 py-2 rounded-lg text-base font-bold transition-all duration-200 hover:shadow-md min-h-[30px] mobile-signin-button">
+                      {{ translate('nav.signIn') }}
+                    </button>
+                  </div>
+                }
           </div>
         </div>
         }
@@ -66,7 +88,28 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
             <div class="flex items-center space-x-3 mobile-controls">
               <app-theme-toggle></app-theme-toggle>
               <app-language-switcher></app-language-switcher>
-              <app-user-menu></app-user-menu>
+              
+              @if (currentUser(); as user) {
+                <div class="flex items-center space-x-2">
+                  <span class="text-gray-700 dark:text-gray-300 text-sm font-medium">{{ translate('nav.welcome') }}, {{ user.name }}</span>
+                  <button
+                    (click)="navigateToMemberSettings()"
+                    class="bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 hover:shadow-md">
+                    {{ translate('nav.memberSettings') }}
+                  </button>
+                  <button
+                    (click)="logout()"
+                    class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 hover:shadow-md">
+                    {{ translate('nav.logout') }}
+                  </button>
+                </div>
+              } @else {
+                <button
+                  (click)="openAuthModal()"
+                  class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 hover:shadow-md mobile-signin-button">
+                  {{ translate('nav.signIn') }}
+                </button>
+              }
               
               <!-- Hamburger Menu Button -->
               <button
@@ -93,14 +136,14 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
           <div class="absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-4 animate-fadeIn shadow-lg z-50">
             <!-- Navigation Links -->
             <div class="space-y-2">
-              <button (click)="navigateToDashboard()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
-                {{ translate('nav.myLottery') }}
+              <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                {{ translate('nav.lotteries') }}
               </button>
-              <button (click)="navigateToFavorites()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
-                {{ translate('nav.favorites') }}
+              <button (click)="navigateToPromotions()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                {{ translate('nav.promotions') }}
               </button>
-              <button (click)="navigateToSearch()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
-                {{ translate('nav.search') }}
+              <button (click)="navigateToLotteryResults()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                {{ translate('nav.winners') }}
               </button>
             </div>
           </div>
@@ -108,6 +151,14 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
       </div>
     </nav>
 
+    @if (showAuthModal) {
+      <app-auth-modal 
+        [mode]="authMode" 
+        (close)="closeAuthModal()"
+        (success)="onAuthSuccess()"
+        (modeChange)="onModeChange($event)">
+      </app-auth-modal>
+    }
   `,
   styles: [`
     :host {
@@ -157,6 +208,8 @@ export class TopbarComponent implements OnInit {
   private mobileDetectionService = inject(MobileDetectionService);
   private toastService = inject(ToastService);
   
+  showAuthModal = false;
+  authMode: 'login' | 'register' = 'login';
   isMobileMenuOpen = false;
   
   // Use global mobile detection
@@ -178,15 +231,38 @@ export class TopbarComponent implements OnInit {
     }
   }
 
+  openAuthModal() {
+    this.authMode = 'login';
+    this.showAuthModal = true;
+  }
+
+  closeAuthModal() {
+    this.showAuthModal = false;
+  }
+
+  onAuthSuccess() {
+    this.showAuthModal = false;
+    // Force refresh to ensure UI updates with new auth state
+    // The signal should auto-update, but this ensures change detection
+    setTimeout(() => {
+      // Trigger change detection by accessing the signal
+      const user = this.currentUser();
+      // User will be updated automatically via signal
+    }, 100);
+  }
+
+  onModeChange(mode: 'login' | 'register') {
+    this.authMode = mode;
+  }
+
+  logout() {
+    this.authService.logout();
+    // Show info toast after logout
+    this.toastService.info('You have been logged out successfully.', 3000);
+  }
 
   translate(key: string): string {
-    // #region agent log
-    const result = this.translationService.translate(key);
-    if (key === 'nav.myLottery') {
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'topbar.component.ts:translate',message:'nav.myLottery translation lookup',data:{key,result,isKey:result===key},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    }
-    // #endregion
-    return result;
+    return this.translationService.translate(key);
   }
 
   navigateToHome() {
@@ -199,32 +275,12 @@ export class TopbarComponent implements OnInit {
     this.isMobileMenuOpen = false;
   }
 
-  navigateToDashboard() {
-    if (!this.authService.isAuthenticated()) {
-      this.toastService.info('Please log in first', 3000);
-      return;
-    }
-    this.router.navigate(['/lottery/dashboard']);
+  navigateToPromotions() {
+    this.router.navigate(['/promotions']);
     this.isMobileMenuOpen = false;
   }
-
-  navigateToFavorites() {
-    if (!this.authService.isAuthenticated()) {
-      this.toastService.info('Please log in first', 3000);
-      return;
-    }
-    this.router.navigate(['/lottery/favorites']);
-    this.isMobileMenuOpen = false;
-  }
-
-  navigateToSearch() {
-    this.router.navigate(['/search']);
-    this.isMobileMenuOpen = false;
-  }
-
 
   navigateToLotteryResults() {
-    // Legacy method - kept for compatibility
     this.router.navigate(['/lottery-results']);
     this.isMobileMenuOpen = false;
   }

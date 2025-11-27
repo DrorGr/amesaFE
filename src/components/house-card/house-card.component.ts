@@ -1,19 +1,28 @@
 import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { House } from '../../models/house.model';
+import { RouterModule } from '@angular/router';
+import { House, HouseDto } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
+import { WatchlistService } from '../../services/watchlist.service';
 import { TranslationService } from '../../services/translation.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
+import { ParticipantStatsComponent } from '../participant-stats/participant-stats.component';
 
 @Component({
   selector: 'app-house-card',
   standalone: true,
-  imports: [CommonModule, VerificationGateComponent],
+  imports: [CommonModule, RouterModule, VerificationGateComponent, ParticipantStatsComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="relative bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col w-full transform hover:scale-105">
+      <!-- Clickable overlay for navigation -->
+      <a
+        [routerLink]="['/house', house().id]"
+        class="absolute inset-0 z-0"
+        [attr.aria-label]="'View details for ' + house().title">
+      </a>
       <!-- Background Pattern -->
       <div class="absolute inset-0 opacity-10">
         <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500"></div>
@@ -40,7 +49,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
         <!-- Favorite Button -->
         <button
           *ngIf="currentUser()"
-          (click)="toggleFavorite()"
+          (click)="toggleFavorite($event)"
           [class.animate-pulse]="isTogglingFavorite"
           class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
           [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
@@ -62,8 +71,26 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
             </path>
           </svg>
         </button>
+
+        <!-- Watchlist Button -->
+        <button
+          *ngIf="currentUser()"
+          (click)="toggleWatchlist($event)"
+          [class.animate-pulse]="isTogglingWatchlist"
+          class="absolute top-16 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+          [attr.aria-label]="isInWatchlist() ? 'Remove from watchlist' : 'Add to watchlist'"
+          [title]="isInWatchlist() ? translate('watchlist.remove') : translate('watchlist.add')">
+          <svg 
+            class="w-5 h-5 transition-all duration-300"
+            [class.text-blue-500]="isInWatchlist()"
+            [class.text-gray-400]="!isInWatchlist()"
+            fill="currentColor" 
+            viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+          </svg>
+        </button>
         
-        <div class="absolute top-16 right-4 z-20">
+        <div class="absolute top-28 right-4 z-20">
           <span class="bg-emerald-500 text-white px-3 py-2 rounded-full text-sm md:text-sm font-semibold shadow-lg">
             {{ getStatusText() }}
           </span>
@@ -110,6 +137,22 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
             <div class="flex justify-between text-2xl md:text-base text-gray-600 dark:text-gray-300 mobile-card-details">
               <span>{{ translate('house.address') }}</span>
               <span class="font-medium">{{ house().address || '123 Park Ave' }}</span>
+            </div>
+          </div>
+
+          <!-- Participant Stats (if maxParticipants is set) -->
+          <div *ngIf="houseDto()?.maxParticipants" class="mb-4 md:mb-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+              {{ translate('participants.count', { count: houseDto()?.uniqueParticipants || 0 }) }}
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-500 mb-2">
+              {{ translate('participants.maxParticipants', { max: houseDto()?.maxParticipants }) }}
+            </div>
+            <div *ngIf="houseDto()?.isParticipantCapReached" class="text-xs text-red-600 dark:text-red-400">
+              {{ translate('participants.capReached') }}
+            </div>
+            <div *ngIf="houseDto()?.remainingParticipantSlots !== undefined && houseDto()?.remainingParticipantSlots !== null && houseDto()?.remainingParticipantSlots > 0" class="text-xs text-green-600 dark:text-green-400">
+              {{ translate('participants.remainingSlots', { count: houseDto()?.remainingParticipantSlots }) }}
             </div>
           </div>
 
@@ -293,6 +336,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
 export class HouseCardComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private lotteryService = inject(LotteryService);
+  private watchlistService = inject(WatchlistService);
   private translationService = inject(TranslationService);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
@@ -302,10 +346,15 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   private countdownInterval?: number;
   isPurchasing = false;
   isTogglingFavorite = false;
+  isTogglingWatchlist = false;
   isQuickEntering = false;
   
   currentUser = this.authService.getCurrentUser();
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
+  watchlistItems = this.watchlistService.getWatchlistSignal();
+  houseDto = signal<HouseDto | null>(null);
+  canEnter = signal<boolean>(true);
+  isExistingParticipant = signal<boolean>(false);
   
   // Use signals for dynamic values to prevent change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
@@ -314,6 +363,11 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   // Computed signal to check if this house is favorited
   isFavorite = computed(() => {
     return this.favoriteHouseIds().includes(this.house().id);
+  });
+
+  // Computed signal to check if this house is in watchlist
+  isInWatchlist = computed(() => {
+    return this.watchlistItems().some(item => item.houseId === this.house().id);
   });
 
   formatPrice(price: number): string {
@@ -364,6 +418,13 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Check if user can enter (participant cap check)
+    if (!this.canEnter() && !this.isExistingParticipant()) {
+      console.warn('Cannot enter lottery: participant cap reached');
+      // TODO: Show error toast
+      return;
+    }
+
     this.isPurchasing = true;
     
     try {
@@ -375,6 +436,8 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       
       if (result && result.ticketsPurchased > 0) {
         console.log('Ticket purchased successfully!');
+        // Refresh can enter status
+        this.checkCanEnter();
       } else {
         console.log('Failed to purchase ticket');
       }
@@ -386,8 +449,41 @@ export class HouseCardComponent implements OnInit, OnDestroy {
         // Verification gate will handle showing the message
         // User will see the gate component
       }
+      // Check if it's a participant cap error
+      if (error?.error?.error?.code === 'PARTICIPANT_CAP_REACHED') {
+        this.canEnter.set(false);
+        // TODO: Show error toast
+      }
     } finally {
       this.isPurchasing = false;
+    }
+  }
+
+  /**
+   * Toggle watchlist status for this house
+   */
+  async toggleWatchlist(event?: Event): Promise<void> {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (!this.currentUser() || this.isTogglingWatchlist) {
+      return;
+    }
+
+    this.isTogglingWatchlist = true;
+    
+    try {
+      if (this.isInWatchlist()) {
+        await this.watchlistService.removeFromWatchlist(this.house().id).toPromise();
+      } else {
+        await this.watchlistService.addToWatchlist(this.house().id, true).toPromise();
+      }
+    } catch (error) {
+      console.error('Error toggling watchlist:', error);
+      // TODO: Show error toast notification
+    } finally {
+      this.isTogglingWatchlist = false;
     }
   }
 
@@ -431,6 +527,39 @@ export class HouseCardComponent implements OnInit, OnDestroy {
         this.currentViewers.set(Math.floor(Math.random() * 46) + 5);
       }
     }, 1000);
+
+    // Load house DTO and participant stats if user is authenticated
+    if (this.currentUser()) {
+      this.loadHouseDetails();
+      this.checkCanEnter();
+    }
+  }
+
+  loadHouseDetails(): void {
+    // Convert House to HouseDto format (simplified - would need full conversion)
+    // For now, we'll load participant stats separately
+    this.lotteryService.getParticipantStats(this.house().id).subscribe({
+      next: (stats) => {
+        // Update house DTO with participant stats
+        // Note: This is a simplified approach - ideally we'd have a full HouseDto
+      },
+      error: (error) => {
+        console.error('Error loading participant stats:', error);
+      }
+    });
+  }
+
+  checkCanEnter(): void {
+    this.lotteryService.canEnterLottery(this.house().id).subscribe({
+      next: (response) => {
+        this.canEnter.set(response.canEnter);
+        this.isExistingParticipant.set(response.isExistingParticipant);
+      },
+      error: (error) => {
+        console.error('Error checking if can enter:', error);
+        this.canEnter.set(true); // Default to allowing entry on error
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -479,7 +608,133 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   /**
    * Toggle favorite status for this house
    */
-  async toggleFavorite(): Promise<void> {
+  async toggleFavorite(event?: Event): Promise<void> {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (!this.currentUser() || this.isTogglingFavorite) {
+      return;
+    }
+
+    this.isTogglingFavorite = true;
+    
+    try {
+      const result = await this.lotteryService.toggleFavorite(this.house().id).toPromise();
+      
+      if (result) {
+        // State is automatically updated by LotteryService
+        console.log(result.message || (result.added ? 'Added to favorites' : 'Removed from favorites'));
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      // TODO: Show error toast notification
+    } finally {
+      this.isTogglingFavorite = false;
+    }
+  }
+
+  /**
+   * Quick entry from favorites
+   */
+  async quickEntry(): Promise<void> {
+    // Verification check is handled by backend and verification gate component
+    if (!this.currentUser() || this.isQuickEntering || !this.isFavorite()) {
+      return;
+    }
+
+    this.isQuickEntering = true;
+    
+    try {
+      const result = await this.lotteryService.quickEntryFromFavorite({
+        houseId: this.house().id,
+        quantity: 1, // API contract specifies "quantity", matches backend [JsonPropertyName("quantity")]
+        paymentMethodId: 'default' // TODO: Get from user preferences or payment service
+      }).toPromise();
+      
+      if (result && result.ticketsPurchased > 0) {
+        console.log('Quick entry successful!', result);
+        // TODO: Show success toast notification
+      }
+    } catch (error) {
+      console.error('Error with quick entry:', error);
+      // TODO: Show error toast notification
+    } finally {
+      this.isQuickEntering = false;
+    }
+  }
+}
+      },
+      error: (error) => {
+        console.error('Error loading participant stats:', error);
+      }
+    });
+  }
+
+  checkCanEnter(): void {
+    this.lotteryService.canEnterLottery(this.house().id).subscribe({
+      next: (response) => {
+        this.canEnter.set(response.canEnter);
+        this.isExistingParticipant.set(response.isExistingParticipant);
+      },
+      error: (error) => {
+        console.error('Error checking if can enter:', error);
+        this.canEnter.set(true); // Default to allowing entry on error
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+  }
+
+  getLotteryCountdown(): string {
+    const now = this.currentTime();
+    const endTime = new Date(this.house().lotteryEndDate).getTime();
+    const timeLeft = endTime - now;
+
+    if (timeLeft <= 0) {
+      return '00:00:00';
+    }
+
+    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    // Show seconds only when less than 24 hours left
+    if (days === 0 && hours < 24) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      return `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
+  }
+
+  openLocationMap(): void {
+    const house = this.house();
+    const address = house.address || house.location || house.title;
+    const city = house.city || 'New York';
+    
+    // Create a search query for Google Maps
+    const searchQuery = encodeURIComponent(`${address}, ${city}`);
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
+    
+    // Open in a new tab
+    window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
+    
+    console.log(`Opening location map for: ${address}, ${city}`);
+  }
+
+  /**
+   * Toggle favorite status for this house
+   */
+  async toggleFavorite(event?: Event): Promise<void> {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     if (!this.currentUser() || this.isTogglingFavorite) {
       return;
     }

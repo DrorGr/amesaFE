@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { HubConnection, HubConnectionBuilder, HubConnectionState, HttpTransportType } from '@microsoft/signalr';
+import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { ApiService } from './api.service';
 
@@ -112,23 +112,13 @@ export class RealtimeService {
     try {
       // Get base URL and construct SignalR URL (remove /api/v1 for WebSocket endpoint)
       const baseUrl = this.apiService.getBaseUrl();
-      let wsUrl = baseUrl.replace('/api/v1', '') + '/ws/lottery';
+      const wsUrl = baseUrl.replace('/api/v1', '') + '/ws/lottery';
       
-      // Get token from localStorage and append as query parameter
-      // WebSocket connections don't support Authorization headers, so we must use query parameter
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        const separator = wsUrl.includes('?') ? '&' : '?';
-        wsUrl += `${separator}access_token=${encodeURIComponent(token)}`;
-      }
-      
-      // Configure SignalR to use LongPolling (works through CloudFront)
-      // CloudFront doesn't support WebSocket upgrades, so we skip WebSocket and use LongPolling
-      // LongPolling provides real-time updates with 50-200ms latency (acceptable for production)
       this.connection = new HubConnectionBuilder()
         .withUrl(wsUrl, {
-          transport: HttpTransportType.LongPolling, // Skip WebSocket, use LongPolling
-          skipNegotiation: false // Keep negotiation for compatibility
+          accessTokenFactory: () => {
+            return localStorage.getItem('access_token') || '';
+          }
         })
         .withAutomaticReconnect({
           nextRetryDelayInMilliseconds: retryContext => {
@@ -299,17 +289,25 @@ export class RealtimeService {
   }
 
   async joinUserGroup(userId: string): Promise<void> {
-    // NOTE: User groups are automatically handled by the backend LotteryHub.OnConnectedAsync()
-    // The backend adds users to user_{userId} group automatically when they connect
-    // No explicit JoinUserGroup method exists or is needed
-    console.log(`User group membership handled automatically by backend for user: ${userId}`);
+    if (this.connection && this.connection.state === HubConnectionState.Connected) {
+      try {
+        await this.connection.invoke('JoinUserGroup', userId);
+        console.log(`Joined user group for user: ${userId}`);
+      } catch (error) {
+        console.error('Error joining user group:', error);
+      }
+    }
   }
 
   async leaveUserGroup(userId: string): Promise<void> {
-    // NOTE: User groups are automatically handled by the backend LotteryHub.OnDisconnectedAsync()
-    // The backend removes users from user_{userId} group automatically when they disconnect
-    // No explicit LeaveUserGroup method exists or is needed
-    console.log(`User group membership handled automatically by backend for user: ${userId}`);
+    if (this.connection && this.connection.state === HubConnectionState.Connected) {
+      try {
+        await this.connection.invoke('LeaveUserGroup', userId);
+        console.log(`Left user group for user: ${userId}`);
+      } catch (error) {
+        console.error('Error leaving user group:', error);
+      }
+    }
   }
 
   async sendMessage(groupName: string, message: string): Promise<void> {

@@ -18,6 +18,10 @@ import {
   QuickEntryResponse,
   FavoriteHouseResponse
 } from '../interfaces/lottery.interface';
+import {
+  LotteryParticipantStats,
+  CanEnterLotteryResponse
+} from '../interfaces/watchlist.interface';
 import { RealtimeService, FavoriteUpdateEvent, EntryStatusChangeEvent, DrawReminderEvent, RecommendationEvent } from './realtime.service';
 
 @Injectable({
@@ -536,6 +540,86 @@ export class LotteryService {
     this.activeEntries.set([]);
     this.userLotteryStats.set(null);
     this.recommendations.set([]);
+  }
+
+  /**
+   * Get participant statistics for a house
+   * Endpoint: GET /api/v1/houses/{id}/participants
+   */
+  getParticipantStats(houseId: string): Observable<LotteryParticipantStats> {
+    return this.apiService.get<LotteryParticipantStats>(`houses/${houseId}/participants`).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to fetch participant stats');
+      }),
+      catchError(error => {
+        console.error('Error fetching participant stats:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Check if user can enter lottery
+   * Endpoint: GET /api/v1/houses/{id}/can-enter
+   */
+  canEnterLottery(houseId: string): Observable<CanEnterLotteryResponse> {
+    return this.apiService.get<CanEnterLotteryResponse>(`houses/${houseId}/can-enter`).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to check if user can enter lottery');
+      }),
+      catchError(error => {
+        console.error('Error checking if user can enter lottery:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+}
+    this.recommendations.set([]);
+  }
+
+  /**
+   * Get participant statistics for a house
+   * Endpoint: GET /api/v1/houses/{id}/participants
+   */
+  getParticipantStats(houseId: string): Observable<LotteryParticipantStats> {
+    return this.apiService.get<LotteryParticipantStats>(`houses/${houseId}/participants`).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to fetch participant stats');
+      }),
+      catchError(error => {
+        console.error('Error fetching participant stats:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Check if user can enter lottery
+   * Endpoint: GET /api/v1/houses/{id}/can-enter
+   */
+  canEnterLottery(houseId: string): Observable<CanEnterLotteryResponse> {
+    return this.apiService.get<CanEnterLotteryResponse>(`houses/${houseId}/can-enter`).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to check if user can enter lottery');
+      }),
+      catchError(error => {
+        console.error('Error checking if user can enter lottery:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
 }

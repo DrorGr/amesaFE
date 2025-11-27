@@ -5,7 +5,9 @@ import { LoggingService } from './logging.service';
 
 export type Language = 'en' | 'es' | 'fr' | 'pl';
 
-export type Translations = Record<string, string>;
+export interface Translations {
+  readonly [key: string]: string;
+}
 
 export interface LanguageInfo {
   code: string;
@@ -105,25 +107,15 @@ export class TranslationService {
 
   /**
    * Get translation for a key in the current language
-   * Returns a signal that updates reactively when language changes
    */
   translate(key: string): string {
-    // Explicitly read both signals to ensure Angular tracks them
-    const lang = this.currentLanguage();
     const translations = this.currentTranslations();
     const translation = translations[key];
-    
-    // #region agent log - throttled to prevent ERR_INSUFFICIENT_RESOURCES
-    if (!translation && (!(window as any).__translationLogThrottle || Date.now() - (window as any).__translationLogThrottle > 1000)) {
-      (window as any).__translationLogThrottle = Date.now();
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:translate',message:'Missing translation',data:{key,lang,translationCount:Object.keys(translations).length},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'C'})}).catch(()=>{});
-    }
-    // #endregion
     
     if (!translation) {
       this.logger.warn('Missing translation', { 
         key, 
-        language: lang 
+        language: this.currentLanguage() 
       }, 'TranslationService');
       // Return the key itself as fallback, but log the missing translation
       return key;
@@ -136,16 +128,16 @@ export class TranslationService {
    * Set the current language and load translations if not cached
    */
   setLanguage(language: Language): void {
-    const currentLang = this.currentLanguage();
-    if (currentLang === language) {
-      this.logger.debug('Language already set', { language }, 'TranslationService');
+    if (this.currentLanguage() === language) {
       return; // Already set to this language
     }
 
-    this.logger.info('Switching language', { from: currentLang, to: language }, 'TranslationService');
+    this.logger.info('Switching language', { language }, 'TranslationService');
     
-    // Show simple loader when changing language
+    // Always show loader when changing language for better UX
     this.isLoading.next(true);
+    this.loadingProgress.next(10);
+    this.loadingMessage.next(`Switching to ${language.toUpperCase()}...`);
     this.error.next(null); // Clear any previous errors
     
     // Load translations if not in cache or cache is stale
@@ -153,16 +145,23 @@ export class TranslationService {
       // Load translations first, then switch language when ready
       this.loadTranslations(language, true); // true = switch language after loading
     } else {
-      // Translations are cached, switch immediately and update cache signal
-      const newCache = new Map(this.translationsCache());
-      // Force cache update to trigger computed signal
-      this.translationsCache.set(newCache);
+      // Translations are cached, safe to switch immediately
       this.currentLanguage.set(language);
       
-      // Hide loader quickly
+      // Show brief loading for smooth UX
+      this.loadingProgress.next(50);
+      this.loadingMessage.next('Loading cached translations...');
+      
       setTimeout(() => {
-        this.isLoading.next(false);
-      }, 100);
+        this.loadingProgress.next(100);
+        this.loadingMessage.next('Language switched successfully!');
+        
+        setTimeout(() => {
+          this.isLoading.next(false);
+          this.loadingProgress.next(0);
+          this.loadingMessage.next('Initializing...');
+        }, 300);
+      }, 200);
     }
   }
 
@@ -179,10 +178,17 @@ export class TranslationService {
    * @param language - Language to load translations for
    * @param switchAfterLoad - If true, switch current language after translations are loaded
    */
-  private loadTranslations(language: Language, switchAfterLoad = false): void {
+  private loadTranslations(language: Language, switchAfterLoad: boolean = false): void {
+    if (this.isLoading.value) {
+      this.logger.debug('Already loading translations, skipping', { language }, 'TranslationService');
+      return; // Already loading
+    }
+
     this.logger.info('Loading translations', { language }, 'TranslationService');
     this.isLoading.next(true);
     this.error.next(null);
+    this.loadingProgress.next(10);
+    this.loadingMessage.next(`Loading ${language.toUpperCase()} translations...`);
 
     const url = `translations/${language}`;
     this.logger.debug('Making API request', { url, language }, 'TranslationService');
@@ -198,6 +204,8 @@ export class TranslationService {
       .pipe(
         tap(response => {
           clearTimeout(timeoutTimer);
+          this.loadingProgress.next(50);
+          this.loadingMessage.next('Processing translations...');
           this.logger.debug('API Response received', { response }, 'TranslationService');
         }),
         map(response => {
@@ -213,6 +221,9 @@ export class TranslationService {
           throw new Error('Invalid response format');
         }),
         tap(data => {
+          this.loadingProgress.next(80);
+          this.loadingMessage.next('Caching translations...');
+          
           const translationCount = Object.keys(data.translations || {}).length;
           this.logger.debug('Caching translations', { language, translationCount }, 'TranslationService');
           
@@ -220,9 +231,9 @@ export class TranslationService {
           if (translationCount === 0) {
             this.logger.warn('No translations found for language', { language }, 'TranslationService');
             this.error.next(`No translations available for ${language.toUpperCase()}. Please ensure the database is seeded.`);
+            this.loadingMessage.next(`Warning: No translations found for ${language.toUpperCase()}`);
           }
           
-          // Update cache - create new Map to trigger signal update
           const newCache = new Map(this.translationsCache());
           newCache.set(language, data.translations || {});
           this.translationsCache.set(newCache);
@@ -234,17 +245,27 @@ export class TranslationService {
             this.logger.info('Language switched after translations loaded', { language }, 'TranslationService');
           }
           
+          this.loadingProgress.next(100);
+          
           if (translationCount > 0) {
+            this.loadingMessage.next('Translations loaded successfully!');
             this.error.next(null);
+          } else {
+            this.loadingMessage.next(`No translations available for ${language.toUpperCase()}`);
+          }
+          
+          // Delay to show completion or warning
+          setTimeout(() => {
+            this.isLoading.next(false);
+            this.loadingProgress.next(0);
+            this.loadingMessage.next('Initializing...');
+          }, translationCount > 0 ? 500 : 2000); // Show warning longer if no translations
+          
+          if (translationCount > 0) {
             this.logger.info('Translations loaded successfully', { language, translationCount, switched: switchAfterLoad }, 'TranslationService');
           } else {
             this.logger.warn('Translations loaded but empty', { language }, 'TranslationService');
           }
-          
-          // Hide loader quickly
-          setTimeout(() => {
-            this.isLoading.next(false);
-          }, translationCount > 0 ? 200 : 1000);
         }),
         catchError(error => {
           clearTimeout(timeoutTimer);
@@ -258,12 +279,11 @@ export class TranslationService {
    * Handle translation loading errors - NO fallback, show error
    */
   private handleTranslationLoadError(language: Language, error: unknown): Observable<null> {
-    const httpError = error as { status?: number | string; statusText?: string; url?: string };
     const errorDetails = {
       message: error instanceof Error ? error.message : 'Unknown error',
-      status: httpError?.status || 'Unknown',
-      statusText: httpError?.statusText || 'Unknown',
-      url: httpError?.url || 'Unknown',
+      status: (error as any)?.status || 'Unknown',
+      statusText: (error as any)?.statusText || 'Unknown',
+      url: (error as any)?.url || 'Unknown',
       language
     };
     
@@ -271,11 +291,15 @@ export class TranslationService {
     
     const errorMessage = `Failed to load ${language.toUpperCase()} translations from server`;
     this.error.next(errorMessage);
+    this.loadingProgress.next(100);
+    this.loadingMessage.next('Translation loading failed');
     
-    // Hide loader quickly on error
+    // Show error state for 2 seconds, then hide loader
     setTimeout(() => {
       this.isLoading.next(false);
-    }, 1000);
+      this.loadingProgress.next(0);
+      this.loadingMessage.next('Initializing...');
+    }, 2000);
     
     return of(null);
   }
