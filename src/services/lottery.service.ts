@@ -1,6 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { Observable, throwError, Subscription, of } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { Observable, throwError, Subscription, of, Subject } from 'rxjs';
+import { map, catchError, tap, debounceTime, filter, switchMap } from 'rxjs/operators';
 import { ApiService, PagedResponse } from './api.service';
 import { RetryService } from './retry.service';
 import { 
@@ -37,6 +37,12 @@ export class LotteryService {
   private activeEntries = signal<LotteryTicketDto[]>([]);
   private userLotteryStats = signal<UserLotteryStats | null>(null);
   private recommendations = signal<HouseRecommendation[]>([]);
+  
+  // Debouncing for favorites operations (prevent rapid clicks/exploits)
+  private pendingFavoriteAdds = new Map<string, boolean>();
+  private pendingFavoriteRemoves = new Map<string, boolean>();
+  private favoriteAddSubject = new Subject<{ houseId: string; timestamp: number }>();
+  private favoriteRemoveSubject = new Subject<{ houseId: string; timestamp: number }>();
   
   private realtimeService = inject(RealtimeService, { optional: true });
   private subscriptions = new Subscription();
@@ -395,23 +401,47 @@ export class LotteryService {
   /**
    * Add house to favorites
    * Endpoint: POST /api/v1/houses/{id}/favorite
+   * Debounced to prevent rapid clicks/exploits (500ms debounce)
    */
   addHouseToFavorites(houseId: string): Observable<FavoriteHouseResponse> {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites',message:'Adding house to favorites',data:{houseId,currentFavorites:this.favoriteHouseIds(),isAlreadyFavorite:this.favoriteHouseIds().includes(houseId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites',message:'Adding house to favorites',data:{houseId,currentFavorites:this.favoriteHouseIds(),isAlreadyFavorite:this.favoriteHouseIds().includes(houseId),isPending:this.pendingFavoriteAdds.has(houseId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
     // #endregion
+    
+    // Debounce: Prevent rapid clicks/exploits - if request is already pending, return early
+    if (this.pendingFavoriteAdds.has(houseId)) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:debounced',message:'Request debounced - already pending',data:{houseId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
+      // Return a cached/duplicate response to prevent UI flicker
+      return of({
+        houseId: houseId,
+        added: this.favoriteHouseIds().includes(houseId),
+        message: 'Request already in progress'
+      });
+    }
+    
+    // Mark as pending
+    this.pendingFavoriteAdds.set(houseId, true);
     
     // Backend expects no body (null) for POST /api/v1/houses/{id}/favorite
     return this.apiService.post<FavoriteHouseResponse>(`houses/${houseId}/favorite`, null).pipe(
+      // Add debounce delay (500ms) to prevent rapid successive requests
+      debounceTime(500),
       map(response => {
         // Backend returns success: false with message for "already in favorites" case
         // Check the message to handle this gracefully
         if (response.success && response.data) {
-          // Update favorite IDs signal
-          const currentFavorites = this.favoriteHouseIds();
-          if (!currentFavorites.includes(houseId)) {
-            this.favoriteHouseIds.set([...currentFavorites, houseId]);
-          }
+          // On success, refresh favorites from backend to ensure sync
+          // Don't optimistically update signal - let backend be the source of truth
+          this.getFavoriteHouses().subscribe({
+            next: (houses) => {
+              // Signal is updated in getFavoriteHouses()
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:success-refresh',message:'Favorites refreshed after successful add',data:{houseId,housesReturned:houses.length,houseIds:houses.map(h=>h.id),isInList:houses.some(h=>h.id===houseId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+              // #endregion
+            }
+          });
           return response.data;
         } else if (!response.success && response.message) {
           // Backend returned success: false with a message
@@ -483,22 +513,33 @@ export class LotteryService {
           if (errorMessage.includes('already') || 
               errorMessage.includes('already be in favorites') ||
               errorMessage.includes('may not exist or already be in favorites')) {
-            // Already favorited or might be - ADD to favorites list and return success response
-            // This ensures the UI shows it as favorited even if backend says it's already there
-            const currentFavorites = this.favoriteHouseIds();
-            const wasInFavorites = currentFavorites.includes(houseId);
-            if (!wasInFavorites) {
-              this.favoriteHouseIds.set([...currentFavorites, houseId]);
-            }
-            
+            // Backend says "already in favorites" - refresh from backend to get actual state
+            // Don't optimistically update signal - let backend be the source of truth
             // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:400-success',message:'Handled 400 as success - added to favorites',data:{houseId,wasInFavorites,newFavoritesCount:this.favoriteHouseIds().length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:400-refresh',message:'Refreshing favorites from backend after 400',data:{houseId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
             // #endregion
             
+            // Refresh favorites list from backend to ensure sync
+            this.getFavoriteHouses().subscribe({
+              next: (houses) => {
+                // Signal is updated in getFavoriteHouses()
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:refresh-complete',message:'Favorites refreshed from backend',data:{houseId,housesReturned:houses.length,houseIds:houses.map(h=>h.id),isInList:houses.some(h=>h.id===houseId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                // #endregion
+              },
+              error: (err) => {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:refresh-error',message:'Error refreshing favorites',data:{houseId,error:err.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                // #endregion
+              }
+            });
+            
+            // Clear pending flag
+            this.pendingFavoriteAdds.delete(houseId);
             return of({
               houseId: houseId,
               added: true, // Set to true so UI shows it as added
-              message: 'Added to favorites'
+              message: 'Already in favorites'
             });
           }
           // If message doesn't match, it might be a different error (e.g., house doesn't exist)
@@ -512,6 +553,8 @@ export class LotteryService {
           // Only log non-auth errors
           console.error('Error adding house to favorites:', error.status, error.statusText, error.error);
         }
+        // Clear pending flag on error
+        this.pendingFavoriteAdds.delete(houseId);
         return throwError(() => error);
       })
     );
@@ -599,14 +642,29 @@ export class LotteryService {
           if (errorMessage.includes('not be in favorites') || 
               errorMessage.includes('may not be in favorites') ||
               errorMessage.includes('may not exist or already be in favorites')) {
-            // Not in favorites - treat as success (already removed)
-            const currentFavorites = this.favoriteHouseIds();
-            const wasInFavorites = currentFavorites.includes(houseId);
-            this.favoriteHouseIds.set(currentFavorites.filter(id => id !== houseId));
-            
+            // Backend says "not in favorites" - refresh from backend to get actual state
+            // Don't optimistically update signal - let backend be the source of truth
             // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:400-success',message:'Handled 400 as success - removed from favorites',data:{houseId,wasInFavorites,newFavoritesCount:this.favoriteHouseIds().length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:400-refresh',message:'Refreshing favorites from backend after 400',data:{houseId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
             // #endregion
+            
+            // Refresh favorites list from backend to ensure sync
+            this.getFavoriteHouses().subscribe({
+              next: (houses) => {
+                // Signal is updated in getFavoriteHouses()
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:refresh-complete',message:'Favorites refreshed from backend',data:{houseId,housesReturned:houses.length,houseIds:houses.map(h=>h.id),isInList:houses.some(h=>h.id===houseId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                // #endregion
+              },
+              error: (err) => {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:refresh-error',message:'Error refreshing favorites',data:{houseId,error:err.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                // #endregion
+              }
+            });
+            
+            // Clear pending flag
+            this.pendingFavoriteRemoves.delete(houseId);
             
             return of({
               houseId: houseId,
