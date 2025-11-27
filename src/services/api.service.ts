@@ -123,7 +123,9 @@ export class ApiService {
   }
 
   post<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
-    return this.http.post<ApiResponse<T>>(this.buildUrl(endpoint), data, {
+    // Handle null body - send as null instead of empty object
+    const body = data === null ? null : (data || {});
+    return this.http.post<ApiResponse<T>>(this.buildUrl(endpoint), body, {
       headers: this.getHeaders()
     }).pipe(
       catchError(this.handleError)

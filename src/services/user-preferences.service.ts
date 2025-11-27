@@ -312,13 +312,15 @@ export class UserPreferencesService {
     this.apiService.post<UserPreferences>('user/preferences', preferences)
       .pipe(
         catchError(error => {
-          // Don't log 400 errors as critical - might be validation issues
+          // Don't log 400 errors to console - might be validation issues
+          // Only log to logger service for debugging, not console
           if (error.status === 400) {
-            this.logger.warn('Preferences validation error (400)', { 
-              error: error.error?.message || error.message,
-              preferences: this.sanitizePreferencesForLogging(preferences)
+            // Silently handle validation errors - don't spam console
+            this.logger.debug('Preferences validation error (400)', { 
+              error: error.error?.message || error.message
             }, 'UserPreferencesService');
-          } else {
+          } else if (error.status !== 401 && error.status !== 403) {
+            // Only log non-auth errors
             this.logger.error('Failed to sync preferences with server', { error }, 'UserPreferencesService');
           }
           this.syncStatusSubject.next({

@@ -375,6 +375,7 @@ export class LotteryService {
    * Endpoint: POST /api/v1/houses/{id}/favorite
    */
   addHouseToFavorites(houseId: string): Observable<FavoriteHouseResponse> {
+    // Try with empty object first (backend might expect empty body)
     return this.apiService.post<FavoriteHouseResponse>(`houses/${houseId}/favorite`, {}).pipe(
       map(response => {
         if (response.success && response.data) {
@@ -388,7 +389,32 @@ export class LotteryService {
         throw new Error('Failed to add house to favorites');
       }),
       catchError(error => {
-        console.error('Error adding house to favorites:', error);
+        // Handle 400 errors gracefully - might be validation or already favorited
+        if (error.status === 400) {
+          // Check if it's because already in favorites
+          const errorMessage = error.error?.message || error.error?.error?.message || '';
+          const errorCode = error.error?.error?.code || error.error?.code || '';
+          
+          if (errorMessage.toLowerCase().includes('already') || 
+              errorMessage.toLowerCase().includes('favorite') ||
+              errorCode.toLowerCase().includes('already')) {
+            // Already favorited - return success response and update state
+            const currentFavorites = this.favoriteHouseIds();
+            if (!currentFavorites.includes(houseId)) {
+              this.favoriteHouseIds.set([...currentFavorites, houseId]);
+            }
+            return of({
+              houseId: houseId,
+              added: false,
+              message: 'Already in favorites'
+            });
+          }
+          // Other 400 errors - don't log to console, just return error
+          // This prevents console spam for validation errors
+        } else if (error.status !== 401 && error.status !== 403) {
+          // Only log non-auth errors
+          console.error('Error adding house to favorites:', error.status, error.statusText);
+        }
         return throwError(() => error);
       })
     );
