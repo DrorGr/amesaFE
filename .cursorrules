@@ -283,21 +283,31 @@ git checkout main
 
 ## Recent Changes (2025-01-25) - LOTTERY-USER LINK SYSTEM COMPLETE & BUILD ERRORS FIXED
 1. ✅ **Build Errors Fixed - Production Build Successful** - All TypeScript compilation errors resolved
-   - **Fixed Translation Service Calls**: Split `translate()` into `translate()` (no params) and `translateWithParams()` (with params) to match service signature
-   - **Fixed ToastService Methods**: Changed `showSuccess()`/`showError()` to `success()`/`error()` to match actual service implementation
-   - **Fixed ApiResponse Unwrapping**: Corrected watchlist service to properly unwrap `ApiResponse<T>` from API calls
-   - **Fixed Optional Chaining**: Replaced unnecessary `?.` operators with explicit null checks where needed
-   - **Fixed AuthService Access**: Updated `currentUser` access to use `getCurrentUser()()` pattern
-   - **Fixed House Card Component**: Updated to load `HouseDto` with participant stats via `getHouseById()` method
-   - **Fixed Duplicate Declarations**: Resolved false positive duplicate class declarations (only one class per file)
-   - **Build Status**: ✅ **SUCCESS** - `npm run build:prod` completes with 0 errors
+   - **Issue Identified**: Participants feature was fully implemented but had build errors preventing production deployment
+   - **Verification**: Confirmed all components (HouseDetailComponent, WatchlistComponent, ParticipantStatsComponent) were complete and functional
+   - **Root Causes**: Type mismatches, incorrect service method calls, and API response unwrapping issues
+   - **Fixes Applied**:
+     - **Translation Service Calls**: Split `translate()` into `translate()` (no params) and `translateWithParams()` (with params) to match service signature
+     - **ToastService Methods**: Changed `showSuccess()`/`showError()` to `success()`/`error()` to match actual service implementation
+     - **ApiResponse Unwrapping**: Corrected watchlist service to properly unwrap `ApiResponse<T>` from API calls (ApiService always returns `Observable<ApiResponse<T>>`)
+     - **Optional Chaining**: Replaced unnecessary `?.` operators with explicit null checks where needed (TypeScript strict mode)
+     - **AuthService Access**: Updated `currentUser` access to use `getCurrentUser()()` pattern (signal access)
+     - **House Card Component**: Updated to load `HouseDto` with participant stats via `getHouseById()` method instead of incomplete participant stats call
+     - **Duplicate Declarations**: Resolved false positive duplicate class declarations (verified only one class per file)
+     - **Orphaned Code**: Removed duplicate/orphaned code blocks from house-card.component.ts (lines 667-788)
+   - **Build Status**: ✅ **SUCCESS** - `npm run build:prod` completes with 0 errors, 0 warnings
    - **Files Fixed**: 
-     - `house-card.component.ts` - Added `translateWithParams()`, fixed `houseDto` loading, removed orphaned code
-     - `house-detail.component.ts` - Fixed `translate()` calls, added `translateWithParams()`, fixed `currentUser` access
-     - `watchlist.component.ts` - Fixed `translate()` calls, fixed `ToastService` methods, fixed `isRemoving()` Map access
-     - `participant-stats.component.ts` - Fixed `translate()` calls, added missing imports (`ErrorMessageService`, `ToastService`)
-     - `watchlist.service.ts` - Fixed `ApiResponse<T>` unwrapping, corrected retry service usage
-     - `lottery-favorites.component.ts` - Fixed optional chaining for image access
+     - `src/components/house-card/house-card.component.ts` - Added `translateWithParams()`, fixed `houseDto` loading, removed orphaned code
+     - `src/components/house-detail/house-detail.component.ts` - Fixed `translate()` calls, added `translateWithParams()`, fixed `currentUser` access
+     - `src/components/watchlist/watchlist.component.ts` - Fixed `translate()` calls, fixed `ToastService` methods, fixed `isRemoving()` Map access (`.get()` instead of function call)
+     - `src/components/participant-stats/participant-stats.component.ts` - Fixed `translate()` calls, added missing imports (`ErrorMessageService`, `ToastService`)
+     - `src/services/watchlist.service.ts` - Fixed `ApiResponse<T>` unwrapping, corrected retry service usage, added `ApiResponse` import
+     - `src/components/lottery-favorites/lottery-favorites.component.ts` - Fixed optional chaining for image access
+   - **New Services Created**: 
+     - `src/services/error-message.service.ts` - Maps error codes to translatable messages
+     - `src/services/retry.service.ts` - Exponential backoff retry logic for network errors
+   - **Commit**: `959e87d` - "Fix build errors: translation service, ToastService, ApiResponse unwrapping"
+   - **Status**: ✅ All build errors resolved, production build successful, code pushed to main branch
 2. ✅ **Lottery-User Link System - Complete Implementation** - Participant caps, watchlist, and all enhancements
    - **Frontend Components**: ✅ **COMPLETE**
      - Created `HouseDetailComponent` with full lottery entry flow, watchlist toggle, participant stats display
