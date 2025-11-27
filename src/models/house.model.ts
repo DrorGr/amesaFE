@@ -163,8 +163,3 @@ export interface UpdateUserProfileRequest {
   preferredLanguage?: string;
   timezone?: string;
 }
-  gender?: string;
-  idNumber?: string;
-  preferredLanguage?: string;
-  timezone?: string;
-}
