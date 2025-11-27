@@ -1,6 +1,7 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
@@ -127,10 +128,11 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
     }
   `]
 })
-export class LotteryFavoritesComponent implements OnInit {
+export class LotteryFavoritesComponent implements OnInit, OnDestroy {
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
+  private favoriteIdsSubscription?: Subscription;
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -139,6 +141,9 @@ export class LotteryFavoritesComponent implements OnInit {
   favoriteHouses = signal<HouseDto[]>([]);
   removingFavorites = signal<Set<string>>(new Set());
   quickEntering = signal<Set<string>>(new Set());
+  
+  // Watch favorite IDs changes to auto-refresh
+  favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
   
   // Computed signals for Set operations
   isRemovingFavorite = computed(() => {
@@ -151,8 +156,36 @@ export class LotteryFavoritesComponent implements OnInit {
     return (houseId: string) => set.has(houseId);
   });
 
+  constructor() {
+    // Auto-refresh favorites when favorite IDs change (user adds/removes from other pages)
+    effect(() => {
+      const favoriteIds = this.favoriteHouseIds();
+      const currentUser = this.currentUser();
+      
+      // Only refresh if user is logged in and we have favorite IDs
+      if (currentUser && favoriteIds.length > 0) {
+        // Debounce: only refresh if we don't already have these houses loaded
+        const currentHouseIds = this.favoriteHouses().map(h => h.id).sort().join(',');
+        const newHouseIds = favoriteIds.sort().join(',');
+        
+        if (currentHouseIds !== newHouseIds) {
+          this.loadFavorites();
+        }
+      } else if (currentUser && favoriteIds.length === 0 && this.favoriteHouses().length > 0) {
+        // If favorites were removed, clear the list
+        this.favoriteHouses.set([]);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.loadFavorites();
+  }
+  
+  ngOnDestroy(): void {
+    if (this.favoriteIdsSubscription) {
+      this.favoriteIdsSubscription.unsubscribe();
+    }
   }
 
   async loadFavorites(): Promise<void> {
@@ -182,9 +215,10 @@ export class LotteryFavoritesComponent implements OnInit {
     try {
       const result = await this.lotteryService.removeHouseFromFavorites(houseId).toPromise();
       if (result) {
-        // Remove from local list
+        // Remove from local list - the effect will also refresh from API
         this.favoriteHouses.set(this.favoriteHouses().filter(h => h.id !== houseId));
-        console.log(result.message);
+        // Reload to ensure sync with backend
+        this.loadFavorites();
       }
     } catch (error) {
       console.error('Error removing favorite:', error);
