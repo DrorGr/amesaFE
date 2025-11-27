@@ -8,12 +8,24 @@ describe('TranslationService', () => {
   let service: TranslationService;
   let httpMock: HttpTestingController;
 
-  const mockTranslations = [
-    { id: '1', languageCode: 'en', key: 'nav.home', value: 'Home', category: 'Navigation', isActive: true },
-    { id: '2', languageCode: 'en', key: 'nav.about', value: 'About', category: 'Navigation', isActive: true },
-    { id: '3', languageCode: 'he', key: 'nav.home', value: 'בית', category: 'Navigation', isActive: true },
-    { id: '4', languageCode: 'he', key: 'nav.about', value: 'אודות', category: 'Navigation', isActive: true }
-  ];
+  // Mock translations response format matches TranslationsResponse interface
+  const mockTranslationsEn = {
+    languageCode: 'en',
+    translations: {
+      'nav.home': 'Home',
+      'nav.about': 'About'
+    },
+    lastUpdated: new Date().toISOString()
+  };
+
+  const mockTranslationsHe = {
+    languageCode: 'he',
+    translations: {
+      'nav.home': 'בית',
+      'nav.about': 'אודות'
+    },
+    lastUpdated: new Date().toISOString()
+  };
 
   const mockLanguages: LanguageInfo[] = [
     { code: 'en', name: 'English', flagUrl: 'en-flag.png', isActive: true, isDefault: true, displayOrder: 1 },
@@ -25,15 +37,22 @@ describe('TranslationService', () => {
       imports: [HttpClientTestingModule],
       providers: [TranslationService]
     });
-    service = TestBed.inject(TranslationService);
     httpMock = TestBed.inject(HttpTestingController);
+    service = TestBed.inject(TranslationService);
+    // Handle initial request from constructor (loadTranslations('en'))
+    const initReq = httpMock.expectOne('/api/v1/translations/en');
+    initReq.flush({ 
+      success: true, 
+      data: mockTranslationsEn, 
+      timestamp: new Date().toISOString() 
+    });
   });
 
   afterEach(() => {
     // Flush any pending requests before verifying
-    httpMock.match((req) => {
+    const pendingRequests = httpMock.match(() => true);
+    pendingRequests.forEach(req => {
       req.flush({ success: true, data: [], timestamp: new Date().toISOString() });
-      return false;
     });
     httpMock.verify();
   });
@@ -43,89 +62,101 @@ describe('TranslationService', () => {
   });
 
   it('should load translations on init', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
-    expect(req.request.method).toBe('GET');
-    req.flush({ success: true, data: mockTranslations, timestamp: new Date().toISOString() });
+    // Initial request already handled in beforeEach
+    expect(service).toBeTruthy();
+    // Verify translations are loaded
+    expect(service.translate('nav.home')).toBe('Home');
   });
 
   it('should load languages on init', () => {
-    const req = httpMock.expectOne('/api/v1/translations/languages');
-    expect(req.request.method).toBe('GET');
-    req.flush({ success: true, data: mockLanguages, timestamp: new Date().toISOString() });
+    // Languages are hardcoded in service, not loaded from API
+    const languages = service.getAvailableLanguages();
+    expect(languages.length).toBeGreaterThan(0);
+    expect(languages.some(l => l.code === 'en')).toBe(true);
   });
 
   it('should translate text correctly', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
-    req.flush({ success: true, data: mockTranslations, timestamp: new Date().toISOString() });
-
+    // Translations already loaded in beforeEach
     const translation = service.translate('nav.home');
     expect(translation).toBe('Home');
   });
 
   it('should return key when translation not found', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
-    req.flush({ success: true, data: mockTranslations, timestamp: new Date().toISOString() });
-
+    // Translations already loaded in beforeEach
     const translation = service.translate('nonexistent.key');
     expect(translation).toBe('nonexistent.key');
   });
 
-  it('should switch language correctly', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
-    req.flush({ success: true, data: mockTranslations, timestamp: new Date().toISOString() });
-
+  it('should switch language correctly', fakeAsync(() => {
+    // Translations for 'en' already loaded in beforeEach
     service.setLanguage('he' as Language);
+    tick(); // Allow async operations to complete
+    
+    // Expect request for Hebrew translations
+    const req = httpMock.expectOne('/api/v1/translations/he');
+    req.flush({ 
+      success: true, 
+      data: mockTranslationsHe, 
+      timestamp: new Date().toISOString() 
+    });
+    tick(); // Allow response processing
+    
     expect(service.getCurrentLanguage()).toBe('he');
-
     const translation = service.translate('nav.home');
-    expect(translation).toBe('nav.home'); // Spanish translations not loaded in test
-  });
+    expect(translation).toBe('בית');
+  }));
 
   it('should get current language', () => {
     expect(service.getCurrentLanguage()).toBe('en');
   });
 
   it('should get available languages', () => {
-    const req = httpMock.expectOne('/api/v1/translations/languages');
-    req.flush({ success: true, data: mockLanguages, timestamp: new Date().toISOString() });
-
+    // Languages are hardcoded in service
     const languages = service.getAvailableLanguages();
-    expect(languages.length).toBe(2);
-    expect(languages[0].code).toBe('en');
-    expect(languages[1].code).toBe('es');
+    expect(languages.length).toBe(4); // en, es, fr, pl
+    expect(languages.some(l => l.code === 'en')).toBe(true);
+    expect(languages.some(l => l.code === 'es')).toBe(true);
   });
 
   it('should get current language info', () => {
-    const req = httpMock.expectOne('/api/v1/translations/languages');
-    req.flush({ success: true, data: mockLanguages, timestamp: new Date().toISOString() });
-
+    // Languages are hardcoded in service
     const availableLanguages = service.getAvailableLanguages();
     const currentLanguageInfo = availableLanguages.find(lang => lang.code === service.getCurrentLanguage());
     expect(currentLanguageInfo?.code).toBe('en');
     expect(currentLanguageInfo?.name).toBe('English');
   });
 
-  it('should handle API errors gracefully', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
+  it('should handle API errors gracefully', fakeAsync(() => {
+    // Initial request already handled, now test error on language switch
+    service.setLanguage('fr' as Language);
+    tick();
+    
+    const req = httpMock.expectOne('/api/v1/translations/fr');
     req.flush({ success: false, message: 'Error loading translations' }, { status: 500, statusText: 'Internal Server Error' });
-
+    tick(3000); // Allow error handling to complete
+    
+    // Should still return key as fallback
     const translation = service.translate('nav.home');
-    expect(translation).toBe('nav.home'); // Should return key as fallback
-  });
+    expect(translation).toBe('nav.home');
+  }));
 
-  it('should handle network errors', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
+  it('should handle network errors', fakeAsync(() => {
+    // Initial request already handled, now test error on language switch
+    service.setLanguage('pl' as Language);
+    tick();
+    
+    const req = httpMock.expectOne('/api/v1/translations/pl');
     req.error(new ErrorEvent('Network error'));
-
+    tick(3000); // Allow error handling to complete
+    
+    // Should return key as fallback
     const translation = service.translate('nav.home');
-    expect(translation).toBe('nav.home'); // Should return key as fallback
-  });
+    expect(translation).toBe('nav.home');
+  }));
 
   it('should cache translations', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
-    req.flush({ success: true, data: mockTranslations, timestamp: new Date().toISOString() });
-
-    // First call should make HTTP request
+    // Translations already loaded in beforeEach (cached)
+    // First call uses cache
     const translation1 = service.translate('nav.home');
     expect(translation1).toBe('Home');
 
@@ -134,20 +165,23 @@ describe('TranslationService', () => {
     expect(translation2).toBe('Home');
   });
 
-  it('should refresh translations', () => {
-    const req1 = httpMock.expectOne('/api/v1/translations');
-    req1.flush({ success: true, data: mockTranslations, timestamp: new Date().toISOString() });
-
+  it('should refresh translations', fakeAsync(() => {
+    // Initial request already handled in beforeEach
     service.refreshTranslations();
-
-    const req2 = httpMock.expectOne('/api/v1/translations');
-    req2.flush({ success: true, data: mockTranslations, timestamp: new Date().toISOString() });
-  });
+    tick();
+    
+    // Should make new request for current language (en)
+    const req2 = httpMock.expectOne('/api/v1/translations/en');
+    req2.flush({ 
+      success: true, 
+      data: mockTranslationsEn, 
+      timestamp: new Date().toISOString() 
+    });
+    tick();
+  }));
 
   it('should translate keys correctly', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
-    req.flush({ success: true, data: mockTranslations, timestamp: new Date().toISOString() });
-
+    // Translations already loaded in beforeEach
     const homeTranslation = service.translate('nav.home');
     const aboutTranslation = service.translate('nav.about');
     expect(homeTranslation).toBe('Home');
@@ -155,88 +189,160 @@ describe('TranslationService', () => {
   });
 
   it('should return key when translation not found', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
-    req.flush({ success: true, data: mockTranslations, timestamp: new Date().toISOString() });
-
+    // Translations already loaded in beforeEach
     const translation = service.translate('NonExistent.key');
     expect(translation).toBe('NonExistent.key');
   });
 
-  it('should handle empty translations response', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
-    req.flush({ success: true, data: [], timestamp: new Date().toISOString() });
-
+  it('should handle empty translations response', fakeAsync(() => {
+    // Switch to a new language to test empty response
+    service.setLanguage('fr' as Language);
+    tick();
+    
+    const req = httpMock.expectOne('/api/v1/translations/fr');
+    req.flush({ 
+      success: true, 
+      data: { languageCode: 'fr', translations: {}, lastUpdated: new Date().toISOString() }, 
+      timestamp: new Date().toISOString() 
+    });
+    tick(3000);
+    
     const translation = service.translate('nav.home');
     expect(translation).toBe('nav.home');
-  });
+  }));
 
-  it('should handle null translations response', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
+  it('should handle null translations response', fakeAsync(() => {
+    // Switch to a new language to test null response
+    service.setLanguage('pl' as Language);
+    tick();
+    
+    const req = httpMock.expectOne('/api/v1/translations/pl');
     req.flush({ success: true, data: null, timestamp: new Date().toISOString() });
-
+    tick(3000);
+    
     const translation = service.translate('nav.home');
     expect(translation).toBe('nav.home');
-  });
+  }));
 
-  it('should handle undefined translations response', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
-    req.flush({ success: true, data: undefined, timestamp: new Date().toISOString() });
-
-    const translation = service.translate('nav.home');
-    expect(translation).toBe('nav.home');
-  });
-
-  it('should maintain language selection across service instances', () => {
-    const req = httpMock.expectOne('/api/v1/translations');
-    req.flush({ success: true, data: mockTranslations, timestamp: new Date().toISOString() });
-
-    service.setLanguage('he' as Language);
-    expect(service.getCurrentLanguage()).toBe('he');
-
-    // Create new service instance
-    const newService = TestBed.inject(TranslationService);
-    expect(newService.getCurrentLanguage()).toBe('es');
-  });
-
-  it('should handle language switching when translations not loaded', () => {
-    service.setLanguage('he' as Language);
-    expect(service.getCurrentLanguage()).toBe('he');
-
-    const translation = service.translate('nav.home');
-    expect(translation).toBe('nav.home'); // Should return key as fallback
-  });
-
-  it('should handle invalid language selection', () => {
+  it('should handle undefined translations response', fakeAsync(() => {
+    // Switch to a new language to test undefined response
     service.setLanguage('es' as Language);
-    expect(service.getCurrentLanguage()).toBe('es');
-
+    tick();
+    
+    const req = httpMock.expectOne('/api/v1/translations/es');
+    req.flush({ success: true, data: undefined, timestamp: new Date().toISOString() });
+    tick(3000);
+    
     const translation = service.translate('nav.home');
-    expect(translation).toBe('nav.home'); // Should return key as fallback
-  });
+    expect(translation).toBe('nav.home');
+  }));
 
-  it('should handle translations with special characters', () => {
-    const specialTranslations = [
-      { id: '1', languageCode: 'en', key: 'special.chars', value: 'Special & "quoted" <tags>', category: 'Test', isActive: true }
-    ];
+  it('should maintain language selection across service instances', fakeAsync(() => {
+    // Initial request already handled
+    service.setLanguage('he' as Language);
+    tick();
+    
+    const req = httpMock.expectOne('/api/v1/translations/he');
+    req.flush({ 
+      success: true, 
+      data: mockTranslationsHe, 
+      timestamp: new Date().toISOString() 
+    });
+    tick();
+    
+    expect(service.getCurrentLanguage()).toBe('he');
 
-    const req = httpMock.expectOne('/api/v1/translations');
+    // Create new service instance - will load 'en' by default
+    const newService = TestBed.inject(TranslationService);
+    const newInitReq = httpMock.expectOne('/api/v1/translations/en');
+    newInitReq.flush({ 
+      success: true, 
+      data: mockTranslationsEn, 
+      timestamp: new Date().toISOString() 
+    });
+    tick();
+    
+    expect(newService.getCurrentLanguage()).toBe('en'); // Default language
+  }));
+
+  it('should handle language switching when translations not loaded', fakeAsync(() => {
+    service.setLanguage('he' as Language);
+    tick();
+    
+    // Request should be made but we won't flush it to simulate not loaded
+    const req = httpMock.expectOne('/api/v1/translations/he');
+    // Don't flush - simulate timeout or error
+    tick(11000); // Wait for timeout (10s + buffer)
+    
+    // Language should still be switched
+    expect(service.getCurrentLanguage()).toBe('he');
+    
+    // Should return key as fallback since translations not loaded
+    const translation = service.translate('nav.home');
+    expect(translation).toBe('nav.home');
+  }));
+
+  it('should handle invalid language selection', fakeAsync(() => {
+    service.setLanguage('es' as Language);
+    tick();
+    
+    // Request for Spanish translations
+    const req = httpMock.expectOne('/api/v1/translations/es');
+    req.flush({ 
+      success: true, 
+      data: { languageCode: 'es', translations: {}, lastUpdated: new Date().toISOString() }, 
+      timestamp: new Date().toISOString() 
+    });
+    tick(3000);
+    
+    expect(service.getCurrentLanguage()).toBe('es');
+    
+    // Should return key as fallback if translations empty
+    const translation = service.translate('nav.home');
+    expect(translation).toBe('nav.home');
+  }));
+
+  it('should handle translations with special characters', fakeAsync(() => {
+    // Refresh to load new translations
+    service.refreshTranslations();
+    tick();
+    
+    const specialTranslations = {
+      languageCode: 'en',
+      translations: {
+        'special.chars': 'Special & "quoted" <tags>'
+      },
+      lastUpdated: new Date().toISOString()
+    };
+
+    const req = httpMock.expectOne('/api/v1/translations/en');
     req.flush({ success: true, data: specialTranslations, timestamp: new Date().toISOString() });
+    tick();
 
     const translation = service.translate('special.chars');
     expect(translation).toBe('Special & "quoted" <tags>');
-  });
+  }));
 
-  it('should handle translations with HTML content', () => {
-    const htmlTranslations = [
-      { id: '1', languageCode: 'en', key: 'html.content', value: '<p>HTML <strong>content</strong></p>', category: 'Test', isActive: true }
-    ];
+  it('should handle translations with HTML content', fakeAsync(() => {
+    // Refresh to load new translations
+    service.refreshTranslations();
+    tick();
+    
+    const htmlTranslations = {
+      languageCode: 'en',
+      translations: {
+        'html.content': '<p>HTML <strong>content</strong></p>'
+      },
+      lastUpdated: new Date().toISOString()
+    };
 
-    const req = httpMock.expectOne('/api/v1/translations');
+    const req = httpMock.expectOne('/api/v1/translations/en');
     req.flush({ success: true, data: htmlTranslations, timestamp: new Date().toISOString() });
+    tick();
 
     const translation = service.translate('html.content');
     expect(translation).toBe('<p>HTML <strong>content</strong></p>');
-  });
+  }));
 });
 
 

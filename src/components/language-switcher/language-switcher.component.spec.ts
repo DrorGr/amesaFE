@@ -19,12 +19,13 @@ describe('LanguageSwitcherComponent', () => {
   ];
 
   beforeEach(async () => {
+    const currentLanguageSignal = signal<Language>('en');
     const translationServiceSpy = jasmine.createSpyObj('TranslationService', [
       'translate',
       'setLanguage',
       'getAvailableLanguages'
     ], {
-      getCurrentLanguage: signal('en')
+      getCurrentLanguage: currentLanguageSignal
     });
 
     const mobileDetectionServiceSpy = jasmine.createSpyObj('MobileDetectionService', [], {
@@ -92,11 +93,14 @@ describe('LanguageSwitcherComponent', () => {
   });
 
   it('should get current language code', () => {
-    expect(component.getCurrentLanguageCode()).toBe('en');
+    // Mock current language signal returns 'en'
+    expect(component.getCurrentLanguageCode()).toBe('EN');
   });
 
   it('should get current language flag', () => {
     const flag = component.getCurrentLanguageFlag();
     expect(flag).toBeDefined();
+    // Should return flag URL from mock languages
+    expect(flag).toBe('en-flag.png');
   });
 });

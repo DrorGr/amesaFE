@@ -38,6 +38,19 @@ describe('LotteryService', () => {
       recommendations$: of({ houseId: 'house-1', reason: 'test' })
     });
 
+    // Mock initial loadHousesInternal call
+    const initialHousesResponse = {
+      success: true,
+      data: {
+        items: [],
+        totalCount: 0,
+        page: 1,
+        pageSize: 10
+      },
+      timestamp: new Date().toISOString()
+    };
+    apiServiceSpy.get.and.returnValue(of(initialHousesResponse));
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
@@ -51,6 +64,9 @@ describe('LotteryService', () => {
     httpMock = TestBed.inject(HttpTestingController);
     apiService = TestBed.inject(ApiService) as jasmine.SpyObj<ApiService>;
     realtimeService = TestBed.inject(RealtimeService) as jasmine.SpyObj<RealtimeService>;
+    
+    // Reset spy calls after initial load
+    apiService.get.calls.reset();
   });
 
   afterEach(() => {
@@ -372,14 +388,14 @@ describe('LotteryService', () => {
   describe('clearLotteryData', () => {
     it('should clear all lottery data', () => {
       service.clearLotteryData();
-      expect(service.getFavoriteHouseIds().length).toBe(0);
-      expect(service.getActiveEntries().length).toBe(0);
-      expect(service.getUserLotteryStats()).toBeNull();
+      expect(service.getFavoriteHouseIds()().length).toBe(0);
+      expect(service.getActiveEntries()().length).toBe(0);
+      expect(service.getUserLotteryStats()()).toBeNull();
     });
   });
 
   describe('isFavorite', () => {
-    it('should return true if house is favorited', () => {
+    it('should return true if house is favorited', (done) => {
       const mockResponse = {
         success: true,
         data: { houseId: 'house-1', added: true, message: 'Added to favorites' },
@@ -387,8 +403,12 @@ describe('LotteryService', () => {
       };
       apiService.post.and.returnValue(of(mockResponse));
       
-      service.addHouseToFavorites('house-1').subscribe();
-      expect(service.isFavorite('house-1')).toBe(true);
+      service.addHouseToFavorites('house-1').subscribe({
+        next: () => {
+          expect(service.isFavorite('house-1')).toBe(true);
+          done();
+        }
+      });
     });
 
     it('should return false if house is not favorited', () => {

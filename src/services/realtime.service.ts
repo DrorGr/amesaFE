@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
+import { HubConnection, HubConnectionBuilder, HubConnectionState, HttpTransportType } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { ApiService } from './api.service';
 
@@ -112,10 +112,23 @@ export class RealtimeService {
     try {
       // Get base URL and construct SignalR URL (remove /api/v1 for WebSocket endpoint)
       const baseUrl = this.apiService.getBaseUrl();
-      const wsUrl = baseUrl.replace('/api/v1', '') + '/ws/lottery';
+      let wsUrl = baseUrl.replace('/api/v1', '') + '/ws/lottery';
+
+      // Get token from localStorage and append as query parameter
+      // WebSocket connections don't support Authorization headers, so we must use query parameter
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        const separator = wsUrl.includes('?') ? '&' : '?';
+        wsUrl += `${separator}access_token=${encodeURIComponent(token)}`;
+      }
       
+      // Configure SignalR to use LongPolling (works through CloudFront)
+      // CloudFront doesn't support WebSocket upgrades, so we skip WebSocket and use LongPolling
+      // LongPolling provides real-time updates with 50-200ms latency (acceptable for production)
       this.connection = new HubConnectionBuilder()
         .withUrl(wsUrl, {
+          transport: HttpTransportType.LongPolling, // Skip WebSocket, use LongPolling
+          skipNegotiation: false, // Keep negotiation for compatibility
           accessTokenFactory: () => {
             return localStorage.getItem('access_token') || '';
           }

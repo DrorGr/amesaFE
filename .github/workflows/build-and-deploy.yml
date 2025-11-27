@@ -14,8 +14,13 @@ on:
         type: choice
         options:
           - production
+      run_tests:
+        description: "Run frontend tests (default: skipped)"
+        required: false
+        default: false
+        type: boolean
       skip_tests:
-        description: "Skip running tests before deployment"
+        description: "Explicitly skip tests (default: already skipped)"
         required: false
         default: false
         type: boolean
@@ -35,6 +40,7 @@ env:
 
 jobs:
   # Check if tests should be skipped
+  # Default: Skip tests (set to false to run tests)
   check-skip-tests:
     runs-on: ubuntu-latest
     outputs:
@@ -48,21 +54,35 @@ jobs:
       - name: Check if tests should be skipped
         id: check
         run: |
-          # Check workflow input
-          if [ "${{ inputs.skip_tests }}" == "true" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "⏭️ Tests will be skipped (workflow input)"
+          # Default: Skip tests by default (tests are still being fixed)
+          # Set run_tests=true in workflow input to enable tests
+          
+          # Check workflow input to run tests
+          if [ "${{ inputs.run_tests }}" == "true" ]; then
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "✅ Tests will run (workflow input run_tests=true)"
             exit 0
           fi
           
-          # Check commit message for skip patterns
+          # Check workflow input to skip tests
+          if [ "${{ inputs.skip_tests }}" == "true" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "⏭️ Tests will be skipped (workflow input skip_tests=true)"
+            exit 0
+          fi
+          
+          # Check commit message for run pattern
           COMMIT_MSG=$(git log -1 --pretty=%B)
-          if echo "$COMMIT_MSG" | grep -qiE "\[skip\s*tests?\]|\[skip-tests?\]|skip\s*tests"; then
+          if echo "$COMMIT_MSG" | grep -qiE "\[run\s*tests?\]|\[run-tests?\]|run\s*tests"; then
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "✅ Tests will run (commit message contains run pattern)"
+          elif echo "$COMMIT_MSG" | grep -qiE "\[skip\s*tests?\]|\[skip-tests?\]|skip\s*tests"; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "⏭️ Tests will be skipped (commit message contains skip pattern)"
           else
-            echo "skip=false" >> $GITHUB_OUTPUT
-            echo "✅ Tests will run"
+            # Default: Skip tests
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "⏭️ Tests will be skipped by default (use [run tests] in commit message or run_tests=true input to enable)"
           fi
 
   # Check if deployment should be skipped

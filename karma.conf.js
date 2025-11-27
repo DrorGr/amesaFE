@@ -60,7 +60,7 @@ module.exports = function (config) {
     client: {
       jasmine: {
         clearContext: false,
-        timeoutInterval: 10000 // 10 second timeout per test
+        timeoutInterval: isCI ? 10000 : 30000 // Local: 30s per test, CI: 10s per test
       },
       clearContext: false
     },
@@ -82,7 +82,9 @@ module.exports = function (config) {
     reporters: isCI ? ['progress'] : ['progress', 'kjhtml'],
     browsers: ['Chrome'],
     // Resource optimization settings
-    concurrency: 1, // Run tests sequentially (one browser at a time)
+    // Local: Triple resources (3x concurrency, 3x memory, longer timeouts)
+    // CI: Minimal resources (1x concurrency, limited memory, strict timeouts)
+    concurrency: isCI ? 1 : 3, // Local: 3 browsers in parallel, CI: 1 browser
     restartOnFileChange: !isCI, // Disable file watching in CI
     singleRun: isCI, // Exit after tests in CI, keep running in local dev
     
@@ -93,13 +95,15 @@ module.exports = function (config) {
         message: 'Karma onPrepare - configuration applied',
         hypothesisId: 'H2',
         data: {
-          concurrency: 1,
+          concurrency: isCI ? 1 : 3,
           singleRun: isCI,
           restartOnFileChange: !isCI,
           reporters: isCI ? ['progress'] : ['progress', 'kjhtml'],
           hasCoverageReporter: !isCI,
           hasKjhtmlReporter: !isCI,
-          chromeFlagsCount: 30 // Number of Chrome flags configured
+          chromeFlagsCount: 30, // Number of Chrome flags configured
+          memoryLimit: isCI ? '512MB' : '1536MB',
+          browserTimeout: isCI ? '30s' : '90s'
         }
       });
     },
@@ -162,11 +166,11 @@ module.exports = function (config) {
       });
     },
     // #endregion
-    // Timeout configurations to prevent hanging
-    browserNoActivityTimeout: 30000, // 30 seconds
-    captureTimeout: 60000, // 60 seconds
-    browserDisconnectTimeout: 10000, // 10 seconds
-    browserDisconnectTolerance: 3,
+    // Timeout configurations - Triple for local, standard for CI
+    browserNoActivityTimeout: isCI ? 30000 : 90000, // Local: 90s, CI: 30s
+    captureTimeout: isCI ? 60000 : 180000, // Local: 180s, CI: 60s
+    browserDisconnectTimeout: isCI ? 10000 : 30000, // Local: 30s, CI: 10s
+    browserDisconnectTolerance: isCI ? 3 : 9, // Local: 9, CI: 3
     customLaunchers: {
       ChromeHeadless: {
         base: 'Chrome',
@@ -177,8 +181,10 @@ module.exports = function (config) {
           '--disable-dev-shm-usage',
           '--disable-extensions',
           '--disable-web-security',
-          // Memory and resource limits
-          '--js-flags=--max-old-space-size=512', // Limit V8 heap to 512MB
+          // Memory and resource limits - Triple for local (1536MB), standard for CI (512MB)
+          isCI 
+            ? '--js-flags=--max-old-space-size=512' // CI: 512MB
+            : '--js-flags=--max-old-space-size=1536', // Local: 1536MB (3x)
           '--disable-background-networking',
           '--disable-background-timer-throttling',
           '--disable-renderer-backgrounding',
