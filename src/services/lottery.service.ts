@@ -416,20 +416,45 @@ export class LotteryService {
           houseId,
           status: error.status,
           statusText: error.statusText,
+          url: error.url,
+          errorBody: error.error,
           errorMessage: error.error?.message || error.error?.error?.message || error.message || '',
           errorCode: error.error?.error?.code || error.error?.code || '',
-          fullError: JSON.stringify(error.error || {}).substring(0, 500),
-          currentFavorites: this.favoriteHouseIds()
+          errorSuccess: error.error?.success,
+          fullError: JSON.stringify(error.error || {}).substring(0, 1000),
+          currentFavorites: this.favoriteHouseIds(),
+          errorType: typeof error.error,
+          errorKeys: error.error ? Object.keys(error.error) : []
         };
         fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:catchError',message:'Error adding to favorites',data:errorDetails,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
         // #endregion
         
         // Handle 400 errors gracefully - backend returns success: false with message
         // Angular HttpClient throws 400 as error, so error.error contains the response body
-        if (error.status === 400 && error.error) {
+        // #region agent log
+        const conditionCheck = {
+          status: error.status,
+          statusIs400: error.status === 400,
+          hasError: !!error.error,
+          errorType: typeof error.error,
+          errorIsNull: error.error === null,
+          errorIsUndefined: error.error === undefined,
+          errorKeys: error.error ? Object.keys(error.error) : [],
+          errorValue: JSON.stringify(error.error || {}).substring(0, 200),
+          conditionResult: error.status === 400 && error.error
+        };
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:condition-check',message:'Checking 400 error condition',data:conditionCheck,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
+        
+        // More robust condition: check for 400 status and that error.error exists (can be object, string, or truthy value)
+        if (error.status === 400 && (error.error !== null && error.error !== undefined)) {
           // Check if error.error is the ApiResponse structure
           const responseBody = error.error;
           const errorMessage = (responseBody.message || error.message || '').toLowerCase();
+          
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:400-handler',message:'Processing 400 error',data:{houseId,errorMessage,messageIncludesAlready:errorMessage.includes('already'),messageIncludesAlreadyBeInFavorites:errorMessage.includes('already be in favorites'),messageIncludesMayNotExist:errorMessage.includes('may not exist or already be in favorites'),responseBody:JSON.stringify(responseBody).substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+          // #endregion
           
           // Check for "already in favorites" or "may not exist or already be in favorites"
           // The backend message is: "Failed to add house to favorites. House may not exist or already be in favorites."
@@ -439,9 +464,15 @@ export class LotteryService {
             // Already favorited or might be - ADD to favorites list and return success response
             // This ensures the UI shows it as favorited even if backend says it's already there
             const currentFavorites = this.favoriteHouseIds();
-            if (!currentFavorites.includes(houseId)) {
+            const wasInFavorites = currentFavorites.includes(houseId);
+            if (!wasInFavorites) {
               this.favoriteHouseIds.set([...currentFavorites, houseId]);
             }
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:400-success',message:'Handled 400 as success - added to favorites',data:{houseId,wasInFavorites,newFavoritesCount:this.favoriteHouseIds().length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+            // #endregion
+            
             return of({
               houseId: houseId,
               added: true, // Set to true so UI shows it as added
@@ -451,6 +482,10 @@ export class LotteryService {
           // If message doesn't match, it might be a different error (e.g., house doesn't exist)
           // Still log it but don't add to favorites
           console.warn('Favorites API returned 400 with unexpected message:', errorMessage);
+          
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:addHouseToFavorites:400-unexpected',message:'400 error with unexpected message',data:{houseId,errorMessage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+          // #endregion
         } else if (error.status !== 401 && error.status !== 403) {
           // Only log non-auth errors
           console.error('Error adding house to favorites:', error.status, error.statusText, error.error);
@@ -499,32 +534,68 @@ export class LotteryService {
           houseId,
           status: error.status,
           statusText: error.statusText,
+          url: error.url,
+          errorBody: error.error,
           errorMessage: error.error?.message || error.error?.error?.message || error.message || '',
           errorCode: error.error?.error?.code || error.error?.code || '',
-          fullError: JSON.stringify(error.error || {}).substring(0, 500),
-          currentFavorites: this.favoriteHouseIds()
+          errorSuccess: error.error?.success,
+          fullError: JSON.stringify(error.error || {}).substring(0, 1000),
+          currentFavorites: this.favoriteHouseIds(),
+          wasInFavorites: this.favoriteHouseIds().includes(houseId),
+          errorType: typeof error.error,
+          errorKeys: error.error ? Object.keys(error.error) : []
         };
         fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:catchError',message:'Error removing from favorites',data:errorDetails,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
         // #endregion
         
         // Handle 400 errors gracefully - backend returns success: false with message
         // Angular HttpClient throws 400 as error, so error.error contains the response body
-        if (error.status === 400 && error.error) {
+        // #region agent log
+        const conditionCheck = {
+          status: error.status,
+          statusIs400: error.status === 400,
+          hasError: !!error.error,
+          errorType: typeof error.error,
+          errorIsNull: error.error === null,
+          errorIsUndefined: error.error === undefined,
+          errorKeys: error.error ? Object.keys(error.error) : [],
+          errorValue: JSON.stringify(error.error || {}).substring(0, 200),
+          conditionResult: error.status === 400 && (error.error !== null && error.error !== undefined)
+        };
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:condition-check',message:'Checking 400 error condition',data:conditionCheck,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
+        
+        // More robust condition: check for 400 status and that error.error exists (can be object, string, or truthy value)
+        if (error.status === 400 && (error.error !== null && error.error !== undefined)) {
           const responseBody = error.error;
           const errorMessage = (responseBody.message || error.message || '').toLowerCase();
+          
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:400-handler',message:'Processing 400 error',data:{houseId,errorMessage,messageIncludesNotBeInFavorites:errorMessage.includes('not be in favorites'),messageIncludesMayNotBeInFavorites:errorMessage.includes('may not be in favorites'),messageIncludesMayNotExist:errorMessage.includes('may not exist or already be in favorites'),responseBody:JSON.stringify(responseBody).substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+          // #endregion
           
           if (errorMessage.includes('not be in favorites') || 
               errorMessage.includes('may not be in favorites') ||
               errorMessage.includes('may not exist or already be in favorites')) {
             // Not in favorites - treat as success (already removed)
             const currentFavorites = this.favoriteHouseIds();
+            const wasInFavorites = currentFavorites.includes(houseId);
             this.favoriteHouseIds.set(currentFavorites.filter(id => id !== houseId));
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:400-success',message:'Handled 400 as success - removed from favorites',data:{houseId,wasInFavorites,newFavoritesCount:this.favoriteHouseIds().length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+            // #endregion
+            
             return of({
               houseId: houseId,
               removed: true, // Set to true so UI shows it as removed
               message: 'Removed from favorites'
             });
           }
+          
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:400-unexpected',message:'400 error with unexpected message',data:{houseId,errorMessage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+          // #endregion
         } else if (error.status !== 401 && error.status !== 403) {
           console.error('Error removing house from favorites:', error.status, error.statusText, error.error);
         }
