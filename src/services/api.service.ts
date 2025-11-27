@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 
@@ -179,6 +179,13 @@ export class ApiService {
     };
     fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.service.ts:handleError',message:'API error occurred',data:errorDetails,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
     // #endregion
+    
+    // Don't log 200 status codes as errors (false positives from response format issues)
+    if (error.status === 200) {
+      // 200 responses shouldn't be logged as errors - likely response format mismatch
+      // The calling code will handle this appropriately
+      return throwError(() => error);
+    }
     
     // Log 400 errors with full details for debugging
     if (error.status === 400) {

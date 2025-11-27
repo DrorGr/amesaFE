@@ -339,17 +339,39 @@ export class LotteryService {
    * Endpoint: GET /api/v1/houses/favorites
    */
   getFavoriteHouses(): Observable<HouseDto[]> {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:getFavoriteHouses',message:'Loading favorite houses',data:{currentFavoriteIds:this.favoriteHouseIds(),currentFavoriteIdsCount:this.favoriteHouseIds().length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    // #endregion
+    
     return this.apiService.get<HouseDto[]>('houses/favorites').pipe(
       map(response => {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:getFavoriteHouses:map',message:'Processing favorite houses response',data:{responseSuccess:response.success,hasData:!!response.data,dataLength:response.data?.length||0,dataIds:response.data?.map(h=>h.id)||[],currentSignalIds:this.favoriteHouseIds()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+        // #endregion
+        
         if (response.success && response.data) {
           // Update favorite IDs signal
           const favoriteIds = response.data.map(house => house.id);
           this.favoriteHouseIds.set(favoriteIds);
+          
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:getFavoriteHouses:success',message:'Favorite houses loaded successfully',data:{favoriteIds,favoriteIdsCount:favoriteIds.length,housesReturned:response.data.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
+          
           return response.data;
         }
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:getFavoriteHouses:error',message:'Failed to fetch favorite houses - invalid response',data:{responseSuccess:response.success,hasData:!!response.data,responseMessage:response.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+        // #endregion
+        
         throw new Error('Failed to fetch favorite houses');
       }),
       catchError(error => {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:getFavoriteHouses:catchError',message:'Error fetching favorite houses',data:{status:error.status,statusText:error.statusText,url:error.url,errorMessage:error.error?.message||error.message,currentSignalIds:this.favoriteHouseIds()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+        // #endregion
+        
         console.error('Error fetching favorite houses:', error);
         return throwError(() => error);
       })

@@ -190,15 +190,35 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
 
   async loadFavorites(): Promise<void> {
     if (!this.currentUser()) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery-favorites.component.ts:loadFavorites',message:'Skipping load - user not authenticated',data:{hasCurrentUser:!!this.currentUser()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+      // #endregion
       return;
     }
 
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery-favorites.component.ts:loadFavorites',message:'Loading favorites',data:{currentUser:this.currentUser()?.email,currentFavoritesCount:this.favoriteHouses().length,currentFavoriteIds:this.lotteryService.getFavoriteHouseIds()()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    // #endregion
+
     try {
       const houses = await this.lotteryService.getFavoriteHouses().toPromise();
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery-favorites.component.ts:loadFavorites:success',message:'Favorites loaded',data:{housesReturned:houses?.length||0,houseIds:houses?.map(h=>h.id)||[],willSetToComponent:!!houses},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+      // #endregion
+      
       if (houses) {
         this.favoriteHouses.set(houses);
+      } else {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery-favorites.component.ts:loadFavorites:empty',message:'No houses returned from API',data:{housesIsNull:houses===null,housesIsUndefined:houses===undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+        // #endregion
+        this.favoriteHouses.set([]);
       }
     } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery-favorites.component.ts:loadFavorites:error',message:'Error loading favorites',data:{error:error instanceof Error?error.message:String(error),currentFavoritesCount:this.favoriteHouses().length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+      // #endregion
       console.error('Error loading favorites:', error);
     }
   }
