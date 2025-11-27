@@ -425,11 +425,18 @@ export class LotteryService {
         // #endregion
         
         // Handle 400 errors gracefully - backend returns success: false with message
-        if (error.status === 400) {
-          const errorMessage = (error.error?.message || error.message || '').toLowerCase();
+        // Angular HttpClient throws 400 as error, so error.error contains the response body
+        if (error.status === 400 && error.error) {
+          // Check if error.error is the ApiResponse structure
+          const responseBody = error.error;
+          const errorMessage = (responseBody.message || error.message || '').toLowerCase();
           
-          if (errorMessage.includes('already') || errorMessage.includes('already be in favorites')) {
-            // Already favorited - ADD to favorites list and return success response
+          // Check for "already in favorites" or "may not exist or already be in favorites"
+          // The backend message is: "Failed to add house to favorites. House may not exist or already be in favorites."
+          if (errorMessage.includes('already') || 
+              errorMessage.includes('already be in favorites') ||
+              errorMessage.includes('may not exist or already be in favorites')) {
+            // Already favorited or might be - ADD to favorites list and return success response
             // This ensures the UI shows it as favorited even if backend says it's already there
             const currentFavorites = this.favoriteHouseIds();
             if (!currentFavorites.includes(houseId)) {
@@ -441,9 +448,12 @@ export class LotteryService {
               message: 'Added to favorites'
             });
           }
+          // If message doesn't match, it might be a different error (e.g., house doesn't exist)
+          // Still log it but don't add to favorites
+          console.warn('Favorites API returned 400 with unexpected message:', errorMessage);
         } else if (error.status !== 401 && error.status !== 403) {
           // Only log non-auth errors
-          console.error('Error adding house to favorites:', error.status, error.statusText);
+          console.error('Error adding house to favorites:', error.status, error.statusText, error.error);
         }
         return throwError(() => error);
       })
@@ -498,21 +508,25 @@ export class LotteryService {
         // #endregion
         
         // Handle 400 errors gracefully - backend returns success: false with message
-        if (error.status === 400) {
-          const errorMessage = (error.error?.message || error.message || '').toLowerCase();
+        // Angular HttpClient throws 400 as error, so error.error contains the response body
+        if (error.status === 400 && error.error) {
+          const responseBody = error.error;
+          const errorMessage = (responseBody.message || error.message || '').toLowerCase();
           
-          if (errorMessage.includes('not be in favorites') || errorMessage.includes('may not be in favorites')) {
+          if (errorMessage.includes('not be in favorites') || 
+              errorMessage.includes('may not be in favorites') ||
+              errorMessage.includes('may not exist or already be in favorites')) {
             // Not in favorites - treat as success (already removed)
             const currentFavorites = this.favoriteHouseIds();
             this.favoriteHouseIds.set(currentFavorites.filter(id => id !== houseId));
             return of({
               houseId: houseId,
-              removed: false,
-              message: 'Not in favorites'
+              removed: true, // Set to true so UI shows it as removed
+              message: 'Removed from favorites'
             });
           }
         } else if (error.status !== 401 && error.status !== 403) {
-          console.error('Error removing house from favorites:', error.status, error.statusText);
+          console.error('Error removing house from favorites:', error.status, error.statusText, error.error);
         }
         return throwError(() => error);
       })

@@ -167,7 +167,35 @@ export class ApiService {
   }
 
   private handleError = (error: any): Observable<never> => {
-    console.error('API Error:', error);
+    // #region agent log
+    const errorDetails = {
+      status: error.status,
+      statusText: error.statusText,
+      url: error.url,
+      errorBody: error.error,
+      errorMessage: error.error?.message || error.error?.error?.message || error.message,
+      errorCode: error.error?.error?.code || error.error?.code,
+      fullError: JSON.stringify(error.error || {}).substring(0, 500)
+    };
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.service.ts:handleError',message:'API error occurred',data:errorDetails,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+    
+    // Log 400 errors with full details for debugging
+    if (error.status === 400) {
+      console.error('API 400 Error - Full Details:', {
+        url: error.url,
+        status: error.status,
+        statusText: error.statusText,
+        error: error.error,
+        errorMessage: error.error?.message || 'No error message',
+        errorCode: error.error?.error?.code || error.error?.code || 'No error code',
+        fullErrorResponse: error.error
+      });
+    } else if (error.status === 401 || error.status === 403) {
+      // Don't log auth errors - handled elsewhere
+    } else {
+      console.error('API Error:', error.status, error.statusText, error.url);
+    }
     
     if (error.status === 401) {
       // Token expired or invalid
