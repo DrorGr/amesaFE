@@ -15,7 +15,9 @@ import { LotteryTicketDto } from '../../models/house.model';
       <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <button 
           (click)="toggleAccordion()" 
-          class="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          class="w-full px-4 py-3 flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 relative"
+          [class.justify-center]="!isExpanded()"
+          [class.justify-between]="isExpanded()">
           <div class="flex items-center gap-3">
             <span class="text-gray-700 dark:text-gray-300 font-semibold">
               {{ translate('nav.activeEntries') }}
@@ -28,7 +30,9 @@ import { LotteryTicketDto } from '../../models/house.model';
           </div>
           <svg 
             [class.rotate-180]="isExpanded()" 
-            class="w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform duration-200" 
+            [class.opacity-0]="!isExpanded()"
+            [class.opacity-100]="isExpanded()"
+            class="w-5 h-5 text-gray-600 dark:text-gray-400 transition-all duration-300 absolute right-4" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24">
@@ -36,7 +40,12 @@ import { LotteryTicketDto } from '../../models/house.model';
           </svg>
         </button>
         
-        @if (isExpanded()) {
+        <div 
+          [class.max-h-0]="!isExpanded()"
+          [class.max-h-[1000px]]="isExpanded()"
+          [class.opacity-0]="!isExpanded()"
+          [class.opacity-100]="isExpanded()"
+          class="overflow-hidden transition-all duration-300 ease-in-out">
           <div class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
             @if (isLoading()) {
               <div class="flex items-center justify-center py-4">
@@ -99,13 +108,18 @@ import { LotteryTicketDto } from '../../models/house.model';
               </div>
             }
           </div>
-        }
+        </div>
       </div>
     }
   `,
   styles: [`
     :host {
       display: block;
+    }
+    
+    /* Smooth accordion animation */
+    .accordion-content {
+      transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
     }
   `]
 })
