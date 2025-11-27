@@ -12,6 +12,8 @@ import { AccessibilityWidgetComponent } from './components/accessibility-widget/
 import { ToastComponent } from './components/toast/toast.component';
 import { CookieConsentComponent } from './components/cookie-consent/cookie-consent.component';
 import { ActiveEntriesAccordionComponent } from './components/active-entries-accordion/active-entries-accordion.component';
+import { PromotionsSlidingMenuComponent } from './components/promotions-sliding-menu/promotions-sliding-menu.component';
+import { PromotionsMenuService } from './services/promotions-menu.service';
 import { AuthService } from './services/auth.service';
 import { TranslationService } from './services/translation.service';
 import { RouteLoadingService } from './services/route-loading.service';
@@ -32,7 +34,8 @@ import { CookieConsentService } from './services/cookie-consent.service';
     AccessibilityWidgetComponent,
     ToastComponent,
     CookieConsentComponent,
-    ActiveEntriesAccordionComponent
+    ActiveEntriesAccordionComponent,
+    PromotionsSlidingMenuComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
@@ -197,6 +200,9 @@ import { CookieConsentService } from './services/cookie-consent.service';
       <!-- Cookie Consent Banner -->
       <app-cookie-consent></app-cookie-consent>
       
+      <!-- Promotions Sliding Menu Widget (Fixed on Left Side) -->
+      <app-promotions-sliding-menu [isOpen]="promotionsMenuService.isOpen()" (close)="promotionsMenuService.close()"></app-promotions-sliding-menu>
+      
     </div>
   `,
   styles: []
@@ -204,6 +210,7 @@ import { CookieConsentService } from './services/cookie-consent.service';
 export class AppComponent implements OnInit, OnDestroy {
   public translationService = inject(TranslationService);
   public authService = inject(AuthService);
+  public promotionsMenuService = inject(PromotionsMenuService);
   private routeLoadingService = inject(RouteLoadingService);
   private router = inject(Router);
   private toastService = inject(ToastService);

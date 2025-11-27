@@ -1,0 +1,30 @@
+﻿commit 1d1ca464bd991b8d901a72e3ed0eaba657310c67
+Author: Dror Granot <dror091@gmail.com>
+Date:   Tue Nov 25 21:46:33 2025 +0200
+
+    feat: Complete navigation redesign and feature integration
+    
+    - Update topbar: Rename 'Lotteries' to 'My Lottery' ( dashboard)
+    - Add 'Favorites' button in topbar ( /lottery/favorites)
+    - Replace 'Winners' with 'Search' button ( /search page)
+    - Change 'Promotions' to open sliding menu from left
+    - Add Active Entries Accordion under topbar (auto-expands with entries)
+    - Create comprehensive Search page with full filter options
+    - Add Lottery History tab to Member Settings with statistics and filters
+    - Create reusable Countdown Timer component
+    - Create Promotions Sliding Menu component
+    - Add /search route to app.routes.ts
+    - Integrate all components properly with authentication checks
+    
+    All features are now accessible from the UI. Build successful.
+
+ src/app.component.ts                               |  10 +-
+ src/app.routes.ts                                  |  23 +
+ .../active-entries-accordion.component.ts          | 191 ++++++++
+ .../countdown-timer/countdown-timer.component.ts   |  80 ++++
+ .../house-detail/house-detail.component.ts         | 486 +++++++++++++++++++++
+ .../member-settings-page.component.ts              | 268 +++++++++++-
+ .../promotions-sliding-menu.component.ts           | 181 ++++++++
+ .../search-page/search-page.component.ts           | 434 ++++++++++++++++++
+ src/components/topbar/topbar.component.ts          |  69 ++-
+ 9 files changed, 1719 insertions(+), 23 deletions(-)

@@ -1,0 +1,26 @@
+﻿commit bc6a27c8313e7c88d6aad09641515cf9d06d421b
+Author: Dror Granot <dror091@gmail.com>
+Date:   Wed Nov 26 19:17:51 2025 +0200
+
+    feat: Implement user menu dropdown and move promotions button to hero section
+    
+    - Create UserMenuComponent with login button / welcome dropdown
+    - Create AccessibilityMenuComponent with all controls from widget
+    - Remove accessibility widget from app.component
+    - Replace topbar user section with user-menu component
+    - Move promotions button from topbar to hero section
+    - Fix promotions sliding menu animation (always rendered, proper slide-in)
+    - Add click-outside and escape key handlers for dropdown
+    - All accessibility controls moved to dropdown menu
+    
+    Breaking changes:
+    - Accessibility widget removed (controls now in user menu dropdown)
+    - Promotions button moved from topbar to hero section
+
+ src/app.component.ts                               |   5 -
+ .../accessibility-menu.component.ts                | 281 +++++++++++++++++++++
+ .../hero-section/hero-section.component.ts         |  24 +-
+ .../promotions-sliding-menu.component.ts           |  41 +--
+ src/components/topbar/topbar.component.ts          | 113 +--------
+ src/components/user-menu/user-menu.component.ts    | 214 ++++++++++++++++
+ 6 files changed, 547 insertions(+), 131 deletions(-)
