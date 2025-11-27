@@ -181,8 +181,13 @@ export class WatchlistService {
    */
   private loadWatchlistCount(): void {
     this.getWatchlistCount().subscribe({
-      error: () => {
-        // Silently fail - user might not be authenticated
+      error: (error) => {
+        // Silently fail for 401/403 (not authenticated) and 503 (service unavailable)
+        // Only log other errors
+        if (error.status !== 401 && error.status !== 403 && error.status !== 503) {
+          console.warn('Unexpected error loading watchlist count:', error.status, error.statusText);
+        }
+        // Silently fail - user might not be authenticated or service might be down
       }
     });
   }

@@ -302,25 +302,17 @@ export class RealtimeService {
   }
 
   async joinUserGroup(userId: string): Promise<void> {
-    if (this.connection && this.connection.state === HubConnectionState.Connected) {
-      try {
-        await this.connection.invoke('JoinUserGroup', userId);
-        console.log(`Joined user group for user: ${userId}`);
-      } catch (error) {
-        console.error('Error joining user group:', error);
-      }
-    }
+    // NOTE: User groups are automatically handled by the backend LotteryHub.OnConnectedAsync()
+    // The backend adds users to user_{userId} group automatically when they connect
+    // No explicit JoinUserGroup method exists or is needed
+    console.log(`User group membership handled automatically by backend for user: ${userId}`);
   }
 
   async leaveUserGroup(userId: string): Promise<void> {
-    if (this.connection && this.connection.state === HubConnectionState.Connected) {
-      try {
-        await this.connection.invoke('LeaveUserGroup', userId);
-        console.log(`Left user group for user: ${userId}`);
-      } catch (error) {
-        console.error('Error leaving user group:', error);
-      }
-    }
+    // NOTE: User groups are automatically handled by the backend LotteryHub.OnDisconnectedAsync()
+    // The backend removes users from user_{userId} group automatically when they disconnect
+    // No explicit LeaveUserGroup method exists or is needed
+    console.log(`User group membership handled automatically by backend for user: ${userId}`);
   }
 
   async sendMessage(groupName: string, message: string): Promise<void> {

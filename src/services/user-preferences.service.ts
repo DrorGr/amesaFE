@@ -312,11 +312,19 @@ export class UserPreferencesService {
     this.apiService.post<UserPreferences>('user/preferences', preferences)
       .pipe(
         catchError(error => {
-          this.logger.error('Failed to sync preferences with server', { error }, 'UserPreferencesService');
+          // Don't log 400 errors as critical - might be validation issues
+          if (error.status === 400) {
+            this.logger.warn('Preferences validation error (400)', { 
+              error: error.error?.message || error.message,
+              preferences: this.sanitizePreferencesForLogging(preferences)
+            }, 'UserPreferencesService');
+          } else {
+            this.logger.error('Failed to sync preferences with server', { error }, 'UserPreferencesService');
+          }
           this.syncStatusSubject.next({
             ...syncStatus,
             syncInProgress: false,
-            syncError: error.message
+            syncError: error.status === 400 ? 'Validation error' : error.message
           });
           return of(null);
         })
@@ -329,8 +337,27 @@ export class UserPreferencesService {
             conflictResolution: 'local'
           });
           this.logger.info('Preferences synced successfully with server', undefined, 'UserPreferencesService');
+        } else if (response && !response.success) {
+          // Handle case where response exists but success is false
+          this.logger.warn('Preferences sync returned unsuccessful response', { response }, 'UserPreferencesService');
+          this.syncStatusSubject.next({
+            ...syncStatus,
+            syncInProgress: false,
+            syncError: response.error?.message || 'Sync failed'
+          });
         }
       });
+  }
+
+  /**
+   * Sanitize preferences for logging (remove sensitive data)
+   */
+  private sanitizePreferencesForLogging(preferences: UserPreferences): Record<string, any> {
+    return {
+      version: preferences.version,
+      lastUpdated: preferences.lastUpdated,
+      // Don't log full preferences object to avoid sensitive data
+    };
   }
 
   /**

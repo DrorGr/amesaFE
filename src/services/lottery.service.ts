@@ -1,5 +1,5 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { Observable, throwError, Subscription } from 'rxjs';
+import { Observable, throwError, Subscription, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { ApiService, PagedResponse } from './api.service';
 import { RetryService } from './retry.service';
@@ -576,14 +576,47 @@ export class LotteryService {
       this.apiService.get<CanEnterLotteryResponse>(`houses/${houseId}/can-enter`)
     ).pipe(
       map(response => {
+        // Handle both ApiResponse<T> format and direct response format
         if (response.success && response.data) {
           return response.data;
         }
-        throw new Error('Failed to check if user can enter lottery');
+        // If response is already the data (direct format), check if it has required properties
+        if (response && typeof response === 'object' && 'canEnter' in response) {
+          const directResponse = response as any;
+          // Ensure all required properties exist
+          return {
+            canEnter: directResponse.canEnter ?? true,
+            isExistingParticipant: directResponse.isExistingParticipant ?? false,
+            reason: directResponse.reason ?? 'Direct response format'
+          } as CanEnterLotteryResponse;
+        }
+        // Default response if format is unexpected
+        console.warn('Unexpected response format from can-enter endpoint, using defaults', response);
+        return {
+          canEnter: true,
+          isExistingParticipant: false,
+          reason: 'Unknown response format'
+        };
       }),
       catchError(error => {
-        console.error('Error checking if user can enter lottery:', error);
-        return throwError(() => error);
+        // Only log if it's not a 200 status (which might be a format issue)
+        if (error.status !== 200) {
+          console.error('Error checking if user can enter lottery:', error);
+        } else {
+          // 200 status but wrong format - return default
+          console.warn('can-enter returned 200 but unexpected format, using defaults', error);
+          return of({
+            canEnter: true,
+            isExistingParticipant: false,
+            reason: 'Response format error'
+          });
+        }
+        // For other errors, return default to allow user to proceed
+        return of({
+          canEnter: true,
+          isExistingParticipant: false,
+          reason: 'Error checking entry status'
+        });
       })
     );
   }
