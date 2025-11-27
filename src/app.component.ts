@@ -11,6 +11,8 @@ import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { AccessibilityWidgetComponent } from './components/accessibility-widget/accessibility-widget.component';
 import { ToastComponent } from './components/toast/toast.component';
 import { CookieConsentComponent } from './components/cookie-consent/cookie-consent.component';
+import { ActiveEntriesAccordionComponent } from './components/active-entries-accordion/active-entries-accordion.component';
+import { AuthService } from './services/auth.service';
 import { TranslationService } from './services/translation.service';
 import { RouteLoadingService } from './services/route-loading.service';
 import { ToastService } from './services/toast.service';
@@ -29,7 +31,8 @@ import { CookieConsentService } from './services/cookie-consent.service';
     ChatbotComponent,
     AccessibilityWidgetComponent,
     ToastComponent,
-    CookieConsentComponent
+    CookieConsentComponent,
+    ActiveEntriesAccordionComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
@@ -39,6 +42,10 @@ import { CookieConsentService } from './services/cookie-consent.service';
       ></app-translation-loader>
       
       <app-topbar></app-topbar>
+      
+      @if (authService.isAuthenticated()) {
+        <app-active-entries-accordion></app-active-entries-accordion>
+      }
       
       <div class="transition-all duration-500 ease-in-out">
         @if (isLoading | async) {
@@ -196,6 +203,7 @@ import { CookieConsentService } from './services/cookie-consent.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
   public translationService = inject(TranslationService);
+  public authService = inject(AuthService);
   private routeLoadingService = inject(RouteLoadingService);
   private router = inject(Router);
   private toastService = inject(ToastService);
