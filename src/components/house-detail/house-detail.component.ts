@@ -4,7 +4,6 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HouseDto } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
-import { WatchlistService } from '../../services/watchlist.service';
 import { TranslationService } from '../../services/translation.service';
 import { ErrorMessageService } from '../../services/error-message.service';
 import { ToastService } from '../../services/toast.service';
@@ -62,54 +61,29 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                 [alt]="house()!.title"
                 class="w-full h-full object-cover">
               
-              <!-- Favorite Button (Always visible) -->
+              <!-- Favorite Button (Always visible) - Matching promotions styling -->
               <button
                 (click)="toggleFavorite()"
                 [disabled]="isTogglingFavorite()"
                 [class.animate-pulse]="isTogglingFavorite()"
-                class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-3 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
                 [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
                 [title]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')">
                 <svg 
-                  class="w-6 h-6 transition-all duration-300"
+                  class="w-6 h-6 transition-all duration-500"
                   [class.text-red-500]="isFavorite()"
-                  [class.text-gray-400]="!isFavorite()"
-                  [class.fill-current]="isFavorite()"
-                  [class.stroke-current]="!isFavorite()"
-                  fill="none" 
-                  stroke="currentColor" 
+                  [class.text-white]="!isFavorite()"
+                  [attr.fill]="isFavorite() ? 'currentColor' : 'none'"
+                  [attr.stroke]="!isFavorite() ? 'currentColor' : 'none'"
+                  stroke-width="2"
                   viewBox="0 0 24 24"
                   aria-hidden="true">
                   <path 
-                    stroke-linecap="round" 
-                    stroke-linejoin="round" 
-                    stroke-width="2" 
-                    [attr.d]="isFavorite() ? 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' : 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'">
+                    fill-rule="evenodd"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    clip-rule="evenodd">
                   </path>
                 </svg>
-              </button>
-
-              <!-- Watchlist Button -->
-              <button
-                *ngIf="currentUser()"
-                (click)="toggleWatchlist()"
-                (keydown)="handleWatchlistKeyDown($event)"
-                [disabled]="checkingWatchlist() || isTogglingWatchlist()"
-                [class.animate-pulse]="isTogglingWatchlist() || checkingWatchlist()"
-                class="absolute top-20 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-3 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                [attr.aria-label]="isInWatchlist() ? 'Remove from watchlist' : 'Add to watchlist'"
-                [title]="isInWatchlist() ? translate('watchlist.remove') : translate('watchlist.add')">
-                <svg 
-                  *ngIf="!checkingWatchlist()"
-                  class="w-6 h-6 transition-all duration-300"
-                  [class.text-blue-500]="isInWatchlist()"
-                  [class.text-gray-400]="!isInWatchlist()"
-                  fill="currentColor" 
-                  viewBox="0 0 24 24"
-                  aria-hidden="true">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
-                </svg>
-                <div *ngIf="checkingWatchlist()" class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
               </button>
 
               <!-- Status Badge -->
@@ -336,13 +310,6 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   </div>
                 </button>
 
-                <!-- Watchlist Indicator -->
-                <div *ngIf="isInWatchlist()" class="text-center text-sm text-blue-600 dark:text-blue-400">
-                  <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
-                  </svg>
-                  {{ translate('watchlist.notificationEnabled') }}
-                </div>
               </div>
             </ng-template>
           </div>
@@ -355,7 +322,6 @@ export class HouseDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private lotteryService = inject(LotteryService);
-  private watchlistService = inject(WatchlistService);
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private errorMessageService = inject(ErrorMessageService);
@@ -365,11 +331,8 @@ export class HouseDetailComponent implements OnInit {
   loading = signal<boolean>(true);
   error = signal<string | null>(null);
   canEnterResponse = signal<CanEnterLotteryResponse | null>(null);
-  isInWatchlist = signal<boolean>(false);
-  isTogglingWatchlist = signal<boolean>(false);
   isTogglingFavorite = signal<boolean>(false);
   checkingCanEnter = signal<boolean>(false);
-  checkingWatchlist = signal<boolean>(false);
   enteringLottery = signal<boolean>(false);
   
   // Favorites
@@ -401,7 +364,7 @@ export class HouseDetailComponent implements OnInit {
       return;
     }
 
-    // Load house first, then check canEnter and watchlist after house loads
+    // Load house first, then check canEnter after house loads
     this.loadHouse(houseId);
   }
 
@@ -412,10 +375,9 @@ export class HouseDetailComponent implements OnInit {
         this.house.set(house);
         this.loading.set(false);
         
-        // After house loads successfully, check canEnter and watchlist
+        // After house loads successfully, check canEnter
         if (this.currentUser()) {
           this.checkCanEnter(houseId);
-          this.checkWatchlist(houseId);
         }
       },
       error: (error) => {
@@ -440,23 +402,6 @@ export class HouseDetailComponent implements OnInit {
       error: (error) => {
         console.error('Error checking if can enter:', error);
         this.checkingCanEnter.set(false);
-        // Don't show error to user, just log it - this is not critical
-      }
-    });
-  }
-
-  checkWatchlist(houseId: string): void {
-    if (!this.currentUser()) return;
-
-    this.checkingWatchlist.set(true);
-    this.watchlistService.isInWatchlist(houseId).subscribe({
-      next: (inWatchlist) => {
-        this.isInWatchlist.set(inWatchlist);
-        this.checkingWatchlist.set(false);
-      },
-      error: (error) => {
-        console.error('Error checking watchlist:', error);
-        this.checkingWatchlist.set(false);
         // Don't show error to user, just log it - this is not critical
       }
     });
@@ -506,40 +451,6 @@ export class HouseDetailComponent implements OnInit {
         }
       }
     });
-  }
-
-  toggleWatchlist(): void {
-    const h = this.house();
-    if (!h || !this.currentUser()) return;
-
-    this.isTogglingWatchlist.set(true);
-    if (this.isInWatchlist()) {
-      this.watchlistService.removeFromWatchlist(h.id).subscribe({
-        next: () => {
-          this.isInWatchlist.set(false);
-          this.isTogglingWatchlist.set(false);
-          this.toastService.success('Removed from watchlist', 3000);
-        },
-        error: (error) => {
-          console.error('Error removing from watchlist:', error);
-          this.isTogglingWatchlist.set(false);
-          this.toastService.error('Failed to remove from watchlist. Please try again.', 4000);
-        }
-      });
-    } else {
-      this.watchlistService.addToWatchlist(h.id, true).subscribe({
-        next: () => {
-          this.isInWatchlist.set(true);
-          this.isTogglingWatchlist.set(false);
-          this.toastService.success('Added to watchlist', 3000);
-        },
-        error: (error) => {
-          console.error('Error adding to watchlist:', error);
-          this.isTogglingWatchlist.set(false);
-          this.toastService.error('Failed to add to watchlist. Please try again.', 4000);
-        }
-      });
-    }
   }
 
   enterLottery(): void {
@@ -636,18 +547,6 @@ export class HouseDetailComponent implements OnInit {
     return translation;
   }
 
-  /**
-   * Handle keyboard events for watchlist button
-   */
-  handleWatchlistKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      event.stopPropagation();
-      if (!this.checkingWatchlist() && !this.isTogglingWatchlist()) {
-        this.toggleWatchlist();
-      }
-    }
-  }
 
   /**
    * Handle keyboard events for entry button

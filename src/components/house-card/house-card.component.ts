@@ -4,7 +4,6 @@ import { RouterModule } from '@angular/router';
 import { House, HouseDto } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
-import { WatchlistService } from '../../services/watchlist.service';
 import { TranslationService } from '../../services/translation.service';
 import { ToastService } from '../../services/toast.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
@@ -45,46 +44,26 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
           </svg>
         </button>
         
-        <!-- Favorite Button (Always visible) -->
+        <!-- Favorite Button (Always visible) - Matching promotions styling -->
         <button
           (click)="toggleFavorite($event)"
           [class.animate-pulse]="isTogglingFavorite"
-          class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+          class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button"
           [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
           [title]="isFavorite() ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
           <svg 
-            class="w-5 h-5 transition-all duration-300"
+            class="w-6 h-6 transition-all duration-500"
             [class.text-red-500]="isFavorite()"
-            [class.text-gray-400]="!isFavorite()"
-            [class.fill-current]="isFavorite()"
-            [class.stroke-current]="!isFavorite()"
-            fill="none" 
-            stroke="currentColor" 
+            [class.text-white]="!isFavorite()"
+            [attr.fill]="isFavorite() ? 'currentColor' : 'none'"
+            [attr.stroke]="!isFavorite() ? 'currentColor' : 'none'"
+            stroke-width="2"
             viewBox="0 0 24 24">
             <path 
-              stroke-linecap="round" 
-              stroke-linejoin="round" 
-              stroke-width="2" 
-              [attr.d]="isFavorite() ? 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' : 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'">
+              fill-rule="evenodd"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              clip-rule="evenodd">
             </path>
-          </svg>
-        </button>
-
-        <!-- Watchlist Button -->
-        <button
-          *ngIf="currentUser()"
-          (click)="toggleWatchlist($event)"
-          [class.animate-pulse]="isTogglingWatchlist"
-          class="absolute top-16 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
-          [attr.aria-label]="isInWatchlist() ? 'Remove from watchlist' : 'Add to watchlist'"
-          [title]="isInWatchlist() ? translate('watchlist.remove') : translate('watchlist.add')">
-          <svg 
-            class="w-5 h-5 transition-all duration-300"
-            [class.text-blue-500]="isInWatchlist()"
-            [class.text-gray-400]="!isInWatchlist()"
-            fill="currentColor" 
-            viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
           </svg>
         </button>
         
@@ -332,7 +311,6 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
 export class HouseCardComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private lotteryService = inject(LotteryService);
-  private watchlistService = inject(WatchlistService);
   private translationService = inject(TranslationService);
   private toastService = inject(ToastService);
   
@@ -343,12 +321,10 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   private countdownInterval?: number;
   isPurchasing = false;
   isTogglingFavorite = false;
-  isTogglingWatchlist = false;
   isQuickEntering = false;
   
   currentUser = this.authService.getCurrentUser();
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
-  watchlistItems = this.watchlistService.getWatchlistSignal();
   houseDto = signal<HouseDto | null>(null);
   canEnter = signal<boolean>(true);
   isExistingParticipant = signal<boolean>(false);
@@ -360,11 +336,6 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   // Computed signal to check if this house is favorited
   isFavorite = computed(() => {
     return this.favoriteHouseIds().includes(this.house().id);
-  });
-
-  // Computed signal to check if this house is in watchlist
-  isInWatchlist = computed(() => {
-    return this.watchlistItems().some(item => item.houseId === this.house().id);
   });
 
   formatPrice(price: number): string {
@@ -462,33 +433,6 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Toggle watchlist status for this house
-   */
-  async toggleWatchlist(event?: Event): Promise<void> {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    if (!this.currentUser() || this.isTogglingWatchlist) {
-      return;
-    }
-
-    this.isTogglingWatchlist = true;
-    
-    try {
-      if (this.isInWatchlist()) {
-        await this.watchlistService.removeFromWatchlist(this.house().id).toPromise();
-      } else {
-        await this.watchlistService.addToWatchlist(this.house().id, true).toPromise();
-      }
-    } catch (error) {
-      console.error('Error toggling watchlist:', error);
-      // TODO: Show error toast notification
-    } finally {
-      this.isTogglingWatchlist = false;
-    }
-  }
 
   translate(key: string): string {
     return this.translationService.translate(key);
