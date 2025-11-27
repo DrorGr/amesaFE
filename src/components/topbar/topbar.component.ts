@@ -32,14 +32,17 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
           </div>
 
           <div class="ml-10 flex items-center space-x-8">
-            <button (click)="navigateToHome()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-              {{ translate('nav.lotteries') }}
+            <button (click)="navigateToDashboard()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+              {{ translate('nav.myLottery') }}
             </button>
-                <button (click)="togglePromotionsMenu()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-                  {{ translate('nav.promotions') }}
-                </button>
-            <button (click)="navigateToLotteryResults()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-              {{ translate('nav.winners') }}
+            <button (click)="navigateToFavorites()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+              {{ translate('nav.favorites') }}
+            </button>
+            <button (click)="navigateToSearch()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+              {{ translate('nav.search') }}
+            </button>
+            <button (click)="togglePromotionsMenu()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+              {{ translate('nav.promotions') }}
             </button>
           </div>
 
@@ -95,14 +98,17 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
           <div class="absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-4 animate-fadeIn shadow-lg z-50">
             <!-- Navigation Links -->
             <div class="space-y-2">
-              <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
-                {{ translate('nav.lotteries') }}
+              <button (click)="navigateToDashboard()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                {{ translate('nav.myLottery') }}
+              </button>
+              <button (click)="navigateToFavorites()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                {{ translate('nav.favorites') }}
+              </button>
+              <button (click)="navigateToSearch()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                {{ translate('nav.search') }}
               </button>
               <button (click)="togglePromotionsMenu()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
                 {{ translate('nav.promotions') }}
-              </button>
-              <button (click)="navigateToLotteryResults()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
-                {{ translate('nav.winners') }}
               </button>
             </div>
           </div>
@@ -211,6 +217,21 @@ export class TopbarComponent implements OnInit {
 
   navigateToHome() {
     this.router.navigate(['/']);
+    this.isMobileMenuOpen = false;
+  }
+
+  navigateToDashboard() {
+    this.router.navigate(['/lottery/dashboard']);
+    this.isMobileMenuOpen = false;
+  }
+
+  navigateToFavorites() {
+    this.router.navigate(['/lottery/favorites']);
+    this.isMobileMenuOpen = false;
+  }
+
+  navigateToSearch() {
+    this.router.navigate(['/search']);
     this.isMobileMenuOpen = false;
   }
 
