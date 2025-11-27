@@ -101,6 +101,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-skip-tests
     if: needs.check-skip-tests.outputs.skip != 'true'
+    env:
+      # Explicitly set CI environment variables for Karma resource optimizations
+      CI: 'true'
+      GITHUB_ACTIONS: 'true'
+      # Limit Node.js memory usage to complement Chrome memory limits
+      NODE_OPTIONS: '--max-old-space-size=1024'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -121,6 +127,7 @@ jobs:
 
       - name: Run unit tests
         run: npm run test:ci
+        timeout-minutes: 10
        
 
   build:
