@@ -687,6 +687,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .favorites-tab-glow {
-  animation: favorites-tab-glow 2s ease-in-out infinite;
-  /* Glow applies to text via text-shadow, not container - larger and longer */
+  animation: favorites-tab-glow 2s ease-in-out;
+  /* Glow applies to text via text-shadow, not container - runs once when heart reaches */
 }

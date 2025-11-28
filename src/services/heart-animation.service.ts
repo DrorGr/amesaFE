@@ -70,9 +70,14 @@ export class HeartAnimationService {
     // Wait for heart to reach target before applying glow
     setTimeout(() => {
       toElement.classList.add(glowClass);
+      
+      // Remove glow after animation completes (2s animation duration)
+      setTimeout(() => {
+        toElement.classList.remove(glowClass);
+      }, 2000); // Remove glow after animation completes
     }, 800); // Apply glow when heart reaches target
 
-    // Clean up after animation
+    // Clean up heart after animation
     setTimeout(() => {
       heart.style.opacity = '0';
       heart.style.transform = 'translate(-50%, -50%) scale(0.5)';
@@ -80,11 +85,6 @@ export class HeartAnimationService {
       setTimeout(() => {
         document.body.removeChild(heart);
         this.animationActive.next(false);
-        
-        // Remove glow after longer fade animation (3 seconds total)
-        setTimeout(() => {
-          toElement.classList.remove(glowClass);
-        }, 3000); // Keep glow visible for 3 seconds total
         
         if (onComplete) {
           onComplete();
