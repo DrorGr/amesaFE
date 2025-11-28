@@ -54,14 +54,20 @@ export class HeartAnimationService {
 
     document.body.appendChild(heart);
 
-    // Trigger animation
+    // Force a reflow to ensure initial position is rendered before animation starts
+    // This is critical for the CSS transition to work properly
+    void heart.offsetHeight;
+
+    // Trigger animation in next frame after reflow
     requestAnimationFrame(() => {
-      const targetX = toRect.left + toRect.width / 2;
-      const targetY = toRect.top + toRect.height / 2;
-      
-      heart.style.left = `${targetX}px`;
-      heart.style.top = `${targetY}px`;
-      heart.style.transform = 'translate(-50%, -50%) scale(1.5)';
+      requestAnimationFrame(() => {
+        const targetX = toRect.left + toRect.width / 2;
+        const targetY = toRect.top + toRect.height / 2;
+        
+        heart.style.left = `${targetX}px`;
+        heart.style.top = `${targetY}px`;
+        heart.style.transform = 'translate(-50%, -50%) scale(1.5)';
+      });
     });
 
     // Add glow effect to target element's text AFTER heart reaches it (800ms delay)
