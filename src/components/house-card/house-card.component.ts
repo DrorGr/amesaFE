@@ -51,7 +51,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
           [class.favorite-button-pulse]="isTogglingFavorite || isFavorite()"
           [class.favorite-button-glow]="isFavorite()"
           [class.favorite-button-orange-glow]="!isFavorite()"
-          class="absolute top-4 right-4 z-20 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-400 border-2 border-white dark:border-gray-800 favorite-button"
+          class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button"
           [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
           [title]="isFavorite() ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)"
           #favoriteButton>

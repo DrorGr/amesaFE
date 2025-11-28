@@ -676,20 +676,17 @@ h1, h2, h3, h4, h5, h6 {
   background: #94a3b8;
 }
 
-/* Favorites tab glow animation */
+/* Favorites tab glow animation - targets text, not container */
 @keyframes favorites-tab-glow {
   0%, 100% {
-    box-shadow: 0 0 10px rgba(249, 115, 22, 0.6), 0 0 20px rgba(249, 115, 22, 0.4), 0 0 30px rgba(249, 115, 22, 0.2);
-    transform: scale(1);
+    text-shadow: 0 0 10px rgba(249, 115, 22, 0.8), 0 0 20px rgba(249, 115, 22, 0.6), 0 0 30px rgba(249, 115, 22, 0.4);
   }
   50% {
-    box-shadow: 0 0 20px rgba(249, 115, 22, 1), 0 0 40px rgba(249, 115, 22, 0.8), 0 0 60px rgba(249, 115, 22, 0.6);
-    transform: scale(1.05);
+    text-shadow: 0 0 20px rgba(249, 115, 22, 1), 0 0 40px rgba(249, 115, 22, 0.9), 0 0 60px rgba(249, 115, 22, 0.7);
   }
 }
 
 .favorites-tab-glow {
   animation: favorites-tab-glow 1s ease-in-out;
-  background-color: rgba(249, 115, 22, 0.1) !important;
-  border-radius: 0.5rem;
+  /* Glow applies to text via text-shadow, not container */
 }

@@ -64,8 +64,10 @@ export class HeartAnimationService {
       heart.style.transform = 'translate(-50%, -50%) scale(1.5)';
     });
 
-    // Add glow effect to target element when heart reaches it
+    // Add glow effect to target element's text when heart reaches it
+    // Find the text content inside the button (not the container)
     const glowClass = 'favorites-tab-glow';
+    // Apply glow to the element itself, but style will target text via CSS
     toElement.classList.add(glowClass);
 
     // Clean up after animation

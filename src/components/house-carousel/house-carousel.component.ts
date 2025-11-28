@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { LotteryService } from '../../services/lottery.service';
+import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
+import { HeartAnimationService } from '../../services/heart-animation.service';
 
 @Component({
   selector: 'app-house-carousel',
@@ -50,6 +53,33 @@ import { LotteryService } from '../../services/lottery.service';
                       [attr.aria-label]="'View ' + house.title + ' location on map'">
                       <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                      </svg>
+                    </button>
+                    
+                    <!-- Favorite Button -->
+                    <button
+                      *ngIf="currentUser()"
+                      (click)="toggleFavorite($event, house)"
+                      [class.favorite-button-pulse]="isTogglingFavorite(house.id)"
+                      [class.favorite-button-glow]="isFavorite(house.id)"
+                      [class.favorite-button-orange-glow]="!isFavorite(house.id)"
+                      class="absolute top-4 right-16 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button"
+                      [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
+                      [title]="isFavorite(house.id) ? translate('lottery.favorites.removeFromFavorites') : translate('lottery.favorites.addToFavorites')">
+                      <svg 
+                        class="w-6 h-6 transition-all duration-500 favorite-heart"
+                        [class.text-red-500]="isFavorite(house.id)"
+                        [class.text-white]="!isFavorite(house.id)"
+                        [class.heart-fill-animation]="isFavorite(house.id)"
+                        [attr.fill]="isFavorite(house.id) ? 'currentColor' : 'none'"
+                        [attr.stroke]="!isFavorite(house.id) ? 'currentColor' : 'none'"
+                        stroke-width="2"
+                        viewBox="0 0 24 24">
+                        <path 
+                          fill-rule="evenodd"
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                          clip-rule="evenodd">
+                        </path>
                       </svg>
                     </button>
                     
@@ -431,12 +461,74 @@ import { LotteryService } from '../../services/lottery.service';
         z-index: 10 !important;
       }
     }
+
+    /* Favorite Button Animations - Matching house-card styling */
+    @keyframes favorite-pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.8), 0 0 40px rgba(139, 92, 246, 0.6), 0 0 60px rgba(139, 92, 246, 0.4), 0 0 0 3px rgba(139, 92, 246, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(139, 92, 246, 1), 0 0 60px rgba(139, 92, 246, 0.8), 0 0 90px rgba(139, 92, 246, 0.6), 0 0 0 6px rgba(139, 92, 246, 0.5);
+      }
+    }
+
+    @keyframes favorite-red-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.4), 0 0 0 3px rgba(239, 68, 68, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(239, 68, 68, 1), 0 0 60px rgba(239, 68, 68, 0.8), 0 0 90px rgba(239, 68, 68, 0.6), 0 0 0 6px rgba(239, 68, 68, 0.5);
+      }
+    }
+
+    @keyframes favorite-orange-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(249, 115, 22, 0.8), 0 0 40px rgba(249, 115, 22, 0.6), 0 0 60px rgba(249, 115, 22, 0.4), 0 0 0 3px rgba(249, 115, 22, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(249, 115, 22, 1), 0 0 60px rgba(249, 115, 22, 0.8), 0 0 90px rgba(249, 115, 22, 0.6), 0 0 0 6px rgba(249, 115, 22, 0.5);
+      }
+    }
+
+    @keyframes heart-fill {
+      0% {
+        transform: scale(1);
+        opacity: 0.5;
+      }
+      50% {
+        transform: scale(1.3);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .favorite-button-pulse {
+      animation: favorite-pulse-glow 2s ease-in-out infinite;
+    }
+
+    .favorite-button-glow {
+      animation: favorite-red-glow 2s ease-in-out infinite;
+    }
+
+    .favorite-button-orange-glow {
+      animation: favorite-orange-glow 2s ease-in-out infinite;
+    }
+
+    .heart-fill-animation {
+      animation: heart-fill 0.6s ease-out;
+    }
   `]
 })
 export class HouseCarouselComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private mobileDetectionService = inject(MobileDetectionService);
   private lotteryService = inject(LotteryService);
+  private authService = inject(AuthService);
+  private toastService = inject(ToastService);
+  private heartAnimationService = inject(HeartAnimationService);
   
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;
@@ -449,16 +541,29 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private countdownInterval?: number;
   private intersectionObserver: IntersectionObserver | null = null;
   loadedImages = new Set<string>();
+  togglingFavorites = signal<Set<string>>(new Set());
   
   // Use signals for values that change over time to avoid change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
   currentTime = signal<number>(Date.now());
+  currentUser = this.authService.getCurrentUser();
+  favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
 
   // Use computed signal to get active houses from lottery service
   houses = computed(() => {
     const allHouses = this.lotteryService.getHouses()();
     return allHouses.filter(house => house.status === 'active');
   });
+
+  // Check if house is favorite
+  isFavorite(houseId: string): boolean {
+    return this.favoriteHouseIds().includes(houseId);
+  }
+
+  // Check if toggling favorite
+  isTogglingFavorite(houseId: string): boolean {
+    return this.togglingFavorites().has(houseId);
+  }
 
   ngOnInit() {
     // DISABLED: Auto-slide disabled - houses will be manually controlled by user
@@ -700,6 +805,63 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         return this.translate('house.upcoming');
       default:
         return this.translate('house.active');
+    }
+  }
+
+  async toggleFavorite(event: Event, house: any): Promise<void> {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    if (!this.currentUser() || this.togglingFavorites().has(house.id)) {
+      return;
+    }
+
+    this.togglingFavorites.set(new Set([...this.togglingFavorites(), house.id]));
+
+    try {
+      const isCurrentlyFavorite = this.isFavorite(house.id);
+      const result = await this.lotteryService.toggleFavorite(house.id).toPromise();
+      
+      if (result) {
+        if (result.added) {
+          this.toastService.success('Added to favorites!', 3000);
+          
+          // Trigger heart animation to favorites tab
+          setTimeout(() => {
+            const favoriteButton = event.target as HTMLElement;
+            const navButtons = document.querySelectorAll('nav button');
+            let favoritesTab: HTMLElement | null = null;
+            
+            for (const btn of Array.from(navButtons)) {
+              const text = btn.textContent?.trim().toLowerCase() || '';
+              if (text.includes('favorite') || text.includes('favourites')) {
+                favoritesTab = btn as HTMLElement;
+                break;
+              }
+            }
+
+            if (favoritesTab && favoriteButton) {
+              this.heartAnimationService.animateHeart({
+                fromElement: favoriteButton,
+                toElement: favoritesTab
+              });
+            }
+          }, 100);
+        } else {
+          this.toastService.success('Removed from favorites', 3000);
+        }
+      }
+    } catch (error: any) {
+      console.error('Error toggling favorite:', error);
+      if (error?.error?.message?.includes('already') || error?.error?.message?.includes('favorite')) {
+        this.toastService.info('Already in favorites', 2000);
+      } else {
+        this.toastService.error('Failed to update favorites. Please try again.', 4000);
+      }
+    } finally {
+      const newSet = new Set(this.togglingFavorites());
+      newSet.delete(house.id);
+      this.togglingFavorites.set(newSet);
     }
   }
 
