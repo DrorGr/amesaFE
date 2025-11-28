@@ -47,9 +47,8 @@ export class TranslationService {
       baseUrl: this.apiService.getBaseUrl()
     }, 'TranslationService');
     
-    // Load initial translations
-    this.logger.debug('Loading initial translations...', undefined, 'TranslationService');
-    this.loadTranslations(this.currentLanguage());
+    // Initial translations will be loaded by setLanguage('en') called from APP_INITIALIZER in main.ts
+    // This prevents redundant API calls on startup
   }
 
   // Public observables
@@ -128,8 +127,12 @@ export class TranslationService {
    * Set the current language and load translations if not cached
    */
   setLanguage(language: Language): void {
-    if (this.currentLanguage() === language) {
-      return; // Already set to this language
+    // Check if translations are loaded for this language
+    const isLanguageLoaded = this.translationsCache().has(language) && !this.isCacheStale(language);
+    
+    // If language is already set AND translations are loaded, skip
+    if (this.currentLanguage() === language && isLanguageLoaded) {
+      return; // Already set to this language with translations loaded
     }
 
     this.logger.info('Switching language', { language }, 'TranslationService');

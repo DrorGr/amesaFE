@@ -391,9 +391,6 @@ export class SearchPageComponent implements OnInit, OnDestroy {
   }
   
   ngOnDestroy(): void {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'search-page.component.ts:ngOnDestroy',message:'Component destroyed',data:{componentName:'SearchPageComponent',subscriptionCount:this.subscriptions.closed?0:'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'H'})}).catch(()=>{});
-    // #endregion
     this.subscriptions.unsubscribe();
   }
 

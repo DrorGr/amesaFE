@@ -159,13 +159,7 @@ export class UserMenuComponent {
   }
 
   openAuthModal(): void {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-menu.component.ts:openAuthModal',message:'openAuthModal called via service',data:{serviceIsOpen:this.authModalService.isOpen()},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     this.authModalService.open('login');
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'user-menu.component.ts:openAuthModal',message:'openAuthModal after service call',data:{serviceIsOpen:this.authModalService.isOpen()},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
   }
 
   navigateToSettings(): void {
