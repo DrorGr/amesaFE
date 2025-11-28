@@ -461,7 +461,8 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    this.startAutoSlide();
+    // DISABLED: Auto-slide disabled - houses will be manually controlled by user
+    // this.startAutoSlide();
     this.setupIntersectionObserver();
     // Load the first slide images immediately
     setTimeout(() => this.loadCurrentSlideImages(), 100);

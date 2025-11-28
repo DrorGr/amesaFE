@@ -15,7 +15,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
   imports: [CommonModule, LanguageSwitcherComponent, ThemeToggleComponent, UserMenuComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
-    <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
+    <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300" style="position: sticky; top: 0; z-index: 50;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Desktop Header -->
         @if (!isMobile()) {

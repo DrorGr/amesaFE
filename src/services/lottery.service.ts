@@ -565,8 +565,11 @@ export class LotteryService {
    */
   removeHouseFromFavorites(houseId: string): Observable<FavoriteHouseResponse> {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites',message:'Removing house from favorites',data:{houseId,currentFavorites:this.favoriteHouseIds(),isInFavorites:this.favoriteHouseIds().includes(houseId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites',message:'Removing house from favorites',data:{houseId,currentFavorites:this.favoriteHouseIds(),isInFavorites:this.favoriteHouseIds().includes(houseId),pendingAdds:Array.from(this.pendingFavoriteAdds.keys())},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
     // #endregion
+    
+    // CRITICAL FIX: Clear pendingFavoriteAdds for this houseId to allow re-adding after removal
+    this.pendingFavoriteAdds.delete(houseId);
     
     return this.apiService.delete<FavoriteHouseResponse>(`houses/${houseId}/favorite`).pipe(
       map(response => {
@@ -575,6 +578,9 @@ export class LotteryService {
           // Update favorite IDs signal
           const currentFavorites = this.favoriteHouseIds();
           this.favoriteHouseIds.set(currentFavorites.filter(id => id !== houseId));
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:success',message:'Successfully removed from favorites',data:{houseId,remainingFavorites:this.favoriteHouseIds().length,pendingAddsCleared:!this.pendingFavoriteAdds.has(houseId)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+          // #endregion
           return response.data;
         } else if (!response.success && response.message) {
           // Backend returned success: false with a message
@@ -583,6 +589,9 @@ export class LotteryService {
             // Not in favorites - treat as success (already removed)
             const currentFavorites = this.favoriteHouseIds();
             this.favoriteHouseIds.set(currentFavorites.filter(id => id !== houseId));
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lottery.service.ts:removeHouseFromFavorites:already-removed',message:'House already not in favorites',data:{houseId,remainingFavorites:this.favoriteHouseIds().length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
             return {
               houseId: houseId,
               removed: false,

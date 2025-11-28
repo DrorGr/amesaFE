@@ -1,4 +1,4 @@
-import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
+import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, signal, computed, effect, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { House, HouseDto } from '../../models/house.model';
@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { ToastService } from '../../services/toast.service';
+import { HeartAnimationService } from '../../services/heart-animation.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 
 @Component({
@@ -44,14 +45,16 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
           </svg>
         </button>
         
-        <!-- Favorite Button (Always visible) - Matching promotions styling with glow -->
+        <!-- Favorite Button (Always visible) - Orange glow like promotions -->
         <button
           (click)="toggleFavorite($event)"
           [class.favorite-button-pulse]="isTogglingFavorite || isFavorite()"
           [class.favorite-button-glow]="isFavorite()"
-          class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button"
+          [class.favorite-button-orange-glow]="!isFavorite()"
+          class="absolute top-4 right-4 z-20 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-400 border-2 border-white dark:border-gray-800 favorite-button"
           [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
-          [title]="isFavorite() ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
+          [title]="isFavorite() ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)"
+          #favoriteButton>
           <svg 
             class="w-6 h-6 transition-all duration-500 favorite-heart"
             [class.text-red-500]="isFavorite()"
@@ -224,6 +227,15 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
       }
     }
 
+    @keyframes favorite-orange-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(249, 115, 22, 0.8), 0 0 40px rgba(249, 115, 22, 0.6), 0 0 60px rgba(249, 115, 22, 0.4), 0 0 0 3px rgba(249, 115, 22, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(249, 115, 22, 1), 0 0 60px rgba(249, 115, 22, 0.8), 0 0 90px rgba(249, 115, 22, 0.6), 0 0 0 6px rgba(249, 115, 22, 0.5);
+      }
+    }
+
     @keyframes heart-fill {
       0% {
         transform: scale(1);
@@ -245,6 +257,10 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
 
     .favorite-button-glow {
       animation: favorite-red-glow 2s ease-in-out infinite;
+    }
+
+    .favorite-button-orange-glow {
+      animation: favorite-orange-glow 2s ease-in-out infinite;
     }
 
     .heart-fill-animation {
@@ -361,6 +377,9 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private toastService = inject(ToastService);
+  private heartAnimationService = inject(HeartAnimationService);
+  
+  @ViewChild('favoriteButton', { static: false }) favoriteButtonRef?: ElementRef<HTMLButtonElement>;
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -639,6 +658,9 @@ export class HouseCardComponent implements OnInit, OnDestroy {
         // State is automatically updated by LotteryService
         if (result.added) {
           this.toastService.success('Added to favorites!', 3000);
+          
+          // Trigger heart animation to favorites tab
+          this.triggerHeartAnimation();
         } else {
           this.toastService.success('Removed from favorites', 3000);
         }
@@ -657,6 +679,37 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     } finally {
       this.isTogglingFavorite = false;
     }
+  }
+
+  /**
+   * Trigger heart animation from favorite button to favorites tab
+   */
+  private triggerHeartAnimation(): void {
+    // Use setTimeout to ensure DOM is ready
+    setTimeout(() => {
+      if (!this.favoriteButtonRef?.nativeElement) {
+        return;
+      }
+
+      // Find the favorites tab button in the topbar - look for button with "favorites" text
+      const navButtons = document.querySelectorAll('nav button');
+      let favoritesTab: HTMLElement | null = null;
+      
+      for (const btn of Array.from(navButtons)) {
+        const text = btn.textContent?.trim().toLowerCase() || '';
+        if (text.includes('favorite') || text.includes('favourites')) {
+          favoritesTab = btn as HTMLElement;
+          break;
+        }
+      }
+
+      if (favoritesTab) {
+        this.heartAnimationService.animateHeart({
+          fromElement: this.favoriteButtonRef.nativeElement,
+          toElement: favoritesTab
+        });
+      }
+    }, 100);
   }
 
   /**

@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 import { HouseDto } from '../../models/house.model';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 
@@ -132,6 +133,7 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
   private favoriteIdsSubscription?: Subscription;
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
@@ -239,9 +241,13 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
         this.favoriteHouses.set(this.favoriteHouses().filter(h => h.id !== houseId));
         // Reload to ensure sync with backend
         this.loadFavorites();
+        // Show success toast notification
+        this.toastService.success(this.translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) || 'Removed from favorites');
       }
     } catch (error) {
       console.error('Error removing favorite:', error);
+      // Show error toast notification
+      this.toastService.error('Failed to remove from favorites');
     } finally {
       const newSet = new Set(this.removingFavorites());
       newSet.delete(houseId);
