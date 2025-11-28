@@ -354,13 +354,13 @@ export class TranslationService {
   /**
    * Refresh translations for current language
    */
-  refreshTranslations(): void {
+  refreshTranslations(): Promise<void> {
     const currentLang = this.currentLanguage();
     const newCache = new Map(this.translationsCache());
     newCache.delete(currentLang);
     this.translationsCache.set(newCache);
     this.lastUpdated.delete(currentLang);
-    this.loadTranslations(currentLang);
+    return this.loadTranslations(currentLang);
   }
 
   /**
