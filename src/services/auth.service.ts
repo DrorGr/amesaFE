@@ -14,7 +14,6 @@ import {
 import { UserLotteryData } from '../interfaces/lottery.interface';
 import { LotteryService } from './lottery.service';
 import { RealtimeService } from './realtime.service';
-import { UserPreferencesService } from './user-preferences.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +26,6 @@ export class AuthService {
   // Inject LotteryService for lottery data loading (circular dependency handled via inject())
   private lotteryService = inject(LotteryService, { optional: true });
   private realtimeService = inject(RealtimeService, { optional: true });
-  private userPreferencesService = inject(UserPreferencesService, { optional: true });
   
   private router = inject(Router, { optional: true });
 

@@ -80,23 +80,27 @@ export class UserPreferencesService {
     // Load preferences on startup
     this.loadPreferences();
     
-    // Set up auto-sync when user is authenticated
-    this.authService.isAuthenticated$.subscribe(isAuth => {
-      if (isAuth) {
-        this.syncWithServer();
-      }
-    });
+    // Defer subscriptions to avoid circular dependency during initialization
+    // Use setTimeout to ensure all services are fully initialized first
+    setTimeout(() => {
+      // Set up auto-sync when user is authenticated
+      this.authService.isAuthenticated$.subscribe(isAuth => {
+        if (isAuth) {
+          this.syncWithServer();
+        }
+      });
 
-    // Set up debounced sync on preference changes
-    this.preferences$.pipe(
-      debounceTime(this.SYNC_DEBOUNCE_TIME),
-      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
-    ).subscribe(preferences => {
-      this.saveToLocalStorage(preferences);
-      if (this.authService.isAuthenticated()) {
-        this.syncWithServer();
-      }
-    });
+      // Set up debounced sync on preference changes
+      this.preferences$.pipe(
+        debounceTime(this.SYNC_DEBOUNCE_TIME),
+        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
+      ).subscribe(preferences => {
+        this.saveToLocalStorage(preferences);
+        if (this.authService.isAuthenticated()) {
+          this.syncWithServer();
+        }
+      });
+    }, 0);
   }
 
   /**
