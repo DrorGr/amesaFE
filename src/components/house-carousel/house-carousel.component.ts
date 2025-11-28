@@ -46,28 +46,27 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
                         (error)="onImageError($event)">
                     }
                     
-                    <!-- Location Icon -->
+                    <!-- Location Icon - 50% bigger -->
                     <button 
                       (click)="openLocationMap(house)"
-                      class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                      class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
                       [attr.aria-label]="'View ' + house.title + ' location on map'">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                       </svg>
                     </button>
                     
-                    <!-- Favorite Button -->
+                    <!-- Favorite Button - Always visible, 50% bigger -->
                     <button
-                      *ngIf="currentUser()"
                       (click)="toggleFavorite($event, house)"
                       [class.favorite-button-pulse]="isTogglingFavorite(house.id)"
                       [class.favorite-button-glow]="isFavorite(house.id)"
                       [class.favorite-button-orange-glow]="!isFavorite(house.id)"
-                      class="absolute top-4 right-16 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button"
+                      class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-5 rounded-full shadow-2xl transition-all duration-500 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
                       [title]="isFavorite(house.id) ? translate('lottery.favorites.removeFromFavorites') : translate('lottery.favorites.addToFavorites')">
                       <svg 
-                        class="w-6 h-6 transition-all duration-500 favorite-heart"
+                        class="w-9 h-9 transition-all duration-500 favorite-heart"
                         [class.text-red-500]="isFavorite(house.id)"
                         [class.text-white]="!isFavorite(house.id)"
                         [class.heart-fill-animation]="isFavorite(house.id)"
@@ -85,7 +84,7 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
                     
                     <!-- Status Badge - Center top with vibration animation, 50% bigger -->
                     <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
-                      <span class="status-badge-vibrate bg-emerald-500 text-white px-5 py-3 rounded-full text-lg font-semibold shadow-lg">
+                      <span class="status-badge-vibrate bg-emerald-500 text-white px-6 py-4 rounded-full text-xl font-semibold shadow-lg">
                         {{ getStatusText(house) }}
                       </span>
                     </div>
