@@ -56,17 +56,17 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
                       </svg>
                     </button>
                     
-                    <!-- Favorite Button - Always visible, 50% bigger -->
+                    <!-- Favorite Button - Always visible, 40% smaller than previous size -->
                     <button
                       (click)="toggleFavorite($event, house)"
                       [class.favorite-button-pulse]="isTogglingFavorite(house.id)"
                       [class.favorite-button-glow]="isFavorite(house.id)"
                       [class.favorite-button-orange-glow]="!isFavorite(house.id)"
-                      class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-5 rounded-full shadow-2xl transition-all duration-500 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button"
+                      class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
                       [title]="isFavorite(house.id) ? translate('lottery.favorites.removeFromFavorites') : translate('lottery.favorites.addToFavorites')">
                       <svg 
-                        class="w-9 h-9 transition-all duration-500 favorite-heart"
+                        class="w-5 h-5 transition-all duration-500 favorite-heart"
                         [class.text-red-500]="isFavorite(house.id)"
                         [class.text-white]="!isFavorite(house.id)"
                         [class.heart-fill-animation]="isFavorite(house.id)"
@@ -853,7 +853,13 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     event.preventDefault();
     
-    if (!this.currentUser() || this.togglingFavorites().has(house.id)) {
+    // Show toast if user is not logged in
+    if (!this.currentUser()) {
+      this.toastService.info('Please log in to add favorites', 3000);
+      return;
+    }
+    
+    if (this.togglingFavorites().has(house.id)) {
       return;
     }
 
