@@ -215,7 +215,7 @@ export class TranslationService {
 
     // Add timeout of 10 seconds
     const timeoutDuration = 10000;
-    let timeoutTimer: NodeJS.Timeout;
+    let timeoutTimer: ReturnType<typeof setTimeout>;
     
     return new Promise<void>((resolve, reject) => {
       timeoutTimer = setTimeout(() => {
