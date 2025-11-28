@@ -1,4 +1,5 @@
 import { Injectable, signal, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { ApiService } from './api.service';
@@ -13,6 +14,7 @@ import {
 import { UserLotteryData } from '../interfaces/lottery.interface';
 import { LotteryService } from './lottery.service';
 import { RealtimeService } from './realtime.service';
+import { UserPreferencesService } from './user-preferences.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +27,10 @@ export class AuthService {
   // Inject LotteryService for lottery data loading (circular dependency handled via inject())
   private lotteryService = inject(LotteryService, { optional: true });
   private realtimeService = inject(RealtimeService, { optional: true });
+  private userPreferencesService = inject(UserPreferencesService, { optional: true });
   
+  private router = inject(Router, { optional: true });
+
   constructor(private apiService: ApiService) {
     // Check if user is already authenticated on service initialization
     this.checkAuthStatus();
@@ -68,6 +73,18 @@ export class AuthService {
           // Load lottery data if available
           if (response.data.lotteryData && this.lotteryService) {
             this.lotteryService.initializeLotteryData(response.data.lotteryData);
+          } else if (this.lotteryService) {
+            // If lotteryData not in response, explicitly fetch favorites from backend
+            // This ensures favorites are loaded even if backend doesn't include them in login response
+            this.lotteryService.getFavoriteHouses().subscribe({
+              next: () => {
+                // Favorites loaded successfully
+              },
+              error: (err) => {
+                console.warn('Failed to load favorites on login:', err);
+                // Non-critical error - continue with login
+              }
+            });
           }
           
           // Connect to SignalR for real-time updates (FE-2.6)
@@ -107,7 +124,12 @@ export class AuthService {
       this.apiService.post('auth/logout', { refreshToken }).subscribe();
     }
     
+    // Clear all tokens
     this.apiService.clearToken();
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('access_token');
+    
+    // Clear all user data
     this.currentUser.set(null);
     this.currentUserDto.set(null);
     this.isAuthenticatedSubject.next(false);
@@ -117,9 +139,38 @@ export class AuthService {
       this.lotteryService.clearLotteryData();
     }
     
+    // Clear user preferences on logout (localStorage will be cleared below)
+    // Note: UserPreferencesService uses localStorage, which is cleared in the loop below
+    
     // Disconnect from SignalR on logout
     if (this.realtimeService) {
       this.realtimeService.stopConnection();
+    }
+    
+    // Clear any other user-related localStorage data
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('amesa_') || key.includes('user') || key.includes('auth'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+    } catch (error) {
+      console.error('Error clearing localStorage on logout:', error);
+    }
+    
+    // Redirect to homepage
+    if (this.router) {
+      this.router.navigate(['/']).catch(err => {
+        console.error('Error navigating to homepage on logout:', err);
+        // Fallback: use window.location if router fails
+        window.location.href = '/';
+      });
+    } else {
+      // Fallback: use window.location if router not available
+      window.location.href = '/';
     }
   }
   
@@ -157,6 +208,18 @@ export class AuthService {
           // Load lottery data if available (BE-1.7 enhancement)
           if (response.data.lotteryData && this.lotteryService) {
             this.lotteryService.initializeLotteryData(response.data.lotteryData);
+          } else if (this.lotteryService) {
+            // If lotteryData not in response, explicitly fetch favorites from backend
+            // This ensures favorites are loaded on page refresh or auth check
+            this.lotteryService.getFavoriteHouses().subscribe({
+              next: () => {
+                // Favorites loaded successfully
+              },
+              error: (err) => {
+                console.warn('Failed to load favorites on auth check:', err);
+                // Non-critical error - continue
+              }
+            });
           }
           
           // Connect to SignalR for real-time updates (FE-2.6)

@@ -64,11 +64,13 @@ export class HeartAnimationService {
       heart.style.transform = 'translate(-50%, -50%) scale(1.5)';
     });
 
-    // Add glow effect to target element's text when heart reaches it
-    // Find the text content inside the button (not the container)
+    // Add glow effect to target element's text AFTER heart reaches it (800ms delay)
     const glowClass = 'favorites-tab-glow';
-    // Apply glow to the element itself, but style will target text via CSS
-    toElement.classList.add(glowClass);
+    
+    // Wait for heart to reach target before applying glow
+    setTimeout(() => {
+      toElement.classList.add(glowClass);
+    }, 800); // Apply glow when heart reaches target
 
     // Clean up after animation
     setTimeout(() => {
@@ -79,10 +81,10 @@ export class HeartAnimationService {
         document.body.removeChild(heart);
         this.animationActive.next(false);
         
-        // Remove glow after fade animation
+        // Remove glow after longer fade animation (3 seconds total)
         setTimeout(() => {
           toElement.classList.remove(glowClass);
-        }, 1000);
+        }, 3000); // Keep glow visible for 3 seconds total
         
         if (onComplete) {
           onComplete();
