@@ -83,9 +83,9 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
                       </svg>
                     </button>
                     
-                    <!-- Status Badge - Centered with vibration animation -->
-                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
-                      <span class="status-badge-vibrate bg-emerald-500 text-white px-3 py-2 rounded-full text-sm font-semibold shadow-lg">
+                    <!-- Status Badge - Center top with vibration animation, 50% bigger -->
+                    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
+                      <span class="status-badge-vibrate bg-emerald-500 text-white px-5 py-3 rounded-full text-lg font-semibold shadow-lg">
                         {{ getStatusText(house) }}
                       </span>
                     </div>
