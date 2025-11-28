@@ -875,27 +875,22 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
           
           // Trigger heart animation to favorites tab
           setTimeout(() => {
-            // Get the button element (event.currentTarget is the button, event.target might be SVG inside)
-            const favoriteButton = (event.currentTarget || event.target) as HTMLElement;
-            // If target is SVG, find the button parent
-            const buttonElement = favoriteButton.closest('button') || favoriteButton;
-            
-            // Find favorites tab in navigation
-            const navButtons = document.querySelectorAll('nav button, nav a');
+            // Use currentTarget which is always the button element with the click handler
+            const favoriteButton = event.currentTarget as HTMLElement;
+            const navButtons = document.querySelectorAll('nav button');
             let favoritesTab: HTMLElement | null = null;
             
             for (const btn of Array.from(navButtons)) {
               const text = btn.textContent?.trim().toLowerCase() || '';
-              const href = (btn as HTMLElement).getAttribute('href') || '';
-              if (text.includes('favorite') || text.includes('favourites') || href.includes('favorite') || href.includes('favourites')) {
+              if (text.includes('favorite') || text.includes('favourites')) {
                 favoritesTab = btn as HTMLElement;
                 break;
               }
             }
 
-            if (favoritesTab && buttonElement) {
+            if (favoritesTab && favoriteButton) {
               this.heartAnimationService.animateHeart({
-                fromElement: buttonElement,
+                fromElement: favoriteButton,
                 toElement: favoritesTab
               });
             }
