@@ -877,14 +877,29 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
           setTimeout(() => {
             // Use currentTarget which is always the button element with the click handler
             const favoriteButton = event.currentTarget as HTMLElement;
-            const navButtons = document.querySelectorAll('nav button');
+            
+            // Try multiple selectors to find the favorites tab
             let favoritesTab: HTMLElement | null = null;
             
+            // First try: nav buttons
+            const navButtons = document.querySelectorAll('nav button');
             for (const btn of Array.from(navButtons)) {
               const text = btn.textContent?.trim().toLowerCase() || '';
               if (text.includes('favorite') || text.includes('favourites')) {
                 favoritesTab = btn as HTMLElement;
                 break;
+              }
+            }
+            
+            // Second try: if not found, try all buttons in the topbar
+            if (!favoritesTab) {
+              const allButtons = document.querySelectorAll('app-topbar button');
+              for (const btn of Array.from(allButtons)) {
+                const text = btn.textContent?.trim().toLowerCase() || '';
+                if (text.includes('favorite') || text.includes('favourites')) {
+                  favoritesTab = btn as HTMLElement;
+                  break;
+                }
               }
             }
 

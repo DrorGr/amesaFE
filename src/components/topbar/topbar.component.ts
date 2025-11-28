@@ -1,6 +1,7 @@
-import { Component, inject, ViewEncapsulation, OnInit, signal } from '@angular/core';
+import { Component, inject, ViewEncapsulation, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
@@ -30,15 +31,35 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
           </div>
 
           <div class="ml-10 flex items-center space-x-8">
-            <button (click)="navigateToDashboard()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-              {{ translate('nav.myLottery') }}
-            </button>
-            <button (click)="navigateToFavorites()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-              {{ translate('nav.favorites') }}
-            </button>
-            <button (click)="navigateToSearch()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
-              {{ translate('nav.search') }}
-            </button>
+            @if (isOnDashboardPage()) {
+              <button (click)="navigateToHome()" class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg">
+                {{ translate('nav.backHome') || 'Back Home' }}
+              </button>
+            } @else {
+              <button (click)="navigateToDashboard()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+                {{ translate('nav.myLottery') }}
+              </button>
+            }
+            
+            @if (isOnFavoritesPage()) {
+              <button (click)="navigateToHome()" class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg">
+                {{ translate('nav.backHome') || 'Back Home' }}
+              </button>
+            } @else {
+              <button (click)="navigateToFavorites()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+                {{ translate('nav.favorites') }}
+              </button>
+            }
+            
+            @if (isOnSearchPage()) {
+              <button (click)="navigateToHome()" class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg">
+                {{ translate('nav.backHome') || 'Back Home' }}
+              </button>
+            } @else {
+              <button (click)="navigateToSearch()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+                {{ translate('nav.search') }}
+              </button>
+            }
           </div>
 
           <div class="flex items-center space-x-3 mobile-controls">
@@ -93,15 +114,35 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
           <div class="absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-4 animate-fadeIn shadow-lg z-50">
             <!-- Navigation Links -->
             <div class="space-y-2">
-              <button (click)="navigateToDashboard()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
-                {{ translate('nav.myLottery') }}
-              </button>
-              <button (click)="navigateToFavorites()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
-                {{ translate('nav.favorites') }}
-              </button>
-              <button (click)="navigateToSearch()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
-                {{ translate('nav.search') }}
-              </button>
+              @if (isOnDashboardPage()) {
+                <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg">
+                  {{ translate('nav.backHome') || 'Back Home' }}
+                </button>
+              } @else {
+                <button (click)="navigateToDashboard()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                  {{ translate('nav.myLottery') }}
+                </button>
+              }
+              
+              @if (isOnFavoritesPage()) {
+                <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg">
+                  {{ translate('nav.backHome') || 'Back Home' }}
+                </button>
+              } @else {
+                <button (click)="navigateToFavorites()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                  {{ translate('nav.favorites') }}
+                </button>
+              }
+              
+              @if (isOnSearchPage()) {
+                <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg">
+                  {{ translate('nav.backHome') || 'Back Home' }}
+                </button>
+              } @else {
+                <button (click)="navigateToSearch()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                  {{ translate('nav.search') }}
+                </button>
+              }
             </div>
           </div>
         }
@@ -157,9 +198,15 @@ export class TopbarComponent implements OnInit {
   private toastService = inject(ToastService);
   
   isMobileMenuOpen = false;
+  currentUrl = signal<string>('');
   
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;
+  
+  // Computed signals for page detection
+  isOnDashboardPage = computed(() => this.currentUrl().includes('/lottery/dashboard'));
+  isOnFavoritesPage = computed(() => this.currentUrl().includes('/lottery/favorites'));
+  isOnSearchPage = computed(() => this.currentUrl().includes('/search'));
   
   toggleMobileMenu() {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
@@ -172,6 +219,16 @@ export class TopbarComponent implements OnInit {
     if (!isMobile && this.isMobileMenuOpen) {
       this.isMobileMenuOpen = false;
     }
+    
+    // Track current route
+    this.currentUrl.set(this.router.url);
+    
+    // Subscribe to route changes
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.currentUrl.set(event.url);
+      });
   }
 
   translate(key: string): string {
