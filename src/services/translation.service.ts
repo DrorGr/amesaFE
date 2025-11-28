@@ -137,15 +137,13 @@ export class TranslationService {
 
     this.logger.info('Switching language', { language }, 'TranslationService');
     
-    // Always show loader when changing language for better UX
-    this.isLoading.next(true);
-    this.loadingProgress.next(10);
-    this.loadingMessage.next(`Switching to ${language.toUpperCase()}...`);
-    this.error.next(null); // Clear any previous errors
+    // Clear any previous errors
+    this.error.next(null);
     
     // Load translations if not in cache or cache is stale
     if (!this.translationsCache().has(language) || this.isCacheStale(language)) {
       // Load translations first, then switch language when ready
+      // loadTranslations will handle the loading state
       this.loadTranslations(language, true); // true = switch language after loading
     } else {
       // Translations are cached, safe to switch immediately
