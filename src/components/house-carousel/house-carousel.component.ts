@@ -83,9 +83,9 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
                       </svg>
                     </button>
                     
-                    <!-- Status Badge -->
-                    <div class="absolute top-4 right-4 z-20">
-                      <span class="bg-emerald-500 text-white px-3 py-2 rounded-full text-sm font-semibold shadow-lg">
+                    <!-- Status Badge - Centered with vibration animation -->
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
+                      <span class="status-badge-vibrate bg-emerald-500 text-white px-3 py-2 rounded-full text-sm font-semibold shadow-lg">
                         {{ getStatusText(house) }}
                       </span>
                     </div>
@@ -488,6 +488,48 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
       50% {
         box-shadow: 0 0 30px rgba(249, 115, 22, 1), 0 0 60px rgba(249, 115, 22, 0.8), 0 0 90px rgba(249, 115, 22, 0.6), 0 0 0 6px rgba(249, 115, 22, 0.5);
       }
+    }
+
+    /* Status Badge Vertical Vibration Animation */
+    /* Vibrates (seesaw motion around center), then pauses for 3 seconds, repeats */
+    /* Total duration: 3.5s (0.5s vibration + 3s pause) */
+    @keyframes status-badge-vibrate {
+      /* Vibration phase: 0% to ~14.3% (0.5s out of 3.5s total) */
+      0% {
+        transform: rotate(0deg);
+        transform-origin: center center;
+      }
+      3.57% {
+        transform: rotate(-3deg);
+        transform-origin: center center;
+      }
+      7.14% {
+        transform: rotate(3deg);
+        transform-origin: center center;
+      }
+      10.71% {
+        transform: rotate(-3deg);
+        transform-origin: center center;
+      }
+      14.28% {
+        transform: rotate(3deg);
+        transform-origin: center center;
+      }
+      14.3% {
+        transform: rotate(0deg);
+        transform-origin: center center;
+      }
+      /* Pause phase: 14.3% to 100% (3s pause) */
+      14.3%, 100% {
+        transform: rotate(0deg);
+        transform-origin: center center;
+      }
+    }
+
+    .status-badge-vibrate {
+      animation: status-badge-vibrate 3.5s ease-in-out infinite;
+      transform-origin: center center;
+      display: inline-block;
     }
 
     @keyframes heart-fill {
