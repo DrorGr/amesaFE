@@ -19,12 +19,12 @@ import { provideRouter, withPreloading, withInMemoryScrolling } from '@angular/r
 import { CustomPreloadingStrategy } from './app.preloading-strategy';
 import { provideHttpClient } from '@angular/common/http';
 
-// Initialize translation service
+// Initialize translation service - MUST be first and blocking
 function initializeTranslations(translationService: TranslationService) {
   return () => {
-    // Initialize with default language (English)
-    translationService.setLanguage('en');
-    return Promise.resolve();
+    // Initialize with default language (English) and wait for it to complete
+    // This ensures translations are loaded before any other initialization
+    return translationService.setLanguage('en');
   };
 }
 
@@ -49,12 +49,15 @@ bootstrapApplication(AppComponent, {
     // Services with providedIn: 'root' are automatically provided - don't register them here
     // This prevents NG0200 circular dependency errors
     { provide: ErrorHandler, useClass: ErrorHandlingService },
+    // CRITICAL: Translations must be loaded FIRST before any other initialization
+    // This ensures the UI displays properly from the start
     {
       provide: APP_INITIALIZER,
       useFactory: initializeTranslations,
       deps: [TranslationService],
       multi: true
     },
+    // Other services initialize after translations are loaded
     {
       provide: APP_INITIALIZER,
       useFactory: initializeServices,
