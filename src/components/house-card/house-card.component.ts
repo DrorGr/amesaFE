@@ -45,7 +45,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
           </svg>
         </button>
         
-        <!-- Favorite Button (Always visible) - Orange glow like promotions -->
+        <!-- Favorite Button (Always visible) - Purple gradient with orange glow when not favorited -->
         <button
           (click)="toggleFavorite($event)"
           [class.favorite-button-pulse]="isTogglingFavorite || isFavorite()"
