@@ -46,18 +46,8 @@ function initializeServices(
 
 bootstrapApplication(AppComponent, {
   providers: [
-    TranslationService,
-    ThemeService,
-    UserPreferencesService,
-    RouteLoadingService,
-    MobileDetectionService,
-    ErrorHandlingService,
-    LoggingService,
-    PerformanceService,
-    SecurityService,
-    ValidationService,
-    AccessibilityService,
-    RoutePerformanceService,
+    // Services with providedIn: 'root' are automatically provided - don't register them here
+    // This prevents NG0200 circular dependency errors
     { provide: ErrorHandler, useClass: ErrorHandlingService },
     {
       provide: APP_INITIALIZER,
