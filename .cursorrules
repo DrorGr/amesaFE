@@ -309,6 +309,31 @@ git checkout main
 - **Theme Support**: Dark/light mode switching
 - **Real-time Features**: SignalR integration for live updates
 
+## Recent Changes (2025-01-27) - FAVORITES UI ENHANCEMENTS & BUG FIXES
+1. ✅ **Heart Animation Glow Timing Fix** - Fixed glow to appear when heart reaches target
+   - **Problem**: Glow started immediately, too small and short
+   - **Solution**: Delay glow application (800ms), increase size, extend duration (2s infinite)
+   - **Files**: `src/services/heart-animation.service.ts`, `src/global_styles.css`
+   - **Commit**: `66ccdca` - "Fix favorites: glow timing, loading on login, logout redirect"
+2. ✅ **Favorites Loading on Login Fix** - Ensured favorites always load from backend
+   - **Problem**: Favorites only loaded if `lotteryData` was in login response
+   - **Solution**: Added explicit `getFavoriteHouses()` call if `lotteryData` missing
+   - **Files**: `src/services/auth.service.ts`
+   - **Impact**: Favorites now load reliably on login and page refresh
+3. ✅ **Logout Redirect and Data Clearing Fix** - Complete logout functionality
+   - **Problem**: Logout didn't redirect or clear all localStorage data
+   - **Solution**: Added Router navigation, comprehensive localStorage cleanup, SignalR disconnect
+   - **Files**: `src/services/auth.service.ts`
+   - **Impact**: Complete data cleanup and automatic redirect to homepage
+4. ✅ **Carousel Status Badge Positioning & Animation** - Moved badge to center with vibration
+   - **Problem**: Status badge overlapped favorites button
+   - **Solution**: Moved to center of image, added vertical vibration animation (seesaw motion)
+   - **Animation**: Vibrate 0.5s, pause 3s, repeat (3.5s cycle)
+   - **Files**: `src/components/house-carousel/house-carousel.component.ts`
+   - **Commit**: `8089411` - "Move carousel status badge to center, add vertical vibration animation"
+   - **Status**: ✅ All changes committed and pushed to main branch
+   - **Documentation**: `MetaData/Documentation/FAVORITES_UI_ENHANCEMENTS.md`
+
 ## Recent Changes (2025-11-27) - FAVORITES FEATURE SYSTEMIC FIX
 1. ✅ **Favorites Feature - Complete Systemic Fix** - Fixed database structure and backend serialization issues
    - **Database Migration**: Executed migration script to add `lotteryPreferences` structure to all existing users
