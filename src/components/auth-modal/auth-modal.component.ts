@@ -266,7 +266,22 @@ export class AuthModalComponent {
           lastName: this.name.split(' ').slice(1).join(' ') || '',
           authProvider: 'local'
         };
-        result = await this.authService.register(registerData).toPromise() || false;
+        const registerResult = await this.authService.register(registerData).toPromise();
+        
+        if (registerResult?.success) {
+          if (registerResult.requiresEmailVerification) {
+            // Redirect to email verification page
+            this.toastService.success('Registration successful! Please check your email to verify your account.', 5000);
+            this.close.emit();
+            this.router.navigate(['/verify-email'], {
+              queryParams: { email: this.email }
+            });
+            return;
+          }
+          result = true;
+        } else {
+          result = false;
+        }
       }
       
       if (result) {
@@ -313,21 +328,41 @@ export class AuthModalComponent {
         
         this.errorMessage = 'Invalid email or password. Please check your credentials and try again.';
       } else if (error.status === 400) {
+        const errorCode = error.error?.error?.code;
+        
         if (this.mode() === 'register') {
           // Check if user already exists - redirect to login
           const errorMessage = error.error?.error?.message || '';
           if (errorMessage.toLowerCase().includes('already exists') || 
               errorMessage.toLowerCase().includes('email already') ||
-              error.error?.error?.code === 'VALIDATION_ERROR') {
+              errorCode === 'VALIDATION_ERROR') {
             // Show warning toast and switch to login mode
             this.toastService.warning('An account with this email already exists. Please log in instead.', 3000);
             this.modeChange.emit('login'); // Switch to login mode
             this.errorMessage = 'This email is already registered. Please log in.';
             return;
           }
+          
+          // Handle rate limiting
+          if (errorCode === 'RATE_LIMIT_EXCEEDED') {
+            this.errorMessage = 'Too many registration attempts. Please try again later.';
+            return;
+          }
+          
+          // Handle CAPTCHA failure
+          if (errorCode === 'CAPTCHA_FAILED') {
+            this.errorMessage = 'CAPTCHA verification failed. Please try again.';
+            return;
+          }
+          
           this.errorMessage = 'Registration failed. Email might already be in use or data is invalid.';
         } else {
-          this.errorMessage = 'Invalid request. Please check your input and try again.';
+          // Login errors
+          if (errorCode === 'RATE_LIMIT_EXCEEDED') {
+            this.errorMessage = 'Too many login attempts. Please try again later.';
+          } else {
+            this.errorMessage = 'Invalid request. Please check your input and try again.';
+          }
         }
       } else if (error.status === 500) {
         this.errorMessage = 'Server error. Please try again later or contact support.';

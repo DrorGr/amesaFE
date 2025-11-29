@@ -80,9 +80,10 @@ export interface LotteryTicketDto {
 import { UserLotteryData } from '../interfaces/lottery.interface';
 
 export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: Date;
+  accessToken?: string; // Optional - not provided if email verification required
+  refreshToken?: string; // Optional - not provided if email verification required
+  expiresAt?: Date; // Optional - not provided if email verification required
+  requiresEmailVerification: boolean; // NEW - indicates email verification needed
   user: UserDto;
   lotteryData?: UserLotteryData; // Added in BE-1.6
 }
@@ -131,6 +132,7 @@ export interface LotteryTicket {
 
 // Request DTOs
 export interface RegisterRequest {
+  captchaToken?: string; // NEW - Google reCAPTCHA v3 token
   username: string;
   email: string;
   password: string;

@@ -64,34 +64,57 @@ export class AuthService {
     return this.apiService.post<AuthResponse>('auth/login', loginRequest).pipe(
       tap(response => {
         if (response.success && response.data) {
-          this.apiService.setToken(response.data.accessToken);
-          this.setUser(response.data.user);
-          this.isAuthenticatedSubject.next(true);
-          
-          // Load lottery data if available
-          if (response.data.lotteryData && this.lotteryService) {
-            this.lotteryService.initializeLotteryData(response.data.lotteryData);
-          } else if (this.lotteryService) {
-            // If lotteryData not in response, explicitly fetch favorites from backend
-            // This ensures favorites are loaded even if backend doesn't include them in login response
-            this.lotteryService.getFavoriteHouses().subscribe({
-              next: () => {
-                // Favorites loaded successfully
-              },
-              error: (err) => {
-                console.warn('Failed to load favorites on login:', err);
-                // Non-critical error - continue with login
-              }
-            });
+          // Check if email verification is required
+          if (response.data.requiresEmailVerification) {
+            // Don't authenticate, user needs to verify email first
+            return;
           }
           
-          // Connect to SignalR for real-time updates (FE-2.6)
-          if (this.realtimeService && response.data.user) {
-            this.connectToSignalR(response.data.user.id);
+          if (response.data.accessToken) {
+            this.apiService.setToken(response.data.accessToken);
+            if (response.data.refreshToken) {
+              localStorage.setItem('refresh_token', response.data.refreshToken);
+            }
+            this.setUser(response.data.user);
+            this.isAuthenticatedSubject.next(true);
+            
+            // Load lottery data if available
+            if (response.data.lotteryData && this.lotteryService) {
+              this.lotteryService.initializeLotteryData(response.data.lotteryData);
+            } else if (this.lotteryService) {
+              // If lotteryData not in response, explicitly fetch favorites from backend
+              // This ensures favorites are loaded even if backend doesn't include them in login response
+              this.lotteryService.getFavoriteHouses().subscribe({
+                next: () => {
+                  // Favorites loaded successfully
+                },
+                error: (err) => {
+                  console.warn('Failed to load favorites on login:', err);
+                  // Non-critical error - continue with login
+                }
+              });
+            }
+            
+            // Connect to SignalR for real-time updates (FE-2.6)
+            if (this.realtimeService && response.data.user) {
+              this.connectToSignalR(response.data.user.id);
+            }
           }
         }
       }),
-      map(response => response.success),
+      map(response => {
+        if (response.success && response.data?.requiresEmailVerification) {
+          // Throw error to indicate email verification needed
+          throw { 
+            status: 403, 
+            error: { 
+              code: 'EMAIL_NOT_VERIFIED', 
+              message: 'Please verify your email before logging in' 
+            } 
+          };
+        }
+        return response.success;
+      }),
       catchError(error => {
         console.error('Login error:', error);
         return throwError(() => error);
@@ -99,16 +122,26 @@ export class AuthService {
     );
   }
 
-  register(registerData: RegisterRequest): Observable<boolean> {
+  register(registerData: RegisterRequest): Observable<{ success: boolean; requiresEmailVerification?: boolean }> {
     return this.apiService.post<AuthResponse>('auth/register', registerData).pipe(
       tap(response => {
         if (response.success && response.data) {
-          this.apiService.setToken(response.data.accessToken);
-          this.setUser(response.data.user);
-          this.isAuthenticatedSubject.next(true);
+          // Only set tokens if email is verified (OAuth users)
+          if (response.data.accessToken && !response.data.requiresEmailVerification) {
+            this.apiService.setToken(response.data.accessToken);
+            if (response.data.refreshToken) {
+              localStorage.setItem('refresh_token', response.data.refreshToken);
+            }
+            this.setUser(response.data.user);
+            this.isAuthenticatedSubject.next(true);
+          }
+          // If email verification required, don't set tokens or authenticate
         }
       }),
-      map(response => response.success),
+      map(response => ({
+        success: response.success,
+        requiresEmailVerification: response.data?.requiresEmailVerification ?? false
+      })),
       catchError(error => {
         console.error('Registration error:', error);
         return throwError(() => error);
@@ -285,11 +318,54 @@ export class AuthService {
     );
   }
 
+  resendVerificationEmail(email: string): Observable<boolean> {
+    return this.apiService.post('auth/resend-verification', { email }).pipe(
+      map(response => response.success),
+      catchError(error => {
+        console.error('Resend verification email error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   verifyPhone(phone: string, code: string): Observable<boolean> {
     return this.apiService.post('auth/verify-phone', { phone, code }).pipe(
       map(response => response.success),
       catchError(error => {
         console.error('Phone verification error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Session Management Methods
+  getActiveSessions(): Observable<any[]> {
+    return this.apiService.get<any[]>('auth/sessions').pipe(
+      map(response => response.data || []),
+      catchError(error => {
+        console.error('Get active sessions error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  logoutFromDevice(sessionToken: string): Observable<boolean> {
+    // Encode session token for URL
+    const encodedToken = encodeURIComponent(sessionToken);
+    return this.apiService.post(`auth/sessions/${encodedToken}/logout`, {}).pipe(
+      map(response => response.success),
+      catchError(error => {
+        console.error('Logout from device error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  logoutAllDevices(): Observable<boolean> {
+    return this.apiService.post('auth/sessions/logout-all', {}).pipe(
+      map(response => response.success),
+      catchError(error => {
+        console.error('Logout all devices error:', error);
         return throwError(() => error);
       })
     );

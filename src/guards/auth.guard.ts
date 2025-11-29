@@ -13,8 +13,18 @@ export class AuthGuard implements CanActivate {
 
   canActivate(): boolean {
     const user = this.authService.getCurrentUser()();
+    const userDto = this.authService.getCurrentUserDto()();
     
     if (user && user.isAuthenticated) {
+      // Check if email is verified
+      if (userDto && !userDto.emailVerified) {
+        // Redirect to email verification page
+        this.toastService.warning('Please verify your email before accessing this page.', 4000);
+        this.router.navigate(['/verify-email'], {
+          queryParams: { email: userDto.email }
+        });
+        return false;
+      }
       return true;
     } else {
       // Show error toast and redirect to home page if not authenticated

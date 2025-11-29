@@ -4,6 +4,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
+import { CaptchaService } from '../../services/captcha.service';
+import { ToastService } from '../../services/toast.service';
 
 
 @Component({
@@ -608,6 +610,8 @@ export class RegistrationPageComponent {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private captchaService = inject(CaptchaService);
+  private toastService = inject(ToastService);
 
   currentStep = signal(1);
   usernameError = signal(false);
@@ -789,9 +793,14 @@ export class RegistrationPageComponent {
     }
   }
 
-  onPasswordSubmit() {
+  async onPasswordSubmit() {
     if (this.passwordForm.valid) {
-      this.currentStep.set(4);
+      // For now, skip identity validation step and complete registration
+      // You can uncomment this if you want to include identity validation
+      // this.currentStep.set(4);
+      
+      // Complete registration directly
+      await this.completeRegistration();
     }
   }
 
@@ -845,9 +854,74 @@ export class RegistrationPageComponent {
     }, 2000);
   }
 
-  completeRegistration() {
-    // Navigate to success page or login
-    this.router.navigate(['/']);
+  async completeRegistration() {
+    if (!this.personalDetailsForm.valid || !this.communicationForm.valid || !this.passwordForm.valid) {
+      this.toastService.error(this.translate('register.pleaseCompleteAllFields'), 3000);
+      return;
+    }
+
+    this.isLoading.set(true);
+
+    try {
+      // Get CAPTCHA token
+      let captchaToken: string | null = null;
+      try {
+        captchaToken = await this.captchaService.execute('register');
+      } catch (error) {
+        console.warn('CAPTCHA execution failed, continuing without token:', error);
+        // Continue without CAPTCHA token - backend will handle gracefully
+      }
+
+      // Prepare registration data
+      const registerData = {
+        username: this.personalDetailsForm.get('username')?.value,
+        email: this.communicationForm.get('email')?.value,
+        password: this.passwordForm.get('password')?.value,
+        firstName: this.personalDetailsForm.get('firstName')?.value,
+        lastName: this.personalDetailsForm.get('lastName')?.value,
+        dateOfBirth: this.personalDetailsForm.get('dateOfBirth')?.value,
+        gender: this.personalDetailsForm.get('gender')?.value,
+        phone: this.phoneNumbers()[0] || '',
+        authProvider: 'email',
+        captchaToken: captchaToken || undefined
+      };
+
+      const result = await this.authService.register(registerData).toPromise();
+
+      if (result?.success) {
+        if (result.requiresEmailVerification) {
+          // Redirect to email verification page
+          this.toastService.success(this.translate('register.verificationEmailSent'), 5000);
+          this.router.navigate(['/verify-email'], {
+            queryParams: { email: registerData.email }
+          });
+        } else {
+          // OAuth user or already verified - redirect to dashboard
+          this.toastService.success(this.translate('register.registrationSuccess'), 3000);
+          this.router.navigate(['/member-settings']);
+        }
+      } else {
+        this.toastService.error(this.translate('register.registrationFailed'), 3000);
+      }
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      
+      // Handle specific error codes
+      const errorCode = error?.error?.error?.code || error?.error?.code;
+      const errorMessage = error?.error?.error?.message || error?.error?.message;
+
+      if (errorCode === 'RATE_LIMIT_EXCEEDED') {
+        this.toastService.error(this.translate('auth.tooManyRegistrationAttempts'), 3000);
+      } else if (errorCode === 'CAPTCHA_FAILED') {
+        this.toastService.error(this.translate('auth.captchaFailed'), 3000);
+      } else if (errorCode === 'VALIDATION_ERROR') {
+        this.toastService.error(errorMessage || this.translate('register.validationError'), 3000);
+      } else {
+        this.toastService.error(errorMessage || this.translate('register.registrationFailed'), 3000);
+      }
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   goToPreviousStep() {

@@ -92,6 +92,15 @@ export const routes: Routes = [
     loadComponent: () => import('./components/oauth-callback/oauth-callback.component').then(m => m.OAuthCallbackComponent)
   },
   {
+    path: 'verify-email',
+    loadComponent: () => import('./components/verify-email/verify-email.component').then(m => m.VerifyEmailComponent)
+  },
+  {
+    path: 'settings/sessions',
+    loadComponent: () => import('./components/sessions-management/sessions-management.component').then(m => m.SessionsManagementComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: '**',
     redirectTo: ''
   }
