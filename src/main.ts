@@ -154,9 +154,15 @@ function initializeTranslations(
       // #endregion
     }
 
-    // Set the determined language
-    translationService.setLanguage(initialLanguage);
-    return Promise.resolve();
+    // Load translations and WAIT for them to complete before app starts
+    // This ensures translations are available when the app initializes
+    return translationService.loadTranslationsAsync(initialLanguage)
+      .catch(error => {
+        // Log error but don't block app startup
+        // App will start with empty translations (fallback to keys)
+        console.error('Failed to load initial translations:', error);
+        return Promise.resolve();
+      });
   };
 }
 

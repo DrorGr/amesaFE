@@ -143,11 +143,8 @@ export class TranslationService {
 
     this.logger.info('Switching language', { language }, 'TranslationService');
     
-    // Always show loader when changing language for better UX
-    this.isLoading.next(true);
-    this.loadingProgress.next(10);
-    this.loadingMessage.next(`Switching to ${language.toUpperCase()}...`);
-    this.error.next(null); // Clear any previous errors
+    // Clear any previous errors
+    this.error.next(null);
     
     // Load translations if not in cache or cache is stale
     if (!this.translationsCache().has(language) || this.isCacheStale(language)) {
@@ -155,6 +152,7 @@ export class TranslationService {
       fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:147',message:'Calling loadTranslations',data:{language,reason:'not in cache or stale'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
       // #endregion
       // Load translations first, then switch language when ready
+      // loadTranslations will handle isLoading, loadingProgress, and loadingMessage
       this.loadTranslations(language, true); // true = switch language after loading
     } else {
       // Translations are cached, safe to switch immediately
@@ -186,20 +184,95 @@ export class TranslationService {
   }
 
   /**
+   * Track ongoing loading promises to prevent duplicate loads
+   */
+  private loadingPromise: Promise<void> | null = null;
+  private loadingLanguage: Language | null = null;
+
+  /**
+   * Load translations asynchronously and return a Promise
+   * Used by APP_INITIALIZER to wait for translations before app starts
+   * Prevents duplicate loads of the same language
+   */
+  public loadTranslationsAsync(language: Language): Promise<void> {
+    // If already loading the same language, return existing promise
+    if (this.loadingPromise && this.loadingLanguage === language) {
+      return this.loadingPromise;
+    }
+    
+    // If already loaded and not stale, resolve immediately
+    if (this.translationsCache().has(language) && !this.isCacheStale(language)) {
+      this.currentLanguage.set(language);
+      return Promise.resolve();
+    }
+    
+    // Create new promise
+    this.loadingLanguage = language;
+    this.loadingPromise = new Promise((resolve, reject) => {
+      let resolved = false;
+      let subscription: any = null;
+      let timeoutId: any = null;
+      
+      const cleanup = () => {
+        if (subscription) {
+          subscription.unsubscribe();
+          subscription = null;
+        }
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        this.loadingPromise = null;
+        this.loadingLanguage = null;
+      };
+      
+      // Subscribe to loading state to know when it's done
+      subscription = this.isLoading$.subscribe(isLoading => {
+        if (!isLoading && !resolved) {
+          resolved = true;
+          const hasError = this.error.value;
+          cleanup();
+          if (hasError) {
+            reject(new Error(hasError));
+          } else {
+            resolve();
+          }
+        }
+      });
+      
+      // Start loading (this will set isLoading = true)
+      this.loadTranslations(language, true);
+      
+      // Timeout after 15 seconds
+      timeoutId = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          reject(new Error('Translation loading timeout after 15 seconds'));
+        }
+      }, 15000);
+    });
+    
+    return this.loadingPromise;
+  }
+
+  /**
    * Load translations from backend API with timeout and proper error handling
    * @param language - Language to load translations for
    * @param switchAfterLoad - If true, switch current language after translations are loaded
    */
   private loadTranslations(language: Language, switchAfterLoad: boolean = false): void {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:193',message:'loadTranslations entry',data:{language,switchAfterLoad,isLoading:this.isLoading.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:193',message:'loadTranslations entry',data:{language,switchAfterLoad,isLoading:this.isLoading.value,currentLanguage:this.currentLanguage()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
     // #endregion
-    if (this.isLoading.value) {
+    // Only block if loading the SAME language (prevent duplicate requests)
+    // Allow loading different languages (will handle via Observable unsubscribe if needed)
+    if (this.isLoading.value && this.currentLanguage() === language) {
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:196',message:'Early return - already loading',data:{language,isLoading:this.isLoading.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:197',message:'Early return - already loading same language',data:{language,isLoading:this.isLoading.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
       // #endregion
-      this.logger.debug('Already loading translations, skipping', { language }, 'TranslationService');
-      return; // Already loading
+      this.logger.debug('Already loading same language, skipping', { language }, 'TranslationService');
+      return; // Already loading same language
     }
 
     this.logger.info('Loading translations', { language }, 'TranslationService');
@@ -351,7 +424,7 @@ export class TranslationService {
       language
     };
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:315',message:'Translation load error',data:{...errorDetails,errorType:error?.constructor?.name,errorStr:JSON.stringify(error).substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:345',message:'Translation load error',data:{...errorDetails,errorType:error?.constructor?.name,errorStr:JSON.stringify(error).substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
     // #endregion
     this.logger.error('Failed to load translations', errorDetails, 'TranslationService');
     
@@ -361,12 +434,6 @@ export class TranslationService {
     this.loadingMessage.next('Translation loading failed');
     
     // CRITICAL: Always reset isLoading, even on error
-    setTimeout(() => {
-      this.isLoading.next(false);
-      this.loadingProgress.next(0);
-      this.loadingMessage.next('Initializing...');
-    }, 2000);
-    
     // Show error state for 2 seconds, then hide loader
     setTimeout(() => {
       this.isLoading.next(false);
@@ -399,20 +466,45 @@ export class TranslationService {
     newCache.delete(currentLang);
     this.translationsCache.set(newCache);
     this.lastUpdated.delete(currentLang);
-    this.loadTranslations(currentLang);
+    // Use loadTranslations with switchAfterLoad=false since language is already set
+    this.loadTranslations(currentLang, false);
   }
 
   /**
    * Get all translations for a specific language (useful for debugging)
+   * Returns Observable that waits for loading to complete
    */
   getTranslations(language: Language): Observable<Translations> {
     if (this.translationsCache().has(language) && !this.isCacheStale(language)) {
       return of(this.translationsCache().get(language)!);
     }
     
-    // Load translations and return them
-    this.loadTranslations(language);
-    return this.translationsCache().get(language) ? of(this.translationsCache().get(language)!) : of({});
+    // Return Observable that waits for loading to complete
+    return new Observable<Translations>(observer => {
+      let subscription: any = null;
+      
+      // Subscribe to loading state to know when it's done
+      subscription = this.isLoading$.subscribe(isLoading => {
+        if (!isLoading) {
+          const translations = this.translationsCache().get(language) || {};
+          observer.next(translations);
+          observer.complete();
+          if (subscription) {
+            subscription.unsubscribe();
+          }
+        }
+      });
+      
+      // Start loading
+      this.loadTranslations(language);
+      
+      // Cleanup on unsubscribe
+      return () => {
+        if (subscription) {
+          subscription.unsubscribe();
+        }
+      };
+    });
   }
 
   /**
