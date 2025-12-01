@@ -102,44 +102,83 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
           <!-- Header Section -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
             <!-- Image Gallery -->
-            <div class="relative h-64 md:h-96 bg-gray-200">
-              <img
-                [src]="primaryImage()"
-                [alt]="house()!.title"
-                class="w-full h-full object-cover">
-              
-              <!-- Favorite Button (Always visible) - Matching promotions styling with glow -->
-              <button
-                (click)="toggleFavorite()"
-                [disabled]="isTogglingFavorite()"
-                [class.favorite-button-pulse]="isTogglingFavorite() || isFavorite()"
-                [class.favorite-button-glow]="isFavorite()"
-                class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
-                [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
-                [title]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')">
-                <svg 
-                  class="w-6 h-6 transition-all duration-500 favorite-heart"
-                  [class.text-red-500]="isFavorite()"
-                  [class.text-white]="!isFavorite()"
-                  [class.heart-fill-animation]="isFavorite()"
-                  [attr.fill]="isFavorite() ? 'currentColor' : 'none'"
-                  [attr.stroke]="!isFavorite() ? 'currentColor' : 'none'"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true">
-                  <path 
-                    fill-rule="evenodd"
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    clip-rule="evenodd">
-                  </path>
-                </svg>
-              </button>
+            <div class="relative">
+              <!-- Main Image -->
+              <div class="relative h-64 md:h-96 bg-gray-200">
+                <img
+                  [src]="primaryImage()"
+                  [alt]="house()!.title"
+                  class="w-full h-full object-cover transition-opacity duration-300">
+                
+                <!-- Favorite Button (Always visible) - Matching promotions styling with glow -->
+                <button
+                  (click)="toggleFavorite()"
+                  [disabled]="isTogglingFavorite()"
+                  [class.favorite-button-pulse]="isTogglingFavorite() || isFavorite()"
+                  [class.favorite-button-glow]="isFavorite()"
+                  class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
+                  [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
+                  [title]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')">
+                  <svg 
+                    class="w-6 h-6 transition-all duration-500 favorite-heart"
+                    [class.text-red-500]="isFavorite()"
+                    [class.text-white]="!isFavorite()"
+                    [class.heart-fill-animation]="isFavorite()"
+                    [attr.fill]="isFavorite() ? 'currentColor' : 'none'"
+                    [attr.stroke]="!isFavorite() ? 'currentColor' : 'none'"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+                    <path 
+                      fill-rule="evenodd"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      clip-rule="evenodd">
+                    </path>
+                  </svg>
+                </button>
 
-              <!-- Status Badge -->
-              <div class="absolute top-4 left-4">
-                <span class="bg-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
-                  {{ getStatusText() }}
-                </span>
+                <!-- Status Badge -->
+                <div class="absolute top-4 left-4">
+                  <span class="bg-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                    {{ getStatusText() }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Thumbnail Gallery (if more than 1 image) -->
+              <div *ngIf="allImages().length > 1" class="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex gap-2 overflow-x-auto pb-2">
+                  <button
+                    *ngFor="let image of allImages(); let i = index"
+                    (click)="selectImage(i)"
+                    [class.border-blue-500]="currentImageIndex() === i"
+                    [class.border-gray-300]="currentImageIndex() !== i"
+                    [class.dark:border-blue-400]="currentImageIndex() === i"
+                    [class.dark:border-gray-600]="currentImageIndex() !== i"
+                    class="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded overflow-hidden border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    [attr.aria-label]="'View image ' + (i + 1) + ' of ' + allImages().length"
+                    [attr.aria-current]="currentImageIndex() === i ? 'true' : 'false'">
+                    <img
+                      [src]="image.imageUrl"
+                      [alt]="house()!.title + ' - Image ' + (i + 1)"
+                      class="w-full h-full object-cover">
+                  </button>
+                </div>
+
+                <!-- Navigation Dots -->
+                <div class="flex justify-center gap-2 mt-3">
+                  <button
+                    *ngFor="let image of allImages(); let i = index"
+                    (click)="selectImage(i)"
+                    [class.bg-blue-500]="currentImageIndex() === i"
+                    [class.bg-gray-300]="currentImageIndex() !== i"
+                    [class.dark:bg-blue-400]="currentImageIndex() === i"
+                    [class.dark:bg-gray-600]="currentImageIndex() !== i"
+                    class="w-2 h-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    [attr.aria-label]="'Go to image ' + (i + 1) + ' of ' + allImages().length"
+                    [attr.aria-current]="currentImageIndex() === i ? 'true' : 'false'">
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -384,6 +423,9 @@ export class HouseDetailComponent implements OnInit {
   checkingCanEnter = signal<boolean>(false);
   enteringLottery = signal<boolean>(false);
   
+  // Image gallery state
+  currentImageIndex = signal<number>(0);
+  
   // Favorites
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
   isFavorite = computed(() => {
@@ -395,14 +437,23 @@ export class HouseDetailComponent implements OnInit {
     return this.authService.getCurrentUser()();
   });
 
-  primaryImage = computed(() => {
+  // Get all images sorted (primary first, then secondary)
+  allImages = computed(() => {
     const h = this.house();
-    if (!h) return '';
-    if (h.images && h.images.length > 0) {
-      const primary = h.images.find(img => img.isPrimary);
-      return primary ? primary.imageUrl : h.images[0].imageUrl;
-    }
-    return '';
+    if (!h || !h.images || h.images.length === 0) return [];
+    
+    const primary = h.images.find(img => img.isPrimary);
+    const secondary = h.images.filter(img => !img.isPrimary);
+    
+    // Return primary first, then secondary
+    return primary ? [primary, ...secondary] : h.images;
+  });
+
+  primaryImage = computed(() => {
+    const images = this.allImages();
+    const index = this.currentImageIndex();
+    if (images.length === 0) return '';
+    return images[index]?.imageUrl || images[0]?.imageUrl || '';
   });
 
   ngOnInit(): void {
@@ -422,6 +473,8 @@ export class HouseDetailComponent implements OnInit {
     this.lotteryService.getHouseById(houseId).subscribe({
       next: (house) => {
         this.house.set(house);
+        // Reset image index when house loads
+        this.currentImageIndex.set(0);
         this.loading.set(false);
         
         // After house loads successfully, check canEnter
@@ -437,6 +490,13 @@ export class HouseDetailComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  selectImage(index: number): void {
+    const images = this.allImages();
+    if (index >= 0 && index < images.length) {
+      this.currentImageIndex.set(index);
+    }
   }
 
   checkCanEnter(houseId: string): void {
