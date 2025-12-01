@@ -191,7 +191,13 @@ export class TranslationService {
    * @param switchAfterLoad - If true, switch current language after translations are loaded
    */
   private loadTranslations(language: Language, switchAfterLoad: boolean = false): void {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:193',message:'loadTranslations entry',data:{language,switchAfterLoad,isLoading:this.isLoading.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    // #endregion
     if (this.isLoading.value) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:196',message:'Early return - already loading',data:{language,isLoading:this.isLoading.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+      // #endregion
       this.logger.debug('Already loading translations, skipping', { language }, 'TranslationService');
       return; // Already loading
     }
@@ -297,10 +303,25 @@ export class TranslationService {
         }),
         catchError(error => {
           clearTimeout(timeoutTimer);
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:304',message:'Translation load error caught',data:{language,errorDetails:error instanceof Error ? error.message : String(error),errorType:typeof error,errorKeys:error && typeof error === 'object' ? Object.keys(error) : []},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+          // #endregion
           return this.handleTranslationLoadError(language, error);
         })
       )
-      .subscribe();
+      .subscribe({
+        next: () => {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:312',message:'Observable subscription completed successfully',data:{language},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
+        },
+        error: (err) => {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:318',message:'Observable subscription error',data:{language,errorDetails:err instanceof Error ? err.message : String(err),errorType:typeof err},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+          // #endregion
+          this.logger.error('Translation subscription error', { language, error: err }, 'TranslationService');
+        }
+      });
   }
 
   /**
