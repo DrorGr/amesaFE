@@ -188,6 +188,7 @@ export class TranslationService {
    */
   private loadingPromise: Promise<void> | null = null;
   private loadingLanguage: Language | null = null;
+  private loadingStarted = false; // Track if loading has actually started (prevents premature resolution)
 
   /**
    * Load translations asynchronously and return a Promise
@@ -203,6 +204,11 @@ export class TranslationService {
     // If already loaded and not stale, resolve immediately
     if (this.translationsCache().has(language) && !this.isCacheStale(language)) {
       this.currentLanguage.set(language);
+      // CRITICAL: Ensure isLoading is false
+      if (this.isLoading.value) {
+        this.isLoading.next(false);
+        this.loadingProgress.next(0);
+      }
       return Promise.resolve();
     }
     
@@ -227,8 +233,12 @@ export class TranslationService {
       };
       
       // Subscribe to loading state to know when it's done
+      // CRITICAL: Reset flag to prevent premature resolution from initial BehaviorSubject emission
+      this.loadingStarted = false;
       subscription = this.isLoading$.subscribe(isLoading => {
-        if (!isLoading && !resolved) {
+        // CRITICAL: Only resolve if loading has started AND is now complete
+        // This prevents premature resolution from the initial BehaviorSubject emission
+        if (!isLoading && !resolved && this.loadingStarted) {
           resolved = true;
           const hasError = this.error.value;
           cleanup();
@@ -238,9 +248,12 @@ export class TranslationService {
             resolve();
           }
         }
+        // If isLoading is false but we haven't started loading yet,
+        // this is just the initial BehaviorSubject emission - ignore it
       });
       
       // Start loading (this will set isLoading = true)
+      this.loadingStarted = true; // Mark that we've started loading
       this.loadTranslations(language, true);
       
       // Timeout after 15 seconds
@@ -359,19 +372,25 @@ export class TranslationService {
           
           this.loadingProgress.next(100);
           
+          // CRITICAL: Set isLoading = false IMMEDIATELY after caching (don't block app startup)
+          // This allows APP_INITIALIZER to resolve immediately, improving startup performance
+          this.isLoading.next(false);
+          this.loadingProgress.next(0);
+          
           if (translationCount > 0) {
             this.loadingMessage.next('Translations loaded successfully!');
             this.error.next(null);
+            
+            // Keep UI message for UX, but don't block app startup
+            setTimeout(() => {
+              this.loadingMessage.next('Initializing...');
+            }, 500);
           } else {
             this.loadingMessage.next(`No translations available for ${language.toUpperCase()}`);
+            setTimeout(() => {
+              this.loadingMessage.next('Initializing...');
+            }, 2000);
           }
-          
-          // Delay to show completion or warning
-          setTimeout(() => {
-            this.isLoading.next(false);
-            this.loadingProgress.next(0);
-            this.loadingMessage.next('Initializing...');
-          }, translationCount > 0 ? 500 : 2000); // Show warning longer if no translations
           
           if (translationCount > 0) {
             this.logger.info('Translations loaded successfully', { language, translationCount, switched: switchAfterLoad }, 'TranslationService');
