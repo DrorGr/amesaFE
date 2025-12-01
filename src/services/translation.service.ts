@@ -209,9 +209,19 @@ export class TranslationService {
           clearTimeout(timeoutTimer);
           this.loadingProgress.next(50);
           this.loadingMessage.next('Processing translations...');
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:208',message:'API Response received',data:{hasSuccess:response.hasOwnProperty('success'),hasData:response.hasOwnProperty('data'),successValue:response.success,dataValue:response.data,responseKeys:Object.keys(response),responseStr:JSON.stringify(response).substring(0,200)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+          // #endregion
           this.logger.debug('API Response received', { response }, 'TranslationService');
         }),
         map(response => {
+          // #region agent log
+          const hasSuccess = response.hasOwnProperty('success');
+          const hasData = response.hasOwnProperty('data');
+          const successValue = (response as any).success;
+          const dataValue = (response as any).data;
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:214',message:'Checking response properties',data:{hasSuccess,hasData,successValue,dataValue,responseType:typeof response,allKeys:Object.keys(response),responseStr:JSON.stringify(response).substring(0,300)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+          // #endregion
           if (response.success && response.data) {
             const translationCount = Object.keys(response.data.translations || {}).length;
             this.logger.debug('Translations data received', { 
@@ -220,6 +230,9 @@ export class TranslationService {
             }, 'TranslationService');
             return response.data;
           }
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:223',message:'Invalid response format detected',data:{hasSuccess,hasData,successValue,dataValue,responseStr:JSON.stringify(response).substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+          // #endregion
           this.logger.error('Invalid response format', { response }, 'TranslationService');
           throw new Error('Invalid response format');
         }),
