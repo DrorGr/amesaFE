@@ -4,9 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 import { ThemeService } from '../../services/theme.service';
-import { AuthService } from '../../services/auth.service';
-import { UserService } from '../../services/user.service';
-import { UserDto } from '../../models/house.model';
+import { MemberSettingsService } from '../../services/member-settings.service';
 
 interface UserProfile {
   firstName: string;
@@ -614,16 +612,17 @@ interface StarReward {
   `]
 })
 export class MemberSettingsPageComponent implements OnInit {
-  private translationService = inject(TranslationService);
-  private router = inject(Router);
+  private memberSettingsService = inject(MemberSettingsService);
   private themeService = inject(ThemeService);
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private userService = inject(UserService);
 
-  activeTab = signal('general');
-  isEditingProfile = signal(false);
-  copySuccess = signal(false);
+  // Delegate to service
+  activeTab = this.memberSettingsService.activeTab;
+  isEditingProfile = this.memberSettingsService.isEditingProfile;
+  copySuccess = this.memberSettingsService.copySuccess;
+  userProfile = this.memberSettingsService.userProfile;
+  profileForm = this.memberSettingsService.profileForm;
+
+  // Local state for UI-only data
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
 
@@ -634,20 +633,7 @@ export class MemberSettingsPageComponent implements OnInit {
     { id: 'stars', title: 'member.stars', icon: '⭐' }
   ];
 
-  userProfile = signal<UserProfile>({
-    firstName: 'John',
-    lastName: 'Doe',
-    gender: 'male',
-    dateOfBirth: '1990-01-15',
-    idNumber: '123456789',
-    email: 'john.doe@example.com',
-    phoneNumbers: ['+1-555-0123', '+1-555-0456'],
-    isVerified: false,
-    accountType: 'gold',
-    joinDate: '2024-01-15',
-    lastLogin: '2024-12-19 14:30'
-  });
-
+  // Mock data for promotions and stars (can be moved to service later)
   userPromotions = signal<Promotion[]>([
     {
       id: '1',
@@ -702,161 +688,76 @@ export class MemberSettingsPageComponent implements OnInit {
     beTheFirst: true
   };
 
-  profileForm: FormGroup;
-
-  constructor() {
-    this.profileForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      gender: ['', Validators.required],
-      dateOfBirth: ['', Validators.required],
-      idNumber: ['']
-    });
-  }
-
   ngOnInit() {
     this.loadUserProfile();
   }
 
-  loadUserProfile() {
+  async loadUserProfile() {
     this.isLoading.set(true);
     this.errorMessage.set(null);
     
-    this.authService.getCurrentUserProfile().subscribe({
-      next: (userDto: UserDto) => {
-        // Map UserDto to UserProfile interface
-        const isVerified = userDto.verificationStatus === 'IdentityVerified' || 
-                          userDto.verificationStatus === 'FullyVerified';
-        
-        // Format date of birth for input field (YYYY-MM-DD)
-        let dateOfBirthFormatted = '';
-        if (userDto.dateOfBirth) {
-          const dob = new Date(userDto.dateOfBirth);
-          dateOfBirthFormatted = dob.toISOString().split('T')[0];
-        }
-        
-        // Format join date and last login
-        const joinDate = userDto.createdAt ? new Date(userDto.createdAt).toISOString().split('T')[0] : '';
-        const lastLogin = userDto.lastLoginAt 
-          ? new Date(userDto.lastLoginAt).toLocaleString() 
-          : 'Never';
-        
-        // Map gender to lowercase for form
-        const gender = userDto.gender?.toLowerCase() || 'male';
-        
-        this.userProfile.set({
-          firstName: userDto.firstName || '',
-          lastName: userDto.lastName || '',
-          gender: gender as 'male' | 'female' | 'other',
-          dateOfBirth: dateOfBirthFormatted,
-          idNumber: userDto.idNumber || '',
-          email: userDto.email || '',
-          phoneNumbers: userDto.phone ? [userDto.phone] : [],
-          isVerified: isVerified,
-          accountType: 'gold', // TODO: Get from user data if available
-          joinDate: joinDate,
-          lastLogin: lastLogin
-        });
-        
-        // Update form with user data
-        this.profileForm.patchValue({
-          firstName: this.userProfile().firstName,
-          lastName: this.userProfile().lastName,
-          gender: this.userProfile().gender,
-          dateOfBirth: this.userProfile().dateOfBirth,
-          idNumber: this.userProfile().idNumber
-        });
-        
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading user profile:', error);
-        this.errorMessage.set('Failed to load user profile. Please try again.');
-        this.isLoading.set(false);
-      }
-    });
+    try {
+      await this.memberSettingsService.loadUserProfile();
+      this.isLoading.set(false);
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+      this.errorMessage.set('Failed to load user profile. Please try again.');
+      this.isLoading.set(false);
+    }
   }
 
   translate(key: string): string {
-    return this.translationService.translate(key);
+    return this.memberSettingsService.translate(key);
   }
 
   setActiveTab(tabId: string) {
-    this.activeTab.set(tabId);
+    this.memberSettingsService.setActiveTab(tabId);
   }
 
   startEdit() {
-    this.isEditingProfile.set(true);
+    this.memberSettingsService.startEdit();
   }
 
   cancelEdit() {
-    this.isEditingProfile.set(false);
-    this.profileForm.patchValue({
-      firstName: this.userProfile().firstName,
-      lastName: this.userProfile().lastName,
-      gender: this.userProfile().gender,
-      dateOfBirth: this.userProfile().dateOfBirth,
-      idNumber: this.userProfile().idNumber
-    });
+    this.memberSettingsService.cancelEdit();
   }
 
-  onProfileSubmit() {
-    if (this.profileForm.valid && !this.userProfile().isVerified) {
-      const formValue = this.profileForm.value;
-      
-      // Prepare update request
-      const updateRequest = {
-        firstName: formValue.firstName,
-        lastName: formValue.lastName,
-        gender: formValue.gender.charAt(0).toUpperCase() + formValue.gender.slice(1), // Capitalize first letter
-        dateOfBirth: formValue.dateOfBirth ? new Date(formValue.dateOfBirth) : undefined,
-        idNumber: formValue.idNumber || undefined
-      };
-      
-      this.userService.updateUserProfile(updateRequest).subscribe({
-        next: (updatedUser: UserDto) => {
-          // Reload user profile to get updated data
-          this.loadUserProfile();
-          this.isEditingProfile.set(false);
-          this.errorMessage.set(null);
-        },
-        error: (error) => {
-          console.error('Error updating profile:', error);
-          if (error.error?.error?.code === 'PROFILE_LOCKED_AFTER_VERIFICATION') {
-            this.errorMessage.set(error.error.error.message || 'Profile is locked after verification. Fields can only be updated from ID document.');
-            // Reload profile to get current state
-            this.loadUserProfile();
-          } else {
-            this.errorMessage.set('Failed to update profile. Please try again.');
-          }
-        }
-      });
+  async onProfileSubmit() {
+    try {
+      await this.memberSettingsService.onProfileSubmit();
+      // Reload profile after update
+      await this.loadUserProfile();
+      this.errorMessage.set(null);
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      if (error?.error?.error?.code === 'PROFILE_LOCKED_AFTER_VERIFICATION') {
+        this.errorMessage.set(error.error.error.message || 'Profile is locked after verification. Fields can only be updated from ID document.');
+        // Reload profile to get current state
+        await this.loadUserProfile();
+      } else {
+        this.errorMessage.set('Failed to update profile. Please try again.');
+      }
     }
   }
 
   changePassword() {
-    // Navigate to change password page or open modal
-    console.log('Change password clicked');
+    this.memberSettingsService.changePassword();
   }
 
   verifyAccount() {
-    // Navigate to identity verification
-    this.router.navigate(['/register']);
+    this.memberSettingsService.verifyAccount();
   }
 
   copyToClipboard(text: string) {
-    navigator.clipboard.writeText(text).then(() => {
-      this.copySuccess.set(true);
-      setTimeout(() => this.copySuccess.set(false), 2000);
-    });
+    this.memberSettingsService.copyToClipboard(text);
   }
 
   toggleDarkMode() {
-    this.themeService.toggleTheme();
+    this.memberSettingsService.toggleDarkMode();
   }
 
   changeLanguage() {
-    this.translationService.setLanguage(this.settings.language as 'en' | 'pl');
+    this.memberSettingsService.changeLanguage();
   }
 
   totalStars(): number {

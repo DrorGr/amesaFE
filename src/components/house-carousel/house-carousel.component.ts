@@ -6,6 +6,7 @@ import { LotteryService } from '../../services/lottery.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
+import { HouseCarouselService } from '../../services/house-carousel.service';
 
 @Component({
   selector: 'app-house-carousel',
@@ -17,7 +18,7 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
         
         <div class="overflow-hidden">
           <div class="flex transition-transform duration-500 ease-in-out" 
-               [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
+               [style.transform]="'translateX(' + (-currentSlide() * 100) + '%)'">
             @for (house of houses(); track house.id; let houseIndex = $index) {
               <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 relative px-2 md:px-0 mobile-carousel-container">
                 <!-- Main House Image -->
@@ -109,10 +110,10 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
                             (click)="goToSecondaryImage($index)"
                             class="w-20 h-12 rounded overflow-hidden border-2 transition-all hover:scale-105 mobile-carousel-thumbnail"
                             style="width: 8rem !important; height: 5rem !important;"
-                            [class.border-blue-500]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
-                            [class.border-gray-300]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)"
-                            [class.dark:border-blue-400]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
-                            [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)">
+                            [class.border-blue-500]="currentSlide() === houseIndex && currentSecondaryImageIndex() === $index"
+                            [class.border-gray-300]="!(currentSlide() === houseIndex && currentSecondaryImageIndex() === $index)"
+                            [class.dark:border-blue-400]="currentSlide() === houseIndex && currentSecondaryImageIndex() === $index"
+                            [class.dark:border-gray-600]="!(currentSlide() === houseIndex && currentSecondaryImageIndex() === $index)">
                             <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover mobile-thumbnail-image" 
                                >
                           </button>
@@ -127,10 +128,10 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
                         <button 
                           (click)="goToSecondaryImage($index)"
                           class="w-30 h-19 rounded overflow-hidden border-2 transition-all hover:scale-105 mobile-carousel-thumbnail"
-                          [class.border-blue-500]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
-                          [class.border-gray-300]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)"
-                          [class.dark:border-blue-400]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
-                          [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)">
+                          [class.border-blue-500]="currentSlide() === houseIndex && currentSecondaryImageIndex() === $index"
+                          [class.border-gray-300]="!(currentSlide() === houseIndex && currentSecondaryImageIndex() === $index)"
+                          [class.dark:border-blue-400]="currentSlide() === houseIndex && currentSecondaryImageIndex() === $index"
+                          [class.dark:border-gray-600]="!(currentSlide() === houseIndex && currentSecondaryImageIndex() === $index)">
                           <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover mobile-thumbnail-image" 
                           >
                         </button>
@@ -143,10 +144,10 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
                         <button 
                           (click)="goToHouseImage($index)"
                           class="w-2 h-2 rounded-full transition-all hover:scale-125"
-                          [class.bg-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
-                          [class.bg-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
-                          [class.dark:bg-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
-                          [class.dark:bg-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
+                          [class.bg-blue-500]="currentSlide() === houseIndex && currentHouseImageIndex() === $index"
+                          [class.bg-gray-300]="!(currentSlide() === houseIndex && currentHouseImageIndex() === $index)"
+                          [class.dark:bg-blue-400]="currentSlide() === houseIndex && currentHouseImageIndex() === $index"
+                          [class.dark:bg-gray-600]="!(currentSlide() === houseIndex && currentHouseImageIndex() === $index)">
                         </button>
                       }
                     </div>
@@ -232,10 +233,10 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
                 <button 
                   (click)="goToSlide($index)"
                   class="w-3 h-3 rounded-full transition-all"
-                  [class.bg-blue-600]="currentSlide === $index"
-                  [class.bg-gray-300]="currentSlide !== $index"
-                  [class.dark:bg-blue-500]="currentSlide === $index"
-                  [class.dark:bg-gray-600]="currentSlide !== $index">
+                  [class.bg-blue-600]="currentSlide() === $index"
+                  [class.bg-gray-300]="currentSlide() !== $index"
+                  [class.dark:bg-blue-500]="currentSlide() === $index"
+                  [class.dark:bg-gray-600]="currentSlide() !== $index">
                 </button>
               }
             </div>
@@ -260,10 +261,10 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
               <button 
                 (click)="goToSlide($index)"
                 class="w-4 h-4 rounded-full transition-all hover:scale-125"
-                [class.bg-blue-600]="currentSlide === $index"
-                [class.bg-gray-300]="currentSlide !== $index"
-                [class.dark:bg-blue-500]="currentSlide === $index"
-                [class.dark:bg-gray-600]="currentSlide !== $index">
+                [class.bg-blue-600]="currentSlide() === $index"
+                [class.bg-gray-300]="currentSlide() !== $index"
+                [class.dark:bg-blue-500]="currentSlide() === $index"
+                [class.dark:bg-gray-600]="currentSlide() !== $index">
               </button>
             }
           </div>
@@ -566,49 +567,40 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
 export class HouseCarouselComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private mobileDetectionService = inject(MobileDetectionService);
-  private lotteryService = inject(LotteryService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private heartAnimationService = inject(HeartAnimationService);
+  private carouselService = inject(HouseCarouselService);
   
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;
   
-  currentSlide = 0;
-  currentHouseImageIndex = 0;
-  currentSecondaryImageIndex = 0;
-  isTransitioning = false;
-  private autoSlideInterval: any;
+  // Delegate to service - use computed signals for template binding
+  currentSlide = computed(() => this.carouselService.currentSlide());
+  currentHouseImageIndex = computed(() => this.carouselService.currentHouseImageIndex());
+  currentSecondaryImageIndex = computed(() => this.carouselService.currentSecondaryImageIndex());
+  isTransitioning = computed(() => this.carouselService.isTransitioning());
+  houses = this.carouselService.houses;
+  
   private countdownInterval?: number;
   private intersectionObserver: IntersectionObserver | null = null;
-  loadedImages = new Set<string>();
-  togglingFavorites = signal<Set<string>>(new Set());
   
   // Use signals for values that change over time to avoid change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
   currentTime = signal<number>(Date.now());
   currentUser = this.authService.getCurrentUser();
-  favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
 
-  // Use computed signal to get active houses from lottery service
-  houses = computed(() => {
-    const allHouses = this.lotteryService.getHouses()();
-    return allHouses.filter(house => house.status === 'active');
-  });
-
-  // Check if house is favorite
+  // Check if house is favorite (delegate to service)
   isFavorite(houseId: string): boolean {
-    return this.favoriteHouseIds().includes(houseId);
+    return this.carouselService.isFavorite(houseId);
   }
 
-  // Check if toggling favorite
+  // Check if toggling favorite (delegate to service)
   isTogglingFavorite(houseId: string): boolean {
-    return this.togglingFavorites().has(houseId);
+    return this.carouselService.isTogglingFavorite(houseId);
   }
 
   ngOnInit() {
-    // DISABLED: Auto-slide disabled - houses will be manually controlled by user
-    // this.startAutoSlide();
     this.setupIntersectionObserver();
     // Load the first slide images immediately
     setTimeout(() => this.loadCurrentSlideImages(), 100);
@@ -623,31 +615,12 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.stopAutoSlide();
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
     }
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
     }
-  }
-
-
-  private startAutoSlide() {
-    this.autoSlideInterval = setInterval(() => {
-      this.nextSlide();
-    }, 8000);
-  }
-
-  private stopAutoSlide() {
-    if (this.autoSlideInterval) {
-      clearInterval(this.autoSlideInterval);
-    }
-  }
-
-  private resetAutoSlide() {
-    this.stopAutoSlide();
-    this.startAutoSlide();
   }
 
   private setupIntersectionObserver() {
@@ -658,11 +631,11 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
             if (entry.isIntersecting) {
               const img = entry.target as HTMLImageElement;
               const src = img.dataset['src'];
-              if (src && !this.loadedImages.has(src)) {
+              if (src && !this.carouselService.isImageLoaded(src)) {
                 img.src = src;
                 img.classList.remove('opacity-0');
                 img.classList.add('opacity-100');
-                this.loadedImages.add(src);
+                this.carouselService.markImageAsLoaded(src);
                 this.intersectionObserver?.unobserve(img);
               }
             }
@@ -677,13 +650,16 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   isImageLoaded(imageUrl: string): boolean {
-    return this.loadedImages.has(imageUrl);
+    return this.carouselService.isImageLoaded(imageUrl);
   }
 
   onImageLoad(event: Event) {
     const img = event.target as HTMLImageElement;
     img.classList.remove('opacity-0');
     img.classList.add('opacity-100');
+    if (img.src) {
+      this.carouselService.markImageAsLoaded(img.src);
+    }
   }
 
   onImageError(event: Event) {
@@ -693,31 +669,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   private loadCurrentSlideImages() {
-    const currentHouse = this.getCurrentHouse();
-    if (currentHouse) {
-      // Load the current image immediately
-      const currentImageUrl = currentHouse.images[this.currentHouseImageIndex].url;
-      if (!this.loadedImages.has(currentImageUrl)) {
-        this.loadedImages.add(currentImageUrl);
-      }
-      
-      // Preload adjacent images for smoother transitions
-      const nextImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
-      const prevImageIndex = this.currentHouseImageIndex === 0 
-        ? currentHouse.images.length - 1 
-        : this.currentHouseImageIndex - 1;
-      
-      [nextImageIndex, prevImageIndex].forEach(index => {
-        const imageUrl = currentHouse.images[index].url;
-        if (!this.loadedImages.has(imageUrl)) {
-          const img = new Image();
-          img.onload = () => {
-            this.loadedImages.add(imageUrl);
-          };
-          img.src = imageUrl;
-        }
-      });
-    }
+    this.carouselService.loadCurrentSlideImages();
   }
 
   translate(key: string): string {
@@ -725,85 +677,67 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
   
   getCurrentHouse() {
-    return this.houses()[this.currentSlide];
+    return this.carouselService.getCurrentHouse();
   }
   
   getCurrentHouseImage() {
-    return this.getCurrentHouse().images[this.currentHouseImageIndex];
+    return this.carouselService.getCurrentHouseImage();
   }
   
   nextSlide() {
-    this.currentSlide = (this.currentSlide + 1) % this.houses().length;
-    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-    this.resetAutoSlide();
+    this.carouselService.nextSlide();
     this.loadCurrentSlideImages();
   }
   
   previousSlide() {
-    this.currentSlide = this.currentSlide === 0 ? this.houses().length - 1 : this.currentSlide - 1;
-    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-    this.resetAutoSlide();
+    this.carouselService.previousSlide();
     this.loadCurrentSlideImages();
   }
   
   goToSlide(index: number) {
-    if (index < 0 || index >= this.houses().length) return;
-    this.currentSlide = index;
-    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-    this.resetAutoSlide();
+    this.carouselService.goToSlide(index);
     this.loadCurrentSlideImages();
   }
   
   nextHouseImage() {
-    const currentHouse = this.getCurrentHouse();
-    this.currentHouseImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
-    this.resetAutoSlide();
+    this.carouselService.nextHouseImage();
   }
   
   previousHouseImage() {
-    const currentHouse = this.getCurrentHouse();
-    this.currentHouseImageIndex = this.currentHouseImageIndex === 0 
-      ? currentHouse.images.length - 1 
-      : this.currentHouseImageIndex - 1;
-    this.resetAutoSlide();
+    this.carouselService.previousHouseImage();
   }
   
   goToHouseImage(index: number) {
-    this.currentHouseImageIndex = index;
-    this.resetAutoSlide();
+    this.carouselService.goToHouseImage(index);
     this.loadCurrentSlideImages();
   }
   
   formatPrice(price: number): string {
-    return price.toLocaleString();
+    return this.carouselService.formatPrice(price);
   }
 
   formatDate(date: Date): string {
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    return this.carouselService.formatDate(date);
   }
 
   getTicketProgressForHouse(house: any): number {
-    return Math.round((house.soldTickets / house.totalTickets) * 100);
+    return this.carouselService.getTicketProgressForHouse(house);
   }
   
   getImageIndexForHouse(houseIndex: number): number {
-    return houseIndex === this.currentSlide ? this.currentHouseImageIndex : 0;
+    return this.carouselService.getImageIndexForHouse(houseIndex);
   }
 
   getOdds(house: any): string {
-    const totalTickets = house.totalTickets;
-    return `1:${totalTickets.toLocaleString()}`;
+    return this.carouselService.getOdds(house);
   }
 
   getRemainingTickets(house: any): number {
-    return house.totalTickets - house.soldTickets;
+    return this.carouselService.getRemainingTickets(house);
   }
 
   getLotteryCountdown(house: any): string {
+    // Use currentTime signal for countdown
     const now = this.currentTime();
     const endTime = new Date(house.lotteryEndDate).getTime();
     const timeLeft = endTime - now;
@@ -831,22 +765,11 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   getTicketsAvailableText(house: any): string {
-    const remaining = this.getRemainingTickets(house);
-    const template = this.translate('house.onlyTicketsAvailable');
-    return template.replace('{count}', remaining.toLocaleString());
+    return this.carouselService.getTicketsAvailableText(house);
   }
 
   getStatusText(house: any): string {
-    switch (house.status) {
-      case 'active':
-        return this.translate('house.active');
-      case 'ended':
-        return this.translate('house.ended');
-      case 'upcoming':
-        return this.translate('house.upcoming');
-      default:
-        return this.translate('house.active');
-    }
+    return this.carouselService.getStatusText(house);
   }
 
   async toggleFavorite(event: Event, house: any): Promise<void> {
@@ -859,72 +782,44 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       return;
     }
     
-    if (this.togglingFavorites().has(house.id)) {
-      return;
-    }
-
-    this.togglingFavorites.set(new Set([...this.togglingFavorites(), house.id]));
-
-    try {
-      const isCurrentlyFavorite = this.isFavorite(house.id);
-      const result = await this.lotteryService.toggleFavorite(house.id).toPromise();
-      
-      if (result) {
-        if (result.added) {
-          this.toastService.success('Added to favorites!', 3000);
-          
-          // Trigger heart animation to favorites tab
-          setTimeout(() => {
-            // Use currentTarget which is always the button element with the click handler
-            const favoriteButton = event.currentTarget as HTMLElement;
-            
-            // Try multiple selectors to find the favorites tab
-            let favoritesTab: HTMLElement | null = null;
-            
-            // First try: nav buttons
-            const navButtons = document.querySelectorAll('nav button');
-            for (const btn of Array.from(navButtons)) {
-              const text = btn.textContent?.trim().toLowerCase() || '';
-              if (text.includes('favorite') || text.includes('favourites')) {
-                favoritesTab = btn as HTMLElement;
-                break;
-              }
-            }
-            
-            // Second try: if not found, try all buttons in the topbar
-            if (!favoritesTab) {
-              const allButtons = document.querySelectorAll('app-topbar button');
-              for (const btn of Array.from(allButtons)) {
-                const text = btn.textContent?.trim().toLowerCase() || '';
-                if (text.includes('favorite') || text.includes('favourites')) {
-                  favoritesTab = btn as HTMLElement;
-                  break;
-                }
-              }
-            }
-
-            if (favoritesTab && favoriteButton) {
-              this.heartAnimationService.animateHeart({
-                fromElement: favoriteButton,
-                toElement: favoritesTab
-              });
-            }
-          }, 100);
-        } else {
-          this.toastService.success('Removed from favorites', 3000);
+    // Delegate to service for favorite toggling
+    await this.carouselService.toggleFavorite(event, house);
+    
+    // Trigger heart animation if added to favorites
+    const isCurrentlyFavorite = this.isFavorite(house.id);
+    if (!isCurrentlyFavorite) {
+      setTimeout(() => {
+        const favoriteButton = event.currentTarget as HTMLElement;
+        let favoritesTab: HTMLElement | null = null;
+        
+        // Try multiple selectors to find the favorites tab
+        const navButtons = document.querySelectorAll('nav button');
+        for (const btn of Array.from(navButtons)) {
+          const text = btn.textContent?.trim().toLowerCase() || '';
+          if (text.includes('favorite') || text.includes('favourites')) {
+            favoritesTab = btn as HTMLElement;
+            break;
+          }
         }
-      }
-    } catch (error: any) {
-      console.error('Error toggling favorite:', error);
-      if (error?.error?.message?.includes('already') || error?.error?.message?.includes('favorite')) {
-        this.toastService.info('Already in favorites', 2000);
-      } else {
-        this.toastService.error('Failed to update favorites. Please try again.', 4000);
-      }
-    } finally {
-      const newSet = new Set(this.togglingFavorites());
-      newSet.delete(house.id);
-      this.togglingFavorites.set(newSet);
+        
+        if (!favoritesTab) {
+          const allButtons = document.querySelectorAll('app-topbar button');
+          for (const btn of Array.from(allButtons)) {
+            const text = btn.textContent?.trim().toLowerCase() || '';
+            if (text.includes('favorite') || text.includes('favourites')) {
+              favoritesTab = btn as HTMLElement;
+              break;
+            }
+          }
+        }
+
+        if (favoritesTab && favoriteButton) {
+          this.heartAnimationService.animateHeart({
+            fromElement: favoriteButton,
+            toElement: favoritesTab
+          });
+        }
+      }, 100);
     }
   }
 
@@ -944,29 +839,22 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   // Get only the secondary (non-primary) images for thumbnails
   getSecondaryImages(images: any[]): any[] {
-    return images.filter(image => !image.isPrimary);
+    return this.carouselService.getSecondaryImages(images);
   }
 
   // Get the primary image for the main display
   getPrimaryImage(images: any[]): any {
-    return images.find(image => image.isPrimary) || images[0];
+    return this.carouselService.getPrimaryImage(images);
   }
 
   // Navigate to a secondary image
   goToSecondaryImage(index: number) {
-    this.currentSecondaryImageIndex = index;
-    this.resetAutoSlide();
+    this.carouselService.goToSecondaryImage(index);
     this.loadCurrentSlideImages();
   }
 
   // Get the current main image to display (primary by default, or selected secondary)
   getCurrentMainImage(house: any, houseIndex: number): any {
-    if (houseIndex === this.currentSlide && this.currentSecondaryImageIndex >= 0) {
-      const secondaryImages = this.getSecondaryImages(house.images);
-      if (secondaryImages.length > 0 && this.currentSecondaryImageIndex < secondaryImages.length) {
-        return secondaryImages[this.currentSecondaryImageIndex];
-      }
-    }
-    return this.getPrimaryImage(house.images);
+    return this.carouselService.getCurrentMainImage(house, houseIndex);
   }
 }

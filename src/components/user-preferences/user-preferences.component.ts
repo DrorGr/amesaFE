@@ -1,18 +1,10 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { FormsModule, ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { UserPreferencesService } from '../../services/user-preferences.service';
 import { TranslationService } from '../../services/translation.service';
-import { LoggingService } from '../../services/logging.service';
-import { 
-  UserPreferences, 
-  ThemeMode, 
-  Language, 
-  UIDensity, 
-  FontSize,
-  AnimationLevel 
-} from '../../interfaces/user-preferences.interface';
+import { UserPreferencesFormService } from '../../services/user-preferences-form.service';
+import { Language } from '../../interfaces/user-preferences.interface';
 
 @Component({
   selector: 'app-user-preferences',
@@ -447,18 +439,19 @@ export class UserPreferencesComponent implements OnInit, OnDestroy {
   // Services
   public userPreferencesService = inject(UserPreferencesService);
   public translationService = inject(TranslationService);
-  private logger = inject(LoggingService);
-  private fb = inject(FormBuilder);
+  private formService = inject(UserPreferencesFormService);
+
+  // ViewChild for file input
+  @ViewChild('fileInput', { static: false }) fileInput?: ElementRef<HTMLInputElement>;
 
   // Component state
   public activeTab = signal<string>('appearance');
-  public isSaving = signal<boolean>(false);
-  public statusMessage = signal<string>('');
-  public statusType = signal<'success' | 'error' | 'info'>('info');
 
-  // Form
-  public preferencesForm!: FormGroup;
-  private subscription = new Subscription();
+  // Delegate to service
+  public isSaving = this.formService.isSaving;
+  public statusMessage = this.formService.statusMessage;
+  public statusType = this.formService.statusType;
+  public preferencesForm = this.formService.preferencesForm;
 
   // Tab configuration
   public tabs = [
@@ -469,207 +462,35 @@ export class UserPreferencesComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
-    this.initializeForm();
-    this.loadCurrentPreferences();
-    this.setupFormSubscriptions();
-    this.logger.info('UserPreferencesComponent initialized', undefined, 'UserPreferencesComponent');
+    // Form is already initialized in service constructor
+    this.formService.loadCurrentPreferences();
+    this.formService.setupFormSubscriptions();
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
-
-  private initializeForm(): void {
-    this.preferencesForm = this.fb.group({
-      // Appearance
-      theme: ['auto'],
-      fontSize: ['medium'],
-      uiDensity: ['comfortable'],
-      showAnimations: [true],
-      
-      // Localization
-      language: ['en'],
-      dateFormat: ['MM/DD/YYYY'],
-      timeFormat: ['12h'],
-      currency: ['USD'],
-      
-      // Accessibility
-      highContrast: [false],
-      colorBlindAssist: [false],
-      screenReaderOptimized: [false],
-      keyboardNavigation: [true],
-      reducedMotion: [false],
-      largeClickTargets: [false],
-      
-      // Notifications
-      emailNotifications: [true],
-      pushNotifications: [false],
-      lotteryResults: [true],
-      newLotteries: [true],
-      promotions: [false],
-      soundEnabled: [true]
-    });
-  }
-
-  private loadCurrentPreferences(): void {
-    const preferences = this.userPreferencesService.getPreferences();
-    
-    this.preferencesForm.patchValue({
-      // Appearance
-      theme: preferences.appearance.theme,
-      fontSize: preferences.appearance.fontSize,
-      uiDensity: preferences.appearance.uiDensity,
-      showAnimations: preferences.appearance.showAnimations,
-      
-      // Localization
-      language: preferences.localization.language,
-      dateFormat: preferences.localization.dateFormat,
-      timeFormat: preferences.localization.timeFormat,
-      currency: preferences.localization.currency,
-      
-      // Accessibility
-      highContrast: preferences.accessibility.highContrast,
-      colorBlindAssist: preferences.accessibility.colorBlindAssist,
-      screenReaderOptimized: preferences.accessibility.screenReaderOptimized,
-      keyboardNavigation: preferences.accessibility.keyboardNavigation,
-      reducedMotion: preferences.appearance.reducedMotion,
-      largeClickTargets: preferences.accessibility.largeClickTargets,
-      
-      // Notifications
-      emailNotifications: preferences.notifications.emailNotifications,
-      pushNotifications: preferences.notifications.pushNotifications,
-      lotteryResults: preferences.notifications.lotteryResults,
-      newLotteries: preferences.notifications.newLotteries,
-      promotions: preferences.notifications.promotions,
-      soundEnabled: preferences.notifications.soundEnabled
-    });
-  }
-
-  private setupFormSubscriptions(): void {
-    // Auto-apply certain preferences immediately
-    this.subscription.add(
-      this.preferencesForm.get('theme')?.valueChanges.subscribe(theme => {
-        this.userPreferencesService.setTheme(theme);
-      })
-    );
-
-    this.subscription.add(
-      this.preferencesForm.get('fontSize')?.valueChanges.subscribe(fontSize => {
-        this.userPreferencesService.setFontSize(fontSize);
-      })
-    );
-
-    this.subscription.add(
-      this.preferencesForm.get('highContrast')?.valueChanges.subscribe(enabled => {
-        this.userPreferencesService.setHighContrast(enabled);
-      })
-    );
+    this.formService.ngOnDestroy();
   }
 
   public savePreferences(): void {
-    if (this.preferencesForm.invalid) {
-      this.showStatus('Please fix the errors before saving', 'error');
-      return;
-    }
-
-    this.isSaving.set(true);
-    const formValue = this.preferencesForm.value;
-
-    try {
-      // Update appearance preferences
-      this.userPreferencesService.updateAppearance({
-        theme: formValue.theme,
-        fontSize: formValue.fontSize,
-        uiDensity: formValue.uiDensity,
-        showAnimations: formValue.showAnimations,
-        reducedMotion: formValue.reducedMotion
-      });
-
-      // Update localization preferences
-      const currentPrefs = this.userPreferencesService.getPreferences();
-      const updatedPrefs = {
-        ...currentPrefs,
-        localization: {
-          ...currentPrefs.localization,
-          language: formValue.language,
-          dateFormat: formValue.dateFormat,
-          timeFormat: formValue.timeFormat,
-          currency: formValue.currency
-        }
-      };
-      
-      // Update accessibility preferences
-      this.userPreferencesService.updateAccessibility({
-        highContrast: formValue.highContrast,
-        colorBlindAssist: formValue.colorBlindAssist,
-        screenReaderOptimized: formValue.screenReaderOptimized,
-        keyboardNavigation: formValue.keyboardNavigation,
-        largeClickTargets: formValue.largeClickTargets
-      });
-
-      // Update notification preferences
-      this.userPreferencesService.updateNotifications({
-        emailNotifications: formValue.emailNotifications,
-        pushNotifications: formValue.pushNotifications,
-        lotteryResults: formValue.lotteryResults,
-        newLotteries: formValue.newLotteries,
-        promotions: formValue.promotions,
-        soundEnabled: formValue.soundEnabled
-      });
-
-      this.preferencesForm.markAsPristine();
-      this.showStatus('Preferences saved successfully!', 'success');
-      this.logger.info('User preferences saved', formValue, 'UserPreferencesComponent');
-      
-    } catch (error) {
-      this.showStatus('Failed to save preferences. Please try again.', 'error');
-      this.logger.error('Failed to save preferences', { error }, 'UserPreferencesComponent');
-    } finally {
-      this.isSaving.set(false);
-    }
+    this.formService.savePreferences();
   }
 
   public onLanguageChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     const language = target.value as Language;
-    this.translationService.setLanguage(language);
-    this.userPreferencesService.setLanguage(language);
+    this.formService.onLanguageChange(language);
   }
 
   public resetToDefaults(): void {
-    if (confirm(this.translationService.translate('preferences.confirmReset'))) {
-      this.userPreferencesService.resetToDefaults();
-      this.loadCurrentPreferences();
-      this.showStatus('Preferences reset to defaults', 'info');
-      this.logger.info('User preferences reset to defaults', undefined, 'UserPreferencesComponent');
-    }
+    this.formService.resetToDefaults();
   }
 
   public exportPreferences(): void {
-    try {
-      const preferencesJson = this.userPreferencesService.exportPreferences();
-      const blob = new Blob([preferencesJson], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `amesa-preferences-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      this.showStatus('Preferences exported successfully!', 'success');
-      this.logger.info('User preferences exported', undefined, 'UserPreferencesComponent');
-    } catch (error) {
-      this.showStatus('Failed to export preferences', 'error');
-      this.logger.error('Failed to export preferences', { error }, 'UserPreferencesComponent');
-    }
+    this.formService.exportPreferences();
   }
 
   public importPreferences(): void {
-    const fileInput = document.querySelector('#fileInput') as HTMLInputElement;
-    fileInput?.click();
+    this.fileInput?.nativeElement.click();
   }
 
   public onFileSelected(event: Event): void {
@@ -677,29 +498,7 @@ export class UserPreferencesComponent implements OnInit, OnDestroy {
     const file = target.files?.[0];
     
     if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const jsonString = e.target?.result as string;
-        this.userPreferencesService.importPreferences(jsonString).subscribe({
-          next: () => {
-            this.loadCurrentPreferences();
-            this.showStatus('Preferences imported successfully!', 'success');
-            this.logger.info('User preferences imported', undefined, 'UserPreferencesComponent');
-          },
-          error: (error) => {
-            this.showStatus('Failed to import preferences. Please check the file format.', 'error');
-            this.logger.error('Failed to import preferences', { error }, 'UserPreferencesComponent');
-          }
-        });
-      } catch (error) {
-        this.showStatus('Invalid file format', 'error');
-        this.logger.error('Invalid preferences file format', { error }, 'UserPreferencesComponent');
-      }
-    };
-    
-    reader.readAsText(file);
+    this.formService.importPreferences(file);
     target.value = ''; // Reset file input
   }
 
@@ -707,43 +506,12 @@ export class UserPreferencesComponent implements OnInit, OnDestroy {
     return this.activeTab() === tabId ? 'tab-active' : 'tab-inactive';
   }
 
-  private showStatus(message: string, type: 'success' | 'error' | 'info'): void {
-    this.statusMessage.set(message);
-    this.statusType.set(type);
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-      this.statusMessage.set('');
-    }, 5000);
-  }
-
   public getStatusClasses(): string {
-    const type = this.statusType();
-    const baseClasses = 'flex items-center';
-    
-    switch (type) {
-      case 'success':
-        return `${baseClasses} bg-green-100 border border-green-400 text-green-700`;
-      case 'error':
-        return `${baseClasses} bg-red-100 border border-red-400 text-red-700`;
-      case 'info':
-      default:
-        return `${baseClasses} bg-blue-100 border border-blue-400 text-blue-700`;
-    }
+    return this.formService.getStatusClasses();
   }
 
   public getStatusIcon(): string {
-    const type = this.statusType();
-    
-    switch (type) {
-      case 'success':
-        return 'fas fa-check-circle';
-      case 'error':
-        return 'fas fa-exclamation-circle';
-      case 'info':
-      default:
-        return 'fas fa-info-circle';
-    }
+    return this.formService.getStatusIcon();
   }
 }
 

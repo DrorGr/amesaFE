@@ -4,9 +4,9 @@ import { RouterModule } from '@angular/router';
 import { House, HouseDto } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
-import { TranslationService } from '../../services/translation.service';
-import { ToastService } from '../../services/toast.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
+import { HouseCardService } from '../../services/house-card.service';
+import { ToastService } from '../../services/toast.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 
 @Component({
@@ -375,9 +375,9 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
 export class HouseCardComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private lotteryService = inject(LotteryService);
-  private translationService = inject(TranslationService);
-  private toastService = inject(ToastService);
   private heartAnimationService = inject(HeartAnimationService);
+  private houseCardService = inject(HouseCardService);
+  private toastService = inject(ToastService);
   
   @ViewChild('favoriteButton', { static: false }) favoriteButtonRef?: ElementRef<HTMLButtonElement>;
   
@@ -406,94 +406,44 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   });
 
   formatPrice(price: number): string {
-    return price.toLocaleString();
+    return this.houseCardService.formatPrice(price);
   }
 
   formatSqft(sqft: number): string {
-    return sqft.toLocaleString();
+    return this.houseCardService.formatSqft(sqft);
   }
 
   getTicketProgress(): number {
-    const house = this.house();
-    return (house.soldTickets / house.totalTickets) * 100;
+    return this.houseCardService.getTicketProgress(this.house());
   }
 
   getStatusText(): string {
-    const status = this.house().status;
-    switch (status) {
-      case 'active': return this.translate('house.active');
-      case 'ended': return this.translate('house.ended');
-      case 'upcoming': return this.translate('house.upcoming');
-      default: return 'Unknown';
-    }
+    return this.houseCardService.getStatusText(this.house());
   }
 
   getTimeRemaining(): string {
-    const endDate = new Date(this.house().lotteryEndDate);
-    const now = new Date();
-    const diff = endDate.getTime() - now.getTime();
-    
-    if (diff <= 0) {
-      return this.translate('house.ended');
-    }
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
-    if (days > 0) {
-      return `${days}d ${hours}h`;
-    } else {
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      return `${hours}h ${minutes}m`;
-    }
+    return this.houseCardService.getTimeRemaining(this.house(), Date.now());
   }
 
   async purchaseTicket() {
-    if (!this.currentUser() || !this.currentUser()?.isAuthenticated) {
-      this.toastService.error('Please log in to purchase tickets.', 4000);
-      return;
-    }
-    
     if (this.isPurchasing) {
-      return;
-    }
-
-    // Check if user can enter (participant cap check)
-    if (!this.canEnter() && !this.isExistingParticipant()) {
-      this.toastService.error('Participant cap reached for this lottery.', 4000);
       return;
     }
 
     this.isPurchasing = true;
     
     try {
-      const result = await this.lotteryService.purchaseTicket({
-        houseId: this.house().id,
-        quantity: 1,
-        paymentMethodId: 'default' // You'll need to implement payment method selection
-      }).toPromise();
+      const result = await this.houseCardService.purchaseTicket(
+        this.house(),
+        this.canEnter(),
+        this.isExistingParticipant()
+      );
       
-      if (result && result.ticketsPurchased > 0) {
-        this.toastService.success(`Successfully purchased ${result.ticketsPurchased} ticket(s)!`, 3000);
+      if (result.success) {
         // Refresh can enter status
-        this.checkCanEnter();
-      } else {
-        this.toastService.error('Failed to purchase ticket. Please try again.', 4000);
-      }
-    } catch (error: any) {
-      console.error('Error purchasing ticket:', error);
-      // Check if it's a verification error
-      if (error?.error?.error?.code === 'ID_VERIFICATION_REQUIRED' || 
-          error?.error?.message?.includes('ID_VERIFICATION_REQUIRED') ||
-          error?.error?.message?.includes('verification')) {
-        this.toastService.error('Please validate your account to purchase tickets.', 4000);
-      }
-      // Check if it's a participant cap error
-      else if (error?.error?.error?.code === 'PARTICIPANT_CAP_REACHED') {
+        await this.checkCanEnter();
+      } else if (result.message === 'Participant cap reached') {
         this.canEnter.set(false);
-        this.toastService.error('Participant cap reached for this lottery.', 4000);
-      } else {
-        this.toastService.error('Failed to purchase ticket. Please try again.', 4000);
       }
     } finally {
       this.isPurchasing = false;
@@ -502,34 +452,23 @@ export class HouseCardComponent implements OnInit, OnDestroy {
 
 
   translate(key: string): string {
-    return this.translationService.translate(key);
+    return this.houseCardService.translate(key);
   }
 
   translateWithParams(key: string, params: Record<string, any>): string {
-    let translation = this.translationService.translate(key);
-    if (params) {
-      Object.keys(params).forEach(paramKey => {
-        translation = translation.replace(`{${paramKey}}`, String(params[paramKey]));
-      });
-    }
-    return translation;
+    return this.houseCardService.translateWithParams(key, params);
   }
 
   getOdds(): string {
-    const totalTickets = this.house().totalTickets;
-    return `1:${totalTickets.toLocaleString()}`;
+    return this.houseCardService.getOdds(this.house());
   }
 
   getRemainingTickets(): number {
-    return this.house().totalTickets - this.house().soldTickets;
+    return this.houseCardService.getRemainingTickets(this.house());
   }
 
   formatLotteryDate(): string {
-    return new Date(this.house().lotteryEndDate).toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    return this.houseCardService.formatLotteryDate(this.house().lotteryEndDate);
   }
 
   getCurrentViewers(): number {
@@ -537,9 +476,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   getTicketsAvailableText(): string {
-    const remaining = this.getRemainingTickets();
-    const template = this.translate('house.onlyTicketsAvailable');
-    return template.replace('{count}', remaining.toLocaleString());
+    return this.houseCardService.getTicketsAvailableText(this.house());
   }
 
   ngOnInit() {
@@ -559,29 +496,17 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadHouseDetails(): void {
-    // Load house details with participant stats
-    this.lotteryService.getHouseById(this.house().id).subscribe({
-      next: (houseDto) => {
-        this.houseDto.set(houseDto);
-      },
-      error: (error) => {
-        console.error('Error loading house details:', error);
-      }
-    });
+  async loadHouseDetails(): Promise<void> {
+    const houseDto = await this.houseCardService.loadHouseDetails(this.house().id);
+    if (houseDto) {
+      this.houseDto.set(houseDto);
+    }
   }
 
-  checkCanEnter(): void {
-    this.lotteryService.canEnterLottery(this.house().id).subscribe({
-      next: (response) => {
-        this.canEnter.set(response.canEnter);
-        this.isExistingParticipant.set(response.isExistingParticipant);
-      },
-      error: (error) => {
-        console.error('Error checking if can enter:', error);
-        this.canEnter.set(true); // Default to allowing entry on error
-      }
-    });
+  async checkCanEnter(): Promise<void> {
+    const response = await this.houseCardService.checkCanEnter(this.house().id);
+    this.canEnter.set(response.canEnter);
+    this.isExistingParticipant.set(response.isExistingParticipant);
   }
 
   ngOnDestroy() {
@@ -591,40 +516,11 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   getLotteryCountdown(): string {
-    const now = this.currentTime();
-    const endTime = new Date(this.house().lotteryEndDate).getTime();
-    const timeLeft = endTime - now;
-
-    if (timeLeft <= 0) {
-      return '00:00:00';
-    }
-
-    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-    // Show seconds only when less than 24 hours left
-    if (days === 0 && hours < 24) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    } else {
-      return `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    }
+    return this.houseCardService.getLotteryCountdown(this.house(), this.currentTime());
   }
 
   openLocationMap(): void {
-    const house = this.house();
-    const address = house.address || house.location || house.title;
-    const city = house.city || 'New York';
-    
-    // Create a search query for Google Maps
-    const searchQuery = encodeURIComponent(`${address}, ${city}`);
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
-    
-    // Open in a new tab
-    window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
-    
-    console.log(`Opening location map for: ${address}, ${city}`);
+    this.houseCardService.openLocationMap(this.house());
   }
 
   /**
@@ -716,11 +612,6 @@ export class HouseCardComponent implements OnInit, OnDestroy {
    * Quick entry from favorites
    */
   async quickEntry(): Promise<void> {
-    if (!this.currentUser() || !this.currentUser()?.isAuthenticated) {
-      this.toastService.error('Please log in to enter the lottery.', 4000);
-      return;
-    }
-    
     if (this.isQuickEntering || !this.isFavorite()) {
       return;
     }
@@ -728,26 +619,13 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     this.isQuickEntering = true;
     
     try {
-      const result = await this.lotteryService.quickEntryFromFavorite({
-        houseId: this.house().id,
-        quantity: 1, // API contract specifies "quantity", matches backend [JsonPropertyName("quantity")]
-        paymentMethodId: 'default' // TODO: Get from user preferences or payment service
-      }).toPromise();
+      const result = await this.houseCardService.quickEntry(
+        this.house(),
+        this.favoriteHouseIds()
+      );
       
-      if (result && result.ticketsPurchased > 0) {
-        this.toastService.success(`Quick entry successful! Purchased ${result.ticketsPurchased} ticket(s).`, 3000);
-      } else {
-        this.toastService.error('Failed to complete quick entry. Please try again.', 4000);
-      }
-    } catch (error: any) {
-      console.error('Error with quick entry:', error);
-      // Check if it's a verification error
-      if (error?.error?.error?.code === 'ID_VERIFICATION_REQUIRED' || 
-          error?.error?.message?.includes('ID_VERIFICATION_REQUIRED') ||
-          error?.error?.message?.includes('verification')) {
-        this.toastService.error('Please validate your account to enter the lottery.', 4000);
-      } else {
-        this.toastService.error('Failed to complete quick entry. Please try again.', 4000);
+      if (!result.success && result.message === 'Verification required') {
+        // Already handled in service
       }
     } finally {
       this.isQuickEntering = false;

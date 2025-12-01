@@ -1,21 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslationService } from '../../services/translation.service';
-
-interface AccessibilitySettings {
-  fontSize: number;
-  contrast: 'normal' | 'high' | 'inverted';
-  colorBlind: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia';
-  reduceMotion: boolean;
-  screenReader: boolean;
-  keyboardNavigation: boolean;
-  focusIndicator: boolean;
-  textSpacing: boolean;
-  cursorSize: 'normal' | 'large' | 'extra-large';
-  readingGuide: boolean;
-  linkHighlight: boolean;
-}
+import { AccessibilityWidgetService, AccessibilitySettings } from '../../services/accessibility-widget.service';
 
 @Component({
   selector: 'app-accessibility-widget',
@@ -406,256 +392,51 @@ interface AccessibilitySettings {
   `]
 })
 export class AccessibilityWidgetComponent {
-  private translationService = inject(TranslationService);
+  private widgetService = inject(AccessibilityWidgetService);
   
-  // State
-  isOpen = signal(false);
-  mouseY = signal(0);
-  isHidden = signal(false);
-  
-  // Default settings
-  settings: AccessibilitySettings = {
-    fontSize: 16,
-    contrast: 'normal',
-    colorBlind: 'none',
-    reduceMotion: false,
-    screenReader: false,
-    keyboardNavigation: true,
-    focusIndicator: false,
-    textSpacing: false,
-    cursorSize: 'normal',
-    readingGuide: false,
-    linkHighlight: false
-  };
-  
-  constructor() {
-    // Load saved settings
-    this.loadSettings();
-    
-    // Widgets should always appear on page refresh
-    // Hidden state is only for current session
-    this.isHidden.set(false);
-    
-    // Apply settings on load
-    this.applySettings();
-    
-    // Track mouse for reading guide
-    if (typeof window !== 'undefined') {
-      window.addEventListener('mousemove', (e) => {
-        this.mouseY.set(e.clientY);
-      });
-    }
-  }
+  // Delegate to service
+  isOpen = this.widgetService.isOpen;
+  mouseY = this.widgetService.mouseY;
+  isHidden = this.widgetService.isHidden;
+  settings: AccessibilitySettings = this.widgetService.settings;
   
   translate(key: string): string {
-    return this.translationService.translate(key);
+    return this.widgetService.translate(key);
   }
   
-  toggleWidget() {
-    this.isOpen.update(open => !open);
+  toggleWidget(): void {
+    this.widgetService.toggleWidget();
   }
   
-  hideWidget() {
-    this.isHidden.set(true);
-    this.isOpen.set(false);
-    // Only hide for current session, not permanently
-    console.log('Accessibility widget hidden for current session');
+  hideWidget(): void {
+    this.widgetService.hideWidget();
   }
   
-  showWidget() {
-    this.isHidden.set(false);
-    console.log('Accessibility widget shown');
+  showWidget(): void {
+    this.widgetService.showWidget();
   }
   
-  showCloseButton() {
-    return !this.isHidden();
+  showCloseButton(): boolean {
+    return this.widgetService.showCloseButton();
   }
   
-  applySettings() {
-    if (typeof document === 'undefined') return;
-    
-    const body = document.body;
-    const html = document.documentElement;
-    
-    // Remove existing accessibility classes
-    body.className = body.className.replace(/accessibility-[\w-]+/g, '');
-    
-    // Apply font size to root element
-    html.style.fontSize = `${this.settings.fontSize}px`;
-    
-    // Apply contrast settings
-    if (this.settings.contrast === 'high') {
-      body.classList.add('accessibility-high-contrast');
-    } else if (this.settings.contrast === 'inverted') {
-      body.classList.add('accessibility-inverted');
-    }
-    
-    // Apply color blind filters
-    if (this.settings.colorBlind !== 'none') {
-      body.classList.add(`accessibility-${this.settings.colorBlind}`);
-    }
-    
-    // Apply cursor size
-    if (this.settings.cursorSize === 'large') {
-      body.classList.add('accessibility-large-cursor');
-    } else if (this.settings.cursorSize === 'extra-large') {
-      body.classList.add('accessibility-extra-large-cursor');
-    }
-    
-    // Apply text spacing
-    if (this.settings.textSpacing) {
-      body.classList.add('accessibility-text-spacing');
-    }
-    
-    // Apply focus indicator
-    if (this.settings.focusIndicator) {
-      body.classList.add('accessibility-focus-indicator');
-    }
-    
-    // Apply link highlight
-    if (this.settings.linkHighlight) {
-      body.classList.add('accessibility-link-highlight');
-    }
-    
-    // Apply reduce motion
-    if (this.settings.reduceMotion) {
-      body.classList.add('accessibility-reduce-motion');
-      // Also set CSS custom property for motion preference
-      html.style.setProperty('--motion-preference', 'reduce');
-    } else {
-      html.style.removeProperty('--motion-preference');
-    }
-    
-    // Log applied settings for testing
-    console.log('Accessibility settings applied:', {
-      fontSize: this.settings.fontSize,
-      contrast: this.settings.contrast,
-      colorBlind: this.settings.colorBlind,
-      cursorSize: this.settings.cursorSize,
-      appliedClasses: Array.from(body.classList).filter(c => c.startsWith('accessibility-'))
-    });
-    
-    // Auto-save settings
-    this.saveSettings();
+  applySettings(): void {
+    this.widgetService.applySettings();
   }
   
-  resetSettings() {
-    this.settings = {
-      fontSize: 16,
-      contrast: 'normal',
-      colorBlind: 'none',
-      reduceMotion: false,
-      screenReader: false,
-      keyboardNavigation: true,
-      focusIndicator: false,
-      textSpacing: false,
-      cursorSize: 'normal',
-      readingGuide: false,
-      linkHighlight: false
-    };
-    this.applySettings();
+  resetSettings(): void {
+    this.widgetService.resetSettings();
   }
   
-  saveSettings() {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('amesa-accessibility-settings', JSON.stringify(this.settings));
-    }
+  saveSettings(): void {
+    this.widgetService.saveSettings();
   }
   
-  loadSettings() {
-    if (typeof localStorage !== 'undefined') {
-      const saved = localStorage.getItem('amesa-accessibility-settings');
-      if (saved) {
-        try {
-          this.settings = { ...this.settings, ...JSON.parse(saved) };
-          console.log('Accessibility settings loaded:', this.settings);
-        } catch (e) {
-          console.warn('Failed to load accessibility settings:', e);
-        }
-      }
-    }
+  loadSettings(): void {
+    this.widgetService.loadSettings();
   }
   
-  // Test method to verify all features
-  testAllFeatures() {
-    console.log('🧪 Testing all accessibility features...');
-    
-    // Test font size
-    console.log('📝 Testing font size changes...');
-    const originalFontSize = this.settings.fontSize;
-    this.settings.fontSize = 20;
-    this.applySettings();
-    setTimeout(() => {
-      this.settings.fontSize = originalFontSize;
-      this.applySettings();
-    }, 2000);
-    
-    // Test contrast modes
-    console.log('🎨 Testing contrast modes...');
-    setTimeout(() => {
-      this.settings.contrast = 'high';
-      this.applySettings();
-      setTimeout(() => {
-        this.settings.contrast = 'inverted';
-        this.applySettings();
-        setTimeout(() => {
-          this.settings.contrast = 'normal';
-          this.applySettings();
-        }, 2000);
-      }, 2000);
-    }, 3000);
-    
-    // Test color blind filters
-    console.log('🌈 Testing color blind filters...');
-    setTimeout(() => {
-      this.settings.colorBlind = 'protanopia';
-      this.applySettings();
-      setTimeout(() => {
-        this.settings.colorBlind = 'deuteranopia';
-        this.applySettings();
-        setTimeout(() => {
-          this.settings.colorBlind = 'tritanopia';
-          this.applySettings();
-          setTimeout(() => {
-            this.settings.colorBlind = 'none';
-            this.applySettings();
-          }, 2000);
-        }, 2000);
-      }, 2000);
-    }, 8000);
-    
-    // Test cursor sizes
-    console.log('🖱️ Testing cursor sizes...');
-    setTimeout(() => {
-      this.settings.cursorSize = 'large';
-      this.applySettings();
-      setTimeout(() => {
-        this.settings.cursorSize = 'extra-large';
-        this.applySettings();
-        setTimeout(() => {
-          this.settings.cursorSize = 'normal';
-          this.applySettings();
-        }, 2000);
-      }, 2000);
-    }, 15000);
-    
-    // Test toggle features
-    console.log('🔄 Testing toggle features...');
-    setTimeout(() => {
-      this.settings.textSpacing = true;
-      this.settings.focusIndicator = true;
-      this.settings.linkHighlight = true;
-      this.settings.readingGuide = true;
-      this.applySettings();
-      
-      setTimeout(() => {
-        this.settings.textSpacing = false;
-        this.settings.focusIndicator = false;
-        this.settings.linkHighlight = false;
-        this.settings.readingGuide = false;
-        this.applySettings();
-        console.log('✅ All accessibility features tested!');
-      }, 3000);
-    }, 20000);
+  testAllFeatures(): void {
+    this.widgetService.testAllFeatures();
   }
 }
