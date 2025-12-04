@@ -68,18 +68,18 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       </span>
                     </div>
                     
-                    <!-- Favorites Button - Below Status Badge, same size as location -->
+                    <!-- Favorites Button - Top Right, same level as status badge, purple background -->
                     <button 
                       (click)="toggleFavorite(house.id, $event)"
                       (keydown.enter)="toggleFavorite(house.id, $event)"
                       (keydown.space)="toggleFavorite(house.id, $event); $event.preventDefault()"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
                       [title]="isFavorite(house.id) ? (translate('lottery.favorites.removeFromFavorites') || 'Remove from favorites') : (translate('lottery.favorites.addToFavorites') || 'Add to favorites')"
-                      class="absolute top-20 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 text-gray-800 dark:text-white p-4.5 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      class="absolute top-4 right-4 bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 text-white p-4.5 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400"
                       [disabled]="isTogglingFavorite(house.id)">
                       <svg class="w-9 h-9 transition-all duration-200"
-                           [class.text-red-500]="isFavorite(house.id)"
-                           [class.text-gray-400]="!isFavorite(house.id)"
+                           [class.text-white]="isFavorite(house.id)"
+                           [class.text-white]="!isFavorite(house.id)"
                            [class.fill-current]="isFavorite(house.id)"
                            [class.stroke-current]="!isFavorite(house.id)"
                            fill="none" 
