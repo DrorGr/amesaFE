@@ -21,141 +21,30 @@ import { provideRouter, withPreloading, withInMemoryScrolling } from '@angular/r
 import { CustomPreloadingStrategy } from './app.preloading-strategy';
 import { provideHttpClient } from '@angular/common/http';
 
-// Initialize translation service
-function initializeTranslations(
-  translationService: TranslationService,
-  userPreferencesService: UserPreferencesService,
-  authService: any
-) {
+// Initialize translation service - LOAD FIRST, before preferences
+function initializeTranslations(translationService: TranslationService) {
   return () => {
-    // #region agent log
-    const logData = {
-      location: 'main.ts:initializeTranslations',
-      message: 'Determining initial language',
-      data: {
-        hasNavigator: typeof navigator !== 'undefined',
-        navigatorLanguage: typeof navigator !== 'undefined' ? navigator.language : 'N/A',
-        navigatorLanguages: typeof navigator !== 'undefined' ? navigator.languages : 'N/A',
-        hasLocalStorage: typeof localStorage !== 'undefined',
-        localStorageLanguage: typeof localStorage !== 'undefined' ? localStorage.getItem('amesa_language') : 'N/A',
-        userPrefsLanguage: userPreferencesService.currentLanguage(),
-        hasAuthService: !!authService,
-        isAuthenticated: authService?.isAuthenticated?.() ?? false
-      },
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'F'
-    };
-    // #region agent log
-    // Only send debug logs in development mode, not production
-    if (typeof fetch !== 'undefined' && !environment.production) {
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(logData)
-      }).catch(() => {});
-    }
-    // #endregion
-    // #endregion
-
-    // Determine initial language with priority:
-    // 1. User preferences (from UserPreferencesService - includes server sync if authenticated)
-    // 2. localStorage (amesa_language key)
-    // 3. Browser/system language (navigator.language)
-    // 4. Default to 'en' if none of the above are available
+    // Determine initial language with priority (NO network requests):
+    // 1. localStorage (amesa_language key) - fastest, no network
+    // 2. Browser/system language (navigator.language)
+    // 3. Default to 'en' if none of the above are available
+    // NOTE: UserPreferencesService is NOT checked here to avoid waiting for network requests
 
     let initialLanguage: 'en' | 'es' | 'fr' | 'pl' = 'en';
     const supportedLanguages: ('en' | 'es' | 'fr' | 'pl')[] = ['en', 'es', 'fr', 'pl'];
 
-    // Priority 1: Check UserPreferencesService (includes server-synced preferences if authenticated)
-    const userPrefsLanguage = userPreferencesService.currentLanguage();
-    if (userPrefsLanguage && supportedLanguages.includes(userPrefsLanguage)) {
-      initialLanguage = userPrefsLanguage;
-      // #region agent log
-      if (typeof fetch !== 'undefined' && !environment.production) {
-        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'main.ts:initializeTranslations',
-            message: 'Using language from UserPreferencesService',
-            data: { language: initialLanguage, source: 'userPreferences' },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'F'
-          })
-        }).catch(() => {});
-      }
-      // #endregion
-    } else if (typeof localStorage !== 'undefined') {
-      // Priority 2: Check localStorage directly
+    // Priority 1: Check localStorage directly (fastest, no network)
+    if (typeof localStorage !== 'undefined') {
       const storedLanguage = localStorage.getItem('amesa_language') as 'en' | 'es' | 'fr' | 'pl' | null;
       if (storedLanguage && supportedLanguages.includes(storedLanguage)) {
         initialLanguage = storedLanguage;
-        // #region agent log
-        if (typeof fetch !== 'undefined' && !environment.production) {
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'main.ts:initializeTranslations',
-              message: 'Using language from localStorage',
-              data: { language: initialLanguage, source: 'localStorage' },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'F'
-            })
-          }).catch(() => {});
-        }
-        // #endregion
       } else if (typeof navigator !== 'undefined' && navigator.language) {
-        // Priority 3: Check browser/system language
+        // Priority 2: Check browser/system language
         const browserLang = navigator.language.toLowerCase().split('-')[0] as string;
         if (supportedLanguages.includes(browserLang as 'en' | 'es' | 'fr' | 'pl')) {
           initialLanguage = browserLang as 'en' | 'es' | 'fr' | 'pl';
-          // #region agent log
-          if (typeof fetch !== 'undefined' && !environment.production) {
-            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                location: 'main.ts:initializeTranslations',
-                message: 'Using language from browser/system',
-                data: { language: initialLanguage, source: 'navigator.language', original: navigator.language },
-                timestamp: Date.now(),
-                sessionId: 'debug-session',
-                runId: 'run1',
-                hypothesisId: 'F'
-              })
-            }).catch(() => {});
-          }
-          // #endregion
         }
       }
-    }
-
-    // Priority 4: Default to 'en' (already set)
-    if (initialLanguage === 'en') {
-      // #region agent log
-      if (typeof fetch !== 'undefined' && !environment.production) {
-        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'main.ts:initializeTranslations',
-            message: 'Using default language (en)',
-            data: { language: initialLanguage, source: 'default' },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'F'
-          })
-        }).catch(() => {});
-      }
-      // #endregion
     }
 
     // Load translations and WAIT for them to complete before app starts
@@ -236,7 +125,7 @@ bootstrapApplication(AppComponent, {
     {
       provide: APP_INITIALIZER,
       useFactory: initializeTranslations,
-      deps: [TranslationService, UserPreferencesService, AuthService],
+      deps: [TranslationService],
       multi: true
     },
     {
