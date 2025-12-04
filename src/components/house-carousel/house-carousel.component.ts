@@ -463,6 +463,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
+    // Ensure auto-rotation is started
     this.startAutoSlide();
     this.setupIntersectionObserver();
     // Load the first slide images immediately
@@ -475,6 +476,14 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         this.currentViewers.set(Math.floor(Math.random() * 46) + 5);
       }
     }, 1000);
+    
+    // Ensure auto-rotation continues even if component is re-initialized
+    // Restart auto-slide after a short delay to ensure it's active
+    setTimeout(() => {
+      if (!this.autoSlideInterval) {
+        this.startAutoSlide();
+      }
+    }, 100);
   }
 
   ngOnDestroy() {
@@ -489,8 +498,15 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
 
   private startAutoSlide() {
+    // Clear any existing interval first
+    if (this.autoSlideInterval) {
+      clearInterval(this.autoSlideInterval);
+    }
+    // Start auto-rotation every 8 seconds
     this.autoSlideInterval = setInterval(() => {
-      this.nextSlide();
+      if (this.houses().length > 1) {
+        this.nextSlide();
+      }
     }, 8000);
   }
 

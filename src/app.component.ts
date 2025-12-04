@@ -8,7 +8,8 @@ import { TopbarComponent } from './components/topbar/topbar.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { TranslationLoaderComponent } from './components/translation-loader/translation-loader.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
-import { AccessibilityWidgetComponent } from './components/accessibility-widget/accessibility-widget.component';
+import { AuthModalComponent } from './components/auth-modal/auth-modal.component';
+import { AuthModalService } from './services/auth-modal.service';
 import { ToastComponent } from './components/toast/toast.component';
 import { CookieConsentComponent } from './components/cookie-consent/cookie-consent.component';
 import { SkipLinksComponent } from './components/skip-links/skip-links.component';
@@ -28,7 +29,7 @@ import { CookieConsentService } from './services/cookie-consent.service';
     LoadingComponent,
     TranslationLoaderComponent,
     ChatbotComponent,
-    AccessibilityWidgetComponent,
+    AuthModalComponent,
     ToastComponent,
     CookieConsentComponent,
     SkipLinksComponent
@@ -188,8 +189,14 @@ import { CookieConsentService } from './services/cookie-consent.service';
       <!-- Fixed Chatbot -->
       <app-chatbot></app-chatbot>
       
-      <!-- Fixed Accessibility Widget -->
-      <app-accessibility-widget></app-accessibility-widget>
+      <!-- Auth Modal -->
+      @if (authModalService.isOpen()) {
+        <app-auth-modal 
+          [mode]="authModalService.mode()"
+          (close)="authModalService.close()"
+          (success)="authModalService.close()">
+        </app-auth-modal>
+      }
       
       <!-- Toast Notifications -->
       <app-toast></app-toast>
@@ -207,6 +214,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private toastService = inject(ToastService);
   private cookieConsentService = inject(CookieConsentService);
+  public authModalService = inject(AuthModalService);
   private routerSubscription?: Subscription;
   
   // Services are injected but not used directly in this component
