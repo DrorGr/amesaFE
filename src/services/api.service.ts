@@ -212,6 +212,36 @@ export class ApiService {
       return throwError(() => error);
     }
     
+    // #region agent log
+    // Track 500 errors for identity/status endpoint debugging
+    if (error.status === 500 && error.url?.includes('/identity/status')) {
+      // Import environment at top of file if not already imported
+      const isProduction = (window as any).location?.hostname?.includes('cloudfront.net') || 
+                          (window as any).location?.hostname?.includes('amazonaws.com');
+      if (typeof fetch !== 'undefined' && !isProduction) {
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'api.service.ts:handleErrorWithRetry',
+            message: '500 error on identity/status endpoint',
+            data: {
+              url: error.url,
+              status: error.status,
+              statusText: error.statusText,
+              error: error.error,
+              headers: error.headers?.keys()
+            },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'B'
+          })
+        }).catch(() => {});
+      }
+    }
+    // #endregion
+    
     // Suppress 500 errors FIRST - these are backend issues, not frontend bugs
     // Check for 500 status or identity/status endpoint (which returns 500)
     if (error.status === 500 || error.url?.includes('/identity/status')) {

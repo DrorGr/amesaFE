@@ -2,6 +2,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { ErrorHandler, APP_INITIALIZER } from '@angular/core';
 import './console-override'; // Remove console logs in production
 import { AppComponent } from './app.component';
+import { environment } from './environments/environment';
 import { TranslationService } from './services/translation.service';
 import { ThemeService } from './services/theme.service';
 import { UserPreferencesService } from './services/user-preferences.service';
@@ -46,13 +47,16 @@ function initializeTranslations(
       runId: 'run1',
       hypothesisId: 'F'
     };
-    if (typeof fetch !== 'undefined') {
+    // #region agent log
+    // Only send debug logs in development mode, not production
+    if (typeof fetch !== 'undefined' && !environment.production) {
       fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(logData)
       }).catch(() => {});
     }
+    // #endregion
     // #endregion
 
     // Determine initial language with priority:
@@ -69,7 +73,7 @@ function initializeTranslations(
     if (userPrefsLanguage && supportedLanguages.includes(userPrefsLanguage)) {
       initialLanguage = userPrefsLanguage;
       // #region agent log
-      if (typeof fetch !== 'undefined') {
+      if (typeof fetch !== 'undefined' && !environment.production) {
         fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -91,7 +95,7 @@ function initializeTranslations(
       if (storedLanguage && supportedLanguages.includes(storedLanguage)) {
         initialLanguage = storedLanguage;
         // #region agent log
-        if (typeof fetch !== 'undefined') {
+        if (typeof fetch !== 'undefined' && !environment.production) {
           fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -113,7 +117,7 @@ function initializeTranslations(
         if (supportedLanguages.includes(browserLang as 'en' | 'es' | 'fr' | 'pl')) {
           initialLanguage = browserLang as 'en' | 'es' | 'fr' | 'pl';
           // #region agent log
-          if (typeof fetch !== 'undefined') {
+          if (typeof fetch !== 'undefined' && !environment.production) {
             fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -136,7 +140,7 @@ function initializeTranslations(
     // Priority 4: Default to 'en' (already set)
     if (initialLanguage === 'en') {
       // #region agent log
-      if (typeof fetch !== 'undefined') {
+      if (typeof fetch !== 'undefined' && !environment.production) {
         fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

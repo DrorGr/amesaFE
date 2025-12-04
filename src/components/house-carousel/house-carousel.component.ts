@@ -48,7 +48,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                         (error)="onImageError($event)">
                     }
                     
-                    <!-- Location Icon - 50% bigger -->
+                    <!-- Location Icon - Top Left, matching image ratio -->
                     <button 
                       (click)="openLocationMap(house)"
                       class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-4.5 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
@@ -58,14 +58,24 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       </svg>
                     </button>
                     
-                    <!-- Favorites Button - Top Right, 50% bigger, same size as location -->
+                    <!-- Status Badge - Top Right, pill shape, matching image -->
+                    <div class="absolute top-4 right-4 z-20">
+                      <span 
+                        [class]="getStatusClasses(house.status)"
+                        [class.animate-seesaw]="house.status === 'active' && vibrationTrigger() > 0"
+                        class="text-white px-8 py-4.5 rounded-full text-lg font-semibold shadow-lg inline-block">
+                        {{ getStatusText(house) }}
+                      </span>
+                    </div>
+                    
+                    <!-- Favorites Button - Below Status Badge, same size as location -->
                     <button 
                       (click)="toggleFavorite(house.id, $event)"
                       (keydown.enter)="toggleFavorite(house.id, $event)"
                       (keydown.space)="toggleFavorite(house.id, $event); $event.preventDefault()"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
                       [title]="isFavorite(house.id) ? (translate('lottery.favorites.removeFromFavorites') || 'Remove from favorites') : (translate('lottery.favorites.addToFavorites') || 'Add to favorites')"
-                      class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 text-gray-800 dark:text-white p-4.5 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      class="absolute top-20 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 text-gray-800 dark:text-white p-4.5 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
                       [disabled]="isTogglingFavorite(house.id)">
                       <svg class="w-9 h-9 transition-all duration-200"
                            [class.text-red-500]="isFavorite(house.id)"
@@ -81,16 +91,6 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                         </path>
                       </svg>
                     </button>
-                    
-                    <!-- Status Badge - Top Middle, 50% bigger, pill shape -->
-                    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
-                      <span 
-                        [class]="getStatusClasses(house.status)"
-                        [class.animate-vibrate]="house.status === 'active' && vibrationTrigger() > 0"
-                        class="text-white px-8 py-4.5 rounded-full text-lg font-semibold shadow-lg inline-block">
-                        {{ getStatusText(house) }}
-                      </span>
-                    </div>
                     
                     <!-- Currently Viewers Hover Overlay -->
                     <div class="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-xl">
@@ -503,24 +503,25 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
       }
     }
     
-    /* Vibration animation for Active status - up and down motion with middle as pivot */
-    @keyframes vibrate {
+    /* Seesaw animation for Active status - one side goes up, other goes down, middle as pivot */
+    /* Animation: rotates like a seesaw board, one end up while other end down, then reverses */
+    @keyframes seesaw {
       0%, 100% {
-        transform: translateX(-50%) translateY(0);
+        transform: rotate(0deg);
       }
       25% {
-        transform: translateX(-50%) translateY(-6px);
+        transform: rotate(-4deg);
       }
       50% {
-        transform: translateX(-50%) translateY(0);
+        transform: rotate(0deg);
       }
       75% {
-        transform: translateX(-50%) translateY(6px);
+        transform: rotate(4deg);
       }
     }
     
-    .animate-vibrate {
-      animation: vibrate 0.5s ease-in-out;
+    .animate-seesaw {
+      animation: seesaw 0.6s ease-in-out;
       animation-iteration-count: 1;
       transform-origin: center center;
     }
@@ -586,16 +587,16 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       }
     }, 1000);
     
-    // Start vibration animation for active status badges (every 3 seconds)
+    // Start seesaw animation for active status badges (every 3 seconds)
     this.vibrationInterval = setInterval(() => {
       const currentHouse = this.getCurrentHouse();
       if (currentHouse && currentHouse.status === 'active') {
         // Trigger animation by updating signal
         this.vibrationTrigger.set(Date.now());
-        // Remove animation class after animation completes (500ms)
+        // Remove animation class after animation completes (600ms)
         setTimeout(() => {
           this.vibrationTrigger.set(0);
-        }, 500);
+        }, 600);
       }
     }, 3000);
   }
