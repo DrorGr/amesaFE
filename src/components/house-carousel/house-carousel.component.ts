@@ -208,22 +208,6 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                     <!-- Buttons Section -->
                     @if (currentUser()?.isAuthenticated) {
                       <app-verification-gate [isVerificationRequired]="true">
-                        <!-- Quick Entry Button (only show if favorited and active) -->
-                        @if (isFavorite(house.id) && house.status === 'active') {
-                          <button
-                            (click)="quickEntry(house.id, $event)"
-                            (keydown.enter)="quickEntry(house.id, $event)"
-                            (keydown.space)="quickEntry(house.id, $event); $event.preventDefault()"
-                            [disabled]="isQuickEntering(house.id)"
-                            class="w-full mt-6 md:mt-4 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-400">
-                            @if (isQuickEntering(house.id)) {
-                              {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
-                            } @else {
-                              ⚡ {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
-                            }
-                          </button>
-                        }
-                        
                         <!-- Buy Ticket / Notify Me Button -->
                         @if (house.status === 'ended') {
                           <button 
