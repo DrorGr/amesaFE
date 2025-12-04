@@ -336,19 +336,25 @@ export class AuthService {
   
   /**
    * Connect to SignalR and subscribe to user groups for real-time updates
+   * Non-blocking: Delays connection until after app is loaded to prevent hanging
    */
-  private async connectToSignalR(userId: string): Promise<void> {
+  private connectToSignalR(userId: string): void {
     if (!this.realtimeService) {
       return;
     }
 
-    try {
-      await this.realtimeService.startConnection();
-      await this.realtimeService.joinUserGroup(userId);
-      console.log('Connected to SignalR and joined user group');
-    } catch (error) {
-      console.error('Error connecting to SignalR:', error);
-    }
+    // Delay SignalR connection to prevent blocking app startup
+    // Connect after a short delay to allow app to render first
+    setTimeout(async () => {
+      try {
+        await this.realtimeService!.startConnection();
+        await this.realtimeService!.joinUserGroup(userId);
+        console.log('Connected to SignalR and joined user group');
+      } catch (error) {
+        console.error('Error connecting to SignalR:', error);
+        // Don't throw - allow app to continue without SignalR
+      }
+    }, 2000); // 2 second delay to allow app to load first
   }
 
   isAuthenticated(): boolean {
