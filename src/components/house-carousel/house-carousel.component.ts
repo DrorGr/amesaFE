@@ -519,8 +519,8 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
     }
     
     .animate-seesaw {
-      animation: seesaw 0.6s ease-in-out;
-      animation-iteration-count: 1;
+      animation: seesaw 0.3s ease-in-out;
+      animation-iteration-count: 2;
       transform-origin: center center;
     }
     
@@ -617,18 +617,18 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       }
     }, 1000);
     
-    // Start seesaw animation for active status badges (every 3 seconds)
+    // Start seesaw animation for active status badges (every 5 seconds)
     this.vibrationInterval = setInterval(() => {
       const currentHouse = this.getCurrentHouse();
       if (currentHouse && currentHouse.status === 'active') {
         // Trigger animation by updating signal
         this.vibrationTrigger.set(Date.now());
-        // Remove animation class after animation completes (600ms)
+        // Remove animation class after animation completes (600ms - 2 iterations × 0.3s)
         setTimeout(() => {
           this.vibrationTrigger.set(0);
         }, 600);
       }
-    }, 3000);
+    }, 5000);
   }
 
   ngOnDestroy() {

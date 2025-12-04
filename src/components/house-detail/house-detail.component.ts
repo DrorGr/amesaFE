@@ -112,7 +112,26 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   [alt]="house()!.title"
                   class="w-full h-full object-cover transition-opacity duration-300">
                 
-                <!-- Favorite Button (Always visible) - Matching promotions styling with glow -->
+                <!-- Location Icon - Red Circular (Standardized Size) -->
+                <button 
+                  (click)="openLocationMap()"
+                  (keydown.enter)="openLocationMap()"
+                  (keydown.space)="openLocationMap(); $event.preventDefault()"
+                  class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                  [attr.aria-label]="'View ' + house()!.title + ' location on map'">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                  </svg>
+                </button>
+
+                <!-- Status Badge - Green Oval (Centered, Same Height as Icons) -->
+                <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
+                  <span class="bg-emerald-500 text-white px-4 py-2 rounded-[20px] text-sm font-semibold shadow-lg whitespace-nowrap">
+                    {{ getStatusText() }}
+                  </span>
+                </div>
+                
+                <!-- Favorite Button - Purple Circular (Same Size as Location Icon) -->
                 <button
                   (click)="toggleFavorite()"
                   (keydown.enter)="toggleFavorite()"
@@ -120,11 +139,11 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   [disabled]="isTogglingFavorite()"
                   [class.favorite-button-pulse]="isTogglingFavorite() || isFavorite()"
                   [class.favorite-button-glow]="isFavorite()"
-                  class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-2 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
                   [attr.aria-label]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')"
                   [title]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')">
                   <svg 
-                    class="w-6 h-6 transition-all duration-500 favorite-heart"
+                    class="w-4 h-4 transition-all duration-300"
                     [class.text-red-500]="isFavorite()"
                     [class.text-white]="!isFavorite()"
                     [class.heart-fill-animation]="isFavorite()"
@@ -140,13 +159,6 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                     </path>
                   </svg>
                 </button>
-
-                <!-- Status Badge -->
-                <div class="absolute top-4 left-4">
-                  <span class="bg-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
-                    {{ getStatusText() }}
-                  </span>
-                </div>
               </div>
 
               <!-- Thumbnail Gallery (if more than 1 image) -->
@@ -695,6 +707,20 @@ export class HouseDetailComponent implements OnInit {
     img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
     img.classList.add('opacity-100');
     // Don't log warnings for missing images - they're handled gracefully
+  }
+
+  openLocationMap(): void {
+    const h = this.house();
+    if (!h) return;
+    
+    const address = h.address || h.location || h.title;
+    
+    // Create a search query for Google Maps
+    const searchQuery = encodeURIComponent(address);
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
+    
+    // Open in a new tab
+    window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
   }
 }
 

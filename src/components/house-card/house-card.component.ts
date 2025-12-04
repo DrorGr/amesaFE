@@ -29,7 +29,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
           (error)="onImageError($event)"
           class="w-full h-full object-cover rounded-t-xl">
         
-        <!-- Location Icon -->
+        <!-- Location Icon - Red Circular (Standardized Size) -->
         <button 
           (click)="openLocationMap()"
           (keydown.enter)="openLocationMap()"
@@ -41,38 +41,40 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
           </svg>
         </button>
         
-        <!-- Favorite Button -->
+        <!-- Status Badge - Green Oval (Centered, Same Height as Icons) -->
+        <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
+          <span class="bg-emerald-500 text-white px-4 py-2 rounded-[20px] text-sm font-semibold shadow-lg whitespace-nowrap">
+            {{ getStatusText() }}
+          </span>
+        </div>
+        
+        <!-- Favorite Button - Purple Circular (Same Size as Location Icon) -->
         <button
           *ngIf="currentUser()"
           (click)="toggleFavorite()"
           (keydown.enter)="toggleFavorite()"
           (keydown.space)="toggleFavorite(); $event.preventDefault()"
+          [disabled]="isTogglingFavorite"
           [class.animate-pulse]="isTogglingFavorite"
-          class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+          class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-2 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
           [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
           [title]="isFavorite() ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
           <svg 
-            class="w-5 h-5 transition-all duration-300"
+            class="w-4 h-4 transition-all duration-300"
             [class.text-red-500]="isFavorite()"
-            [class.text-gray-400]="!isFavorite()"
-            [style.color]="isFavorite() ? '#ef4444' : '#9ca3af'"
+            [class.text-white]="!isFavorite()"
             [attr.fill]="isFavorite() ? 'currentColor' : 'none'"
             [attr.stroke]="!isFavorite() ? 'currentColor' : 'none'"
-            stroke-width="2" 
-            viewBox="0 0 24 24">
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            aria-hidden="true">
             <path 
-              stroke-linecap="round" 
-              stroke-linejoin="round" 
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+              fill-rule="evenodd"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              clip-rule="evenodd">
             </path>
           </svg>
         </button>
-        
-        <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
-          <span class="bg-emerald-500 text-white px-3 py-2 rounded-full text-sm md:text-sm font-semibold shadow-lg">
-            {{ getStatusText() }}
-          </span>
-        </div>
         
         <!-- Currently Viewers Hover Overlay -->
         <div class="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-t-xl">
