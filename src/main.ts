@@ -47,15 +47,17 @@ function initializeTranslations(translationService: TranslationService) {
       }
     }
 
-    // Load translations and WAIT for them to complete before app starts
-    // This ensures translations are available when the app initializes
-    return translationService.loadTranslationsAsync(initialLanguage)
+    // Start loading translations in background (non-blocking)
+    // App will start immediately, translations will load asynchronously
+    translationService.loadTranslationsAsync(initialLanguage)
       .catch(error => {
         // Log error but don't block app startup
-        // App will start with empty translations (fallback to keys)
         console.error('Failed to load initial translations:', error);
-        return Promise.resolve();
       });
+    
+    // Resolve immediately to allow app to start without waiting for translations
+    // Translations will load in the background and update when ready
+    return Promise.resolve();
   };
 }
 

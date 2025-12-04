@@ -29,10 +29,12 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                         <img
                           [src]="getCurrentMainImage(house, houseIndex).url" 
                           [alt]="getCurrentMainImage(house, houseIndex).alt"
+                          [loading]="houseIndex === 0 && currentSlide === 0 ? 'eager' : 'lazy'"
+                          decoding="async"
+                          fetchpriority="high"
                           (error)="onImageError($event)"
                           class="w-full h-64 md:h-96 object-cover object-center opacity-100 transition-opacity duration-300 mobile-carousel-image"
                           (load)="onImageLoad($event)"
-                          (error)="onImageError($event)"
                           onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+'">
                     } @else {
                       <div class="w-full h-64 md:h-96 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
@@ -116,8 +118,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                             [class.border-gray-300]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)"
                             [class.dark:border-blue-400]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
                             [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)">
-                            <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover mobile-thumbnail-image" (error)="onImageError($event)" 
-                               >
+                            <img [src]="image.url" [alt]="image.alt" loading="lazy" decoding="async" class="w-full h-full object-cover mobile-thumbnail-image" (error)="onImageError($event)">
                           </button>
                         }
                       </div>
@@ -134,7 +135,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                           [class.border-gray-300]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)"
                           [class.dark:border-blue-400]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
                           [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)">
-                          <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover mobile-thumbnail-image" (error)="onImageError($event)">
+                          <img [src]="image.url" [alt]="image.alt" loading="lazy" decoding="async" class="w-full h-full object-cover mobile-thumbnail-image" (error)="onImageError($event)">
                         </button>
                       }
                     </div>

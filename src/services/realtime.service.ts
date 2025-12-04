@@ -235,16 +235,44 @@ export class RealtimeService {
 
       this.setupEventHandlers();
       
-      await this.connection.start();
-      this.connectionState.set(this.connection.state);
-      this.isConnected.set(true);
+      // Add timeout to prevent hanging connections
+      const connectionTimeout = 10000; // 10 seconds
+      const startPromise = this.connection.start();
+      const timeoutPromise: Promise<never> = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('SignalR connection timeout: Connection did not establish within 10 seconds'));
+        }, connectionTimeout);
+      });
       
-      console.log('SignalR connection established');
+      try {
+        await Promise.race([startPromise, timeoutPromise]);
+        this.connectionState.set(this.connection.state);
+        this.isConnected.set(true);
+        console.log('SignalR connection established');
+      } catch (error: any) {
+        // If connection failed, clean up and don't throw (allow app to continue)
+        console.error('Error starting SignalR connection:', error);
+        if (this.connection) {
+          try {
+            await this.connection.stop();
+          } catch (stopError) {
+            console.error('Error stopping failed connection:', stopError);
+          }
+          this.connection = null;
+        }
+        this.connectionState.set(HubConnectionState.Disconnected);
+        this.isConnected.set(false);
+        // Don't throw - allow app to continue without SignalR
+        // Connection will retry automatically via automaticReconnect
+        return;
+      }
     } catch (error) {
-      console.error('Error starting SignalR connection:', error);
+      // Outer catch for any errors during connection setup
+      console.error('Error setting up SignalR connection:', error);
       this.connectionState.set(HubConnectionState.Disconnected);
       this.isConnected.set(false);
-      throw error;
+      // Don't throw - allow app to continue without SignalR
+      return;
     }
   }
 
