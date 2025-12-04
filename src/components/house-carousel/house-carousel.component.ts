@@ -532,8 +532,8 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   favoriteHouseIds = computed(() => this.lotteryService.getFavoriteHouseIds());
 
   ngOnInit() {
-    // Ensure auto-rotation is started
-    this.startAutoSlide();
+    // Auto-rotation disabled - only manual navigation via arrows
+    // this.startAutoSlide(); // Disabled - user controls navigation
     this.setupIntersectionObserver();
     // Load the first slide images immediately
     setTimeout(() => this.loadCurrentSlideImages(), 100);
@@ -545,14 +545,6 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         this.currentViewers.set(Math.floor(Math.random() * 46) + 5);
       }
     }, 1000);
-    
-    // Ensure auto-rotation continues even if component is re-initialized
-    // Restart auto-slide after a short delay to ensure it's active
-    setTimeout(() => {
-      if (!this.autoSlideInterval) {
-        this.startAutoSlide();
-      }
-    }, 100);
     
     // Start vibration animation for active status badges (every 3 seconds)
     this.vibrationInterval = setInterval(() => {
@@ -601,9 +593,11 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Auto-rotation disabled - method kept for compatibility but does nothing
   private resetAutoSlide() {
-    this.stopAutoSlide();
-    this.startAutoSlide();
+    // Auto-rotation disabled - user controls navigation via arrows
+    // this.stopAutoSlide();
+    // this.startAutoSlide();
   }
 
   private setupIntersectionObserver() {
@@ -693,14 +687,14 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   nextSlide() {
     this.currentSlide = (this.currentSlide + 1) % this.houses().length;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-    this.resetAutoSlide();
+    // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
   }
   
   previousSlide() {
     this.currentSlide = this.currentSlide === 0 ? this.houses().length - 1 : this.currentSlide - 1;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-    this.resetAutoSlide();
+    // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
   }
   
@@ -708,14 +702,14 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     if (index < 0 || index >= this.houses().length) return;
     this.currentSlide = index;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-    this.resetAutoSlide();
+    // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
   }
   
   nextHouseImage() {
     const currentHouse = this.getCurrentHouse();
     this.currentHouseImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
-    this.resetAutoSlide();
+    // Auto-rotation disabled - no reset needed
   }
   
   previousHouseImage() {
@@ -723,12 +717,12 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.currentHouseImageIndex = this.currentHouseImageIndex === 0 
       ? currentHouse.images.length - 1 
       : this.currentHouseImageIndex - 1;
-    this.resetAutoSlide();
+    // Auto-rotation disabled - no reset needed
   }
   
   goToHouseImage(index: number) {
     this.currentHouseImageIndex = index;
-    this.resetAutoSlide();
+    // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
   }
   
@@ -843,7 +837,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   // Navigate to a secondary image
   goToSecondaryImage(index: number) {
     this.currentSecondaryImageIndex = index;
-    this.resetAutoSlide();
+    // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
   }
 
