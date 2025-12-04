@@ -124,6 +124,22 @@ export class TranslationService {
   }
 
   /**
+   * Get translation for a key with parameter substitution
+   * @param key Translation key
+   * @param params Parameters to substitute in the translation (e.g., {name: "John"} replaces {name} in translation)
+   */
+  translateWithParams(key: string, params: Record<string, any>): string {
+    let translation = this.translate(key);
+    
+    // Replace parameters in the translation string
+    Object.entries(params).forEach(([param, value]) => {
+      translation = translation.replace(new RegExp(`\\{${param}\\}`, 'g'), String(value));
+    });
+    
+    return translation;
+  }
+
+  /**
    * Set the current language and load translations if not cached
    */
   setLanguage(language: Language): void {

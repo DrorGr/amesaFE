@@ -1,7 +1,8 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, HubConnectionState, HttpTransportType } from '@microsoft/signalr';
-import { Subject } from 'rxjs';
+import { Subject, Observable, firstValueFrom } from 'rxjs';
 import { ApiService } from './api.service';
+import { AuthService } from './auth.service';
 
 export interface RealtimeEvent {
   type: string;
@@ -25,6 +26,8 @@ export interface NotificationEvent {
   message: string;
   data?: any;
   timestamp: Date;
+  language?: string; // User's language preference for localized notifications
+  locale?: string; // User's locale for date/number formatting
 }
 
 export interface UserStatusEvent {
@@ -62,6 +65,29 @@ export interface RecommendationEvent {
   timestamp: Date;
 }
 
+export interface InventoryUpdateEvent {
+  houseId: string;
+  availableTickets: number;
+  reservedTickets: number;
+  soldTickets: number;
+  isSoldOut: boolean;
+  updatedAt: Date;
+}
+
+export interface CountdownUpdateEvent {
+  houseId: string;
+  timeRemaining: number; // milliseconds
+  isEnded: boolean;
+  lotteryEndDate: Date;
+}
+
+export interface ReservationStatusUpdateEvent {
+  reservationId: string;
+  status: string;
+  errorMessage?: string;
+  processedAt?: Date;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -81,6 +107,11 @@ export class RealtimeService {
   private entryStatusChangeSubject = new Subject<EntryStatusChangeEvent>();
   private drawReminderSubject = new Subject<DrawReminderEvent>();
   private recommendationSubject = new Subject<RecommendationEvent>();
+  
+  // Reservation system events
+  private inventoryUpdateSubject = new Subject<InventoryUpdateEvent>();
+  private countdownUpdateSubject = new Subject<CountdownUpdateEvent>();
+  private reservationStatusUpdateSubject = new Subject<ReservationStatusUpdateEvent>();
 
   // Public observables
   public lotteryUpdates$ = this.lotteryUpdateSubject.asObservable();
@@ -93,6 +124,13 @@ export class RealtimeService {
   public entryStatusChanges$ = this.entryStatusChangeSubject.asObservable();
   public drawReminders$ = this.drawReminderSubject.asObservable();
   public recommendations$ = this.recommendationSubject.asObservable();
+  
+  // Reservation system observables
+  public inventoryUpdates$ = this.inventoryUpdateSubject.asObservable();
+  public countdownUpdates$ = this.countdownUpdateSubject.asObservable();
+  public reservationStatusUpdates$ = this.reservationStatusUpdateSubject.asObservable();
+
+  private authService = inject(AuthService);
 
   constructor(private apiService: ApiService) {}
 
@@ -102,6 +140,47 @@ export class RealtimeService {
 
   getIsConnected() {
     return this.isConnected.asReadonly();
+  }
+
+  getConnection(): HubConnection | null {
+    return this.connection;
+  }
+
+  onConnected(): Observable<void> {
+    const subject = new Subject<void>();
+    if (this.connection && this.connection.state === HubConnectionState.Connected) {
+      subject.next();
+      subject.complete();
+    } else {
+      let checkConnection: any = null;
+      let timeoutId: any = null;
+      
+      // Set 10 second timeout to prevent infinite polling
+      timeoutId = setTimeout(() => {
+        if (checkConnection) {
+          clearInterval(checkConnection);
+          checkConnection = null;
+        }
+        subject.error(new Error('Connection timeout: SignalR connection did not establish within 10 seconds'));
+      }, 10000);
+      
+      checkConnection = setInterval(() => {
+        if (this.connection && this.connection.state === HubConnectionState.Connected) {
+          // Clear both interval and timeout on success
+          if (checkConnection) {
+            clearInterval(checkConnection);
+            checkConnection = null;
+          }
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+          }
+          subject.next();
+          subject.complete();
+        }
+      }, 100);
+    }
+    return subject.asObservable();
   }
 
   async startConnection(): Promise<void> {
@@ -184,10 +263,19 @@ export class RealtimeService {
       this.isConnected.set(false);
     });
 
-    this.connection.onreconnecting((error) => {
+    this.connection.onreconnecting(async (error) => {
       console.log('SignalR reconnecting:', error);
       this.connectionState.set(HubConnectionState.Reconnecting);
       this.isConnected.set(false);
+      
+      // Refresh token before reconnecting to ensure valid authentication
+      try {
+        await firstValueFrom(this.authService.refreshToken());
+        console.log('Token refreshed successfully before SignalR reconnect');
+      } catch (refreshError) {
+        console.warn('Token refresh failed during SignalR reconnect:', refreshError);
+        // Continue with reconnect anyway - accessTokenFactory will use current token
+      }
     });
 
     this.connection.onreconnected((connectionId) => {
@@ -274,6 +362,28 @@ export class RealtimeService {
       this.recommendationSubject.next({
         ...data,
         timestamp: new Date()
+      });
+    });
+
+    // Reservation system events
+    this.connection.on('InventoryUpdated', (data: InventoryUpdateEvent) => {
+      this.inventoryUpdateSubject.next({
+        ...data,
+        updatedAt: new Date(data.updatedAt)
+      });
+    });
+
+    this.connection.on('CountdownUpdated', (data: CountdownUpdateEvent) => {
+      this.countdownUpdateSubject.next({
+        ...data,
+        lotteryEndDate: new Date(data.lotteryEndDate)
+      });
+    });
+
+    this.connection.on('ReservationStatusChanged', (data: ReservationStatusUpdateEvent) => {
+      this.reservationStatusUpdateSubject.next({
+        ...data,
+        processedAt: data.processedAt ? new Date(data.processedAt) : undefined
       });
     });
   }

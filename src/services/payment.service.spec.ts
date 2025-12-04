@@ -322,6 +322,128 @@ describe('PaymentService', () => {
       expect(apiService.delete).toHaveBeenCalledWith('payments/methods/pm-1');
     });
   });
+
+  describe('generateIdempotencyKey', () => {
+    it('should generate unique idempotency keys', () => {
+      const key1 = service.generateIdempotencyKey();
+      const key2 = service.generateIdempotencyKey();
+
+      expect(key1).toBeTruthy();
+      expect(key2).toBeTruthy();
+      expect(key1).not.toBe(key2);
+      expect(key1.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('processProductPayment', () => {
+    it('should process product payment successfully', (done) => {
+      const productId = 'prod-1';
+      const quantity = 2;
+      const paymentMethodId = 'pm-1';
+
+      const mockResponse = {
+        success: true,
+        data: {
+          transactionId: 'txn-1',
+          providerTransactionId: 'stripe-txn-1',
+          message: 'Payment processed successfully'
+        },
+        timestamp: new Date().toISOString()
+      };
+
+      apiService.post.and.returnValue(of(mockResponse));
+
+      service.processProductPayment(productId, quantity, paymentMethodId).subscribe({
+        next: (result) => {
+          expect(result.success).toBe(true);
+          expect(result.transactionId).toBe('txn-1');
+          done();
+        }
+      });
+
+      expect(apiService.post).toHaveBeenCalledWith('payments/process', jasmine.objectContaining({
+        productId,
+        quantity,
+        paymentMethodId,
+        amount: 0,
+        currency: 'USD',
+        idempotencyKey: jasmine.any(String)
+      }));
+    });
+
+    it('should use provided idempotency key', (done) => {
+      const productId = 'prod-1';
+      const quantity = 1;
+      const idempotencyKey = 'custom-key-123';
+
+      const mockResponse = {
+        success: true,
+        data: {
+          transactionId: 'txn-1',
+          message: 'Payment processed successfully'
+        },
+        timestamp: new Date().toISOString()
+      };
+
+      apiService.post.and.returnValue(of(mockResponse));
+
+      service.processProductPayment(productId, quantity, undefined, idempotencyKey).subscribe({
+        next: (result) => {
+          expect(result.success).toBe(true);
+          done();
+        }
+      });
+
+      expect(apiService.post).toHaveBeenCalledWith('payments/process', jasmine.objectContaining({
+        idempotencyKey
+      }));
+    });
+  });
+
+  describe('getProductPrice', () => {
+    it('should fetch product price successfully', (done) => {
+      const productId = 'prod-1';
+      const quantity = 3;
+
+      const mockResponse = {
+        success: true,
+        data: {
+          calculatedPrice: 150.00
+        },
+        timestamp: new Date().toISOString()
+      };
+
+      apiService.post.and.returnValue(of(mockResponse));
+
+      service.getProductPrice(productId, quantity).subscribe({
+        next: (price) => {
+          expect(price).toBe(150.00);
+          done();
+        }
+      });
+
+      expect(apiService.post).toHaveBeenCalledWith(`products/${productId}/validate`, {
+        productId,
+        quantity
+      });
+    });
+
+    it('should handle errors when fetching product price', (done) => {
+      const productId = 'prod-1';
+
+      apiService.post.and.returnValue(throwError(() => ({ 
+        status: 404, 
+        message: 'Product not found' 
+      })));
+
+      service.getProductPrice(productId).subscribe({
+        error: (error) => {
+          expect(error).toBeDefined();
+          done();
+        }
+      });
+    });
+  });
 });
 
 

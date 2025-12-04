@@ -1,13 +1,15 @@
 import { Component, OnInit, signal, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { LotteryResultsService, LotteryResult } from '../../services/lottery-results.service';
+import { LotteryResultsService, LotteryResult, CreatePrizeDeliveryRequest } from '../../services/lottery-results.service';
 import { TranslationService } from '../../services/translation.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-lottery-result-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div class="container mx-auto px-4 py-8">
@@ -262,7 +264,33 @@ import { TranslationService } from '../../services/translation.service';
                 </div>
 
                 <!-- Actions -->
-                <div class="flex justify-center space-x-4">
+                <div class="flex justify-center space-x-4 flex-wrap gap-4">
+                  <!-- Claim Prize Button (only for winner, unclaimed) -->
+                  @if (isCurrentUserWinner() && !result()!.isClaimed) {
+                    <button 
+                      (click)="openClaimModal()"
+                      class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors"
+                    >
+                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {{ translate('lotteryResults.claimPrize') || 'Claim Prize' }}
+                    </button>
+                  }
+                  
+                  <!-- Request Prize Delivery Button (only for claimed, non-first place winners) -->
+                  @if (isCurrentUserWinner() && result()!.isClaimed && result()!.prizePosition !== 1) {
+                    <button 
+                      (click)="openDeliveryModal()"
+                      class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors"
+                    >
+                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      {{ translate('lotteryResults.requestDelivery') || 'Request Delivery' }}
+                    </button>
+                  }
+                  
                   @if (result()!.qrCodeImageUrl) {
                     <button 
                       (click)="downloadQRCode()"
@@ -291,6 +319,309 @@ import { TranslationService } from '../../services/translation.service';
         }
       </div>
     </div>
+
+    <!-- Prize Delivery Modal -->
+    @if (showDeliveryModal()) {
+      <div 
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+        (click)="closeDeliveryModal()"
+      >
+        <div class="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800" (click)="$event.stopPropagation()">
+          <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                {{ translate('lotteryResults.requestDelivery') || 'Request Prize Delivery' }}
+              </h3>
+              <button 
+                (click)="closeDeliveryModal()"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                aria-label="Close modal"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <form (ngSubmit)="createDelivery()" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Recipient Name -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.recipientName') || 'Recipient Name' }} <span class="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    [(ngModel)]="deliveryForm.recipientName"
+                    name="recipientName"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                </div>
+
+                <!-- Phone -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.phone') || 'Phone' }}
+                  </label>
+                  <input 
+                    type="tel"
+                    [(ngModel)]="deliveryForm.phone"
+                    name="phone"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                </div>
+
+                <!-- Address Line 1 -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.addressLine1') || 'Address Line 1' }} <span class="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    [(ngModel)]="deliveryForm.addressLine1"
+                    name="addressLine1"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                </div>
+
+                <!-- Address Line 2 -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.addressLine2') || 'Address Line 2' }}
+                  </label>
+                  <input 
+                    type="text"
+                    [(ngModel)]="deliveryForm.addressLine2"
+                    name="addressLine2"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                </div>
+
+                <!-- City -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.city') || 'City' }} <span class="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    [(ngModel)]="deliveryForm.city"
+                    name="city"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                </div>
+
+                <!-- State -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.state') || 'State/Province' }} <span class="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    [(ngModel)]="deliveryForm.state"
+                    name="state"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                </div>
+
+                <!-- Postal Code -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.postalCode') || 'Postal Code' }} <span class="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    [(ngModel)]="deliveryForm.postalCode"
+                    name="postalCode"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                </div>
+
+                <!-- Country -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.country') || 'Country' }} <span class="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text"
+                    [(ngModel)]="deliveryForm.country"
+                    name="country"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                </div>
+
+                <!-- Email -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.email') || 'Email' }}
+                  </label>
+                  <input 
+                    type="email"
+                    [(ngModel)]="deliveryForm.email"
+                    name="email"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                </div>
+
+                <!-- Delivery Method -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.deliveryMethod') || 'Delivery Method' }} <span class="text-red-500">*</span>
+                  </label>
+                  <select 
+                    [(ngModel)]="deliveryForm.deliveryMethod"
+                    name="deliveryMethod"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="">{{ translate('lotteryResults.selectMethod') || 'Select Method' }}</option>
+                    <option value="Standard">{{ translate('lotteryResults.standard') || 'Standard' }}</option>
+                    <option value="Express">{{ translate('lotteryResults.express') || 'Express' }}</option>
+                    <option value="Overnight">{{ translate('lotteryResults.overnight') || 'Overnight' }}</option>
+                  </select>
+                </div>
+
+                <!-- Delivery Notes -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ translate('lotteryResults.deliveryNotes') || 'Delivery Notes' }}
+                  </label>
+                  <textarea 
+                    [(ngModel)]="deliveryForm.deliveryNotes"
+                    name="deliveryNotes"
+                    rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    [placeholder]="translate('lotteryResults.deliveryNotesPlaceholder') || 'Any special delivery instructions...'"
+                  ></textarea>
+                </div>
+              </div>
+              
+              @if (deliveryError()) {
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <p class="text-sm text-red-800 dark:text-red-200">{{ deliveryError() }}</p>
+                </div>
+              }
+              
+              <div class="flex justify-center space-x-3 pt-4">
+                <button 
+                  type="button"
+                  (click)="closeDeliveryModal()"
+                  class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+                >
+                  {{ translate('lotteryResults.cancel') || 'Cancel' }}
+                </button>
+                <button 
+                  type="submit"
+                  [disabled]="creatingDelivery()"
+                  class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  @if (creatingDelivery()) {
+                    <span class="inline-flex items-center">
+                      <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {{ translate('lotteryResults.creating') || 'Creating...' }}
+                    </span>
+                  } @else {
+                    {{ translate('lotteryResults.submitDelivery') || 'Submit Delivery Request' }}
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Claim Prize Modal -->
+    @if (showClaimModal()) {
+      <div 
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+        (click)="closeClaimModal()"
+      >
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800" (click)="$event.stopPropagation()">
+          <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                {{ translate('lotteryResults.claimPrize') || 'Claim Prize' }}
+              </h3>
+              <button 
+                (click)="closeClaimModal()"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                aria-label="Close modal"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="mb-4">
+              <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                {{ translate('lotteryResults.claimPrizeDescription') || 'You are about to claim your prize. This action cannot be undone.' }}
+              </p>
+              
+              <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+                <p class="text-sm font-medium text-green-800 dark:text-green-200 mb-2">
+                  {{ translate('lotteryResults.prizeValue') || 'Prize Value' }}
+                </p>
+                <p class="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {{ lotteryResultsService.formatCurrency(result()!.prizeValue) }}
+                </p>
+              </div>
+              
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {{ translate('lotteryResults.claimNotes') || 'Notes (Optional)' }}
+              </label>
+              <textarea 
+                [(ngModel)]="claimNotes"
+                rows="4"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                [placeholder]="translate('lotteryResults.claimNotesPlaceholder') || 'Add any notes about your claim...'"
+              ></textarea>
+            </div>
+            
+            @if (claimError()) {
+              <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+                <p class="text-sm text-red-800 dark:text-red-200">{{ claimError() }}</p>
+              </div>
+            }
+            
+            <div class="flex justify-center space-x-3">
+              <button 
+                (click)="closeClaimModal()"
+                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+              >
+                {{ translate('lotteryResults.cancel') || 'Cancel' }}
+              </button>
+              <button 
+                (click)="claimPrize()"
+                [disabled]="claiming()"
+                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                @if (claiming()) {
+                  <span class="inline-flex items-center">
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {{ translate('lotteryResults.claiming') || 'Claiming...' }}
+                  </span>
+                } @else {
+                  {{ translate('lotteryResults.confirmClaim') || 'Confirm Claim' }}
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   `,
   styles: [`
     .spinning {
@@ -325,6 +656,7 @@ import { TranslationService } from '../../services/translation.service';
 export class LotteryResultDetailComponent implements OnInit {
   public lotteryResultsService = inject(LotteryResultsService);
   private translationService = inject(TranslationService);
+  private authService = inject(AuthService);
 
   @Input() resultId?: string;
 
@@ -334,6 +666,12 @@ export class LotteryResultDetailComponent implements OnInit {
   private _error = signal<string | null>(null);
   private _isSpinning = signal<boolean>(false);
   private _isQRRevealed = signal<boolean>(false);
+  private _showClaimModal = signal<boolean>(false);
+  private _claiming = signal<boolean>(false);
+  private _claimError = signal<string | null>(null);
+  private _showDeliveryModal = signal<boolean>(false);
+  private _creatingDelivery = signal<boolean>(false);
+  private _deliveryError = signal<string | null>(null);
 
   // Public signals
   public result = this._result.asReadonly();
@@ -341,6 +679,31 @@ export class LotteryResultDetailComponent implements OnInit {
   public error = this._error.asReadonly();
   public isSpinning = this._isSpinning.asReadonly();
   public isQRRevealed = this._isQRRevealed.asReadonly();
+  public showClaimModal = this._showClaimModal.asReadonly();
+  public claiming = this._claiming.asReadonly();
+  public claimError = this._claimError.asReadonly();
+  public showDeliveryModal = this._showDeliveryModal.asReadonly();
+  public creatingDelivery = this._creatingDelivery.asReadonly();
+  public deliveryError = this._deliveryError.asReadonly();
+
+  // Claim form
+  public claimNotes: string = '';
+
+  // Delivery form
+  public deliveryForm: CreatePrizeDeliveryRequest = {
+    lotteryResultId: '',
+    recipientName: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: '',
+    phone: '',
+    email: '',
+    deliveryMethod: '',
+    deliveryNotes: ''
+  };
 
   ngOnInit(): void {
     if (this.resultId) {
@@ -412,5 +775,122 @@ export class LotteryResultDetailComponent implements OnInit {
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  isCurrentUserWinner(): boolean {
+    const currentUser = this.authService.getCurrentUser()();
+    const result = this.result();
+    if (!currentUser || !result) {
+      return false;
+    }
+    // Compare user IDs
+    return currentUser.id === result.winnerUserId;
+  }
+
+  openClaimModal(): void {
+    this._showClaimModal.set(true);
+    this._claimError.set(null);
+    this.claimNotes = '';
+  }
+
+  closeClaimModal(): void {
+    this._showClaimModal.set(false);
+    this._claimError.set(null);
+    this.claimNotes = '';
+  }
+
+  claimPrize(): void {
+    const result = this.result();
+    if (!result) {
+      return;
+    }
+
+    this._claiming.set(true);
+    this._claimError.set(null);
+
+    this.lotteryResultsService.claimPrize(result.id, this.claimNotes || undefined).subscribe({
+      next: (updatedResult) => {
+        this._result.set(updatedResult);
+        this._showClaimModal.set(false);
+        this._claiming.set(false);
+        this.claimNotes = '';
+        // Show success message (you might want to use a toast service here)
+        alert(this.translate('lotteryResults.claimSuccess') || 'Prize claimed successfully!');
+      },
+      error: (error) => {
+        this._claimError.set(error.message || this.translate('lotteryResults.claimError') || 'Failed to claim prize');
+        this._claiming.set(false);
+      }
+    });
+  }
+
+  openDeliveryModal(): void {
+    const result = this.result();
+    if (!result) {
+      return;
+    }
+
+    // Initialize form with result ID
+    this.deliveryForm = {
+      lotteryResultId: result.id,
+      recipientName: result.winnerName || '',
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: '',
+      phone: '',
+      email: result.winnerEmail || '',
+      deliveryMethod: '',
+      deliveryNotes: ''
+    };
+
+    this._showDeliveryModal.set(true);
+    this._deliveryError.set(null);
+  }
+
+  closeDeliveryModal(): void {
+    this._showDeliveryModal.set(false);
+    this._deliveryError.set(null);
+    this.deliveryForm = {
+      lotteryResultId: '',
+      recipientName: '',
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: '',
+      phone: '',
+      email: '',
+      deliveryMethod: '',
+      deliveryNotes: ''
+    };
+  }
+
+  createDelivery(): void {
+    const result = this.result();
+    if (!result) {
+      return;
+    }
+
+    this._creatingDelivery.set(true);
+    this._deliveryError.set(null);
+
+    this.lotteryResultsService.createPrizeDelivery(this.deliveryForm).subscribe({
+      next: (delivery) => {
+        this._showDeliveryModal.set(false);
+        this._creatingDelivery.set(false);
+        // Show success message
+        alert(this.translate('lotteryResults.deliverySuccess') || 'Prize delivery request created successfully!');
+        // Reset form
+        this.closeDeliveryModal();
+      },
+      error: (error) => {
+        this._deliveryError.set(error.message || this.translate('lotteryResults.deliveryError') || 'Failed to create delivery request');
+        this._creatingDelivery.set(false);
+      }
+    });
   }
 }

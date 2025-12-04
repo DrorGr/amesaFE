@@ -105,7 +105,7 @@ describe('AuthModalComponent', () => {
   });
 
   it('should handle register form submission', async () => {
-    mockAuthService.register.and.returnValue(of(true));
+    mockAuthService.register.and.returnValue(of({ success: true }));
     mockAuthService.getCurrentUserProfile.and.returnValue(of({} as any));
     
     fixture.componentRef.setInput('mode', 'register');

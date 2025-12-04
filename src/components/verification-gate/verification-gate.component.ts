@@ -69,13 +69,13 @@ export class VerificationGateComponent implements OnInit {
   shouldBlock(): boolean {
     const user = this.authService.getCurrentUser()();
     if (!user || !user.isAuthenticated) {
-      this.toastService.error('Please log in to access this feature.', 4000);
+      this.toastService.error(this.translate('auth.loginRequired'), 4000);
       this.blocked.emit();
       return true;
     }
     
     if (this.isVerificationRequired() && !this.isVerified()) {
-      this.toastService.error('Please validate your account to continue.', 4000);
+      this.toastService.error(this.translate('auth.verificationRequired'), 4000);
       this.blocked.emit();
       return true;
     }

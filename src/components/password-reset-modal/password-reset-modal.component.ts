@@ -18,8 +18,9 @@ import { TranslationService } from '../../services/translation.service';
             </h2>
             <button 
               (click)="close.emit()"
+              [attr.aria-label]="translate('common.close')"
               class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all duration-200 hover:scale-110 transform p-1">
-              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </button>
@@ -49,6 +50,8 @@ import { TranslationService } from '../../services/translation.service';
                     [(ngModel)]="email"
                     name="email"
                     required
+                    [attr.aria-label]="translate('auth.email')"
+                    [attr.aria-required]="'true'"
                     class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400"
                     placeholder="{{ translate('auth.enterEmail') }}">
                 </div>
@@ -56,6 +59,8 @@ import { TranslationService } from '../../services/translation.service';
                 <button
                   type="submit"
                   [disabled]="isLoading"
+                  [attr.aria-label]="translate('auth.sendResetEmail')"
+                  [attr.aria-busy]="isLoading"
                   class="w-full btn-primary text-2xl py-4 disabled:bg-blue-400 disabled:transform-none disabled:shadow-none">
                   @if (isLoading) {
                     <span class="flex items-center justify-center">

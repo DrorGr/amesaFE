@@ -22,7 +22,12 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
         @if (!isMobile()) {
           <div class="flex justify-between items-center h-20">
           <div class="flex items-center flex-shrink-0">
-            <button (click)="navigateToHome()" class="focus:outline-none">
+            <button 
+              (click)="navigateToHome()"
+              (keydown.enter)="navigateToHome()"
+              (keydown.space)="navigateToHome(); $event.preventDefault()"
+              [attr.aria-label]="translate('nav.goToHome')"
+              class="focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
@@ -32,31 +37,61 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
 
           <div class="ml-10 flex items-center space-x-8">
             @if (isOnDashboardPage()) {
-              <button (click)="navigateToHome()" class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg">
+              <button 
+                (click)="navigateToHome()"
+                (keydown.enter)="navigateToHome()"
+                (keydown.space)="navigateToHome(); $event.preventDefault()"
+                [attr.aria-label]="translate('nav.backHome')"
+                class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
                 {{ translate('nav.backHome') || 'Back Home' }}
               </button>
             } @else {
-              <button (click)="navigateToDashboard()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+              <button 
+                (click)="navigateToDashboard()"
+                (keydown.enter)="navigateToDashboard()"
+                (keydown.space)="navigateToDashboard(); $event.preventDefault()"
+                [attr.aria-label]="translate('nav.myLottery')"
+                class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
                 {{ translate('nav.myLottery') }}
               </button>
             }
             
             @if (isOnFavoritesPage()) {
-              <button (click)="navigateToHome()" class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg">
+              <button 
+                (click)="navigateToHome()"
+                (keydown.enter)="navigateToHome()"
+                (keydown.space)="navigateToHome(); $event.preventDefault()"
+                [attr.aria-label]="translate('nav.backHome')"
+                class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
                 {{ translate('nav.backHome') || 'Back Home' }}
               </button>
             } @else {
-              <button (click)="navigateToFavorites()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+              <button 
+                (click)="navigateToFavorites()"
+                (keydown.enter)="navigateToFavorites()"
+                (keydown.space)="navigateToFavorites(); $event.preventDefault()"
+                [attr.aria-label]="translate('nav.favorites')"
+                class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
                 {{ translate('nav.favorites') }}
               </button>
             }
             
             @if (isOnSearchPage()) {
-              <button (click)="navigateToHome()" class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg">
+              <button 
+                (click)="navigateToHome()"
+                (keydown.enter)="navigateToHome()"
+                (keydown.space)="navigateToHome(); $event.preventDefault()"
+                [attr.aria-label]="translate('nav.backHome')"
+                class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
                 {{ translate('nav.backHome') || 'Back Home' }}
               </button>
             } @else {
-              <button (click)="navigateToSearch()" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button">
+              <button 
+                (click)="navigateToSearch()"
+                (keydown.enter)="navigateToSearch()"
+                (keydown.space)="navigateToSearch(); $event.preventDefault()"
+                [attr.aria-label]="translate('nav.search')"
+                class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
                 {{ translate('nav.search') }}
               </button>
             }
@@ -75,7 +110,10 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
           <div class="flex justify-between items-center h-16">
             <!-- Logo -->
             <div class="flex items-center">
-              <button (click)="navigateToHome()" class="focus:outline-none">
+              <button 
+                (click)="navigateToHome()" 
+                [attr.aria-label]="translate('nav.goToHome')"
+                class="focus:outline-none">
                 <img 
                   src="assets/AmesaNoBG.png" 
                   alt="Amesa" 
@@ -92,7 +130,11 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
               <!-- Hamburger Menu Button -->
               <button
                 (click)="toggleMobileMenu()"
-                class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 mobile-hamburger">
+                (keydown.enter)="toggleMobileMenu()"
+                (keydown.space)="toggleMobileMenu(); $event.preventDefault()"
+                [attr.aria-label]="isMobileMenuOpen ? translate('nav.closeMenu') : translate('nav.openMenu')"
+                [attr.aria-expanded]="isMobileMenuOpen"
+                class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 mobile-hamburger focus:outline-none focus:ring-2 focus:ring-blue-400">
                 @if (!isMobileMenuOpen) {
                   <!-- Hamburger Icon -->
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,33 +155,69 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
         @if (isMobile() && isMobileMenuOpen) {
           <div class="absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-4 animate-fadeIn shadow-lg z-50">
             <!-- Navigation Links -->
-            <div class="space-y-2">
+            <div class="space-y-2" role="menu">
               @if (isOnDashboardPage()) {
-                <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg">
+                <button 
+                  (click)="navigateToHome()"
+                  (keydown.enter)="navigateToHome()"
+                  (keydown.space)="navigateToHome(); $event.preventDefault()"
+                  [attr.aria-label]="translate('nav.backHome')"
+                  role="menuitem"
+                  class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
                   {{ translate('nav.backHome') || 'Back Home' }}
                 </button>
               } @else {
-                <button (click)="navigateToDashboard()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                <button 
+                  (click)="navigateToDashboard()"
+                  (keydown.enter)="navigateToDashboard()"
+                  (keydown.space)="navigateToDashboard(); $event.preventDefault()"
+                  [attr.aria-label]="translate('nav.myLottery')"
+                  role="menuitem"
+                  class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-400">
                   {{ translate('nav.myLottery') }}
                 </button>
               }
               
               @if (isOnFavoritesPage()) {
-                <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg">
+                <button 
+                  (click)="navigateToHome()"
+                  (keydown.enter)="navigateToHome()"
+                  (keydown.space)="navigateToHome(); $event.preventDefault()"
+                  [attr.aria-label]="translate('nav.backHome')"
+                  role="menuitem"
+                  class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
                   {{ translate('nav.backHome') || 'Back Home' }}
                 </button>
               } @else {
-                <button (click)="navigateToFavorites()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                <button 
+                  (click)="navigateToFavorites()"
+                  (keydown.enter)="navigateToFavorites()"
+                  (keydown.space)="navigateToFavorites(); $event.preventDefault()"
+                  [attr.aria-label]="translate('nav.favorites')"
+                  role="menuitem"
+                  class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-400">
                   {{ translate('nav.favorites') }}
                 </button>
               }
               
               @if (isOnSearchPage()) {
-                <button (click)="navigateToHome()" class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg">
+                <button 
+                  (click)="navigateToHome()"
+                  (keydown.enter)="navigateToHome()"
+                  (keydown.space)="navigateToHome(); $event.preventDefault()"
+                  [attr.aria-label]="translate('nav.backHome')"
+                  role="menuitem"
+                  class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
                   {{ translate('nav.backHome') || 'Back Home' }}
                 </button>
               } @else {
-                <button (click)="navigateToSearch()" class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button">
+                <button 
+                  (click)="navigateToSearch()"
+                  (keydown.enter)="navigateToSearch()"
+                  (keydown.space)="navigateToSearch(); $event.preventDefault()"
+                  [attr.aria-label]="translate('nav.search')"
+                  role="menuitem"
+                  class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-400">
                   {{ translate('nav.search') }}
                 </button>
               }

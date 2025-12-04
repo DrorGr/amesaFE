@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
 import { ToastService } from '../../services/toast.service';
+import { LocaleService } from '../../services/locale.service';
 
 interface UserSession {
   id: string;
@@ -18,35 +19,36 @@ interface UserSession {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 py-12 px-4">
+    <main class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 py-12 px-4">
       <div class="max-w-4xl mx-auto">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 md:p-12">
-          <div class="mb-8">
+          <header class="mb-8">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {{ translate('auth.activeSessions') }}
             </h1>
             <p class="text-gray-600 dark:text-gray-400">
               {{ translate('auth.activeSessionsDescription') }}
             </p>
-          </div>
+          </header>
 
-          @if (isLoading()) {
-            <div class="text-center py-12">
-              <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </div>
-          } @else if (sessions().length === 0) {
-            <div class="text-center py-12">
-              <p class="text-gray-600 dark:text-gray-400">
-                {{ translate('auth.noActiveSessions') }}
-              </p>
-            </div>
-          } @else {
-            <div class="space-y-4 mb-8">
+          <div aria-live="polite" aria-atomic="true">
+            @if (isLoading()) {
+              <div class="text-center py-12" role="status" aria-label="Loading sessions">
+                <svg class="animate-spin h-12 w-12 text-blue-600 dark:text-blue-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+            } @else if (sessions().length === 0) {
+              <div class="text-center py-12" role="status">
+                <p class="text-gray-600 dark:text-gray-400">
+                  {{ translate('auth.noActiveSessions') }}
+                </p>
+              </div>
+            } @else {
+              <div class="space-y-4 mb-8" role="list" [attr.aria-label]="translate('auth.activeSessions')">
               @for (session of sessions(); track session.id) {
-                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" role="listitem" [attr.aria-label]="'Session: ' + session.deviceName">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <div class="flex items-center mb-2">
@@ -72,8 +74,11 @@ interface UserSession {
                     @if (!session.isCurrent) {
                       <button
                         (click)="logoutFromDevice(session.id)"
+                        (keydown.enter)="logoutFromDevice(session.id)"
+                        (keydown.space)="logoutFromDevice(session.id); $event.preventDefault()"
                         [disabled]="isLoggingOut()"
-                        class="ml-4 px-4 py-2 text-sm font-semibold text-red-600 dark:text-red-400 bg-transparent border-2 border-red-600 dark:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 disabled:opacity-50">
+                        [attr.aria-label]="translate('auth.logoutFromDevice') + ': ' + session.deviceName"
+                        class="ml-4 px-4 py-2 text-sm font-semibold text-red-600 dark:text-red-400 bg-transparent border-2 border-red-600 dark:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                         {{ translate('auth.logoutFromDevice') }}
                       </button>
                     }
@@ -85,8 +90,11 @@ interface UserSession {
             <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
               <button
                 (click)="logoutAllDevices()"
+                (keydown.enter)="logoutAllDevices()"
+                (keydown.space)="logoutAllDevices(); $event.preventDefault()"
                 [disabled]="isLoggingOut()"
-                class="w-full px-6 py-3 text-lg font-semibold text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 rounded-lg transition-all duration-200 disabled:opacity-50">
+                [attr.aria-label]="translate('auth.logoutAllDevices')"
+                class="w-full px-6 py-3 text-lg font-semibold text-white bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-500 rounded-lg transition-all duration-200 disabled:opacity-50 focus:outline-none">
                 @if (isLoggingOut()) {
                   <span class="flex items-center justify-center">
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -107,6 +115,7 @@ interface UserSession {
   `
 })
 export class SessionsManagementComponent implements OnInit {
+  localeService = inject(LocaleService);
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private toastService = inject(ToastService);
@@ -125,13 +134,7 @@ export class SessionsManagementComponent implements OnInit {
 
   formatDate(date: Date | string): string {
     const d = typeof date === 'string' ? new Date(date) : date;
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(d);
+    return this.localeService.formatDate(d, 'medium');
   }
 
   async loadSessions() {

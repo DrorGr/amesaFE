@@ -6,6 +6,10 @@
 export class MemoryMonitorService {
   private monitoringInterval?: number;
   private componentCounts = new Map<string, number>();
+  private cachedDomCount: number | null = null;
+  private cachedComponentCount: number | null = null;
+  private lastDomQueryTime: number = 0;
+  private readonly DOM_CACHE_TTL = 30000; // Cache DOM queries for 30 seconds
   
   startMonitoring(): void {
     if (this.monitoringInterval) {
@@ -21,15 +25,26 @@ export class MemoryMonitorService {
         jsHeapSizeLimit: memory.jsHeapSizeLimit
       } : null;
       
-      // Count DOM nodes
-      const domNodeCount = document.querySelectorAll('*').length;
+      // Cache expensive DOM queries - only update every 30 seconds
+      const now = Date.now();
+      if (!this.cachedDomCount || (now - this.lastDomQueryTime) > this.DOM_CACHE_TTL) {
+        // Use more efficient query: count using document.body.getElementsByTagName('*').length
+        // This is faster than querySelectorAll('*') for large DOMs
+        const allElements = document.body?.getElementsByTagName('*');
+        this.cachedDomCount = allElements ? allElements.length : 0;
+        
+        // Cache component count (less expensive but still cache it)
+        const componentElements = document.querySelectorAll('[ng-version], app-root');
+        this.cachedComponentCount = componentElements.length;
+        
+        this.lastDomQueryTime = now;
+      }
       
-      // Count Angular components (approximate by counting app-* elements)
-      const componentElements = document.querySelectorAll('[ng-version], app-root, app-*, [class*="ng-"]');
-      const componentCount = componentElements.length;
+      const domNodeCount = this.cachedDomCount;
+      const componentCount = this.cachedComponentCount || 0;
       
       // Memory monitoring logic can be added here if needed
-    }, 5000); // Every 5 seconds
+    }, 5000); // Every 5 seconds (but DOM queries cached for 30 seconds)
   }
   
   stopMonitoring(): void {

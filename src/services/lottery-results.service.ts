@@ -1,7 +1,8 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
+import { LocaleService } from './locale.service';
 
 export interface LotteryResult {
   id: string;
@@ -364,23 +365,18 @@ export class LotteryResultsService {
   }
 
   /**
-   * Format currency
+   * Format currency - Uses LocaleService for locale-aware formatting
    */
+  private localeService = inject(LocaleService);
+
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
+    return this.localeService.formatCurrency(amount, 'USD');
   }
 
   /**
-   * Format date
+   * Format date - Uses LocaleService for locale-aware formatting
    */
   formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    return this.localeService.formatDate(new Date(dateString), 'long');
   }
 }

@@ -16,7 +16,7 @@ import { HouseCarouselComponent } from '../house-carousel/house-carousel.compone
     HouseCarouselComponent
   ],
   template: `
-    <main>
+    <main role="main" id="main-content">
       <app-hero-section></app-hero-section>
       <app-house-carousel></app-house-carousel>
       <app-stats-section></app-stats-section>

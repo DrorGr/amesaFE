@@ -3,10 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { LotteryService } from '../../services/lottery.service';
-import { AuthService } from '../../services/auth.service';
-import { ToastService } from '../../services/toast.service';
-import { HeartAnimationService } from '../../services/heart-animation.service';
-import { HouseCarouselService } from '../../services/house-carousel.service';
+import { LocaleService } from '../../services/locale.service';
 
 @Component({
   selector: 'app-house-carousel',
@@ -18,7 +15,7 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
         
         <div class="overflow-hidden">
           <div class="flex transition-transform duration-500 ease-in-out" 
-               [style.transform]="'translateX(' + (-currentSlide() * 100) + '%)'">
+               [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
             @for (house of houses(); track house.id; let houseIndex = $index) {
               <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 relative px-2 md:px-0 mobile-carousel-container">
                 <!-- Main House Image -->
@@ -47,45 +44,19 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
                         (error)="onImageError($event)">
                     }
                     
-                    <!-- Location Icon - 50% bigger -->
+                    <!-- Location Icon -->
                     <button 
                       (click)="openLocationMap(house)"
-                      class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                      class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
                       [attr.aria-label]="'View ' + house.title + ' location on map'">
-                      <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                       </svg>
                     </button>
                     
-                    <!-- Favorite Button - Always visible, 40% smaller than previous size -->
-                    <button
-                      (click)="toggleFavorite($event, house)"
-                      [class.favorite-button-pulse]="isTogglingFavorite(house.id)"
-                      [class.favorite-button-glow]="isFavorite(house.id)"
-                      [class.favorite-button-orange-glow]="!isFavorite(house.id)"
-                      class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button"
-                      [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
-                      [title]="isFavorite(house.id) ? translate('lottery.favorites.removeFromFavorites') : translate('lottery.favorites.addToFavorites')">
-                      <svg 
-                        class="w-5 h-5 transition-all duration-500 favorite-heart"
-                        [class.text-red-500]="isFavorite(house.id)"
-                        [class.text-white]="!isFavorite(house.id)"
-                        [class.heart-fill-animation]="isFavorite(house.id)"
-                        [attr.fill]="isFavorite(house.id) ? 'currentColor' : 'none'"
-                        [attr.stroke]="!isFavorite(house.id) ? 'currentColor' : 'none'"
-                        stroke-width="2"
-                        viewBox="0 0 24 24">
-                        <path 
-                          fill-rule="evenodd"
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                          clip-rule="evenodd">
-                        </path>
-                      </svg>
-                    </button>
-                    
-                    <!-- Status Badge - Center top with vibration animation, 50% bigger -->
-                    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
-                      <span class="status-badge-vibrate bg-emerald-500 text-white px-6 py-4 rounded-full text-xl font-semibold shadow-lg">
+                    <!-- Status Badge -->
+                    <div class="absolute top-4 right-4 z-20">
+                      <span class="bg-emerald-500 text-white px-3 py-2 rounded-full text-sm font-semibold shadow-lg">
                         {{ getStatusText(house) }}
                       </span>
                     </div>
@@ -110,10 +81,10 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
                             (click)="goToSecondaryImage($index)"
                             class="w-20 h-12 rounded overflow-hidden border-2 transition-all hover:scale-105 mobile-carousel-thumbnail"
                             style="width: 8rem !important; height: 5rem !important;"
-                            [class.border-blue-500]="currentSlide() === houseIndex && currentSecondaryImageIndex() === $index"
-                            [class.border-gray-300]="!(currentSlide() === houseIndex && currentSecondaryImageIndex() === $index)"
-                            [class.dark:border-blue-400]="currentSlide() === houseIndex && currentSecondaryImageIndex() === $index"
-                            [class.dark:border-gray-600]="!(currentSlide() === houseIndex && currentSecondaryImageIndex() === $index)">
+                            [class.border-blue-500]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
+                            [class.border-gray-300]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)"
+                            [class.dark:border-blue-400]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
+                            [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)">
                             <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover mobile-thumbnail-image" 
                                >
                           </button>
@@ -128,10 +99,10 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
                         <button 
                           (click)="goToSecondaryImage($index)"
                           class="w-30 h-19 rounded overflow-hidden border-2 transition-all hover:scale-105 mobile-carousel-thumbnail"
-                          [class.border-blue-500]="currentSlide() === houseIndex && currentSecondaryImageIndex() === $index"
-                          [class.border-gray-300]="!(currentSlide() === houseIndex && currentSecondaryImageIndex() === $index)"
-                          [class.dark:border-blue-400]="currentSlide() === houseIndex && currentSecondaryImageIndex() === $index"
-                          [class.dark:border-gray-600]="!(currentSlide() === houseIndex && currentSecondaryImageIndex() === $index)">
+                          [class.border-blue-500]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
+                          [class.border-gray-300]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)"
+                          [class.dark:border-blue-400]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
+                          [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)">
                           <img [src]="image.url" [alt]="image.alt" class="w-full h-full object-cover mobile-thumbnail-image" 
                           >
                         </button>
@@ -144,10 +115,10 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
                         <button 
                           (click)="goToHouseImage($index)"
                           class="w-2 h-2 rounded-full transition-all hover:scale-125"
-                          [class.bg-blue-500]="currentSlide() === houseIndex && currentHouseImageIndex() === $index"
-                          [class.bg-gray-300]="!(currentSlide() === houseIndex && currentHouseImageIndex() === $index)"
-                          [class.dark:bg-blue-400]="currentSlide() === houseIndex && currentHouseImageIndex() === $index"
-                          [class.dark:bg-gray-600]="!(currentSlide() === houseIndex && currentHouseImageIndex() === $index)">
+                          [class.bg-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.bg-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                          [class.dark:bg-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.dark:bg-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
                         </button>
                       }
                     </div>
@@ -172,7 +143,7 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
                   <!-- Lottery Information -->
                   <div class="space-y-2 md:space-y-2 flex-grow flex flex-col justify-center">
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('common.price') }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('carousel.propertyValue') }}</span>
                       <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">€{{ formatPrice(house.price) }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
@@ -184,7 +155,7 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
                       <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">{{ house.address || '123 Park Ave' }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('common.price') }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('carousel.ticketPrice') }}</span>
                       <span class="font-bold text-blue-600 dark:text-blue-400 text-xl md:text-3xl">€{{ house.ticketPrice }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
@@ -205,7 +176,7 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
                     
                     <!-- Buy Ticket Button -->
                     <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
-                      {{ translate('house.buyTicket') }} - €{{ house.ticketPrice }}
+                      {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
                     </button>
                   </div>
                 </div>
@@ -233,10 +204,10 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
                 <button 
                   (click)="goToSlide($index)"
                   class="w-3 h-3 rounded-full transition-all"
-                  [class.bg-blue-600]="currentSlide() === $index"
-                  [class.bg-gray-300]="currentSlide() !== $index"
-                  [class.dark:bg-blue-500]="currentSlide() === $index"
-                  [class.dark:bg-gray-600]="currentSlide() !== $index">
+                  [class.bg-blue-600]="currentSlide === $index"
+                  [class.bg-gray-300]="currentSlide !== $index"
+                  [class.dark:bg-blue-500]="currentSlide === $index"
+                  [class.dark:bg-gray-600]="currentSlide !== $index">
                 </button>
               }
             </div>
@@ -261,10 +232,10 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
               <button 
                 (click)="goToSlide($index)"
                 class="w-4 h-4 rounded-full transition-all hover:scale-125"
-                [class.bg-blue-600]="currentSlide() === $index"
-                [class.bg-gray-300]="currentSlide() !== $index"
-                [class.dark:bg-blue-500]="currentSlide() === $index"
-                [class.dark:bg-gray-600]="currentSlide() !== $index">
+                [class.bg-blue-600]="currentSlide === $index"
+                [class.bg-gray-300]="currentSlide !== $index"
+                [class.dark:bg-blue-500]="currentSlide === $index"
+                [class.dark:bg-gray-600]="currentSlide !== $index">
               </button>
             }
           </div>
@@ -461,146 +432,38 @@ import { HouseCarouselService } from '../../services/house-carousel.service';
         z-index: 10 !important;
       }
     }
-
-    /* Favorite Button Animations - Matching house-card styling */
-    @keyframes favorite-pulse-glow {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(139, 92, 246, 0.8), 0 0 40px rgba(139, 92, 246, 0.6), 0 0 60px rgba(139, 92, 246, 0.4), 0 0 0 3px rgba(139, 92, 246, 0.3);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(139, 92, 246, 1), 0 0 60px rgba(139, 92, 246, 0.8), 0 0 90px rgba(139, 92, 246, 0.6), 0 0 0 6px rgba(139, 92, 246, 0.5);
-      }
-    }
-
-    @keyframes favorite-red-glow {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.4), 0 0 0 3px rgba(239, 68, 68, 0.3);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(239, 68, 68, 1), 0 0 60px rgba(239, 68, 68, 0.8), 0 0 90px rgba(239, 68, 68, 0.6), 0 0 0 6px rgba(239, 68, 68, 0.5);
-      }
-    }
-
-    @keyframes favorite-orange-glow {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(249, 115, 22, 0.8), 0 0 40px rgba(249, 115, 22, 0.6), 0 0 60px rgba(249, 115, 22, 0.4), 0 0 0 3px rgba(249, 115, 22, 0.3);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(249, 115, 22, 1), 0 0 60px rgba(249, 115, 22, 0.8), 0 0 90px rgba(249, 115, 22, 0.6), 0 0 0 6px rgba(249, 115, 22, 0.5);
-      }
-    }
-
-    /* Status Badge Vertical Vibration Animation */
-    /* Vibrates (seesaw motion around center), then pauses for 3 seconds, repeats */
-    /* Total duration: 3.5s (0.5s vibration + 3s pause) */
-    @keyframes status-badge-vibrate {
-      /* Vibration phase: 0% to ~14.3% (0.5s out of 3.5s total) */
-      0% {
-        transform: rotate(0deg);
-        transform-origin: center center;
-      }
-      3.57% {
-        transform: rotate(-3deg);
-        transform-origin: center center;
-      }
-      7.14% {
-        transform: rotate(3deg);
-        transform-origin: center center;
-      }
-      10.71% {
-        transform: rotate(-3deg);
-        transform-origin: center center;
-      }
-      14.28% {
-        transform: rotate(3deg);
-        transform-origin: center center;
-      }
-      14.3% {
-        transform: rotate(0deg);
-        transform-origin: center center;
-      }
-      /* Pause phase: 14.3% to 100% (3s pause) */
-      14.3%, 100% {
-        transform: rotate(0deg);
-        transform-origin: center center;
-      }
-    }
-
-    .status-badge-vibrate {
-      animation: status-badge-vibrate 3.5s ease-in-out infinite;
-      transform-origin: center center;
-      display: inline-block;
-    }
-
-    @keyframes heart-fill {
-      0% {
-        transform: scale(1);
-        opacity: 0.5;
-      }
-      50% {
-        transform: scale(1.3);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    .favorite-button-pulse {
-      animation: favorite-pulse-glow 2s ease-in-out infinite;
-    }
-
-    .favorite-button-glow {
-      animation: favorite-red-glow 2s ease-in-out infinite;
-    }
-
-    .favorite-button-orange-glow {
-      animation: favorite-orange-glow 2s ease-in-out infinite;
-    }
-
-    .heart-fill-animation {
-      animation: heart-fill 0.6s ease-out;
-    }
   `]
 })
 export class HouseCarouselComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private mobileDetectionService = inject(MobileDetectionService);
-  private authService = inject(AuthService);
-  private toastService = inject(ToastService);
-  private heartAnimationService = inject(HeartAnimationService);
-  private carouselService = inject(HouseCarouselService);
+  private lotteryService = inject(LotteryService);
+  private localeService = inject(LocaleService);
   
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;
   
-  // Delegate to service - use computed signals for template binding
-  currentSlide = computed(() => this.carouselService.currentSlide());
-  currentHouseImageIndex = computed(() => this.carouselService.currentHouseImageIndex());
-  currentSecondaryImageIndex = computed(() => this.carouselService.currentSecondaryImageIndex());
-  isTransitioning = computed(() => this.carouselService.isTransitioning());
-  houses = this.carouselService.houses;
-  
+  currentSlide = 0;
+  currentHouseImageIndex = 0;
+  currentSecondaryImageIndex = 0;
+  isTransitioning = false;
+  private autoSlideInterval: any;
   private countdownInterval?: number;
   private intersectionObserver: IntersectionObserver | null = null;
+  loadedImages = new Set<string>();
   
   // Use signals for values that change over time to avoid change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
   currentTime = signal<number>(Date.now());
-  currentUser = this.authService.getCurrentUser();
 
-  // Check if house is favorite (delegate to service)
-  isFavorite(houseId: string): boolean {
-    return this.carouselService.isFavorite(houseId);
-  }
-
-  // Check if toggling favorite (delegate to service)
-  isTogglingFavorite(houseId: string): boolean {
-    return this.carouselService.isTogglingFavorite(houseId);
-  }
+  // Use computed signal to get active houses from lottery service
+  houses = computed(() => {
+    const allHouses = this.lotteryService.getHouses()();
+    return allHouses.filter(house => house.status === 'active');
+  });
 
   ngOnInit() {
+    this.startAutoSlide();
     this.setupIntersectionObserver();
     // Load the first slide images immediately
     setTimeout(() => this.loadCurrentSlideImages(), 100);
@@ -615,12 +478,31 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.stopAutoSlide();
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
     }
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
     }
+  }
+
+
+  private startAutoSlide() {
+    this.autoSlideInterval = setInterval(() => {
+      this.nextSlide();
+    }, 8000);
+  }
+
+  private stopAutoSlide() {
+    if (this.autoSlideInterval) {
+      clearInterval(this.autoSlideInterval);
+    }
+  }
+
+  private resetAutoSlide() {
+    this.stopAutoSlide();
+    this.startAutoSlide();
   }
 
   private setupIntersectionObserver() {
@@ -631,11 +513,11 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
             if (entry.isIntersecting) {
               const img = entry.target as HTMLImageElement;
               const src = img.dataset['src'];
-              if (src && !this.carouselService.isImageLoaded(src)) {
+              if (src && !this.loadedImages.has(src)) {
                 img.src = src;
                 img.classList.remove('opacity-0');
                 img.classList.add('opacity-100');
-                this.carouselService.markImageAsLoaded(src);
+                this.loadedImages.add(src);
                 this.intersectionObserver?.unobserve(img);
               }
             }
@@ -650,16 +532,13 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   isImageLoaded(imageUrl: string): boolean {
-    return this.carouselService.isImageLoaded(imageUrl);
+    return this.loadedImages.has(imageUrl);
   }
 
   onImageLoad(event: Event) {
     const img = event.target as HTMLImageElement;
     img.classList.remove('opacity-0');
     img.classList.add('opacity-100');
-    if (img.src) {
-      this.carouselService.markImageAsLoaded(img.src);
-    }
   }
 
   onImageError(event: Event) {
@@ -669,7 +548,31 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   private loadCurrentSlideImages() {
-    this.carouselService.loadCurrentSlideImages();
+    const currentHouse = this.getCurrentHouse();
+    if (currentHouse) {
+      // Load the current image immediately
+      const currentImageUrl = currentHouse.images[this.currentHouseImageIndex].url;
+      if (!this.loadedImages.has(currentImageUrl)) {
+        this.loadedImages.add(currentImageUrl);
+      }
+      
+      // Preload adjacent images for smoother transitions
+      const nextImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
+      const prevImageIndex = this.currentHouseImageIndex === 0 
+        ? currentHouse.images.length - 1 
+        : this.currentHouseImageIndex - 1;
+      
+      [nextImageIndex, prevImageIndex].forEach(index => {
+        const imageUrl = currentHouse.images[index].url;
+        if (!this.loadedImages.has(imageUrl)) {
+          const img = new Image();
+          img.onload = () => {
+            this.loadedImages.add(imageUrl);
+          };
+          img.src = imageUrl;
+        }
+      });
+    }
   }
 
   translate(key: string): string {
@@ -677,67 +580,81 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
   
   getCurrentHouse() {
-    return this.carouselService.getCurrentHouse();
+    return this.houses()[this.currentSlide];
   }
   
   getCurrentHouseImage() {
-    return this.carouselService.getCurrentHouseImage();
+    return this.getCurrentHouse().images[this.currentHouseImageIndex];
   }
   
   nextSlide() {
-    this.carouselService.nextSlide();
+    this.currentSlide = (this.currentSlide + 1) % this.houses().length;
+    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+    this.resetAutoSlide();
     this.loadCurrentSlideImages();
   }
   
   previousSlide() {
-    this.carouselService.previousSlide();
+    this.currentSlide = this.currentSlide === 0 ? this.houses().length - 1 : this.currentSlide - 1;
+    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+    this.resetAutoSlide();
     this.loadCurrentSlideImages();
   }
   
   goToSlide(index: number) {
-    this.carouselService.goToSlide(index);
+    if (index < 0 || index >= this.houses().length) return;
+    this.currentSlide = index;
+    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+    this.resetAutoSlide();
     this.loadCurrentSlideImages();
   }
   
   nextHouseImage() {
-    this.carouselService.nextHouseImage();
+    const currentHouse = this.getCurrentHouse();
+    this.currentHouseImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
+    this.resetAutoSlide();
   }
   
   previousHouseImage() {
-    this.carouselService.previousHouseImage();
+    const currentHouse = this.getCurrentHouse();
+    this.currentHouseImageIndex = this.currentHouseImageIndex === 0 
+      ? currentHouse.images.length - 1 
+      : this.currentHouseImageIndex - 1;
+    this.resetAutoSlide();
   }
   
   goToHouseImage(index: number) {
-    this.carouselService.goToHouseImage(index);
+    this.currentHouseImageIndex = index;
+    this.resetAutoSlide();
     this.loadCurrentSlideImages();
   }
   
   formatPrice(price: number): string {
-    return this.carouselService.formatPrice(price);
+    return this.localeService.formatCurrency(price, 'USD');
   }
 
   formatDate(date: Date): string {
-    return this.carouselService.formatDate(date);
+    return this.localeService.formatDate(date, 'medium');
   }
 
   getTicketProgressForHouse(house: any): number {
-    return this.carouselService.getTicketProgressForHouse(house);
+    return Math.round((house.soldTickets / house.totalTickets) * 100);
   }
   
   getImageIndexForHouse(houseIndex: number): number {
-    return this.carouselService.getImageIndexForHouse(houseIndex);
+    return houseIndex === this.currentSlide ? this.currentHouseImageIndex : 0;
   }
 
   getOdds(house: any): string {
-    return this.carouselService.getOdds(house);
+    const totalTickets = house.totalTickets;
+    return `1:${this.localeService.formatNumber(totalTickets)}`;
   }
 
   getRemainingTickets(house: any): number {
-    return this.carouselService.getRemainingTickets(house);
+    return house.totalTickets - house.soldTickets;
   }
 
   getLotteryCountdown(house: any): string {
-    // Use currentTime signal for countdown
     const now = this.currentTime();
     const endTime = new Date(house.lotteryEndDate).getTime();
     const timeLeft = endTime - now;
@@ -765,61 +682,21 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   getTicketsAvailableText(house: any): string {
-    return this.carouselService.getTicketsAvailableText(house);
+    const remaining = this.getRemainingTickets(house);
+    const template = this.translate('house.onlyTicketsAvailable');
+    return template.replace('{count}', this.localeService.formatNumber(remaining));
   }
 
   getStatusText(house: any): string {
-    return this.carouselService.getStatusText(house);
-  }
-
-  async toggleFavorite(event: Event, house: any): Promise<void> {
-    event.stopPropagation();
-    event.preventDefault();
-    
-    // Show toast if user is not logged in
-    if (!this.currentUser()) {
-      this.toastService.info('Please log in to add favorites', 3000);
-      return;
-    }
-    
-    // Delegate to service for favorite toggling
-    await this.carouselService.toggleFavorite(event, house);
-    
-    // Trigger heart animation if added to favorites
-    const isCurrentlyFavorite = this.isFavorite(house.id);
-    if (!isCurrentlyFavorite) {
-      setTimeout(() => {
-        const favoriteButton = event.currentTarget as HTMLElement;
-        let favoritesTab: HTMLElement | null = null;
-        
-        // Try multiple selectors to find the favorites tab
-        const navButtons = document.querySelectorAll('nav button');
-        for (const btn of Array.from(navButtons)) {
-          const text = btn.textContent?.trim().toLowerCase() || '';
-          if (text.includes('favorite') || text.includes('favourites')) {
-            favoritesTab = btn as HTMLElement;
-            break;
-          }
-        }
-        
-        if (!favoritesTab) {
-          const allButtons = document.querySelectorAll('app-topbar button');
-          for (const btn of Array.from(allButtons)) {
-            const text = btn.textContent?.trim().toLowerCase() || '';
-            if (text.includes('favorite') || text.includes('favourites')) {
-              favoritesTab = btn as HTMLElement;
-              break;
-            }
-          }
-        }
-
-        if (favoritesTab && favoriteButton) {
-          this.heartAnimationService.animateHeart({
-            fromElement: favoriteButton,
-            toElement: favoritesTab
-          });
-        }
-      }, 100);
+    switch (house.status) {
+      case 'active':
+        return this.translate('house.active');
+      case 'ended':
+        return this.translate('house.ended');
+      case 'upcoming':
+        return this.translate('house.upcoming');
+      default:
+        return this.translate('house.active');
     }
   }
 
@@ -839,22 +716,29 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   // Get only the secondary (non-primary) images for thumbnails
   getSecondaryImages(images: any[]): any[] {
-    return this.carouselService.getSecondaryImages(images);
+    return images.filter(image => !image.isPrimary);
   }
 
   // Get the primary image for the main display
   getPrimaryImage(images: any[]): any {
-    return this.carouselService.getPrimaryImage(images);
+    return images.find(image => image.isPrimary) || images[0];
   }
 
   // Navigate to a secondary image
   goToSecondaryImage(index: number) {
-    this.carouselService.goToSecondaryImage(index);
+    this.currentSecondaryImageIndex = index;
+    this.resetAutoSlide();
     this.loadCurrentSlideImages();
   }
 
   // Get the current main image to display (primary by default, or selected secondary)
   getCurrentMainImage(house: any, houseIndex: number): any {
-    return this.carouselService.getCurrentMainImage(house, houseIndex);
+    if (houseIndex === this.currentSlide && this.currentSecondaryImageIndex >= 0) {
+      const secondaryImages = this.getSecondaryImages(house.images);
+      if (secondaryImages.length > 0 && this.currentSecondaryImageIndex < secondaryImages.length) {
+        return secondaryImages[this.currentSecondaryImageIndex];
+      }
+    }
+    return this.getPrimaryImage(house.images);
   }
 }

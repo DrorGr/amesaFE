@@ -8,6 +8,8 @@ import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { HouseDto } from '../../models/house.model';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
+import { LocaleService } from '../../services/locale.service';
+import { UserPreferencesService } from '../../services/user-preferences.service';
 
 @Component({
   selector: 'app-lottery-favorites',
@@ -42,9 +44,12 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                 <!-- Favorite Button -->
                 <button
                   (click)="removeFavorite($event, house.id)"
+                  (keydown.enter)="removeFavorite($event, house.id)"
+                  (keydown.space)="removeFavorite($event, house.id); $event.preventDefault()"
                   [class.animate-pulse]="isRemovingFavorite()(house.id)"
-                  class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10">
-                  <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                  [attr.aria-label]="translate('favorites.removeFromFavorites')"
+                  class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10 focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400">
+                  <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                   </svg>
                 </button>
@@ -64,10 +69,10 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                 
                 <div class="flex items-center justify-between mb-4">
                   <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    €{{ formatPrice(house.price) }}
+                    {{ formatPrice(house.price) }}
                   </div>
                   <div class="text-sm text-gray-600 dark:text-gray-400">
-                    €{{ formatPrice(house.ticketPrice) }} {{ translate('house.perTicket') }}
+                    {{ formatPrice(house.ticketPrice) }} {{ translate('house.perTicket') }}
                   </div>
                 </div>
                 
@@ -81,6 +86,8 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                 <button
                   (click)="quickEntry($event, house)"
                   [disabled]="isQuickEntering()(house.id) || house.status !== 'active'"
+                  [attr.aria-label]="translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow)"
+                  [attr.aria-describedby]="house.status !== 'active' ? 'quick-entry-disabled-' + house.id : null"
                   class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
                   <ng-container *ngIf="isQuickEntering()(house.id); else quickEntryText">
                     {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
@@ -89,10 +96,16 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                     ⚡ {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
                   </ng-template>
                 </button>
+                @if (house.status !== 'active') {
+                  <div [id]="'quick-entry-disabled-' + house.id" class="sr-only">
+                    {{ translate('entry.lotteryNotActive') }}
+                  </div>
+                }
                 
                 <!-- View Details Link -->
                 <button
                   (click)="viewDetails($event, house.id)"
+                  [attr.aria-label]="translateWithParams('house.viewDetails', { title: house.title })"
                   class="w-full mt-2 text-blue-600 dark:text-blue-400 hover:underline text-sm">
                   {{ translate(LOTTERY_TRANSLATION_KEYS.common.view) }} {{ translate('common.details') }}
                 </button>
@@ -130,6 +143,8 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
   `]
 })
 export class LotteryFavoritesComponent implements OnInit, OnDestroy {
+  localeService = inject(LocaleService);
+  userPreferencesService = inject(UserPreferencesService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
@@ -230,7 +245,7 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error removing favorite:', error);
       // Show error toast notification
-      this.toastService.error('Failed to remove from favorites');
+      this.toastService.error(this.translate('favorites.removeFailed'));
     } finally {
       const newSet = new Set(this.removingFavorites());
       newSet.delete(houseId);
@@ -274,15 +289,19 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
   }
 
   formatPrice(price: number): string {
-    return price.toLocaleString();
+    return this.localeService.formatCurrency(price, 'USD');
   }
 
   formatSqft(sqft: number): string {
-    return sqft.toLocaleString();
+    return this.localeService.formatNumber(sqft);
   }
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  translateWithParams(key: string, params: Record<string, any>): string {
+    return this.translationService.translateWithParams(key, params);
   }
 }
 

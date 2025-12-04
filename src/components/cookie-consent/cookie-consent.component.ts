@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect, OnInit, OnDestroy, EffectRef } from '@angular/core';
+import { Component, inject, signal, effect, OnInit, OnDestroy, EffectRef, HostListener, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CookieConsentService } from '../../services/cookie-consent.service';
@@ -6,6 +6,7 @@ import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { CookieConsent } from '../../interfaces/cookie-consent.interface';
 import { Subscription } from 'rxjs';
+import { FocusTrapService } from '../../services/focus-trap.service';
 
 @Component({
   selector: 'app-cookie-consent',
@@ -68,13 +69,17 @@ import { Subscription } from 'rxjs';
         [attr.aria-label]="translate('cookieConsent.preferences.title')"
         [attr.aria-modal]="true">
         <div 
+          #preferencesModal
           class="w-full h-full md:w-auto md:h-auto bg-white dark:bg-gray-800 md:rounded-xl md:shadow-2xl flex flex-col"
           [class]="isMobile() ? '' : 'modal-content max-w-2xl'"
-          (click)="$event.stopPropagation()">
+          (click)="$event.stopPropagation()"
+          role="dialog"
+          [attr.aria-modal]="'true'"
+          [attr.aria-labelledby]="'cookie-preferences-title'">
           
           <!-- Header -->
           <div class="p-4 md:p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <h2 class="text-2xl md:text-xl font-bold text-gray-900 dark:text-white">
+            <h2 id="cookie-preferences-title" class="text-2xl md:text-xl font-bold text-gray-900 dark:text-white">
               {{ translate('cookieConsent.preferences.title') }}
             </h2>
             <button
@@ -264,7 +269,9 @@ import { Subscription } from 'rxjs';
     }
   `]
 })
-export class CookieConsentComponent implements OnInit, OnDestroy {
+export class CookieConsentComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('preferencesModal') preferencesModal?: ElementRef<HTMLElement>;
+  private focusTrapService = inject(FocusTrapService);
   private cookieConsentService = inject(CookieConsentService);
   private translationService = inject(TranslationService);
   private mobileDetectionService = inject(MobileDetectionService);
@@ -286,6 +293,24 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private preferencesEffect?: EffectRef;
   
+  ngAfterViewInit(): void {
+    // Trap focus in preferences modal when it opens
+    // Use effect to watch for modal state changes
+    effect(() => {
+      const isOpen = this.isPreferencesOpen();
+      const modalElement = this.preferencesModal?.nativeElement;
+      
+      if (isOpen && modalElement) {
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          this.focusTrapService.trapFocus(modalElement);
+        }, 0);
+      } else if (!isOpen) {
+        this.focusTrapService.releaseFocus();
+      }
+    });
+  }
+
   constructor() {
     // Watch for consent changes to update visibility
     effect(() => {

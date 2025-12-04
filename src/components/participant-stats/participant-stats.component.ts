@@ -5,25 +5,26 @@ import { TranslationService } from '../../services/translation.service';
 import { ErrorMessageService } from '../../services/error-message.service';
 import { ToastService } from '../../services/toast.service';
 import { LotteryParticipantStats } from '../../interfaces/watchlist.interface';
+import { LocaleService } from '../../services/locale.service';
 
 @Component({
   selector: 'app-participant-stats',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 border border-gray-200 dark:border-gray-700">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 border border-gray-200 dark:border-gray-700" role="region" aria-labelledby="participant-stats-title">
+      <h3 id="participant-stats-title" class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
         {{ translate('participants.title') }}
       </h3>
 
       <!-- Loading State -->
-      <div *ngIf="loading()" class="flex justify-center items-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div *ngIf="loading()" class="flex justify-center items-center py-8" role="status" aria-label="Loading participant statistics">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400" aria-hidden="true"></div>
       </div>
 
       <!-- Empty State -->
-      <div *ngIf="!loading() && !stats()" class="text-center py-8">
-        <svg class="mx-auto h-16 w-16 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div *ngIf="!loading() && !stats()" class="text-center py-8" role="status">
+        <svg class="mx-auto h-16 w-16 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
         </svg>
         <p class="text-gray-600 dark:text-gray-400">{{ translate('participants.empty') }}</p>
@@ -44,7 +45,11 @@ import { LotteryParticipantStats } from '../../interfaces/watchlist.interface';
         </div>
 
         <!-- Progress Bar (if max participants set) -->
-        <div *ngIf="stats()?.maxParticipants" class="w-full">
+        <div *ngIf="stats()?.maxParticipants" class="w-full" role="progressbar" 
+             [attr.aria-valuenow]="progressPercentage()" 
+             aria-valuemin="0" 
+             aria-valuemax="100"
+             [attr.aria-label]="'Progress: ' + progressPercentage() + ' percent'">
           <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
             <span>{{ translate('participants.progress') }}</span>
             <span>{{ progressPercentage() }}%</span>
@@ -66,9 +71,9 @@ import { LotteryParticipantStats } from '../../interfaces/watchlist.interface';
         </div>
 
         <!-- Cap Reached Badge -->
-        <div *ngIf="stats()?.isCapReached" class="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-3">
+        <div *ngIf="stats()?.isCapReached" class="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-3" role="alert">
           <div class="flex items-center">
-            <svg class="w-5 h-5 text-red-600 dark:text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-5 h-5 text-red-600 dark:text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
             </svg>
             <span class="text-red-800 dark:text-red-200 font-semibold">{{ translate('participants.capReached') }}</span>
@@ -96,6 +101,7 @@ import { LotteryParticipantStats } from '../../interfaces/watchlist.interface';
   `
 })
 export class ParticipantStatsComponent implements OnInit {
+  localeService = inject(LocaleService);
   houseId = input.required<string>();
   
   private lotteryService = inject(LotteryService);
@@ -134,7 +140,7 @@ export class ParticipantStatsComponent implements OnInit {
 
   formatDate(date?: Date): string {
     if (!date) return '';
-    return new Date(date).toLocaleDateString();
+    return this.localeService.formatDate(date, 'short');
   }
 
   translate(key: string): string {

@@ -1,9 +1,11 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { House, HouseDto } from '../models/house.model';
 import { LotteryService } from './lottery.service';
 import { AuthService } from './auth.service';
 import { TranslationService } from './translation.service';
 import { ToastService } from './toast.service';
+import { LocaleService } from './locale.service';
+import { UserPreferencesService } from './user-preferences.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,21 +28,34 @@ export class HouseCardService {
     this.toastService = toastService;
   }
 
-  // Formatting utilities
+  private localeService = inject(LocaleService);
+  private userPreferencesService = inject(UserPreferencesService);
+
+  // Formatting utilities - Uses LocaleService for locale-aware formatting
   formatPrice(price: number): string {
-    return price.toLocaleString();
+    // Get currency from user preferences or default to USD
+    const currency = this.getCurrencyCode();
+    return this.localeService.formatCurrency(price, currency);
+  }
+
+  private getCurrencyCode(): string {
+    // Get currency from user preferences, default to USD
+    try {
+      const prefs = this.userPreferencesService.getPreferences();
+      return prefs.localization?.currency || 'USD';
+    } catch {
+      // If preferences not available, use default
+      return 'USD';
+    }
   }
 
   formatSqft(sqft: number): string {
-    return sqft.toLocaleString();
+    return this.localeService.formatNumber(sqft);
   }
 
   formatLotteryDate(endDate: Date | string): string {
-    return new Date(endDate).toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    const date = typeof endDate === 'string' ? new Date(endDate) : endDate;
+    return this.localeService.formatDate(date, 'medium');
   }
 
   // House calculations
@@ -51,7 +66,7 @@ export class HouseCardService {
 
   getOdds(house: House): string {
     if (!house.totalTickets || house.totalTickets === 0) return 'N/A';
-    return `1:${house.totalTickets.toLocaleString()}`;
+    return `1:${this.localeService.formatNumber(house.totalTickets)}`;
   }
 
   getRemainingTickets(house: House): number {
@@ -114,7 +129,7 @@ export class HouseCardService {
   getTicketsAvailableText(house: House): string {
     const remaining = this.getRemainingTickets(house);
     const template = this.translationService.translate('house.onlyTicketsAvailable');
-    return template.replace('{count}', remaining.toLocaleString());
+    return template.replace('{count}', this.localeService.formatNumber(remaining));
   }
 
   // Viewers count (simulated)

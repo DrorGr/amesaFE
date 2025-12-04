@@ -7,6 +7,8 @@ import { AuthService } from '../../services/auth.service';
 import { ErrorMessageService } from '../../services/error-message.service';
 import { WatchlistItem } from '../../interfaces/watchlist.interface';
 import { ToastService } from '../../services/toast.service';
+import { LocaleService } from '../../services/locale.service';
+import { UserPreferencesService } from '../../services/user-preferences.service';
 
 @Component({
   selector: 'app-watchlist',
@@ -63,7 +65,8 @@ import { ToastService } from '../../services/toast.service';
                   [class.bg-blue-500]="item.notificationEnabled"
                   [class.bg-gray-400]="!item.notificationEnabled"
                   class="absolute top-4 left-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                  [attr.aria-label]="item.notificationEnabled ? 'Disable notifications' : 'Enable notifications'">
+                  [attr.aria-label]="item.notificationEnabled ? translate('watchlist.disableNotifications') : translate('watchlist.enableNotifications')"
+                  [attr.aria-pressed]="item.notificationEnabled">
                   <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"></path>
                   </svg>
@@ -87,7 +90,7 @@ import { ToastService } from '../../services/toast.service';
                     €{{ formatPrice(item.house.price) }}
                   </div>
                   <div class="text-sm text-gray-600 dark:text-gray-400">
-                    €{{ formatPrice(item.house.ticketPrice) }} {{ translate('house.perTicket') }}
+                    {{ formatPrice(item.house.ticketPrice) }} {{ translate('house.perTicket') }}
                   </div>
                 </div>
                 
@@ -145,6 +148,8 @@ import { ToastService } from '../../services/toast.service';
   `
 })
 export class WatchlistComponent implements OnInit {
+  localeService = inject(LocaleService);
+  userPreferencesService = inject(UserPreferencesService);
   private watchlistService = inject(WatchlistService);
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
@@ -227,10 +232,10 @@ export class WatchlistComponent implements OnInit {
   }
 
   formatPrice(price: number): string {
-    return new Intl.NumberFormat('en-US', {
+    return this.localeService.formatNumber(price, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(price);
+    });
   }
 
   translate(key: string): string {

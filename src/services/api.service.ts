@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
+import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
+import { catchError, switchMap, retryWhen, delay, take, concatMap } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 
 export interface ApiResponse<T> {
@@ -33,6 +33,9 @@ export class ApiService {
   private baseUrl = environment.backendUrl || '/api/v1';
   private tokenSubject = new BehaviorSubject<string | null>(this.getStoredToken());
   public token$ = this.tokenSubject.asObservable();
+  private tokenRefreshCallback: (() => Observable<unknown>) | null = null;
+  private isRefreshing = false;
+  private refreshSubject = new BehaviorSubject<boolean>(false);
 
   constructor(private http: HttpClient) {
     // Check if we're in a test environment
@@ -97,7 +100,15 @@ export class ApiService {
 
   clearToken(): void {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('token_expires_at');
     this.tokenSubject.next(null);
+  }
+
+  /**
+   * Set callback for token refresh (called by AuthService)
+   */
+  setTokenRefreshCallback(callback: () => Observable<unknown>): void {
+    this.tokenRefreshCallback = callback;
   }
 
   getBaseUrl(): string {
@@ -118,7 +129,12 @@ export class ApiService {
       headers: this.getHeaders(),
       params: httpParams
     }).pipe(
-      catchError(this.handleError)
+      catchError((error: HttpErrorResponse) => this.handleErrorWithRetry(error, () => 
+        this.http.get<ApiResponse<T>>(this.buildUrl(endpoint), {
+          headers: this.getHeaders(),
+          params: httpParams
+        })
+      ))
     );
   }
 
@@ -140,7 +156,11 @@ export class ApiService {
     return this.http.post<ApiResponse<T>>(url, body, {
       headers: headers
     }).pipe(
-      catchError(this.handleError)
+      catchError((error: HttpErrorResponse) => this.handleErrorWithRetry(error, () => 
+        this.http.post<ApiResponse<T>>(url, body, {
+          headers: this.getHeaders()
+        })
+      ))
     );
   }
 
@@ -148,7 +168,11 @@ export class ApiService {
     return this.http.put<ApiResponse<T>>(this.buildUrl(endpoint), data, {
       headers: this.getHeaders()
     }).pipe(
-      catchError(this.handleError)
+      catchError((error: HttpErrorResponse) => this.handleErrorWithRetry(error, () => 
+        this.http.put<ApiResponse<T>>(this.buildUrl(endpoint), data, {
+          headers: this.getHeaders()
+        })
+      ))
     );
   }
 
@@ -159,11 +183,18 @@ export class ApiService {
     return this.http.delete<ApiResponse<T>>(url, {
       headers: headers
     }).pipe(
-      catchError(this.handleError)
+      catchError((error: HttpErrorResponse) => this.handleErrorWithRetry(error, () => 
+        this.http.delete<ApiResponse<T>>(url, {
+          headers: this.getHeaders()
+        })
+      ))
     );
   }
 
-  private handleError = (error: any): Observable<never> => {
+  /**
+   * Handle error with automatic retry on 401 after token refresh
+   */
+  private handleErrorWithRetry = <T>(error: HttpErrorResponse, retryRequest: () => Observable<T>): Observable<T> => {
     // Don't log 200 status codes as errors (false positives from response format issues)
     if (error.status === 200) {
       // 200 responses shouldn't be logged as errors - likely response format mismatch
@@ -200,12 +231,76 @@ export class ApiService {
       console.error('API Error:', error.status, error.statusText, error.url);
     }
     
+    // Handle 401 errors with automatic token refresh and retry
     if (error.status === 401) {
-      // Token expired or invalid
-      this.clearToken();
-      // Redirect to login or emit event
+      // Skip retry for auth endpoints (login, register, refresh) to avoid infinite loops
+      const isAuthEndpoint = error.url?.includes('/auth/') || error.url?.includes('/oauth/');
+      if (isAuthEndpoint) {
+        this.clearToken();
+        return throwError(() => error);
+      }
+
+      // Attempt token refresh and retry
+      if (this.tokenRefreshCallback && !this.isRefreshing) {
+        this.isRefreshing = true;
+        this.refreshSubject.next(true);
+
+        return this.tokenRefreshCallback!().pipe(
+          switchMap(() => {
+            // Token refreshed successfully, retry original request
+            this.isRefreshing = false;
+            this.refreshSubject.next(false);
+            return retryRequest();
+          }),
+          catchError((refreshError) => {
+            // Token refresh failed, clear tokens and throw error
+            this.isRefreshing = false;
+            this.refreshSubject.next(false);
+            this.clearToken();
+            return throwError(() => refreshError);
+          })
+        );
+      } else if (this.isRefreshing) {
+        // Already refreshing, wait for refresh to complete then retry
+        return this.refreshSubject.pipe(
+          switchMap((refreshing) => {
+            if (!refreshing) {
+              // Refresh completed, retry request
+              return retryRequest();
+            }
+            // Wait a bit and check again
+            return of(null).pipe(
+              delay(100),
+              switchMap(() => this.refreshSubject.pipe(
+                take(1),
+                switchMap((stillRefreshing) => {
+                  if (!stillRefreshing) {
+                    return retryRequest();
+                  }
+                  // Give up after waiting
+                  this.clearToken();
+                  return throwError(() => error);
+                })
+              ))
+            );
+          }),
+          catchError(() => {
+            this.clearToken();
+            return throwError(() => error);
+          })
+        );
+      } else {
+        // No refresh callback available, clear token and throw error
+        this.clearToken();
+        return throwError(() => error);
+      }
     }
 
-    throw error;
+    return throwError(() => error);
+  };
+
+  private handleError = (error: any): Observable<never> => {
+    // Legacy error handler for backward compatibility
+    return this.handleErrorWithRetry(error, () => throwError(() => error));
   };
 }

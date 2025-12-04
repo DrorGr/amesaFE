@@ -98,6 +98,43 @@ html {
   @apply transition-transform duration-200 hover:scale-105;
 }
 
+/* Dark Mode Utility Classes */
+.dark-bg-primary {
+  @apply bg-white dark:bg-gray-800;
+}
+
+.dark-bg-secondary {
+  @apply bg-gray-50 dark:bg-gray-900;
+}
+
+.dark-text-primary {
+  @apply text-gray-900 dark:text-white;
+}
+
+.dark-text-secondary {
+  @apply text-gray-600 dark:text-gray-400;
+}
+
+.dark-border-primary {
+  @apply border-gray-300 dark:border-gray-600;
+}
+
+.dark-border-secondary {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+.dark-shadow-sm {
+  @apply shadow-sm dark:shadow-gray-900/50;
+}
+
+.dark-shadow-md {
+  @apply shadow-md dark:shadow-gray-900/50;
+}
+
+.dark-shadow-lg {
+  @apply shadow-lg dark:shadow-gray-900/50;
+}
+
 /* Animations */
 @keyframes pulse {
   0%, 100% {

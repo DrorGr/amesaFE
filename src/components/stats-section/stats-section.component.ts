@@ -9,25 +9,25 @@ import { MobileDetectionService } from '../../services/mobile-detection.service'
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="relative py-16 md:py-24 overflow-hidden">
+    <section class="relative py-16 md:py-24 overflow-hidden" aria-labelledby="stats-section-title">
       <!-- Vibrant Background -->
-      <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-slate-800 dark:to-blue-900"></div>
+      <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-slate-800 dark:to-blue-900" aria-hidden="true"></div>
       
       <!-- Dynamic Pattern Overlay -->
-      <div class="absolute inset-0 opacity-40 dark:opacity-20">
+      <div class="absolute inset-0 opacity-40 dark:opacity-20" aria-hidden="true">
         <div class="absolute inset-0" style="background-image: radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);"></div>
       </div>
       
       <!-- Centered Header -->
       <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 md:mb-16">
         <div class="text-center">
-          <h2 class="text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-3">
+          <h2 id="stats-section-title" class="text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-3">
             Live Statistics
           </h2>
           <p class="text-gray-700 dark:text-gray-300 text-base md:text-lg font-medium">
             Real-time lottery performance metrics
           </p>
-          <div class="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mt-4 rounded-full"></div>
+          <div class="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mt-4 rounded-full" aria-hidden="true"></div>
         </div>
       </div>
       
@@ -46,15 +46,20 @@ import { MobileDetectionService } from '../../services/mobile-detection.service'
               <div class="flex-shrink-0 min-w-[180px] md:min-w-[220px] lg:min-w-[280px]">
                 <div class="group text-center">
                   <!-- Vibrant Stat Card -->
-                  <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-700 ease-out border border-blue-100/50 dark:border-gray-700/50 group-hover:border-blue-300/70 dark:group-hover:border-blue-600/70 group-hover:bg-white dark:group-hover:bg-gray-800">
+                  <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-700 ease-out border border-blue-100/50 dark:border-gray-700/50 group-hover:border-blue-300/70 dark:group-hover:border-blue-600/70 group-hover:bg-white dark:group-hover:bg-gray-800"
+                       role="article"
+                       [attr.aria-label]="getStatLabel(stat.labelKey) + ': ' + stat.value">
                     
                     <!-- Large Number -->
-                    <div class="text-3xl md:text-4xl lg:text-5xl font-black text-slate-800 dark:text-white mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-500 ease-out">
+                    <div class="text-3xl md:text-4xl lg:text-5xl font-black text-slate-800 dark:text-white mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-500 ease-out"
+                         [attr.aria-label]="'Value: ' + stat.value">
                       {{ stat.value }}
                     </div>
                     
                     <!-- Icon -->
-                    <div class="text-2xl md:text-3xl mb-4 opacity-70 group-hover:opacity-100 transition-all duration-600 ease-out group-hover:scale-105 transform">
+                    <div class="text-2xl md:text-3xl mb-4 opacity-70 group-hover:opacity-100 transition-all duration-600 ease-out group-hover:scale-105 transform"
+                         [attr.aria-label]="'Icon for ' + getStatLabel(stat.labelKey)"
+                         aria-hidden="true">
                       {{ getStatIcon(stat.labelKey) }}
                     </div>
                     
@@ -72,7 +77,10 @@ import { MobileDetectionService } from '../../services/mobile-detection.service'
               <div class="flex-shrink-0 min-w-[180px] md:min-w-[220px] lg:min-w-[280px]">
                 <div class="group text-center">
                   <!-- Vibrant Stat Card -->
-                  <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-700 ease-out border border-blue-100/50 dark:border-gray-700/50 group-hover:border-blue-300/70 dark:group-hover:border-blue-600/70 group-hover:bg-white dark:group-hover:bg-gray-800">
+                  <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-700 ease-out border border-blue-100/50 dark:border-gray-700/50 group-hover:border-blue-300/70 dark:group-hover:border-blue-600/70 group-hover:bg-white dark:group-hover:bg-gray-800"
+                       role="article"
+                       [attr.aria-label]="getStatLabel(stat.labelKey) + ': ' + stat.value"
+                       aria-hidden="true">
                     
                     <!-- Large Number -->
                     <div class="text-3xl md:text-4xl lg:text-5xl font-black text-slate-800 dark:text-white mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-500 ease-out">
@@ -80,7 +88,8 @@ import { MobileDetectionService } from '../../services/mobile-detection.service'
                     </div>
                     
                     <!-- Icon -->
-                    <div class="text-2xl md:text-3xl mb-4 opacity-70 group-hover:opacity-100 transition-all duration-600 ease-out group-hover:scale-105 transform">
+                    <div class="text-2xl md:text-3xl mb-4 opacity-70 group-hover:opacity-100 transition-all duration-600 ease-out group-hover:scale-105 transform"
+                         aria-hidden="true">
                       {{ getStatIcon(stat.labelKey) }}
                     </div>
                     

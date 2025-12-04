@@ -1,5 +1,6 @@
-import { Injectable, ErrorHandler } from '@angular/core';
+import { Injectable, ErrorHandler, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ToastService } from './toast.service';
 
 /**
  * Interface for error information structure
@@ -34,6 +35,7 @@ export interface ErrorInfo {
 export class ErrorHandlingService implements ErrorHandler {
   private errorLog: ErrorInfo[] = [];
   private maxLogSize = 100;
+  private toastService = inject(ToastService);
 
   /**
    * Handles global Angular errors
@@ -143,9 +145,12 @@ export class ErrorHandlingService implements ErrorHandler {
    * @param errorInfo - The error information
    */
   private showCriticalError(errorInfo: ErrorInfo): void {
-    // For critical errors, you might want to show a modal or redirect to error page
     console.error('CRITICAL ERROR:', errorInfo);
-    // You could emit an event or use a notification service here
+    // Show error toast with longer duration for critical errors
+    this.toastService.error(
+      errorInfo.message || 'A critical error occurred. Please refresh the page or contact support.',
+      6000
+    );
   }
 
   /**
@@ -154,7 +159,11 @@ export class ErrorHandlingService implements ErrorHandler {
    */
   private showHighSeverityError(errorInfo: ErrorInfo): void {
     console.error('HIGH SEVERITY ERROR:', errorInfo);
-    // Show toast notification or alert
+    // Show error toast
+    this.toastService.error(
+      errorInfo.message || 'An error occurred. Please try again.',
+      5000
+    );
   }
 
   /**
@@ -163,7 +172,11 @@ export class ErrorHandlingService implements ErrorHandler {
    */
   private showMediumSeverityError(errorInfo: ErrorInfo): void {
     console.warn('MEDIUM SEVERITY ERROR:', errorInfo);
-    // Show subtle notification
+    // Show warning toast for medium severity errors
+    this.toastService.warning(
+      errorInfo.message || 'Something went wrong. Please check your input.',
+      4000
+    );
   }
 
   /**

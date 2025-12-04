@@ -1,6 +1,6 @@
 ﻿import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
@@ -8,23 +8,25 @@ import { LoggingService } from '../../services/logging.service';
 import { HouseDto, LotteryTicketDto } from '../../models/house.model';
 import { UserLotteryStats, HouseRecommendation } from '../../interfaces/lottery.interface';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
+import { LocaleService } from '../../services/locale.service';
+import { UserPreferencesService } from '../../services/user-preferences.service';
 
 @Component({
   selector: 'app-lottery-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 md:p-8">
+    <main class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 md:p-8">
       <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <div class="mb-8">
+        <header class="mb-8">
           <h1 class="text-4xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {{ translate(LOTTERY_TRANSLATION_KEYS.dashboard.title) }}
           </h1>
           <p class="text-lg md:text-base text-gray-600 dark:text-gray-300">
             {{ translate(LOTTERY_TRANSLATION_KEYS.dashboard.welcome) }}
           </p>
-        </div>
+        </header>
 
         <!-- Statistics Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
@@ -110,7 +112,10 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
               </h2>
               <a 
                 routerLink="/lottery/entries/active"
-                class="text-blue-600 dark:text-blue-400 hover:underline text-sm">
+                (keydown.enter)="navigateToActiveEntries()"
+                (keydown.space)="navigateToActiveEntries(); $event.preventDefault()"
+                aria-label="View all active entries"
+                class="text-blue-600 dark:text-blue-400 hover:underline text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
                 {{ translate(LOTTERY_TRANSLATION_KEYS.dashboard.viewAll) }}
               </a>
             </div>
@@ -161,7 +166,10 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
               </h2>
               <a 
                 routerLink="/lottery/favorites"
-                class="text-blue-600 dark:text-blue-400 hover:underline text-sm">
+                (keydown.enter)="navigateToFavorites()"
+                (keydown.space)="navigateToFavorites(); $event.preventDefault()"
+                aria-label="View all favorite houses"
+                class="text-blue-600 dark:text-blue-400 hover:underline text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
                 {{ translate(LOTTERY_TRANSLATION_KEYS.dashboard.viewAll) }}
               </a>
             </div>
@@ -170,14 +178,19 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
               <div class="space-y-4">
                 <div 
                   *ngFor="let house of favoriteHouses().slice(0, 3)" 
-                  class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                  [routerLink]="['/houses', house.id]">
+                  class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  [routerLink]="['/houses', house.id]"
+                  (keydown.enter)="navigateToHouse(house.id)"
+                  (keydown.space)="navigateToHouse(house.id); $event.preventDefault()"
+                  [attr.aria-label]="'View house: ' + house.title"
+                  tabindex="0"
+                  role="link">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <p class="font-semibold text-gray-900 dark:text-white">{{ house.title }}</p>
                       <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ house.location }}</p>
                       <p class="text-sm font-semibold text-blue-600 dark:text-blue-400 mt-1">
-                        Γé¼{{ formatPrice(house.price) }}
+                        {{ formatPrice(house.price) }}
                       </p>
                     </div>
                     <div class="ml-4">
@@ -209,12 +222,17 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div 
                 *ngFor="let rec of recommendations().slice(0, 3)"
-                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                [routerLink]="['/houses', rec.id]">
+                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                [routerLink]="['/houses', rec.id]"
+                (keydown.enter)="navigateToHouse(rec.id)"
+                (keydown.space)="navigateToHouse(rec.id); $event.preventDefault()"
+                [attr.aria-label]="'View recommended house: ' + rec.title"
+                tabindex="0"
+                role="link">
                 <p class="font-semibold text-gray-900 dark:text-white">{{ rec.title }}</p>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ rec.location }}</p>
                 <p class="text-sm font-semibold text-blue-600 dark:text-blue-400 mt-1">
-                  Γé¼{{ formatPrice(rec.price) }}
+                  {{ formatPrice(rec.price) }}
                 </p>
                 <p class="text-xs text-purple-600 dark:text-purple-400 mt-2">
                   {{ rec.reason }}
@@ -231,7 +249,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
           </ng-template>
         </div>
       </div>
-    </div>
+    </main>
   `,
   styles: [`
     :host {
@@ -241,10 +259,13 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
   `]
 })
 export class LotteryDashboardComponent implements OnInit, OnDestroy {
+  localeService = inject(LocaleService);
+  userPreferencesService = inject(UserPreferencesService);
   private authService = inject(AuthService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private logger = inject(LoggingService);
+  private router = inject(Router);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -301,16 +322,24 @@ export class LotteryDashboardComponent implements OnInit, OnDestroy {
   }
 
   formatPrice(price: number): string {
-    return price.toLocaleString();
+    return this.localeService.formatCurrency(price, 'USD');
   }
 
   formatDate(date: Date | string): string {
     const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    return this.localeService.formatDate(d, 'short');
+  }
+
+  navigateToActiveEntries(): void {
+    this.router.navigate(['/lottery/entries/active']);
+  }
+
+  navigateToFavorites(): void {
+    this.router.navigate(['/lottery/favorites']);
+  }
+
+  navigateToHouse(houseId: string): void {
+    this.router.navigate(['/houses', houseId]);
   }
 
   getWinRate(): string {
@@ -318,7 +347,10 @@ export class LotteryDashboardComponent implements OnInit, OnDestroy {
     if (!stats || stats.totalEntries === 0) {
       return '0';
     }
-    return ((stats.winRate * 100) || 0).toFixed(1);
+    return this.localeService.formatNumber((stats.winRate * 100) || 0, { 
+      minimumFractionDigits: 1, 
+      maximumFractionDigits: 1 
+    });
   }
 }
 

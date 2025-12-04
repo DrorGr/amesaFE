@@ -1,12 +1,13 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
 import { LotteryTicketDto } from '../../models/house.model';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
+import { LocaleService } from '../../services/locale.service';
 
 @Component({
   selector: 'app-active-entries',
@@ -54,7 +55,13 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
             <div 
               *ngFor="let entry of filteredEntries()" 
               class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow cursor-pointer"
-              [routerLink]="['/houses', entry.houseId]">
+              [routerLink]="['/houses', entry.houseId]"
+              (keydown.enter)="navigateToHouse(entry.houseId)"
+              (keydown.space)="navigateToHouse(entry.houseId); $event.preventDefault()"
+              [attr.aria-label]="translateWithParams('entries.viewEntryDetails', { house: entry.houseTitle })"
+              role="link"
+              tabindex="0"
+              class="focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
               <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="flex-1">
                   <div class="flex items-center gap-3 mb-2">
@@ -89,7 +96,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                     </div>
                     <div>
                       <span class="font-semibold">{{ translate('common.price') }}:</span>
-                      <span class="ml-2 font-semibold text-blue-600 dark:text-blue-400">€{{ formatPrice(entry.purchasePrice) }}</span>
+                      <span class="ml-2 font-semibold text-blue-600 dark:text-blue-400">{{ formatPrice(entry.purchasePrice) }}</span>
                     </div>
                   </div>
                 </div>
@@ -97,6 +104,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                 <div class="flex-shrink-0">
                   <button
                     (click)="viewDetails($event, entry)"
+                    [attr.aria-label]="translateWithParams('entries.viewDetailsFor', { house: entry.houseTitle })"
                     class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg transition-colors">
                     {{ translate(LOTTERY_TRANSLATION_KEYS.common.view) }}
                   </button>
@@ -130,6 +138,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
   `]
 })
 export class ActiveEntriesComponent implements OnInit {
+  localeService = inject(LocaleService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
@@ -139,6 +148,7 @@ export class ActiveEntriesComponent implements OnInit {
   
   currentUser = this.authService.getCurrentUser();
   activeEntries = this.lotteryService.getActiveEntries();
+  private router = inject(Router);
   
   selectedStatus = signal<string>('');
   sortBy = signal<string>('date');
@@ -207,28 +217,34 @@ export class ActiveEntriesComponent implements OnInit {
   }
 
   formatDate(date: Date | string): string {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    // Use LocaleService for locale-aware formatting
+    return this.localeService.formatDate(
+      typeof date === 'string' ? new Date(date) : date, 
+      'medium'
+    );
   }
 
   formatPrice(price: number): string {
-    return price.toLocaleString();
+    // Use LocaleService for locale-aware currency formatting
+    return this.localeService.formatCurrency(price, this.localeService.getCurrencyCode());
   }
 
   translate(key: string): string {
     return this.translationService.translate(key);
   }
 
+  translateWithParams(key: string, params: Record<string, any>): string {
+    return this.translationService.translateWithParams(key, params);
+  }
+
   viewDetails(event: Event, entry: LotteryTicketDto): void {
     event.stopPropagation();
     // Navigate to house detail page
     // Router navigation is handled by the card click
+  }
+
+  navigateToHouse(houseId: string): void {
+    this.router.navigate(['/houses', houseId]);
   }
 }
 

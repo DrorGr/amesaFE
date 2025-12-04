@@ -23,22 +23,28 @@ import { MobileDetectionService } from '../../services/mobile-detection.service'
       </button>
 
       @if (isDropdownOpen) {
-        <div class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50 mobile-language-dropdown">
+        <div 
+          class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50 mobile-language-dropdown"
+          role="menu"
+          [attr.aria-label]="'Language selection menu'">
           @for (language of availableLanguages; track language.code) {
             <button
               (click)="selectLanguage(language.code)"
+              [attr.aria-label]="'Select ' + language.name + ' language'"
+              [attr.aria-checked]="currentLanguage() === language.code"
+              role="menuitemradio"
               class="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 mobile-language-option"
               [class.bg-blue-50]="currentLanguage() === language.code"
               [class.dark:bg-blue-900]="currentLanguage() === language.code"
               [class.text-blue-600]="currentLanguage() === language.code"
               [class.dark:text-blue-400]="currentLanguage() === language.code">
               <div class="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
-                <img [src]="language.flagUrl" [alt]="language.code" class="w-full h-full object-cover">
+                <img [src]="language.flagUrl" [alt]="language.code + ' flag'" class="w-full h-full object-cover">
               </div>
               <span class="font-medium">{{ language.code.toUpperCase() }}</span>
               <span class="text-xs text-gray-500 dark:text-gray-400 ml-auto">{{ language.name }}</span>
               @if (currentLanguage() === language.code) {
-                <svg class="w-4 h-4 ml-auto text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-4 h-4 ml-auto text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                   <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                 </svg>
               }

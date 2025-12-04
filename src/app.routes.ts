@@ -101,6 +101,30 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'products',
+    loadComponent: () => import('./components/product-selector/product-selector.component').then(m => m.ProductSelectorComponent)
+  },
+  {
+    path: 'payment/checkout',
+    loadComponent: () => import('./components/payment-checkout/payment-checkout.component').then(m => m.PaymentCheckoutComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'payment/stripe',
+    loadComponent: () => import('./components/stripe-payment/stripe-payment.component').then(m => m.StripePaymentComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'payment/crypto',
+    loadComponent: () => import('./components/crypto-payment/crypto-payment.component').then(m => m.CryptoPaymentComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'payment/methods',
+    loadComponent: () => import('./components/payment-methods/payment-methods.component').then(m => m.PaymentMethodsComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: '**',
     redirectTo: ''
   }

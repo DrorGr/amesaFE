@@ -7,13 +7,13 @@ import { interval } from 'rxjs';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="flex items-center gap-2 text-sm">
+    <div class="flex items-center gap-2 text-sm" [attr.aria-live]="'polite'" [attr.aria-atomic]="'true'">
       @if (timeRemaining().ended) {
-        <span class="text-red-600 dark:text-red-400 font-semibold">
-          Ended
+        <span class="text-red-600 dark:text-red-400 font-semibold" role="status">
+          {{ translate('countdown.ended') || 'Ended' }}
         </span>
       } @else {
-        <span class="text-gray-700 dark:text-gray-300">
+        <span class="text-gray-700 dark:text-gray-300" role="timer" [attr.aria-label]="getTimeRemainingLabel()">
           {{ timeRemaining().days }}d {{ timeRemaining().hours }}h {{ timeRemaining().minutes }}m
         </span>
       }
@@ -75,6 +75,14 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
   translate(key: string): string {
     const fn = this.translateFn();
     return fn ? fn(key) : key;
+  }
+
+  getTimeRemainingLabel(): string {
+    const time = this.timeRemaining();
+    if (time.ended) {
+      return this.translate('countdown.ended') || 'Ended';
+    }
+    return `${time.days} days, ${time.hours} hours, ${time.minutes} minutes remaining`;
   }
 }
 

@@ -7,7 +7,7 @@ import { ToastService } from '../../services/toast.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-md w-full pointer-events-none">
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-md w-full pointer-events-none" role="region" aria-live="polite" aria-atomic="false">
       @for (toast of toasts(); track toast.id) {
         <div 
           [class]="getToastClasses(toast.type)"

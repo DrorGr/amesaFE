@@ -169,7 +169,9 @@ function initializeTranslations(
 // Initialize services with cross-dependencies
 function initializeServices(
   userPreferencesService: UserPreferencesService,
-  themeService: ThemeService
+  themeService: ThemeService,
+  accessibilityService: AccessibilityService,
+  authService: AuthService
 ) {
   return () => {
     // Set up the theme service reference in user preferences to avoid circular dependency
@@ -177,6 +179,35 @@ function initializeServices(
     
     // Initialize theme from storage for faster loading
     themeService.initializeFromStorage();
+    
+    // Load user preferences if authenticated
+    // Note: Preferences are loaded automatically by UserPreferencesService constructor
+    // We just need to apply them to theme and accessibility services
+    const prefs = userPreferencesService.getPreferences();
+    
+    // Initialize theme from user preferences
+    if (prefs.appearance?.theme) {
+      themeService.updateThemeFromPreferences(prefs.appearance.theme);
+    }
+    
+    // Initialize accessibility from user preferences
+    if (prefs.accessibility) {
+      // Apply accessibility settings
+      if (prefs.accessibility.highContrast) {
+        accessibilityService.toggleHighContrast();
+      }
+      if (prefs.appearance.fontSize) {
+        // Map FontSize enum to service's accepted values (extra-large maps to large)
+        const fontSizeMap: Record<string, 'small' | 'medium' | 'large'> = {
+          'small': 'small',
+          'medium': 'medium',
+          'large': 'large',
+          'extra-large': 'large'
+        };
+        const fontSize = fontSizeMap[prefs.appearance.fontSize] || 'medium';
+        accessibilityService.setFontSize(fontSize);
+      }
+    }
     
     return Promise.resolve();
   };
@@ -206,7 +237,7 @@ bootstrapApplication(AppComponent, {
     {
       provide: APP_INITIALIZER,
       useFactory: initializeServices,
-      deps: [UserPreferencesService, ThemeService],
+      deps: [UserPreferencesService, ThemeService, AccessibilityService, AuthService],
       multi: true
     },
     provideRouter(

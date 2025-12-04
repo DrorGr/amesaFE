@@ -1,4 +1,4 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, inject, input, output, AfterViewInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,22 +7,41 @@ import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { ToastService } from '../../services/toast.service';
 import { PasswordResetModalComponent } from '../password-reset-modal/password-reset-modal.component';
+import { FocusTrapService } from '../../services/focus-trap.service';
 
 @Component({
   selector: 'app-auth-modal',
   standalone: true,
   imports: [CommonModule, FormsModule, PasswordResetModalComponent],
   template: `
+    <!-- Screen reader announcement -->
+    <div aria-live="polite" aria-atomic="true" class="sr-only">
+      @if (isLoading) {
+        {{ translate('auth.processing') }}
+      }
+    </div>
     <div class="modal-backdrop dark:bg-black dark:bg-opacity-60" (click)="onBackdropClick($event)">
-      <div class="modal-content dark:bg-gray-800">
+      <div 
+        #modalContainer
+        class="modal-content dark:bg-gray-800"
+        role="dialog"
+        [attr.aria-modal]="'true'"
+        [attr.aria-labelledby]="'auth-modal-title'">
         <div class="p-8">
           <div class="flex justify-between items-center mb-8">
-            <h2 class="text-4xl md:text-3xl font-black text-gray-900 dark:text-white mobile-auth-title">
+            <h2 
+              id="auth-modal-title"
+              class="text-4xl md:text-3xl font-black text-gray-900 dark:text-white mobile-auth-title">
               {{ mode() === 'login' ? translate('auth.signIn') : translate('auth.createAccount') }}
             </h2>
             <button 
               (click)="close.emit()"
-              class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all duration-200 hover:scale-110 transform p-1">
+              (keydown.enter)="close.emit()"
+              (keydown.space)="close.emit(); $event.preventDefault()"
+              (keydown.escape)="close.emit()"
+              [attr.aria-label]="translate('auth.closeModal')"
+              [attr.aria-describedby]="'auth-modal-title'"
+              class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all duration-200 hover:scale-110 transform p-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 rounded">
               <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
@@ -32,9 +51,12 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
           <!-- Social Login Buttons -->
           <div class="space-y-4 mb-6">
             <button
+              type="button"
               (click)="loginWithGoogle()"
               [disabled]="isLoading"
-              class="w-full flex items-center justify-center px-8 py-6 text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[80px] mobile-social-button">
+              [attr.aria-label]="translate('auth.continueWithGoogle')"
+              [attr.aria-describedby]="'google-login-help'"
+              class="w-full flex items-center justify-center px-8 py-6 text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[80px] mobile-social-button focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
               <svg class="w-8 h-8 mr-6 mobile-social-icon" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -46,8 +68,11 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
 
             <button
               (click)="loginWithMeta()"
+              (keydown.enter)="loginWithMeta()"
+              (keydown.space)="loginWithMeta(); $event.preventDefault()"
               [disabled]="isLoading"
-              class="w-full flex items-center justify-center px-8 py-6 text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[80px] mobile-social-button">
+              [attr.aria-label]="translate('auth.continueWithMeta')"
+              class="w-full flex items-center justify-center px-8 py-6 text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[80px] mobile-social-button focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
               <svg class="w-8 h-8 mr-6 mobile-social-icon" fill="#1877F2" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
@@ -56,8 +81,11 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
 
             <button
               (click)="loginWithApple()"
+              (keydown.enter)="loginWithApple()"
+              (keydown.space)="loginWithApple(); $event.preventDefault()"
               [disabled]="isLoading"
-              class="w-full flex items-center justify-center px-8 py-6 text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[80px] mobile-social-button">
+              [attr.aria-label]="translate('auth.continueWithApple')"
+              class="w-full flex items-center justify-center px-8 py-6 text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[80px] mobile-social-button focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
               <svg class="w-8 h-8 mr-6 mobile-social-icon" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
               </svg>
@@ -226,7 +254,30 @@ import { PasswordResetModalComponent } from '../password-reset-modal/password-re
     }
   `]
 })
-export class AuthModalComponent {
+export class AuthModalComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('modalContainer') modalContainer!: ElementRef<HTMLElement>;
+  private focusTrapService = inject(FocusTrapService);
+
+  ngAfterViewInit() {
+    // Trap focus in modal
+    if (this.modalContainer?.nativeElement) {
+      this.focusTrapService.trapFocus(this.modalContainer.nativeElement);
+    }
+  }
+
+  @HostListener('keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    // Close modal on Escape key
+    if (event.key === 'Escape') {
+      this.close.emit();
+    }
+  }
+
+  ngOnDestroy() {
+    // Release focus when modal closes
+    this.focusTrapService.releaseFocus();
+  }
+
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private router = inject(Router);
@@ -271,7 +322,7 @@ export class AuthModalComponent {
         if (registerResult?.success) {
           if (registerResult.requiresEmailVerification) {
             // Redirect to email verification page
-            this.toastService.success('Registration successful! Please check your email to verify your account.', 5000);
+            this.toastService.success(this.translate('auth.registrationSuccessVerifyEmail'), 5000);
             this.close.emit();
             this.router.navigate(['/verify-email'], {
               queryParams: { email: this.email }
@@ -294,9 +345,9 @@ export class AuthModalComponent {
         
         // Show success toast
         if (this.mode() === 'login') {
-          this.toastService.success('Welcome back! You have been logged in successfully.', 3000);
+          this.toastService.success(this.translate('auth.loginSuccess'), 3000);
         } else {
-          this.toastService.success('Account created successfully! Welcome!', 3000);
+          this.toastService.success(this.translate('auth.registrationSuccess'), 3000);
         }
         
         // Small delay to show toast before closing modal
@@ -306,9 +357,9 @@ export class AuthModalComponent {
         this.resetForm();
       } else {
         if (this.mode() === 'login') {
-          this.errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+          this.errorMessage = this.translate('auth.invalidCredentials');
         } else {
-          this.errorMessage = 'Registration failed. Please try again or contact support.';
+          this.errorMessage = this.translate('auth.registrationFailed');
         }
       }
     } catch (error: any) {
@@ -320,13 +371,13 @@ export class AuthModalComponent {
         if (error.error?.error?.code === 'USER_NOT_FOUND' || 
             error.error?.error?.message?.includes('USER_NOT_FOUND')) {
           // Show warning toast (yellow) and switch to register mode
-          this.toastService.warning('Account not found. Please sign up first.', 3000);
+          this.toastService.warning(this.translate('auth.accountNotFound'), 3000);
           this.modeChange.emit('register'); // Emit event to parent to switch to register mode
-          this.errorMessage = 'Please create an account to continue.';
+          this.errorMessage = this.translate('auth.createAccountToContinue');
           return;
         }
         
-        this.errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        this.errorMessage = this.translate('auth.invalidCredentials');
       } else if (error.status === 400) {
         const errorCode = error.error?.error?.code;
         
@@ -337,39 +388,39 @@ export class AuthModalComponent {
               errorMessage.toLowerCase().includes('email already') ||
               errorCode === 'VALIDATION_ERROR') {
             // Show warning toast and switch to login mode
-            this.toastService.warning('An account with this email already exists. Please log in instead.', 3000);
+            this.toastService.warning(this.translate('auth.emailAlreadyExists'), 3000);
             this.modeChange.emit('login'); // Switch to login mode
-            this.errorMessage = 'This email is already registered. Please log in.';
+            this.errorMessage = this.translate('auth.emailAlreadyRegistered');
             return;
           }
           
           // Handle rate limiting
           if (errorCode === 'RATE_LIMIT_EXCEEDED') {
-            this.errorMessage = 'Too many registration attempts. Please try again later.';
+            this.errorMessage = this.translate('auth.tooManyRegistrationAttempts');
             return;
           }
           
           // Handle CAPTCHA failure
           if (errorCode === 'CAPTCHA_FAILED') {
-            this.errorMessage = 'CAPTCHA verification failed. Please try again.';
+            this.errorMessage = this.translate('auth.captchaFailed');
             return;
           }
           
-          this.errorMessage = 'Registration failed. Email might already be in use or data is invalid.';
+          this.errorMessage = this.translate('auth.registrationFailedInvalid');
         } else {
           // Login errors
           if (errorCode === 'RATE_LIMIT_EXCEEDED') {
-            this.errorMessage = 'Too many login attempts. Please try again later.';
+            this.errorMessage = this.translate('auth.tooManyLoginAttempts');
           } else {
-            this.errorMessage = 'Invalid request. Please check your input and try again.';
+            this.errorMessage = this.translate('auth.invalidRequest');
           }
         }
       } else if (error.status === 500) {
-        this.errorMessage = 'Server error. Please try again later or contact support.';
+        this.errorMessage = this.translate('auth.serverError');
       } else if (error.message?.includes('Network')) {
-        this.errorMessage = 'Network error. Please check your connection and try again.';
+        this.errorMessage = this.translate('auth.networkError');
       } else {
-        this.errorMessage = 'An unexpected error occurred. Please try again.';
+        this.errorMessage = this.translate('auth.unexpectedError');
       }
     } finally {
       this.isLoading = false;

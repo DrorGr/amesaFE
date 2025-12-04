@@ -1,6 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { Observable, throwError, Subscription, of } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { Observable, throwError, Subscription, of, Subject } from 'rxjs';
+import { map, catchError, tap, switchMap, takeUntil, take, mergeMap } from 'rxjs/operators';
 import { ApiService, PagedResponse } from './api.service';
 import { RetryService } from './retry.service';
 import { 
@@ -58,12 +58,25 @@ export class LotteryService {
   private subscriptions = new Subscription();
   private retryService = inject(RetryService);
   
+  // Cleanup subject for managing subscriptions in root service
+  private cleanup$ = new Subject<void>();
+  
   constructor(private apiService: ApiService) {
     // Load houses automatically when service is initialized
     this.loadHousesInternal();
     
     // Setup SignalR subscriptions for real-time updates (FE-2.6)
     this.setupRealtimeSubscriptions();
+  }
+  
+  /**
+   * Cleanup method to be called before app shutdown or service destruction
+   * Since services with providedIn: 'root' don't have ngOnDestroy, this must be called explicitly
+   */
+  cleanup(): void {
+    this.cleanup$.next();
+    this.cleanup$.complete();
+    this.subscriptions.unsubscribe();
   }
   
   /**
@@ -74,43 +87,58 @@ export class LotteryService {
       return;
     }
     
-    // Subscribe to favorite updates
-    const favoriteSub = this.realtimeService.favoriteUpdates$.subscribe((event: FavoriteUpdateEvent) => {
-      const currentFavorites = this.favoriteHouseIds();
-      if (event.updateType === 'added' && !currentFavorites.includes(event.houseId)) {
-        this.favoriteHouseIds.set([...currentFavorites, event.houseId]);
-      } else if (event.updateType === 'removed') {
-        this.favoriteHouseIds.set(currentFavorites.filter(id => id !== event.houseId));
-      }
-    });
+    // Subscribe to favorite updates - use takeUntil for automatic cleanup
+    const favoriteSub = this.realtimeService.favoriteUpdates$
+      .pipe(takeUntil(this.cleanup$))
+      .subscribe((event: FavoriteUpdateEvent) => {
+        const currentFavorites = this.favoriteHouseIds();
+        if (event.updateType === 'added' && !currentFavorites.includes(event.houseId)) {
+          this.favoriteHouseIds.set([...currentFavorites, event.houseId]);
+        } else if (event.updateType === 'removed') {
+          this.favoriteHouseIds.set(currentFavorites.filter(id => id !== event.houseId));
+        }
+      });
     this.subscriptions.add(favoriteSub);
     
-    // Subscribe to entry status changes
-    const entryStatusSub = this.realtimeService.entryStatusChanges$.subscribe((event: EntryStatusChangeEvent) => {
-      const currentEntries = this.activeEntries();
-      const updatedEntries = currentEntries.map(entry => 
-        entry.id === event.ticketId 
-          ? { ...entry, status: event.newStatus }
-          : entry
-      );
-      this.activeEntries.set(updatedEntries);
-    });
+    // Subscribe to entry status changes - use takeUntil for automatic cleanup
+    const entryStatusSub = this.realtimeService.entryStatusChanges$
+      .pipe(takeUntil(this.cleanup$))
+      .subscribe((event: EntryStatusChangeEvent) => {
+        const currentEntries = this.activeEntries();
+        const updatedEntries = currentEntries.map(entry => 
+          entry.id === event.ticketId 
+            ? { ...entry, status: event.newStatus }
+            : entry
+        );
+        this.activeEntries.set(updatedEntries);
+      });
     this.subscriptions.add(entryStatusSub);
     
-    // Subscribe to draw reminders
-    const drawReminderSub = this.realtimeService.drawReminders$.subscribe((event: DrawReminderEvent) => {
-      // TODO: Show notification/toast for draw reminder
-      console.log('Draw reminder:', event);
-    });
+    // Subscribe to draw reminders - use takeUntil for automatic cleanup
+    const drawReminderSub = this.realtimeService.drawReminders$
+      .pipe(takeUntil(this.cleanup$))
+      .subscribe((event: DrawReminderEvent) => {
+        // TODO: Show notification/toast for draw reminder
+        console.log('Draw reminder:', event);
+      });
     this.subscriptions.add(drawReminderSub);
     
-    // Subscribe to recommendations
-    const recommendationSub = this.realtimeService.recommendations$.subscribe((event: RecommendationEvent) => {
-      // TODO: Show notification/toast for new recommendation
-      console.log('New recommendation:', event);
-      // Optionally refresh recommendations
-      this.getRecommendations(10).subscribe();
-    });
+    // Subscribe to recommendations - use switchMap to prevent nested subscription leaks
+    const recommendationSub = this.realtimeService.recommendations$
+      .pipe(
+        switchMap((event: RecommendationEvent) => {
+          // TODO: Show notification/toast for new recommendation
+          console.log('New recommendation:', event);
+          // Refresh recommendations (switchMap automatically unsubscribes previous requests)
+          return this.getRecommendations(10);
+        }),
+        takeUntil(this.cleanup$),
+        catchError(error => {
+          console.error('Error refreshing recommendations:', error);
+          return of([]); // Return empty array on error to prevent stream breaking
+        })
+      )
+      .subscribe();
     this.subscriptions.add(recommendationSub);
   }
 
@@ -153,7 +181,9 @@ export class LotteryService {
       return; // Use cached data
     }
     
-    this.getHousesFromApi().subscribe({
+    this.getHousesFromApi().pipe(
+      take(1) // Auto-unsubscribe after first emission to prevent memory leaks
+    ).subscribe({
       next: (response) => {
         // Convert HouseDto to House format
         const houses: House[] = response.items.map(dto => this.convertHouseDtoToHouse(dto));
@@ -374,7 +404,9 @@ export class LotteryService {
 
   // Load houses from API and update local state
   loadHouses(params?: any): void {
-    this.getHousesFromApi(params).subscribe({
+    this.getHousesFromApi(params).pipe(
+      take(1) // Auto-unsubscribe after first emission to prevent memory leaks
+    ).subscribe({
       next: (pagedResponse) => {
         const houses = pagedResponse.items.map(houseDto => this.convertHouseDtoToHouse(houseDto));
         this.houses.set(houses);
@@ -424,7 +456,9 @@ export class LotteryService {
       clearTimeout(this.favoritesRefreshTimeout);
     }
     this.favoritesRefreshTimeout = setTimeout(() => {
-      this.getFavoriteHouses().subscribe({
+      this.getFavoriteHouses().pipe(
+        take(1) // Auto-unsubscribe after first emission to prevent memory leaks
+      ).subscribe({
         error: (error) => {
           console.error('Error refreshing favorites:', error);
         }
@@ -700,11 +734,15 @@ export class LotteryService {
     ).pipe(
       map(response => {
         if (response.success && response.data) {
-          // Refresh active entries after quick entry
-          this.getUserActiveEntries().subscribe();
           return response.data;
         }
         throw new Error('Failed to process quick entry');
+      }),
+      tap(() => {
+        // Refresh active entries after quick entry (side effect)
+        this.getUserActiveEntries().pipe(
+          take(1) // Auto-unsubscribe after first emission to prevent memory leaks
+        ).subscribe();
       }),
       catchError(error => {
         console.error('Error processing quick entry:', error);

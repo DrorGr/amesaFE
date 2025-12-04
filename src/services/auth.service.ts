@@ -1,7 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { tap, catchError, map, take } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { 
   User, 
@@ -14,6 +14,10 @@ import {
 import { UserLotteryData } from '../interfaces/lottery.interface';
 import { LotteryService } from './lottery.service';
 import { RealtimeService } from './realtime.service';
+import { UserPreferencesService } from './user-preferences.service';
+import { ThemeService } from './theme.service';
+import { AccessibilityService } from './accessibility.service';
+import { TranslationService } from './translation.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,12 +30,24 @@ export class AuthService {
   // Inject LotteryService for lottery data loading (circular dependency handled via inject())
   private lotteryService = inject(LotteryService, { optional: true });
   private realtimeService = inject(RealtimeService, { optional: true });
+  private userPreferencesService = inject(UserPreferencesService, { optional: true });
+  private themeService = inject(ThemeService, { optional: true });
+  private accessibilityService = inject(AccessibilityService, { optional: true });
+  private translationService = inject(TranslationService, { optional: true });
   
   private router = inject(Router, { optional: true });
+
+  private tokenRefreshInterval: any = null;
+  private readonly REFRESH_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
+  private readonly REFRESH_BEFORE_EXPIRY = 5 * 60 * 1000; // 5 minutes before expiry
 
   constructor(private apiService: ApiService) {
     // Check if user is already authenticated on service initialization
     this.checkAuthStatus();
+    // Start proactive token refresh monitoring
+    this.startTokenRefreshMonitoring();
+    // Register token refresh callback for automatic retry on 401 errors
+    this.apiService.setTokenRefreshCallback(() => this.refreshToken());
   }
 
   getCurrentUser() {
@@ -47,14 +63,56 @@ export class AuthService {
   private checkAuthStatus(): void {
     const token = localStorage.getItem('access_token');
     if (token) {
-      this.getCurrentUserProfile().subscribe({
+      // Fixed: Use take(1) for auto-cleanup to prevent memory leaks
+      this.getCurrentUserProfile().pipe(
+        take(1) // Auto-unsubscribe after first emission
+      ).subscribe({
         next: (user) => {
           this.setUser(user);
+          // Initialize preferences on auth status check
+          this.initializeUserPreferences();
         },
         error: () => {
           this.logout();
         }
       });
+    }
+  }
+  
+  /**
+   * Initialize user preferences (theme, accessibility, language) from user preferences service
+   * Called after successful login or auth status check
+   */
+  private initializeUserPreferences(): void {
+    if (this.userPreferencesService) {
+      const prefs = this.userPreferencesService.getPreferences();
+      
+      // Initialize theme from user preferences
+      if (this.themeService && prefs.appearance?.theme) {
+        this.themeService.updateThemeFromPreferences(prefs.appearance.theme);
+      }
+      
+      // Initialize accessibility settings from user preferences
+      if (this.accessibilityService && prefs.accessibility) {
+        // Apply accessibility preferences
+        if (prefs.accessibility.highContrast !== undefined) {
+          if (prefs.accessibility.highContrast && !this.accessibilityService.getHighContrastMode()()) {
+            this.accessibilityService.toggleHighContrast();
+          }
+        }
+        if (prefs.appearance?.fontSize) {
+          // Map 'extra-large' to 'large' since setFontSize only accepts 'small' | 'medium' | 'large'
+          const fontSize = prefs.appearance.fontSize === 'extra-large' ? 'large' : prefs.appearance.fontSize;
+          if (fontSize === 'small' || fontSize === 'medium' || fontSize === 'large') {
+            this.accessibilityService.setFontSize(fontSize);
+          }
+        }
+      }
+      
+      // Initialize language from user preferences
+      if (this.translationService && prefs.localization?.language) {
+        this.translationService.setLanguage(prefs.localization.language);
+      }
     }
   }
 
@@ -75,8 +133,18 @@ export class AuthService {
             if (response.data.refreshToken) {
               localStorage.setItem('refresh_token', response.data.refreshToken);
             }
+            if (response.data.expiresAt) {
+              // Store as ISO string for reliable parsing
+              const expiresAt = response.data.expiresAt instanceof Date 
+                ? response.data.expiresAt.toISOString() 
+                : new Date(response.data.expiresAt).toISOString();
+              localStorage.setItem('token_expires_at', expiresAt);
+            }
             this.setUser(response.data.user);
             this.isAuthenticatedSubject.next(true);
+            
+            // Initialize user preferences (theme, accessibility, language) from user preferences
+            this.initializeUserPreferences();
             
             // Load lottery data if available
             if (response.data.lotteryData && this.lotteryService) {
@@ -84,7 +152,10 @@ export class AuthService {
             } else if (this.lotteryService) {
               // If lotteryData not in response, explicitly fetch favorites from backend
               // This ensures favorites are loaded even if backend doesn't include them in login response
-              this.lotteryService.getFavoriteHouses().subscribe({
+              // Fixed: Use take(1) for auto-cleanup to prevent memory leaks
+              this.lotteryService.getFavoriteHouses().pipe(
+                take(1) // Auto-unsubscribe after first emission
+              ).subscribe({
                 next: () => {
                   // Favorites loaded successfully
                 },
@@ -132,6 +203,13 @@ export class AuthService {
             if (response.data.refreshToken) {
               localStorage.setItem('refresh_token', response.data.refreshToken);
             }
+            if (response.data.expiresAt) {
+              // Store as ISO string for reliable parsing
+              const expiresAt = response.data.expiresAt instanceof Date 
+                ? response.data.expiresAt.toISOString() 
+                : new Date(response.data.expiresAt).toISOString();
+              localStorage.setItem('token_expires_at', expiresAt);
+            }
             this.setUser(response.data.user);
             this.isAuthenticatedSubject.next(true);
           }
@@ -150,15 +228,22 @@ export class AuthService {
   }
 
   logout(): void {
+    // Stop token refresh monitoring
+    this.stopTokenRefreshMonitoring();
+
     const refreshToken = localStorage.getItem('refresh_token');
     if (refreshToken) {
-      this.apiService.post('auth/logout', { refreshToken }).subscribe();
+      // Fixed: Use take(1) for auto-cleanup to prevent memory leaks
+      this.apiService.post('auth/logout', { refreshToken }).pipe(
+        take(1) // Auto-unsubscribe after first emission
+      ).subscribe();
     }
     
     // Clear all tokens
     this.apiService.clearToken();
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('access_token');
+    localStorage.removeItem('token_expires_at');
     
     // Clear all user data
     this.currentUser.set(null);
@@ -236,13 +321,19 @@ export class AuthService {
           this.setUser(userData);
           this.isAuthenticatedSubject.next(true);
           
+          // Initialize user preferences (theme, accessibility, language) from user preferences
+          this.initializeUserPreferences();
+          
           // Load lottery data if available (BE-1.7 enhancement)
           if (response.data.lotteryData && this.lotteryService) {
             this.lotteryService.initializeLotteryData(response.data.lotteryData);
           } else if (this.lotteryService) {
             // If lotteryData not in response, explicitly fetch favorites from backend
             // This ensures favorites are loaded on page refresh or auth check
-            this.lotteryService.getFavoriteHouses().subscribe({
+            // Fixed: Use take(1) for auto-cleanup to prevent memory leaks
+            this.lotteryService.getFavoriteHouses().pipe(
+              take(1) // Auto-unsubscribe after first emission
+            ).subscribe({
               next: () => {
                 // Favorites loaded successfully
               },
@@ -423,6 +514,117 @@ export class AuthService {
     };
     
     this.currentUser.set(user);
+  }
+
+  /**
+   * Refresh access token using refresh token
+   */
+  refreshToken(): Observable<AuthResponse> {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    return this.apiService.post<AuthResponse>('auth/refresh', { refreshToken }).pipe(
+      tap(response => {
+        if (response.success && response.data) {
+          // Update tokens in localStorage
+          if (response.data.accessToken) {
+            this.apiService.setToken(response.data.accessToken);
+          }
+          if (response.data.refreshToken) {
+            localStorage.setItem('refresh_token', response.data.refreshToken);
+          }
+          if (response.data.expiresAt) {
+            // Store as ISO string for reliable parsing
+            const expiresAt = response.data.expiresAt instanceof Date 
+              ? response.data.expiresAt.toISOString() 
+              : new Date(response.data.expiresAt).toISOString();
+            localStorage.setItem('token_expires_at', expiresAt);
+          }
+          // Update user if provided
+          if (response.data.user) {
+            this.setUser(response.data.user);
+          }
+        }
+      }),
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Token refresh failed');
+      }),
+      catchError(error => {
+        console.error('Token refresh error:', error);
+        // If refresh fails, clear tokens and logout
+        this.logout();
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Start proactive token refresh monitoring
+   * Checks token expiration every 5 minutes and refreshes if expiring within 5 minutes
+   */
+  private startTokenRefreshMonitoring(): void {
+    // Clear any existing interval
+    if (this.tokenRefreshInterval) {
+      clearInterval(this.tokenRefreshInterval);
+    }
+
+    // Check token expiration periodically
+    this.tokenRefreshInterval = setInterval(() => {
+      this.checkAndRefreshToken();
+    }, this.REFRESH_CHECK_INTERVAL);
+
+    // Also check immediately on initialization
+    this.checkAndRefreshToken();
+  }
+
+  /**
+   * Check token expiration and refresh if needed
+   */
+  private checkAndRefreshToken(): void {
+    const expiresAtStr = localStorage.getItem('token_expires_at');
+    if (!expiresAtStr) {
+      return; // No token expiration info
+    }
+
+    try {
+      const expiresAt = new Date(expiresAtStr);
+      const now = new Date();
+      const timeUntilExpiry = expiresAt.getTime() - now.getTime();
+
+      // If token expires within 5 minutes, refresh it
+      if (timeUntilExpiry > 0 && timeUntilExpiry <= this.REFRESH_BEFORE_EXPIRY) {
+        console.log('Token expiring soon, refreshing proactively...');
+        // Fixed: Use take(1) for auto-cleanup to prevent memory leaks
+        this.refreshToken().pipe(
+          take(1) // Auto-unsubscribe after first emission
+        ).subscribe({
+          next: () => {
+            console.log('Token refreshed successfully');
+          },
+          error: (err) => {
+            console.warn('Proactive token refresh failed:', err);
+            // Don't logout on proactive refresh failure - will fail on next API call
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error checking token expiration:', error);
+    }
+  }
+
+  /**
+   * Stop token refresh monitoring (called on logout)
+   */
+  private stopTokenRefreshMonitoring(): void {
+    if (this.tokenRefreshInterval) {
+      clearInterval(this.tokenRefreshInterval);
+      this.tokenRefreshInterval = null;
+    }
   }
 
 }

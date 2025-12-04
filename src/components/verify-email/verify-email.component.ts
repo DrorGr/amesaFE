@@ -38,13 +38,19 @@ import { ToastService } from '../../services/toast.service';
                 type="text"
                 [(ngModel)]="verificationToken"
                 [disabled]="isLoading()"
+                [attr.aria-label]="translate('auth.verificationToken')"
+                [attr.aria-describedby]="'verification-token-help'"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                 [placeholder]="translate('auth.enterVerificationToken')">
+              <p id="verification-token-help" class="sr-only">{{ translate('auth.enterVerificationToken') }}</p>
             </div>
 
             <button
               (click)="verifyEmail()"
+              (keydown.enter)="verifyEmail()"
+              (keydown.space)="verifyEmail(); $event.preventDefault()"
               [disabled]="!verificationToken || isLoading()"
+              [attr.aria-label]="translate('auth.verifyEmail')"
               class="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
               @if (isLoading()) {
                 <span class="flex items-center justify-center">
@@ -65,7 +71,10 @@ import { ToastService } from '../../services/toast.service';
               </p>
               <button
                 (click)="resendVerificationEmail()"
+                (keydown.enter)="resendVerificationEmail()"
+                (keydown.space)="resendVerificationEmail(); $event.preventDefault()"
                 [disabled]="isResending() || resendCooldown() > 0"
+                [attr.aria-label]="translate('auth.resendVerificationEmail')"
                 class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors">
                 @if (resendCooldown() > 0) {
                   {{ getResendCooldownMessage() }}
@@ -78,9 +87,9 @@ import { ToastService } from '../../services/toast.service';
         }
 
         @if (verificationStatus() === 'success') {
-          <div class="text-center space-y-6">
+          <div class="text-center space-y-6" aria-live="polite" aria-atomic="true" role="status">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900">
-              <svg class="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
@@ -92,6 +101,9 @@ import { ToastService } from '../../services/toast.service';
             </p>
             <button
               (click)="goToLogin()"
+              (keydown.enter)="goToLogin()"
+              (keydown.space)="goToLogin(); $event.preventDefault()"
+              [attr.aria-label]="translate('auth.goToLogin')"
               class="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-lg transition-all duration-200">
               {{ translate('auth.goToLogin') }}
             </button>
@@ -99,9 +111,9 @@ import { ToastService } from '../../services/toast.service';
         }
 
         @if (verificationStatus() === 'error') {
-          <div class="text-center space-y-6">
+          <div class="text-center space-y-6" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900">
-              <svg class="h-8 w-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="h-8 w-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </div>
@@ -114,12 +126,18 @@ import { ToastService } from '../../services/toast.service';
             <div class="space-y-3">
               <button
                 (click)="retryVerification()"
+                (keydown.enter)="retryVerification()"
+                (keydown.space)="retryVerification(); $event.preventDefault()"
+                [attr.aria-label]="translate('auth.tryAgain')"
                 class="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-lg transition-all duration-200">
                 {{ translate('auth.tryAgain') }}
               </button>
               <button
                 (click)="resendVerificationEmail()"
+                (keydown.enter)="resendVerificationEmail()"
+                (keydown.space)="resendVerificationEmail(); $event.preventDefault()"
                 [disabled]="isResending() || resendCooldown() > 0"
+                [attr.aria-label]="translate('auth.resendVerificationEmail')"
                 class="w-full px-6 py-3 text-lg font-semibold text-blue-600 dark:text-blue-400 bg-transparent border-2 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 disabled:opacity-50">
                 @if (resendCooldown() > 0) {
                   {{ getResendCooldownMessage() }}

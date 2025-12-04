@@ -1,7 +1,8 @@
 ﻿import { Component, input, output, OnInit, OnDestroy, inject, signal, effect, EffectRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
+import { LocaleService } from '../../services/locale.service';
 
 interface Promotion {
   id: string;
@@ -40,8 +41,12 @@ interface Promotion {
             </h2>
             <button 
               (click)="close.emit()"
-              class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-20">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              (keydown.enter)="close.emit()"
+              (keydown.space)="close.emit(); $event.preventDefault()"
+              (keydown.escape)="close.emit()"
+              [attr.aria-label]="translate('common.close')"
+              class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </button>
@@ -67,9 +72,14 @@ interface Promotion {
             <div class="space-y-4">
               @for (promotion of promotions(); track promotion.id) {
                 <div 
-                  class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
+                  class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
                   [routerLink]="promotion.link || ['/promotions']"
-                  (click)="close.emit()">
+                  (click)="close.emit()"
+                  (keydown.enter)="close.emit(); navigateToPromotion(promotion)"
+                  (keydown.space)="close.emit(); navigateToPromotion(promotion); $event.preventDefault()"
+                  [attr.aria-label]="translateWithParams('promotions.viewPromotion', { title: promotion.title })"
+                  role="link"
+                  tabindex="0">
                   @if (promotion.imageUrl) {
                     <img 
                       [src]="promotion.imageUrl" 
@@ -115,10 +125,12 @@ interface Promotion {
   `]
 })
 export class PromotionsSlidingMenuComponent implements OnInit, OnDestroy {
+  localeService = inject(LocaleService);
   isOpen = input.required<boolean>();
   close = output<void>();
   
   private translationService = inject(TranslationService);
+  private router = inject(Router);
   
   promotions = signal<Promotion[]>([]);
   isLoading = signal(false);
@@ -191,12 +203,19 @@ export class PromotionsSlidingMenuComponent implements OnInit, OnDestroy {
   }
 
   formatDate(date: string): string {
-    const d = new Date(date);
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    return this.localeService.formatDate(date, 'short');
+  }
+
+  translateWithParams(key: string, params: Record<string, any>): string {
+    return this.translationService.translateWithParams(key, params);
+  }
+
+  navigateToPromotion(promotion: Promotion): void {
+    if (promotion.link) {
+      this.router.navigateByUrl(promotion.link);
+    } else {
+      this.router.navigate(['/promotions']);
+    }
   }
 }
 

@@ -54,6 +54,9 @@ export interface ProcessPaymentRequest {
   currency: string;
   description?: string;
   referenceId?: string;
+  idempotencyKey?: string;
+  productId?: string;
+  quantity?: number;
 }
 
 export interface PaymentResponse {
@@ -214,6 +217,40 @@ export class PaymentService {
       }),
       catchError(error => {
         console.error('Error processing withdrawal:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Idempotency key generation
+  generateIdempotencyKey(): string {
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+  }
+
+  // Product payment processing
+  processProductPayment(productId: string, quantity: number, paymentMethodId?: string, idempotencyKey?: string): Observable<PaymentResponse> {
+    const request: ProcessPaymentRequest = {
+      paymentMethodId: paymentMethodId || '',
+      amount: 0, // Will be calculated server-side
+      currency: 'USD',
+      productId,
+      quantity,
+      idempotencyKey: idempotencyKey || this.generateIdempotencyKey()
+    };
+    return this.processPayment(request);
+  }
+
+  // Get product price (server-side)
+  getProductPrice(productId: string, quantity: number = 1): Observable<number> {
+    return this.apiService.post<{ calculatedPrice: number }>(`products/${productId}/validate`, { productId, quantity }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data.calculatedPrice;
+        }
+        throw new Error('Failed to get product price');
+      }),
+      catchError(error => {
+        console.error('Error getting product price:', error);
         return throwError(() => error);
       })
     );

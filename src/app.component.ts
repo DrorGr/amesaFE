@@ -8,12 +8,10 @@ import { TopbarComponent } from './components/topbar/topbar.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { TranslationLoaderComponent } from './components/translation-loader/translation-loader.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
+import { AccessibilityWidgetComponent } from './components/accessibility-widget/accessibility-widget.component';
 import { ToastComponent } from './components/toast/toast.component';
 import { CookieConsentComponent } from './components/cookie-consent/cookie-consent.component';
-import { ActiveEntriesAccordionComponent } from './components/active-entries-accordion/active-entries-accordion.component';
-import { AuthModalComponent } from './components/auth-modal/auth-modal.component';
-import { AuthService } from './services/auth.service';
-import { AuthModalService } from './services/auth-modal.service';
+import { SkipLinksComponent } from './components/skip-links/skip-links.component';
 import { TranslationService } from './services/translation.service';
 import { RouteLoadingService } from './services/route-loading.service';
 import { ToastService } from './services/toast.service';
@@ -30,23 +28,24 @@ import { CookieConsentService } from './services/cookie-consent.service';
     LoadingComponent,
     TranslationLoaderComponent,
     ChatbotComponent,
+    AccessibilityWidgetComponent,
     ToastComponent,
     CookieConsentComponent,
-    ActiveEntriesAccordionComponent,
-    AuthModalComponent
+    SkipLinksComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
+      <!-- Skip Links for Accessibility -->
+      <app-skip-links></app-skip-links>
+      
       <!-- Translation Loader Spinner -->
       <app-translation-loader
         [isVisible]="(translationService.isLoading$ | async) ?? false"
       ></app-translation-loader>
       
-      <app-topbar></app-topbar>
-      
-      @if (authService.isAuthenticated()) {
-        <app-active-entries-accordion></app-active-entries-accordion>
-      }
+      <nav id="main-navigation" role="navigation">
+        <app-topbar></app-topbar>
+      </nav>
       
       <div class="transition-all duration-500 ease-in-out">
         @if (isLoading | async) {
@@ -56,7 +55,7 @@ import { CookieConsentService } from './services/cookie-consent.service';
         }
       </div>
       
-      <footer class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-8">
+      <footer id="footer" role="contentinfo" class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Logo, Description and Social Media -->
           <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-6 mobile-footer-header">
@@ -106,9 +105,9 @@ import { CookieConsentService } from './services/cookie-consent.service';
             <div>
               <h4 class="font-semibold mb-3 text-white mobile-footer-section-heading">{{ translate('footer.community') }}</h4>
               <ul class="space-y-2 text-gray-300 text-sm mobile-footer-link-text">
-                <li><button (click)="navigateToAbout()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.about') }}</button></li>
-                <li><button (click)="navigateToSponsorship()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.makeSponsorship') }}</button></li>
-                <li><button (click)="navigateToResponsibleGambling()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.responsibleGaming') }}</button></li>
+                <li><button (click)="navigateToAbout()" (keydown.enter)="navigateToAbout()" (keydown.space)="navigateToAbout(); $event.preventDefault()" [attr.aria-label]="translate('footer.about')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.about') }}</button></li>
+                <li><button (click)="navigateToSponsorship()" (keydown.enter)="navigateToSponsorship()" (keydown.space)="navigateToSponsorship(); $event.preventDefault()" [attr.aria-label]="translate('footer.makeSponsorship')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.makeSponsorship') }}</button></li>
+                <li><button (click)="navigateToResponsibleGambling()" (keydown.enter)="navigateToResponsibleGambling()" (keydown.space)="navigateToResponsibleGambling(); $event.preventDefault()" [attr.aria-label]="translate('footer.responsibleGaming')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.responsibleGaming') }}</button></li>
               </ul>
             </div>
             
@@ -116,10 +115,10 @@ import { CookieConsentService } from './services/cookie-consent.service';
             <div>
               <h4 class="font-semibold mb-3 text-white mobile-footer-section-heading">{{ translate('footer.support') }}</h4>
               <ul class="space-y-2 text-gray-300 text-sm mobile-footer-link-text">
-                <li><button (click)="navigateToHelp()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.helpCenter') }}</button></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.liveChat') }}</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.contactUs') }}</a></li>
-                <li><button (click)="navigateToFAQ()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.faq') }}</button></li>
+                <li><button (click)="navigateToHelp()" (keydown.enter)="navigateToHelp()" (keydown.space)="navigateToHelp(); $event.preventDefault()" [attr.aria-label]="translate('footer.helpCenter')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.helpCenter') }}</button></li>
+                <li><a href="#" [attr.aria-label]="translate('footer.liveChat')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.liveChat') }}</a></li>
+                <li><a href="#" [attr.aria-label]="translate('footer.contactUs')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.contactUs') }}</a></li>
+                <li><button (click)="navigateToFAQ()" (keydown.enter)="navigateToFAQ()" (keydown.space)="navigateToFAQ(); $event.preventDefault()" [attr.aria-label]="translate('footer.faq')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.faq') }}</button></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.drawCalendar') }}</a></li>
                 <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.branchMap') }}</a></li>
               </ul>
@@ -129,12 +128,12 @@ import { CookieConsentService } from './services/cookie-consent.service';
             <div>
               <h4 class="font-semibold mb-3 text-white mobile-footer-section-heading">{{ translate('footer.legal') }}</h4>
               <ul class="space-y-2 text-gray-300 text-sm mobile-footer-link-text">
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.regulations') }}</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.termsConditions') }}</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.privacyPolicy') }}</a></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.gdprInfo') }}</a></li>
-                <li><button (click)="openCookiePreferences()" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left">{{ translate('footer.cookiePreferences') }}</button></li>
-                <li><a href="#" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block">{{ translate('footer.news') }}</a></li>
+                <li><a href="#" [attr.aria-label]="translate('footer.regulations')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.regulations') }}</a></li>
+                <li><a href="#" [attr.aria-label]="translate('footer.termsConditions')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.termsConditions') }}</a></li>
+                <li><a href="#" [attr.aria-label]="translate('footer.privacyPolicy')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.privacyPolicy') }}</a></li>
+                <li><a href="#" [attr.aria-label]="translate('footer.gdprInfo')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.gdprInfo') }}</a></li>
+                <li><button (click)="openCookiePreferences()" (keydown.enter)="openCookiePreferences()" (keydown.space)="openCookiePreferences(); $event.preventDefault()" [attr.aria-label]="translate('footer.cookiePreferences')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.cookiePreferences') }}</button></li>
+                <li><a href="#" [attr.aria-label]="translate('footer.news')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none focus:ring-2 focus:ring-blue-400 rounded">{{ translate('footer.news') }}</a></li>
               </ul>
             </div>
             
@@ -189,21 +188,14 @@ import { CookieConsentService } from './services/cookie-consent.service';
       <!-- Fixed Chatbot -->
       <app-chatbot></app-chatbot>
       
+      <!-- Fixed Accessibility Widget -->
+      <app-accessibility-widget></app-accessibility-widget>
+      
       <!-- Toast Notifications -->
       <app-toast></app-toast>
       
       <!-- Cookie Consent Banner -->
       <app-cookie-consent></app-cookie-consent>
-
-      <!-- Auth Modal (rendered at root level to avoid parent constraints) -->
-      @if (authModalService.isOpen()) {
-        <app-auth-modal
-          [mode]="authModalService.mode()"
-          (close)="authModalService.close()"
-          (success)="onAuthSuccess()"
-          (modeChange)="authModalService.setMode($event)">
-        </app-auth-modal>
-      }
       
     </div>
   `,
@@ -211,8 +203,6 @@ import { CookieConsentService } from './services/cookie-consent.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
   public translationService = inject(TranslationService);
-  public authService = inject(AuthService);
-  public authModalService = inject(AuthModalService);
   private routeLoadingService = inject(RouteLoadingService);
   private router = inject(Router);
   private toastService = inject(ToastService);
@@ -301,10 +291,6 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       }
     }, 500);
-  }
-
-  onAuthSuccess(): void {
-    this.authModalService.close();
   }
 
   ngOnDestroy(): void {

@@ -1,9 +1,10 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { LotteryResultsService, LotteryResult, LotteryResultsFilter } from '../../services/lottery-results.service';
+import { LotteryResultsService, LotteryResult, LotteryResultsFilter, QRCodeValidation } from '../../services/lottery-results.service';
 import { TranslationService } from '../../services/translation.service';
+import { Html5Qrcode } from 'html5-qrcode';
 
 @Component({
   selector: 'app-lottery-results-page',
@@ -87,12 +88,21 @@ import { TranslationService } from '../../services/translation.service';
           </div>
 
           <!-- Clear Filters Button -->
-          <div class="mt-4">
+          <div class="mt-4 flex justify-between items-center">
             <button 
               (click)="clearFilters()"
               class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
               {{ translate('lotteryResults.clearFilters') }}
+            </button>
+            <button 
+              (click)="openQRScanner()"
+              class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h4M4 8h4m-4 4h4m-4 4h4m-4-8h4m-4 4h4"></path>
+              </svg>
+              {{ translate('lotteryResults.scanQR') }}
             </button>
           </div>
         </div>
@@ -316,6 +326,65 @@ import { TranslationService } from '../../services/translation.service';
       </div>
     </div>
 
+    <!-- QR Scanner Modal -->
+    @if (showScanner()) {
+      <div 
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+        (click)="closeQRScanner()"
+      >
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800" (click)="$event.stopPropagation()">
+          <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                {{ translate('lotteryResults.scanQRTitle') || 'Scan QR Code' }}
+              </h3>
+              <button 
+                (click)="closeQRScanner()"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                aria-label="Close scanner"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <div id="qr-reader" class="w-full mb-4"></div>
+            
+            @if (scanningError()) {
+              <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+                <p class="text-sm text-red-800 dark:text-red-200">{{ scanningError() }}</p>
+              </div>
+            }
+            
+            @if (validationResult()) {
+              <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+                <h4 class="text-sm font-medium text-green-800 dark:text-green-200 mb-2">
+                  {{ translate('lotteryResults.validationResult') || 'Validation Result' }}
+                </h4>
+                <p class="text-sm text-green-700 dark:text-green-300">{{ validationResult()!.message }}</p>
+                @if (validationResult()!.isValid && validationResult()!.isWinner) {
+                  <div class="mt-2 text-sm">
+                    <p><strong>{{ translate('lotteryResults.prize') }}:</strong> {{ lotteryResultsService.formatCurrency(validationResult()!.prizeValue || 0) }}</p>
+                    <p><strong>{{ translate('lotteryResults.position') || 'Position' }}:</strong> {{ validationResult()!.prizePosition }}</p>
+                  </div>
+                }
+              </div>
+            }
+            
+            <div class="flex justify-center space-x-3">
+              <button 
+                (click)="closeQRScanner()"
+                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+              >
+                {{ translate('lotteryResults.close') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- QR Code Modal -->
     @if (selectedResult()) {
       <div 
@@ -372,7 +441,7 @@ import { TranslationService } from '../../services/translation.service';
     }
   `]
 })
-export class LotteryResultsPageComponent implements OnInit {
+export class LotteryResultsPageComponent implements OnInit, OnDestroy {
   public lotteryResultsService = inject(LotteryResultsService);
   private translationService = inject(TranslationService);
 
@@ -383,6 +452,9 @@ export class LotteryResultsPageComponent implements OnInit {
   private _currentPage = signal<number>(1);
   private _totalPages = signal<number>(1);
   private _selectedResult = signal<LotteryResult | null>(null);
+  private _showScanner = signal<boolean>(false);
+  private _scanningError = signal<string | null>(null);
+  private _validationResult = signal<QRCodeValidation | null>(null);
 
   // Public signals
   public results = this._results.asReadonly();
@@ -391,6 +463,12 @@ export class LotteryResultsPageComponent implements OnInit {
   public currentPage = this._currentPage.asReadonly();
   public totalPages = this._totalPages.asReadonly();
   public selectedResult = this._selectedResult.asReadonly();
+  public showScanner = this._showScanner.asReadonly();
+  public scanningError = this._scanningError.asReadonly();
+  public validationResult = this._validationResult.asReadonly();
+
+  // QR Scanner
+  private qrScanner: Html5Qrcode | null = null;
 
   // Computed signals
   public winnersByPosition = this.lotteryResultsService.winnersByPosition;
@@ -514,5 +592,89 @@ export class LotteryResultsPageComponent implements OnInit {
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  openQRScanner(): void {
+    this._showScanner.set(true);
+    this._scanningError.set(null);
+    this._validationResult.set(null);
+    
+    // Initialize scanner after view update
+    setTimeout(() => {
+      this.initQRScanner();
+    }, 100);
+  }
+
+  closeQRScanner(): void {
+    this.stopQRScanner();
+    this._showScanner.set(false);
+    this._scanningError.set(null);
+    this._validationResult.set(null);
+  }
+
+  private async initQRScanner(): Promise<void> {
+    try {
+      const qrCodeRegionId = 'qr-reader';
+      this.qrScanner = new Html5Qrcode(qrCodeRegionId);
+      
+      const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+      };
+
+      await this.qrScanner.start(
+        { facingMode: 'environment' }, // Use back camera on mobile
+        config,
+        (decodedText) => {
+          // QR code scanned successfully
+          this.handleQRCodeScanned(decodedText);
+        },
+        (errorMessage) => {
+          // Scanning error (not a fatal error, just no QR code detected yet)
+          // Don't show error for normal scanning process
+        }
+      );
+    } catch (error: any) {
+      console.error('Error initializing QR scanner:', error);
+      this._scanningError.set(
+        error.message || this.translate('lotteryResults.scannerError') || 'Failed to initialize QR scanner'
+      );
+    }
+  }
+
+  private stopQRScanner(): void {
+    if (this.qrScanner) {
+      this.qrScanner.stop().catch((err) => {
+        console.error('Error stopping QR scanner:', err);
+      });
+      this.qrScanner.clear();
+      this.qrScanner = null;
+    }
+  }
+
+  private handleQRCodeScanned(qrCodeData: string): void {
+    // Stop scanning after successful scan
+    this.stopQRScanner();
+    
+    // Validate the QR code
+    this.lotteryResultsService.validateQRCode(qrCodeData).subscribe({
+      next: (validation) => {
+        this._validationResult.set(validation);
+        if (!validation.isValid) {
+          this._scanningError.set(validation.message || 'Invalid QR code');
+        } else {
+          this._scanningError.set(null);
+        }
+      },
+      error: (error) => {
+        this._scanningError.set(error.message || 'Failed to validate QR code');
+        this._validationResult.set(null);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.stopQRScanner();
   }
 }

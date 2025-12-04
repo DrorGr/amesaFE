@@ -1,7 +1,9 @@
-import { Injectable, signal } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Injectable, signal, inject, OnDestroy } from '@angular/core';
+import { Observable, throwError, Subject } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { ApiService } from './api.service';
+import { RealtimeService } from './realtime.service';
+import { Subscription } from 'rxjs';
 
 export interface NotificationDto {
   id: string;
@@ -45,11 +47,19 @@ export interface SendNotificationRequest {
 @Injectable({
   providedIn: 'root'
 })
-export class NotificationService {
+export class NotificationService implements OnDestroy {
   private notifications = signal<NotificationDto[]>([]);
   private unreadCount = signal<number>(0);
+  private realtimeService = inject(RealtimeService);
+  private subscription?: Subscription;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService) {
+    this.subscribeToNotifications();
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribeFromNotifications();
+  }
 
   getNotifications() {
     return this.notifications.asReadonly();
@@ -177,14 +187,36 @@ export class NotificationService {
 
   // Subscribe to real-time notifications
   subscribeToNotifications(): void {
-    // This would integrate with SignalR for real-time updates
-    // For now, we'll implement polling or WebSocket connection
-    console.log('Subscribing to real-time notifications...');
+    if (this.subscription) {
+      return; // Already subscribed
+    }
+
+    // Subscribe to notification events from RealtimeService
+    this.subscription = this.realtimeService.notifications$.subscribe((event: any) => {
+      const notification: NotificationDto = {
+        id: event.id,
+        type: event.type,
+        title: event.title,
+        message: event.message,
+        data: event.data,
+        isRead: false,
+        createdAt: event.timestamp || new Date()
+      };
+      const current = this.notifications();
+      this.notifications.set([notification, ...current]);
+      this.updateUnreadCount();
+    });
+
+    console.log('Subscribed to real-time notifications via SignalR');
   }
 
   // Unsubscribe from real-time notifications
   unsubscribeFromNotifications(): void {
-    console.log('Unsubscribing from real-time notifications...');
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = undefined;
+      console.log('Unsubscribed from real-time notifications');
+    }
   }
 
   // Private helper methods

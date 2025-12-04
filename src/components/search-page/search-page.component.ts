@@ -7,6 +7,8 @@ import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { House } from '../../models/house.model';
 import { CountdownTimerComponent } from '../countdown-timer/countdown-timer.component';
+import { LocaleService } from '../../services/locale.service';
+import { UserPreferencesService } from '../../services/user-preferences.service';
 
 interface SearchFilters {
   query: string;
@@ -56,6 +58,7 @@ interface SearchFilters {
                   [(ngModel)]="filters().query"
                   (ngModelChange)="applyFilters()"
                   [placeholder]="translate('search.searchPlaceholder')"
+                  [attr.aria-label]="translate('search.searchInput')"
                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               </div>
 
@@ -67,6 +70,7 @@ interface SearchFilters {
                 <select
                   [(ngModel)]="filters().status"
                   (ngModelChange)="applyFilters()"
+                  [attr.aria-label]="translate('search.status')"
                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                   <option value="all">{{ translate('search.statusAll') }}</option>
                   <option value="active">{{ translate('search.statusActive') }}</option>
@@ -86,12 +90,14 @@ interface SearchFilters {
                     [(ngModel)]="filters().minPrice"
                     (ngModelChange)="applyFilters()"
                     [placeholder]="translate('search.minPrice')"
+                    [attr.aria-label]="translate('search.minPrice')"
                     class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
                   <input
                     type="number"
                     [(ngModel)]="filters().maxPrice"
                     (ngModelChange)="applyFilters()"
                     [placeholder]="translate('search.maxPrice')"
+                    [attr.aria-label]="translate('search.maxPrice')"
                     class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
                 </div>
               </div>
@@ -106,6 +112,7 @@ interface SearchFilters {
                   [(ngModel)]="filters().location"
                   (ngModelChange)="applyFilters()"
                   [placeholder]="translate('search.locationPlaceholder')"
+                  [attr.aria-label]="translate('search.location')"
                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
               </div>
 
@@ -131,6 +138,7 @@ interface SearchFilters {
                 <select
                   [(ngModel)]="filters().sortBy"
                   (ngModelChange)="applyFilters()"
+                  [attr.aria-label]="translate('search.sortBy')"
                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                   <option value="date">{{ translate('search.sortByDate') }}</option>
                   <option value="price">{{ translate('search.sortByPrice') }}</option>
@@ -142,6 +150,7 @@ interface SearchFilters {
               <!-- Reset Filters -->
               <button
                 (click)="resetFilters()"
+                [attr.aria-label]="translate('search.resetFilters')"
                 class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold transition-colors">
                 {{ translate('search.resetFilters') }}
               </button>
@@ -163,8 +172,11 @@ interface SearchFilters {
                     [class.text-white]="viewMode() === 'grid'"
                     [class.bg-gray-200]="viewMode() !== 'grid'"
                     [class.dark:bg-gray-700]="viewMode() !== 'grid'"
+                    [attr.aria-label]="translate('search.gridView')"
+                    [attr.aria-pressed]="viewMode() === 'grid'"
+                    role="button"
                     class="p-2 rounded-lg transition-colors">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
                     </svg>
                   </button>
@@ -174,8 +186,11 @@ interface SearchFilters {
                     [class.text-white]="viewMode() === 'list'"
                     [class.bg-gray-200]="viewMode() !== 'list'"
                     [class.dark:bg-gray-700]="viewMode() !== 'list'"
+                    [attr.aria-label]="translate('search.listView')"
+                    [attr.aria-pressed]="viewMode() === 'list'"
+                    role="button"
                     class="p-2 rounded-lg transition-colors">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
                     </svg>
                   </button>
@@ -260,7 +275,7 @@ interface SearchFilters {
                           </p>
                           <div class="flex items-center justify-between">
                             <span class="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                              Γé¼{{ formatPrice(house.price) }}
+                              {{ formatPrice(house.price) }}
                             </span>
                             <span 
                               class="px-2 py-1 text-xs rounded-full font-semibold"
@@ -290,6 +305,8 @@ interface SearchFilters {
   `]
 })
 export class SearchPageComponent implements OnInit, OnDestroy {
+  localeService = inject(LocaleService);
+  userPreferencesService = inject(UserPreferencesService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   
@@ -427,7 +444,7 @@ export class SearchPageComponent implements OnInit, OnDestroy {
   }
 
   formatPrice(price: number): string {
-    return price.toLocaleString();
+    return this.localeService.formatCurrency(price, 'USD');
   }
 
   translate(key: string, params?: { [key: string]: any }): string {

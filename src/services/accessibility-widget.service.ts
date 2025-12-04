@@ -193,6 +193,11 @@ export class AccessibilityWidgetService implements OnDestroy {
     this.saveSettings();
   }
 
+  toggleHighContrast(): void {
+    this.settings.contrast = 'high';
+    this.applySettings();
+  }
+
   resetSettings(): void {
     this.settings = {
       fontSize: 16,

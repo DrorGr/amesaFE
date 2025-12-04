@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { LotteryTicketDto } from '../../models/house.model';
+import { LocaleService } from '../../services/locale.service';
 
 @Component({
   selector: 'app-active-entries-accordion',
@@ -14,8 +15,13 @@ import { LotteryTicketDto } from '../../models/house.model';
     @if (currentUser()) {
       <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <button 
-          (click)="toggleAccordion()" 
-          class="w-full px-4 py-3 flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 relative"
+          (click)="toggleAccordion()"
+          (keydown.enter)="toggleAccordion()"
+          (keydown.space)="toggleAccordion(); $event.preventDefault()"
+          [attr.aria-label]="translate('nav.activeEntries')"
+          [attr.aria-expanded]="isExpanded()"
+          [attr.aria-controls]="'active-entries-content'"
+          class="w-full px-4 py-3 flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 relative focus:outline-none focus:ring-2 focus:ring-blue-400"
           [class.justify-center]="!isExpanded()"
           [class.justify-between]="isExpanded()">
           <div class="flex items-center gap-3">
@@ -35,16 +41,19 @@ import { LotteryTicketDto } from '../../models/house.model';
             class="w-5 h-5 text-gray-600 dark:text-gray-400 transition-all duration-300 absolute right-4" 
             fill="none" 
             stroke="currentColor" 
-            viewBox="0 0 24 24">
+            viewBox="0 0 24 24"
+            aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
         
         <div 
+          id="active-entries-content"
           [class.max-h-0]="!isExpanded()"
           [class.max-h-[1000px]]="isExpanded()"
           [class.opacity-0]="!isExpanded()"
           [class.opacity-100]="isExpanded()"
+          [attr.aria-hidden]="!isExpanded()"
           class="overflow-hidden transition-all duration-300 ease-in-out">
           <div class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
             @if (isLoading()) {
@@ -62,7 +71,10 @@ import { LotteryTicketDto } from '../../models/house.model';
                 </p>
                 <button
                   (click)="navigateToHome()"
-                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-semibold transition-colors">
+                  (keydown.enter)="navigateToHome()"
+                  (keydown.space)="navigateToHome(); $event.preventDefault()"
+                  [attr.aria-label]="translate('nav.viewLotteries')"
+                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400">
                   {{ translate('nav.viewLotteries') }}
                 </button>
               </div>
@@ -124,6 +136,7 @@ import { LotteryTicketDto } from '../../models/house.model';
   `]
 })
 export class ActiveEntriesAccordionComponent implements OnInit, OnDestroy {
+  localeService = inject(LocaleService);
   private authService = inject(AuthService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
@@ -205,11 +218,7 @@ export class ActiveEntriesAccordionComponent implements OnInit, OnDestroy {
 
   formatDate(date: Date | string): string {
     const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    return this.localeService.formatDate(d, 'medium');
   }
 }
 

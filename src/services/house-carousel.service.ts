@@ -1,6 +1,7 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { LotteryService } from './lottery.service';
 import { AuthService } from './auth.service';
+import { LocaleService } from './locale.service';
 
 export interface CarouselState {
   currentSlide: number;
@@ -15,6 +16,7 @@ export interface CarouselState {
 export class HouseCarouselService {
   private lotteryService: LotteryService;
   private authService: AuthService;
+  private localeService = inject(LocaleService);
 
   // Carousel state
   private _currentSlide = signal<number>(0);
@@ -218,20 +220,11 @@ export class HouseCarouselService {
 
   // Formatting utilities
   formatPrice(price: number): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price);
+    return this.localeService.formatCurrency(price, 'USD');
   }
 
   formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(date);
+    return this.localeService.formatDate(date, 'long');
   }
 
   // House calculations
@@ -247,7 +240,7 @@ export class HouseCarouselService {
     const remaining = house.totalTickets - ticketsSold;
     if (remaining === 0) return '0%';
     const odds = (1 / remaining) * 100;
-    return odds < 0.01 ? '<0.01%' : `${odds.toFixed(2)}%`;
+    return odds < 0.01 ? '<0.01%' : this.localeService.formatNumber(odds, { style: 'percent', minimumFractionDigits: 2 });
   }
 
   getRemainingTickets(house: any): number {

@@ -93,7 +93,7 @@ describe('AuthService', () => {
     };
 
     service.register(registerRequest).subscribe(response => {
-      expect(response).toBe(true);
+      expect(response.success).toBe(true);
     });
 
     const req = httpMock.expectOne('/api/v1/auth/register');

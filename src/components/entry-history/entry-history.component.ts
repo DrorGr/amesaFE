@@ -1,12 +1,13 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
 import { EntryFilters, PagedEntryHistoryResponse } from '../../interfaces/lottery.interface';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
+import { LocaleService } from '../../services/locale.service';
 
 @Component({
   selector: 'app-entry-history',
@@ -36,6 +37,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
               <select 
                 [(ngModel)]="filters.status"
                 (change)="applyFilters()"
+                [attr.aria-label]="translate(LOTTERY_TRANSLATION_KEYS.filters.status)"
                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                 <option [value]="undefined">{{ translate(LOTTERY_TRANSLATION_KEYS.filters.all) }}</option>
                 <option value="active">{{ translate(LOTTERY_TRANSLATION_KEYS.entries.statusActive) }}</option>
@@ -53,6 +55,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                 type="date"
                 [(ngModel)]="filters.startDate"
                 (change)="applyFilters()"
+                [attr.aria-label]="translate(LOTTERY_TRANSLATION_KEYS.filters.startDate)"
                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
             </div>
             
@@ -65,6 +68,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                 type="date"
                 [(ngModel)]="filters.endDate"
                 (change)="applyFilters()"
+                [attr.aria-label]="translate(LOTTERY_TRANSLATION_KEYS.filters.endDate)"
                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
             </div>
             
@@ -72,7 +76,10 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
             <div class="flex items-end">
               <button
                 (click)="clearFilters()"
-                class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors">
+                (keydown.enter)="clearFilters()"
+                (keydown.space)="clearFilters(); $event.preventDefault()"
+                [attr.aria-label]="translate(LOTTERY_TRANSLATION_KEYS.filters.clear)"
+                class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
                 {{ translate(LOTTERY_TRANSLATION_KEYS.filters.clear) }}
               </button>
             </div>
@@ -83,10 +90,16 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
         <ng-container *ngIf="historyData(); else loading">
           <div *ngIf="historyData()!.items.length > 0; else noHistory">
             <div class="space-y-4 mb-6">
-              <div 
+                <div 
                 *ngFor="let entry of historyData()!.items" 
                 class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow cursor-pointer"
-                [routerLink]="['/houses', entry.houseId]">
+                [routerLink]="['/houses', entry.houseId]"
+                (keydown.enter)="navigateToHouse(entry.houseId)"
+                (keydown.space)="navigateToHouse(entry.houseId); $event.preventDefault()"
+                [attr.aria-label]="translateWithParams('entries.viewEntryDetails', { house: entry.houseTitle })"
+                role="link"
+                tabindex="0"
+                class="focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div class="flex-1">
                     <div class="flex items-center gap-3 mb-2">
@@ -184,9 +197,11 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
   `]
 })
 export class EntryHistoryComponent implements OnInit {
+  localeService = inject(LocaleService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
+  private router = inject(Router);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -267,21 +282,23 @@ export class EntryHistoryComponent implements OnInit {
 
   formatDate(date: Date | string): string {
     const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return this.localeService.formatDate(d, 'medium');
   }
 
   formatPrice(price: number): string {
-    return price.toLocaleString();
+    return this.localeService.formatCurrency(price, 'USD');
   }
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  translateWithParams(key: string, params: Record<string, any>): string {
+    return this.translationService.translateWithParams(key, params);
+  }
+
+  navigateToHouse(houseId: string): void {
+    this.router.navigate(['/houses', houseId]);
   }
 }
 

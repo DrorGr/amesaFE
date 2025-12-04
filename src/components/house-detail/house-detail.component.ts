@@ -7,6 +7,7 @@ import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { ErrorMessageService } from '../../services/error-message.service';
 import { ToastService } from '../../services/toast.service';
+import { LocaleService } from '../../services/locale.service';
 import { ParticipantStatsComponent } from '../participant-stats/participant-stats.component';
 import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
 import { QuickEntryRequest } from '../../interfaces/lottery.interface';
@@ -113,11 +114,13 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                 <!-- Favorite Button (Always visible) - Matching promotions styling with glow -->
                 <button
                   (click)="toggleFavorite()"
+                  (keydown.enter)="toggleFavorite()"
+                  (keydown.space)="toggleFavorite(); $event.preventDefault()"
                   [disabled]="isTogglingFavorite()"
                   [class.favorite-button-pulse]="isTogglingFavorite() || isFavorite()"
                   [class.favorite-button-glow]="isFavorite()"
                   class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-3 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
-                  [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
+                  [attr.aria-label]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')"
                   [title]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')">
                   <svg 
                     class="w-6 h-6 transition-all duration-500 favorite-heart"
@@ -156,7 +159,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                     [class.dark:border-blue-400]="currentImageIndex() === i"
                     [class.dark:border-gray-600]="currentImageIndex() !== i"
                     class="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded overflow-hidden border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    [attr.aria-label]="'View image ' + (i + 1) + ' of ' + allImages().length"
+                    [attr.aria-label]="translateWithParams('house.viewImage', { current: i + 1, total: allImages().length })"
                     [attr.aria-current]="currentImageIndex() === i ? 'true' : 'false'">
                     <img
                       [src]="image.imageUrl"
@@ -175,7 +178,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                     [class.dark:bg-blue-400]="currentImageIndex() === i"
                     [class.dark:bg-gray-600]="currentImageIndex() !== i"
                     class="w-2 h-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    [attr.aria-label]="'Go to image ' + (i + 1) + ' of ' + allImages().length"
+                    [attr.aria-label]="translateWithParams('house.goToImage', { current: i + 1, total: allImages().length })"
                     [attr.aria-current]="currentImageIndex() === i ? 'true' : 'false'">
                   </button>
                 </div>
@@ -197,10 +200,10 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   <span>{{ house()!.location }}</span>
                 </div>
                 <div class="flex items-center">
-                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
-                  <span>€{{ house()!.price | number:'1.0-0' }}</span>
+                  <span>{{ localeService.formatCurrency(house()!.price) }}</span>
                 </div>
               </div>
 
@@ -219,7 +222,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   <div class="text-sm text-gray-600 dark:text-gray-400">{{ translate('house.squareFeet') }}</div>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
-                  <div class="text-2xl font-bold text-gray-900 dark:text-white">€{{ house()!.ticketPrice | number:'1.2-2' }}</div>
+                  <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ localeService.formatCurrency(house()!.ticketPrice) }}</div>
                   <div class="text-sm text-gray-600 dark:text-gray-400">{{ translate('house.perTicket') }}</div>
                 </div>
               </div>
@@ -522,7 +525,7 @@ export class HouseDetailComponent implements OnInit {
     
     // Check if user is logged in
     if (!this.currentUser() || !this.currentUser()?.isAuthenticated) {
-      this.toastService.error('Please log in to add favorites.', 4000);
+      this.toastService.error(this.translate('favorites.loginRequired'), 4000);
       return;
     }
     
@@ -540,13 +543,13 @@ export class HouseDetailComponent implements OnInit {
         this.isTogglingFavorite.set(false);
         if (result) {
           if (result.added) {
-            this.toastService.success('Added to favorites!', 3000);
+            this.toastService.success(this.translate('favorites.added'), 3000);
           } else {
-            this.toastService.success('Removed from favorites', 3000);
+            this.toastService.success(this.translate('favorites.removed'), 3000);
           }
         } else if (isCurrentlyFavorite) {
           // Already in favorites - this shouldn't happen, but handle gracefully
-          this.toastService.info('Already in favorites', 2000);
+          this.toastService.info(this.translate('favorites.alreadyInFavorites'), 2000);
         }
       },
       error: (error: any) => {
@@ -554,9 +557,9 @@ export class HouseDetailComponent implements OnInit {
         console.error('Error toggling favorite:', error);
         // Check if error is because already in favorites
         if (error?.error?.message?.includes('already') || error?.error?.message?.includes('favorite')) {
-          this.toastService.info('Already in favorites', 2000);
+          this.toastService.info(this.translate('favorites.alreadyInFavorites'), 2000);
         } else {
-          this.toastService.error('Failed to update favorites. Please try again.', 4000);
+          this.toastService.error(this.translate('favorites.updateFailed'), 4000);
         }
       }
     });
@@ -567,7 +570,7 @@ export class HouseDetailComponent implements OnInit {
     if (!h) return;
     
     if (!this.currentUser() || !this.currentUser()?.isAuthenticated) {
-      this.toastService.error('Please log in to enter the lottery.', 4000);
+      this.toastService.error(this.translate('entry.loginRequired'), 4000);
       return;
     }
 
@@ -637,9 +640,12 @@ export class HouseDetailComponent implements OnInit {
     }
   }
 
+  localeService = inject(LocaleService);
+
   formatDate(date: Date | string): string {
     if (!date) return '';
-    return new Date(date).toLocaleDateString();
+    // Use LocaleService for locale-aware formatting
+    return this.localeService.formatDate(typeof date === 'string' ? new Date(date) : date, 'medium');
   }
 
   translate(key: string): string {
