@@ -50,9 +50,9 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                     <!-- Location Icon -->
                     <button 
                       (click)="openLocationMap(house)"
-                      class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                      class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
                       [attr.aria-label]="'View ' + house.title + ' location on map'">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                       </svg>
                     </button>
@@ -64,9 +64,9 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       (keydown.space)="toggleFavorite(house.id, $event); $event.preventDefault()"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
                       [title]="isFavorite(house.id) ? (translate('lottery.favorites.removeFromFavorites') || 'Remove from favorites') : (translate('lottery.favorites.addToFavorites') || 'Add to favorites')"
-                      class="absolute top-4 left-16 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 text-gray-800 dark:text-white p-2 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 text-gray-800 dark:text-white p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
                       [disabled]="isTogglingFavorite(house.id)">
-                      <svg class="w-5 h-5 transition-all duration-200"
+                      <svg class="w-6 h-6 transition-all duration-200"
                            [class.text-red-500]="isFavorite(house.id)"
                            [class.text-gray-400]="!isFavorite(house.id)"
                            [class.fill-current]="isFavorite(house.id)"
@@ -82,8 +82,11 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                     </button>
                     
                     <!-- Status Badge -->
-                    <div class="absolute top-4 right-4 z-20">
-                      <span class="bg-emerald-500 text-white px-3 py-2 rounded-full text-sm font-semibold shadow-lg">
+                    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
+                      <span 
+                        [class]="getStatusClasses(house.status)"
+                        [class.animate-vibrate]="house.status === 'active' && vibrationTrigger() > 0"
+                        class="text-white px-4.5 py-3 rounded-full text-base font-semibold shadow-lg">
                         {{ getStatusText(house) }}
                       </span>
                     </div>
@@ -201,10 +204,22 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       </div>
                     </div>
                     
-                    <!-- Buy Ticket Button -->
-                    <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
-                      {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
-                    </button>
+                    <!-- Buy Ticket / Notify Me Button -->
+                    @if (house.status === 'ended') {
+                      <button 
+                        disabled
+                        class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button cursor-not-allowed opacity-60">
+                        {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
+                      </button>
+                    } @else if (house.status === 'upcoming') {
+                      <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
+                        {{ translate('carousel.notifyMe') || 'Notify Me' }}
+                      </button>
+                    } @else {
+                      <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
+                        {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
+                      </button>
+                    }
                   </div>
                 </div>
               </div>
@@ -459,6 +474,25 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
         z-index: 10 !important;
       }
     }
+    
+    /* Vibration animation for Active status */
+    @keyframes vibrate {
+      0%, 100% {
+        transform: translateX(-50%) translateY(0);
+      }
+      25% {
+        transform: translateX(-50%) translateY(-4px);
+      }
+      75% {
+        transform: translateX(-50%) translateY(4px);
+      }
+    }
+    
+    .animate-vibrate {
+      animation: vibrate 0.3s ease-in-out;
+      animation-iteration-count: 1;
+      transform-origin: center;
+    }
   `]
 })
 export class HouseCarouselComponent implements OnInit, OnDestroy {
@@ -479,8 +513,10 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   isTransitioning = false;
   private autoSlideInterval: any;
   private countdownInterval?: number;
+  private vibrationInterval?: any;
   private intersectionObserver: IntersectionObserver | null = null;
   loadedImages = new Set<string>();
+  vibrationTrigger = signal<number>(0);
   
   // Use signals for values that change over time to avoid change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
@@ -517,12 +553,28 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         this.startAutoSlide();
       }
     }, 100);
+    
+    // Start vibration animation for active status badges (every 3 seconds)
+    this.vibrationInterval = setInterval(() => {
+      const currentHouse = this.getCurrentHouse();
+      if (currentHouse && currentHouse.status === 'active') {
+        // Trigger animation by updating signal
+        this.vibrationTrigger.set(Date.now());
+        // Remove animation class after animation completes (300ms)
+        setTimeout(() => {
+          this.vibrationTrigger.set(0);
+        }, 300);
+      }
+    }, 3000);
   }
 
   ngOnDestroy() {
     this.stopAutoSlide();
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
+    }
+    if (this.vibrationInterval) {
+      clearInterval(this.vibrationInterval);
     }
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
@@ -748,6 +800,19 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         return this.translate('house.upcoming');
       default:
         return this.translate('house.active');
+    }
+  }
+
+  getStatusClasses(status: string): string {
+    switch (status) {
+      case 'active':
+        return 'bg-emerald-500';
+      case 'ended':
+        return 'bg-red-500';
+      case 'upcoming':
+        return 'bg-blue-500';
+      default:
+        return 'bg-gray-500';
     }
   }
 

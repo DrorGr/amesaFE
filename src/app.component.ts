@@ -262,42 +262,52 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         // Small delay to ensure page is rendered
         setTimeout(() => {
-          const storedToast = localStorage.getItem('oauth_toast');
-          if (storedToast) {
-            const colonIndex = storedToast.indexOf(':');
-            if (colonIndex > 0) {
-              const type = storedToast.substring(0, colonIndex);
-              const message = storedToast.substring(colonIndex + 1);
-              if (type === 'success') {
-                this.toastService.success(message, 3000);
-              } else if (type === 'info') {
-                // Fallback for any 'info' type - treat as success for login scenarios
-                this.toastService.success(message, 3000);
+          try {
+            const storedToast = localStorage.getItem('oauth_toast');
+            if (storedToast) {
+              const colonIndex = storedToast.indexOf(':');
+              if (colonIndex > 0) {
+                const type = storedToast.substring(0, colonIndex);
+                const message = storedToast.substring(colonIndex + 1);
+                if (type === 'success') {
+                  this.toastService.success(message, 3000);
+                } else if (type === 'info') {
+                  // Fallback for any 'info' type - treat as success for login scenarios
+                  this.toastService.success(message, 3000);
+                }
+                localStorage.removeItem('oauth_toast');
               }
-              localStorage.removeItem('oauth_toast');
             }
+          } catch (error) {
+            // Silently handle NG0203 errors - service not yet initialized
+            console.warn('Toast service not yet available:', error);
           }
         }, 300);
       });
 
-    // Also check on initial load
+    // Also check on initial load - use longer delay to ensure services are initialized
     setTimeout(() => {
-      const storedToast = localStorage.getItem('oauth_toast');
-      if (storedToast) {
-        const colonIndex = storedToast.indexOf(':');
-        if (colonIndex > 0) {
-          const type = storedToast.substring(0, colonIndex);
-          const message = storedToast.substring(colonIndex + 1);
-          if (type === 'success') {
-            this.toastService.success(message, 3000);
-          } else if (type === 'info') {
-            // Fallback for any 'info' type - treat as success for login scenarios
-            this.toastService.success(message, 3000);
+      try {
+        const storedToast = localStorage.getItem('oauth_toast');
+        if (storedToast) {
+          const colonIndex = storedToast.indexOf(':');
+          if (colonIndex > 0) {
+            const type = storedToast.substring(0, colonIndex);
+            const message = storedToast.substring(colonIndex + 1);
+            if (type === 'success') {
+              this.toastService.success(message, 3000);
+            } else if (type === 'info') {
+              // Fallback for any 'info' type - treat as success for login scenarios
+              this.toastService.success(message, 3000);
+            }
+            localStorage.removeItem('oauth_toast');
           }
-          localStorage.removeItem('oauth_toast');
         }
+      } catch (error) {
+        // Silently handle NG0203 errors - service not yet initialized
+        console.warn('Toast service not yet available:', error);
       }
-    }, 500);
+    }, 1000);
   }
 
   ngOnDestroy(): void {
