@@ -157,7 +157,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     [attr.aria-required]="true"
                     [attr.aria-invalid]="usernameError() ? 'true' : 'false'"
                     [attr.aria-describedby]="usernameError() ? 'username-error' : (usernameSuggestions().length > 0 ? 'username-suggestions' : null)"
-                    [class]="usernameError() ? 'border-red-500 : 'border-gray-300 dark:border-gray-600"
+                    [class]="usernameError() ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'"
                     class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200 focus:outline-none"
                     [placeholder]="translate('register.usernamePlaceholder')">
                   @if (usernameError()) {
