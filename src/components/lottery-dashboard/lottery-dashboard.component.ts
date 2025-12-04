@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -116,7 +116,7 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                 (keydown.enter)="navigateToActiveEntries()"
                 (keydown.space)="navigateToActiveEntries(); $event.preventDefault()"
                 aria-label="View all active entries"
-                class="text-blue-600 dark:text-blue-400 hover:underline text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+                class="text-blue-600 dark:text-blue-400 hover:underline text-sm focus:outline-none rounded">
                 {{ translate(LOTTERY_TRANSLATION_KEYS.dashboard.viewAll) }}
               </a>
             </div>
@@ -144,7 +144,7 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                         [class.text-red-500]="isFavorite(entry.houseId)"
                         [class.text-gray-400]="!isFavorite(entry.houseId)"
                         [class.animate-pulse]="isTogglingFavorite(entry.houseId)"
-                        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer focus:outline-none"
                         [attr.aria-label]="isFavorite(entry.houseId) ? 'Remove from favorites' : 'Add to favorites'"
                         [title]="isFavorite(entry.houseId) ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
                         <svg 
@@ -196,7 +196,7 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                 (keydown.enter)="navigateToFavorites()"
                 (keydown.space)="navigateToFavorites(); $event.preventDefault()"
                 aria-label="View all favorite houses"
-                class="text-blue-600 dark:text-blue-400 hover:underline text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+                class="text-blue-600 dark:text-blue-400 hover:underline text-sm focus:outline-none rounded">
                 {{ translate(LOTTERY_TRANSLATION_KEYS.dashboard.viewAll) }}
               </a>
             </div>
@@ -205,7 +205,7 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
               <div class="space-y-4">
                 @for (house of favoriteHouses().slice(0, 3); track house.id) {
                 <div 
-                  class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none"
                   [routerLink]="['/houses', house.id]"
                   (keydown.enter)="navigateToHouse(house.id)"
                   (keydown.space)="navigateToHouse(house.id); $event.preventDefault()"
@@ -249,7 +249,7 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               @for (rec of recommendations().slice(0, 3); track rec.id) {
               <div 
-                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none"
                 [routerLink]="['/houses', rec.id]"
                 (keydown.enter)="navigateToHouse(rec.id)"
                 (keydown.space)="navigateToHouse(rec.id); $event.preventDefault()"

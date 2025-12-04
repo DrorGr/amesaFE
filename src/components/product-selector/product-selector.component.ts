@@ -39,7 +39,7 @@ import { LocaleService } from '../../services/locale.service';
           [(ngModel)]="selectedType" 
           (change)="filterProducts()"
           [attr.aria-label]="translate('product.selector.filter')"
-          class="border border-gray-300 dark:border-gray-600 rounded px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+          class="border border-gray-300 dark:border-gray-600 rounded px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none">
           <option value="">{{ translate('product.selector.allProducts') }}</option>
           <option value="lottery_ticket">{{ translate('product.selector.lotteryTickets') }}</option>
           <option value="subscription">{{ translate('product.selector.subscriptions') }}</option>
@@ -90,7 +90,7 @@ import { LocaleService } from '../../services/locale.service';
                   (keydown.enter)="selectProduct(product); $event.stopPropagation()"
                   (keydown.space)="selectProduct(product); $event.stopPropagation(); $event.preventDefault()"
                   [attr.aria-label]="translate('product.selector.selectButton', { name: product.name })"
-                  class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                  class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none">
                   {{ translate('product.selector.select') }}
                 </button>
               </div>

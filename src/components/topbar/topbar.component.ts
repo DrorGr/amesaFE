@@ -27,7 +27,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
               (keydown.enter)="navigateToHome()"
               (keydown.space)="navigateToHome(); $event.preventDefault()"
               [attr.aria-label]="translate('nav.goToHome')"
-              class="focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+              class="focus:outline-none">
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
@@ -36,25 +36,14 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
           </div>
 
           <div class="ml-10 flex items-center space-x-8">
-            @if (isOnDashboardPage()) {
-              <button 
-                (click)="navigateToHome()"
-                (keydown.enter)="navigateToHome()"
-                (keydown.space)="navigateToHome(); $event.preventDefault()"
-                [attr.aria-label]="translate('nav.backHome')"
-                class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
-                {{ translate('nav.backHome') || 'Back Home' }}
-              </button>
-            } @else {
-              <button 
-                (click)="navigateToDashboard()"
-                (keydown.enter)="navigateToDashboard()"
-                (keydown.space)="navigateToDashboard(); $event.preventDefault()"
-                [attr.aria-label]="translate('nav.myLottery')"
-                class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
-                {{ translate('nav.myLottery') }}
-              </button>
-            }
+            <button 
+              (click)="navigateToDashboard()"
+              (keydown.enter)="navigateToDashboard()"
+              (keydown.space)="navigateToDashboard(); $event.preventDefault()"
+              [attr.aria-label]="translate('nav.myLottery')"
+              [class]="isOnDashboardPage() ? 'bg-[#2D3748] dark:bg-[#2D3748] text-white dark:text-white border border-[#374151] dark:border-[#374151] px-4 py-2 text-lg font-bold transition-all duration-200 rounded-lg mobile-nav-button focus:outline-none' : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button focus:outline-none'">
+              {{ translate('nav.myLottery') }}
+            </button>
             
             @if (isOnFavoritesPage()) {
               <button 
@@ -62,7 +51,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
                 (keydown.enter)="navigateToHome()"
                 (keydown.space)="navigateToHome(); $event.preventDefault()"
                 [attr.aria-label]="translate('nav.backHome')"
-                class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg focus:outline-none">
                 {{ translate('nav.backHome') || 'Back Home' }}
               </button>
             } @else {
@@ -71,7 +60,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
                 (keydown.enter)="navigateToFavorites()"
                 (keydown.space)="navigateToFavorites(); $event.preventDefault()"
                 [attr.aria-label]="translate('nav.favorites')"
-                class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button focus:outline-none">
                 {{ translate('nav.favorites') }}
               </button>
             }
@@ -82,7 +71,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
                 (keydown.enter)="navigateToHome()"
                 (keydown.space)="navigateToHome(); $event.preventDefault()"
                 [attr.aria-label]="translate('nav.backHome')"
-                class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button rounded-lg focus:outline-none">
                 {{ translate('nav.backHome') || 'Back Home' }}
               </button>
             } @else {
@@ -91,7 +80,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
                 (keydown.enter)="navigateToSearch()"
                 (keydown.space)="navigateToSearch(); $event.preventDefault()"
                 [attr.aria-label]="translate('nav.search')"
-                class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button focus:outline-none">
                 {{ translate('nav.search') }}
               </button>
             }
@@ -134,7 +123,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
                 (keydown.space)="toggleMobileMenu(); $event.preventDefault()"
                 [attr.aria-label]="isMobileMenuOpen ? translate('nav.closeMenu') : translate('nav.openMenu')"
                 [attr.aria-expanded]="isMobileMenuOpen"
-                class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 mobile-hamburger focus:outline-none focus:ring-2 focus:ring-blue-400">
+                class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 mobile-hamburger focus:outline-none">
                 @if (!isMobileMenuOpen) {
                   <!-- Hamburger Icon -->
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,27 +145,15 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
           <div class="absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-4 animate-fadeIn shadow-lg z-50">
             <!-- Navigation Links -->
             <div class="space-y-2" role="menu">
-              @if (isOnDashboardPage()) {
-                <button 
-                  (click)="navigateToHome()"
-                  (keydown.enter)="navigateToHome()"
-                  (keydown.space)="navigateToHome(); $event.preventDefault()"
-                  [attr.aria-label]="translate('nav.backHome')"
-                  role="menuitem"
-                  class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                  {{ translate('nav.backHome') || 'Back Home' }}
-                </button>
-              } @else {
-                <button 
-                  (click)="navigateToDashboard()"
-                  (keydown.enter)="navigateToDashboard()"
-                  (keydown.space)="navigateToDashboard(); $event.preventDefault()"
-                  [attr.aria-label]="translate('nav.myLottery')"
-                  role="menuitem"
-                  class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-400">
-                  {{ translate('nav.myLottery') }}
-                </button>
-              }
+              <button 
+                (click)="navigateToDashboard()"
+                (keydown.enter)="navigateToDashboard()"
+                (keydown.space)="navigateToDashboard(); $event.preventDefault()"
+                [attr.aria-label]="translate('nav.myLottery')"
+                role="menuitem"
+                [class]="isOnDashboardPage() ? 'block w-full text-left px-8 py-6 text-3xl bg-[#2D3748] dark:bg-[#2D3748] text-white dark:text-white border border-[#374151] dark:border-[#374151] font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none' : 'block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none'">
+                {{ translate('nav.myLottery') }}
+              </button>
               
               @if (isOnFavoritesPage()) {
                 <button 
@@ -185,7 +162,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
                   (keydown.space)="navigateToHome(); $event.preventDefault()"
                   [attr.aria-label]="translate('nav.backHome')"
                   role="menuitem"
-                  class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                  class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none">
                   {{ translate('nav.backHome') || 'Back Home' }}
                 </button>
               } @else {
@@ -195,7 +172,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
                   (keydown.space)="navigateToFavorites(); $event.preventDefault()"
                   [attr.aria-label]="translate('nav.favorites')"
                   role="menuitem"
-                  class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-400">
+                  class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none">
                   {{ translate('nav.favorites') }}
                 </button>
               }
@@ -207,7 +184,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
                   (keydown.space)="navigateToHome(); $event.preventDefault()"
                   [attr.aria-label]="translate('nav.backHome')"
                   role="menuitem"
-                  class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                  class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none">
                   {{ translate('nav.backHome') || 'Back Home' }}
                 </button>
               } @else {
@@ -217,7 +194,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
                   (keydown.space)="navigateToSearch(); $event.preventDefault()"
                   [attr.aria-label]="translate('nav.search')"
                   role="menuitem"
-                  class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none focus:ring-2 focus:ring-blue-400">
+                  class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none">
                   {{ translate('nav.search') }}
                 </button>
               }

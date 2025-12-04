@@ -1,4 +1,4 @@
-﻿import { Component, input, output, OnInit, OnDestroy, inject, signal, effect, EffectRef } from '@angular/core';
+import { Component, input, output, OnInit, OnDestroy, inject, signal, effect, EffectRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
@@ -45,7 +45,7 @@ interface Promotion {
               (keydown.space)="close.emit(); $event.preventDefault()"
               (keydown.escape)="close.emit()"
               [attr.aria-label]="translate('common.close')"
-              class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600">
+              class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-20 focus:outline-none">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
@@ -72,7 +72,7 @@ interface Promotion {
             <div class="space-y-4">
               @for (promotion of promotions(); track promotion.id) {
                 <div 
-                  class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer focus:outline-none"
                   [routerLink]="promotion.link || ['/promotions']"
                   (click)="close.emit()"
                   (keydown.enter)="close.emit(); navigateToPromotion(promotion)"

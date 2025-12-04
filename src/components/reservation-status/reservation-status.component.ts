@@ -98,7 +98,7 @@ import { Subscription } from 'rxjs';
               (keydown.enter)="cancelReservation()"
               (keydown.space)="cancelReservation(); $event.preventDefault()"
               aria-label="Cancel reservation"
-              class="mt-4 w-full bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white font-semibold py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+              class="mt-4 w-full bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white font-semibold py-2 px-4 rounded-lg transition-colors focus:outline-none">
               Cancel Reservation
             </button>
           }

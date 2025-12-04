@@ -49,7 +49,7 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                   (keydown.space)="removeFavorite($event, house.id); $event.preventDefault()"
                   [class.animate-pulse]="isRemovingFavorite()(house.id)"
                   [attr.aria-label]="translate('favorites.removeFromFavorites')"
-                  class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10 focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400">
+                  class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10 focus:outline-none">
                   <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                   </svg>

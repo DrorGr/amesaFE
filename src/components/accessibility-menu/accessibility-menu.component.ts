@@ -1,4 +1,4 @@
-﻿import { Component, inject, signal, output } from '@angular/core';
+import { Component, inject, signal, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../services/translation.service';
@@ -117,7 +117,7 @@ interface AccessibilitySettings {
                 type="checkbox"
                 [(ngModel)]="settings.reduceMotion"
                 (ngModelChange)="applySettings()"
-                class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                class="rounded border-gray-300 text-purple-600">
               {{ translate('accessibility.reduceMotion') }}
             </label>
             <label class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
@@ -125,7 +125,7 @@ interface AccessibilitySettings {
                 type="checkbox"
                 [(ngModel)]="settings.focusIndicator"
                 (ngModelChange)="applySettings()"
-                class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                class="rounded border-gray-300 text-purple-600">
               {{ translate('accessibility.focusIndicator') }}
             </label>
             <label class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
@@ -133,7 +133,7 @@ interface AccessibilitySettings {
                 type="checkbox"
                 [(ngModel)]="settings.textSpacing"
                 (ngModelChange)="applySettings()"
-                class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                class="rounded border-gray-300 text-purple-600">
               {{ translate('accessibility.textSpacing') }}
             </label>
             <label class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
@@ -141,7 +141,7 @@ interface AccessibilitySettings {
                 type="checkbox"
                 [(ngModel)]="settings.linkHighlight"
                 (ngModelChange)="applySettings()"
-                class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                class="rounded border-gray-300 text-purple-600">
               {{ translate('accessibility.linkHighlight') }}
             </label>
           </div>

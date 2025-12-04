@@ -78,7 +78,7 @@ interface UserSession {
                         (keydown.space)="logoutFromDevice(session.id); $event.preventDefault()"
                         [disabled]="isLoggingOut()"
                         [attr.aria-label]="translate('auth.logoutFromDevice') + ': ' + session.deviceName"
-                        class="ml-4 px-4 py-2 text-sm font-semibold text-red-600 dark:text-red-400 bg-transparent border-2 border-red-600 dark:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        class="ml-4 px-4 py-2 text-sm font-semibold text-red-600 dark:text-red-400 bg-transparent border-2 border-red-600 dark:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 disabled:opacity-50 focus:outline-none">
                         {{ translate('auth.logoutFromDevice') }}
                       </button>
                     }
@@ -94,7 +94,7 @@ interface UserSession {
                 (keydown.space)="logoutAllDevices(); $event.preventDefault()"
                 [disabled]="isLoggingOut()"
                 [attr.aria-label]="translate('auth.logoutAllDevices')"
-                class="w-full px-6 py-3 text-lg font-semibold text-white bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-500 rounded-lg transition-all duration-200 disabled:opacity-50 focus:outline-none">
+                class="w-full px-6 py-3 text-lg font-semibold text-white bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-800 rounded-lg transition-all duration-200 disabled:opacity-50 focus:outline-none">
                 @if (isLoggingOut()) {
                   <span class="flex items-center justify-center">
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

@@ -91,7 +91,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
                 target="_blank"
                 rel="noopener noreferrer"
                 [attr.aria-label]="translate('payment.crypto.openPaymentPage')"
-                class="text-blue-600 dark:text-blue-400 hover:underline mt-2 block focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 rounded">
+                class="text-blue-600 dark:text-blue-400 hover:underline mt-2 block focus:outline-none rounded">
                 {{ translate('payment.crypto.openPaymentPage') }}
               </a>
             </div>

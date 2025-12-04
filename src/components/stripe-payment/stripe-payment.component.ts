@@ -75,7 +75,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
             [disabled]="processing()"
             [attr.aria-label]="translate('payment.stripe.confirmButton')"
             [attr.aria-describedby]="processing() ? 'processing-help' : null"
-            class="w-full bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+            class="w-full bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none transition-colors duration-200">
             @if (processing()) {
               {{ translate('payment.stripe.processing') }}
             } @else {

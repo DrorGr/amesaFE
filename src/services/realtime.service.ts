@@ -193,13 +193,29 @@ export class RealtimeService {
 
   async startConnection(): Promise<void> {
     if (this.connection && this.connection.state === HubConnectionState.Connected) {
+      console.log('[SignalR] Already connected, skipping start');
       return;
     }
 
     try {
-      // Get base URL and construct SignalR URL (remove /api/v1 for WebSocket endpoint)
+      // Get base URL and construct SignalR URL properly
       const baseUrl = this.apiService.getBaseUrl();
-      let wsUrl = baseUrl.replace('/api/v1', '') + '/ws/lottery';
+      
+      // More robust URL construction - handle both absolute and relative URLs
+      let wsUrl: string;
+      if (baseUrl.startsWith('http://') || baseUrl.startsWith('https://')) {
+        // Absolute URL: https://domain.com/api/v1
+        try {
+          const url = new URL(baseUrl);
+          wsUrl = `${url.protocol}//${url.host}/ws/lottery`;
+        } catch (urlError) {
+          // Fallback to string replacement if URL parsing fails
+          wsUrl = baseUrl.replace('/api/v1', '') + '/ws/lottery';
+        }
+      } else {
+        // Relative URL: /api/v1
+        wsUrl = '/ws/lottery';
+      }
 
       // Get token from localStorage and append as query parameter
       // WebSocket connections don't support Authorization headers, so we must use query parameter
@@ -209,6 +225,12 @@ export class RealtimeService {
         wsUrl += `${separator}access_token=${encodeURIComponent(token)}`;
       }
       
+      // Log connection attempt (mask token in logs)
+      const logUrl = wsUrl.replace(/access_token=[^&]*/, 'access_token=***');
+      console.log('[SignalR] Starting connection to:', logUrl);
+      console.log('[SignalR] Base URL:', baseUrl);
+      console.log('[SignalR] Transport: LongPolling');
+      
       // Configure SignalR to use LongPolling (works through CloudFront)
       // CloudFront doesn't support WebSocket upgrades, so we skip WebSocket and use LongPolling
       // LongPolling provides real-time updates with 50-200ms latency (acceptable for production)
@@ -217,46 +239,56 @@ export class RealtimeService {
           transport: HttpTransportType.LongPolling, // Skip WebSocket, use LongPolling
           skipNegotiation: false, // Keep negotiation for compatibility
           accessTokenFactory: () => {
-            return localStorage.getItem('access_token') || '';
+            const currentToken = localStorage.getItem('access_token');
+            console.log('[SignalR] Access token factory called, token present:', !!currentToken);
+            return currentToken || '';
           }
         })
         .withAutomaticReconnect({
           nextRetryDelayInMilliseconds: retryContext => {
-            if (retryContext.previousRetryCount < 3) {
-              return 2000; // 2 seconds
-            } else if (retryContext.previousRetryCount < 10) {
-              return 10000; // 10 seconds
-            } else {
-              return 30000; // 30 seconds
-            }
+            const delay = retryContext.previousRetryCount < 3 ? 2000 :
+                         retryContext.previousRetryCount < 10 ? 10000 : 30000;
+            console.log(`[SignalR] Reconnect attempt ${retryContext.previousRetryCount}, delay: ${delay}ms`);
+            return delay;
           }
         })
         .build();
 
       this.setupEventHandlers();
       
-      // Add timeout to prevent hanging connections
-      const connectionTimeout = 10000; // 10 seconds
+      // Add timeout to prevent hanging connections (increased to 15 seconds for long polling)
+      const connectionTimeout = 15000; // 15 seconds (long polling can take longer)
+      console.log(`[SignalR] Connection timeout set to ${connectionTimeout}ms`);
+      
       const startPromise = this.connection.start();
       const timeoutPromise: Promise<never> = new Promise((_, reject) => {
         setTimeout(() => {
-          reject(new Error('SignalR connection timeout: Connection did not establish within 10 seconds'));
+          console.error('[SignalR] Connection timeout after 15 seconds');
+          reject(new Error('SignalR connection timeout: Connection did not establish within 15 seconds'));
         }, connectionTimeout);
       });
       
       try {
         await Promise.race([startPromise, timeoutPromise]);
+        console.log('[SignalR] Connection established successfully');
+        console.log('[SignalR] Connection state:', this.connection.state);
+        console.log('[SignalR] Connection ID:', this.connection.connectionId);
         this.connectionState.set(this.connection.state);
         this.isConnected.set(true);
-        console.log('SignalR connection established');
       } catch (error: any) {
         // If connection failed, clean up and don't throw (allow app to continue)
-        console.error('Error starting SignalR connection:', error);
+        console.error('[SignalR] Connection failed:', error);
+        console.error('[SignalR] Error details:', {
+          message: error?.message,
+          stack: error?.stack,
+          connectionState: this.connection?.state
+        });
+        
         if (this.connection) {
           try {
             await this.connection.stop();
           } catch (stopError) {
-            console.error('Error stopping failed connection:', stopError);
+            console.error('[SignalR] Error stopping failed connection:', stopError);
           }
           this.connection = null;
         }
@@ -268,7 +300,11 @@ export class RealtimeService {
       }
     } catch (error) {
       // Outer catch for any errors during connection setup
-      console.error('Error setting up SignalR connection:', error);
+      console.error('[SignalR] Error setting up connection:', error);
+      console.error('[SignalR] Setup error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       this.connectionState.set(HubConnectionState.Disconnected);
       this.isConnected.set(false);
       // Don't throw - allow app to continue without SignalR

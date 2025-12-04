@@ -38,7 +38,7 @@ import { Html5Qrcode } from 'html5-qrcode';
               <input 
                 type="date" 
                 [(ngModel)]="filters.fromDate"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                 (change)="applyFilters()"
               >
             </div>
@@ -50,7 +50,7 @@ import { Html5Qrcode } from 'html5-qrcode';
               <input 
                 type="date" 
                 [(ngModel)]="filters.toDate"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                 (change)="applyFilters()"
               >
             </div>
@@ -64,7 +64,7 @@ import { Html5Qrcode } from 'html5-qrcode';
                 type="text" 
                 [(ngModel)]="filters.address"
                 placeholder="{{ translate('lotteryResults.addressPlaceholder') }}"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                 (input)="onFilterChange()"
               >
             </div>
@@ -76,7 +76,7 @@ import { Html5Qrcode } from 'html5-qrcode';
               </label>
               <select 
                 [(ngModel)]="filters.prizePosition"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                 (change)="applyFilters()"
               >
                 <option value="">{{ translate('lotteryResults.allPositions') }}</option>

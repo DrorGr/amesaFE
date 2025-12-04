@@ -355,7 +355,7 @@ import { AuthService } from '../../services/auth.service';
                     [(ngModel)]="deliveryForm.recipientName"
                     name="recipientName"
                     required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                 </div>
 
@@ -368,7 +368,7 @@ import { AuthService } from '../../services/auth.service';
                     type="tel"
                     [(ngModel)]="deliveryForm.phone"
                     name="phone"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                 </div>
 
@@ -382,7 +382,7 @@ import { AuthService } from '../../services/auth.service';
                     [(ngModel)]="deliveryForm.addressLine1"
                     name="addressLine1"
                     required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                 </div>
 
@@ -395,7 +395,7 @@ import { AuthService } from '../../services/auth.service';
                     type="text"
                     [(ngModel)]="deliveryForm.addressLine2"
                     name="addressLine2"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                 </div>
 
@@ -409,7 +409,7 @@ import { AuthService } from '../../services/auth.service';
                     [(ngModel)]="deliveryForm.city"
                     name="city"
                     required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                 </div>
 
@@ -423,7 +423,7 @@ import { AuthService } from '../../services/auth.service';
                     [(ngModel)]="deliveryForm.state"
                     name="state"
                     required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                 </div>
 
@@ -437,7 +437,7 @@ import { AuthService } from '../../services/auth.service';
                     [(ngModel)]="deliveryForm.postalCode"
                     name="postalCode"
                     required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                 </div>
 
@@ -451,7 +451,7 @@ import { AuthService } from '../../services/auth.service';
                     [(ngModel)]="deliveryForm.country"
                     name="country"
                     required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                 </div>
 
@@ -464,7 +464,7 @@ import { AuthService } from '../../services/auth.service';
                     type="email"
                     [(ngModel)]="deliveryForm.email"
                     name="email"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                 </div>
 
@@ -477,7 +477,7 @@ import { AuthService } from '../../services/auth.service';
                     [(ngModel)]="deliveryForm.deliveryMethod"
                     name="deliveryMethod"
                     required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                   >
                     <option value="">{{ translate('lotteryResults.selectMethod') || 'Select Method' }}</option>
                     <option value="Standard">{{ translate('lotteryResults.standard') || 'Standard' }}</option>
@@ -495,7 +495,7 @@ import { AuthService } from '../../services/auth.service';
                     [(ngModel)]="deliveryForm.deliveryNotes"
                     name="deliveryNotes"
                     rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                     [placeholder]="translate('lotteryResults.deliveryNotesPlaceholder') || 'Any special delivery instructions...'"
                   ></textarea>
                 </div>
@@ -582,7 +582,7 @@ import { AuthService } from '../../services/auth.service';
               <textarea 
                 [(ngModel)]="claimNotes"
                 rows="4"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:border-transparent dark:bg-gray-700 dark:text-white"
                 [placeholder]="translate('lotteryResults.claimNotesPlaceholder') || 'Add any notes about your claim...'"
               ></textarea>
             </div>

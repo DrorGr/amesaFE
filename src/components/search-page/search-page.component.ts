@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -59,7 +59,7 @@ interface SearchFilters {
                   (ngModelChange)="applyFilters()"
                   [placeholder]="translate('search.searchPlaceholder')"
                   [attr.aria-label]="translate('search.searchInput')"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-transparent">
               </div>
 
               <!-- Status Filter -->
@@ -123,7 +123,7 @@ interface SearchFilters {
                     type="checkbox"
                     [(ngModel)]="filters().showWinnersOnly"
                     (ngModelChange)="applyFilters()"
-                    class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    class="mr-2 rounded border-gray-300 text-blue-600">
                   <span class="text-sm text-gray-700 dark:text-gray-300">
                     {{ translate('search.showWinnersOnly') }}
                   </span>
@@ -231,7 +231,7 @@ interface SearchFilters {
                         </p>
                         <div class="flex items-center justify-between mb-3">
                           <span class="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                            Γé¼{{ formatPrice(house.price) }}
+                            G�{{ formatPrice(house.price) }}
                           </span>
                           <span 
                             class="px-2 py-1 text-xs rounded-full font-semibold"

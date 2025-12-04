@@ -40,7 +40,7 @@ import { ToastService } from '../../services/toast.service';
                 [disabled]="isLoading()"
                 [attr.aria-label]="translate('auth.verificationToken')"
                 [attr.aria-describedby]="'verification-token-help'"
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                 [placeholder]="translate('auth.enterVerificationToken')">
               <p id="verification-token-help" class="sr-only">{{ translate('auth.enterVerificationToken') }}</p>
             </div>
@@ -51,7 +51,7 @@ import { ToastService } from '../../services/toast.service';
               (keydown.space)="verifyEmail(); $event.preventDefault()"
               [disabled]="!verificationToken || isLoading()"
               [attr.aria-label]="translate('auth.verifyEmail')"
-              class="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              class="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
               @if (isLoading()) {
                 <span class="flex items-center justify-center">
                   <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -104,7 +104,7 @@ import { ToastService } from '../../services/toast.service';
               (keydown.enter)="goToLogin()"
               (keydown.space)="goToLogin(); $event.preventDefault()"
               [attr.aria-label]="translate('auth.goToLogin')"
-              class="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-lg transition-all duration-200">
+              class="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200">
               {{ translate('auth.goToLogin') }}
             </button>
           </div>
@@ -129,7 +129,7 @@ import { ToastService } from '../../services/toast.service';
                 (keydown.enter)="retryVerification()"
                 (keydown.space)="retryVerification(); $event.preventDefault()"
                 [attr.aria-label]="translate('auth.tryAgain')"
-                class="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-lg transition-all duration-200">
+                class="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200">
                 {{ translate('auth.tryAgain') }}
               </button>
               <button

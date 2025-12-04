@@ -41,7 +41,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
                 (keydown.enter)="navigateToHome()"
                 (keydown.space)="navigateToHome(); $event.preventDefault()"
                 [attr.aria-label]="translate('hero.browseLotteries')"
-                class="px-12 py-6 text-3xl md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-500 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button focus:outline-none">
+                class="px-12 py-6 text-3xl md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button focus:outline-none">
                 {{ translate('hero.browseLotteries') }}
               </button>
               <button 
@@ -49,7 +49,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
                 (keydown.enter)="navigateToHowItWorks()"
                 (keydown.space)="navigateToHowItWorks(); $event.preventDefault()"
                 [attr.aria-label]="translate('hero.howItWorks')"
-                class="px-12 py-6 text-3xl md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-500 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button focus:outline-none dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
+                class="px-12 py-6 text-3xl md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button focus:outline-none dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
                 {{ translate('hero.howItWorks') }}
               </button>
             </div>
@@ -67,7 +67,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         (click)="expandPromotionsTab()"
         (keydown.enter)="expandPromotionsTab()"
         (keydown.space)="expandPromotionsTab(); $event.preventDefault()"
-        class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white w-12 h-12 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 flex items-center justify-center group promotions-p-widget border-2 border-white dark:border-gray-800 animate-widget-appear focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400"
+        class="fixed left-0 top-32 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white w-12 h-12 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 flex items-center justify-center group promotions-p-widget border-2 border-white dark:border-gray-800 animate-widget-appear focus:outline-none"
         [attr.aria-label]="translate('nav.promotions')">
         <span class="font-black text-lg drop-shadow-lg">P</span>
       </button>

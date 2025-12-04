@@ -52,7 +52,7 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                   [class.animate-pulse]="isRemoving().get(item.houseId) || false"
                   [attr.aria-label]="translate('watchlist.remove') + ' ' + item.house.title"
                   [attr.aria-busy]="isRemoving().get(item.houseId) || false"
-                  class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+                  class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10 focus:outline-none">
                   <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
                   </svg>
@@ -64,7 +64,7 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                   (keydown)="handleNotificationKeyDown($event, item)"
                   [class.bg-blue-500]="item.notificationEnabled"
                   [class.bg-gray-400]="!item.notificationEnabled"
-                  class="absolute top-4 left-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                  class="absolute top-4 left-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 p-2 rounded-full shadow-lg transition-all duration-300 cursor-pointer z-10 focus:outline-none"
                   [attr.aria-label]="item.notificationEnabled ? translate('watchlist.disableNotifications') : translate('watchlist.enableNotifications')"
                   [attr.aria-pressed]="item.notificationEnabled">
                   <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -115,7 +115,7 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                   (click)="viewDetails($event, item.houseId)"
                   (keydown)="handleViewDetailsKeyDown($event, item.houseId)"
                   [attr.aria-label]="translate('common.view') + ' ' + translate('common.details') + ' ' + item.house.title"
-                  class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+                  class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 focus:outline-none">
                   {{ translate('common.view') }} {{ translate('common.details') }}
                 </button>
               </div>

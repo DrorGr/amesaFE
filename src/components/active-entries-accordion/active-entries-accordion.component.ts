@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, OnDestroy, signal, computed, effect, EffectRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, effect, EffectRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -21,7 +21,7 @@ import { LocaleService } from '../../services/locale.service';
           [attr.aria-label]="translate('nav.activeEntries')"
           [attr.aria-expanded]="isExpanded()"
           [attr.aria-controls]="'active-entries-content'"
-          class="w-full px-4 py-3 flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 relative focus:outline-none focus:ring-2 focus:ring-blue-400"
+          class="w-full px-4 py-3 flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 relative focus:outline-none"
           [class.justify-center]="!isExpanded()"
           [class.justify-between]="isExpanded()">
           <div class="flex items-center gap-3">
@@ -74,7 +74,7 @@ import { LocaleService } from '../../services/locale.service';
                   (keydown.enter)="navigateToHome()"
                   (keydown.space)="navigateToHome(); $event.preventDefault()"
                   [attr.aria-label]="translate('nav.viewLotteries')"
-                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400">
+                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-semibold transition-colors focus:outline-none">
                   {{ translate('nav.viewLotteries') }}
                 </button>
               </div>
@@ -114,7 +114,7 @@ import { LocaleService } from '../../services/locale.service';
                   <button
                     (click)="navigateToActiveEntries()"
                     class="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium">
-                    {{ translate('nav.viewAllEntries') }} ΓåÆ
+                    {{ translate('nav.viewAllEntries') }} G��
                   </button>
                 </div>
               </div>

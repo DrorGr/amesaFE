@@ -85,7 +85,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   (keydown.space)="registerWithGoogle(); $event.preventDefault()"
                   [disabled]="isLoading()"
                   [attr.aria-label]="translate('auth.continueWithGoogle')"
-                  class="w-full flex items-center justify-center px-8 py-6 text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[80px] focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                  class="w-full flex items-center justify-center px-8 py-6 text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[80px] focus:outline-none">
                   <svg class="w-8 h-8 mr-6" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -101,7 +101,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   (keydown.space)="registerWithMeta(); $event.preventDefault()"
                   [disabled]="isLoading()"
                   [attr.aria-label]="translate('auth.continueWithMeta')"
-                  class="w-full flex items-center justify-center px-8 py-6 text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[80px] focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                  class="w-full flex items-center justify-center px-8 py-6 text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 min-h-[80px] focus:outline-none">
                   <svg class="w-8 h-8 mr-6" fill="#1877F2" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
@@ -157,8 +157,8 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     [attr.aria-required]="true"
                     [attr.aria-invalid]="usernameError() ? 'true' : 'false'"
                     [attr.aria-describedby]="usernameError() ? 'username-error' : (usernameSuggestions().length > 0 ? 'username-suggestions' : null)"
-                    [class]="usernameError() ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'"
-                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200 focus:outline-none"
+                    [class]="usernameError() ? 'border-red-500 : 'border-gray-300 dark:border-gray-600"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200 focus:outline-none"
                     [placeholder]="translate('register.usernamePlaceholder')">
                   @if (usernameError()) {
                     <p 
@@ -195,7 +195,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     <input
                       type="text"
                       formControlName="firstName"
-                      class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                      class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                       [placeholder]="translate('register.firstNamePlaceholder')">
                   </div>
                   <div>
@@ -205,7 +205,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     <input
                       type="text"
                       formControlName="lastName"
-                      class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                      class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                       [placeholder]="translate('register.lastNamePlaceholder')">
                   </div>
                 </div>
@@ -218,7 +218,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <input
                     type="text"
                     formControlName="idNumber"
-                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.idNumberPlaceholder')">
                 </div>
 
@@ -228,7 +228,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.gender') }} <span class="text-red-500">*</span>
                     </label>
-                    <select formControlName="gender" class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200">
+                    <select formControlName="gender" class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200">
                       <option value="">{{ translate('register.selectGender') }}</option>
                       <option value="male">{{ translate('register.male') }}</option>
                       <option value="female">{{ translate('register.female') }}</option>
@@ -242,7 +242,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     <input
                       type="date"
                       formControlName="dateOfBirth"
-                      class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200">
+                      class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200">
                   </div>
                 </div>
 
@@ -259,7 +259,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="text"
                         formControlName="country"
-                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.countryPlaceholder')">
                     </div>
                     <div>
@@ -269,7 +269,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="text"
                         formControlName="city"
-                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.cityPlaceholder')">
                     </div>
                     <div>
@@ -279,7 +279,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="text"
                         formControlName="street"
-                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.streetPlaceholder')">
                     </div>
                     <div>
@@ -289,7 +289,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="text"
                         formControlName="houseNumber"
-                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.houseNumberPlaceholder')">
                     </div>
                     <div>
@@ -299,7 +299,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="text"
                         formControlName="zipCode"
-                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.zipCodePlaceholder')">
                     </div>
                   </div>
@@ -310,7 +310,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <button
                     type="submit"
                     [disabled]="personalDetailsForm.invalid"
-                    class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
+                    class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
                     {{ translate('register.nextStep') }}
                   </button>
                 </div>
@@ -337,7 +337,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <input
                     type="email"
                     formControlName="email"
-                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.emailPlaceholder')">
                   @if (emailVerified()) {
                     <p class="mt-2 text-sm text-green-600 dark:text-green-400 flex items-center">
@@ -359,7 +359,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="tel"
                         [(ngModel)]="phoneNumbers()[$index]"
-                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200 flex-1"
+                        class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200 flex-1"
                         [placeholder]="translate('register.phonePlaceholder')">
                       @if (phoneNumbers().length > 1) {
                         <button
@@ -388,13 +388,13 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <button
                     type="button"
                     (click)="goToPreviousStep()"
-                    class="px-12 py-6 text-2xl font-bold text-blue-600 bg-transparent border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[80px]">
+                    class="px-12 py-6 text-2xl font-bold text-blue-600 bg-transparent border-2 border-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 min-h-[80px]">
                     {{ translate('register.previousStep') }}
                   </button>
                   <button
                     type="submit"
                     [disabled]="communicationForm.invalid"
-                    class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
+                    class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
                     {{ translate('register.nextStep') }}
                   </button>
                 </div>
@@ -421,7 +421,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <input
                     type="password"
                     formControlName="password"
-                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.passwordPlaceholder')">
                   <!-- Password Strength Indicator -->
                   <div class="mt-2">
@@ -447,7 +447,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <input
                     type="password"
                     formControlName="confirmPassword"
-                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.confirmPasswordPlaceholder')">
                   @if (passwordForm.get('confirmPassword')?.touched && passwordForm.get('confirmPassword')?.errors?.['mismatch']) {
                     <p class="mt-2 text-sm text-red-600 dark:text-red-400">
@@ -461,13 +461,13 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <button
                     type="button"
                     (click)="goToPreviousStep()"
-                    class="px-12 py-6 text-2xl font-bold text-blue-600 bg-transparent border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[80px]">
+                    class="px-12 py-6 text-2xl font-bold text-blue-600 bg-transparent border-2 border-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 min-h-[80px]">
                     {{ translate('register.previousStep') }}
                   </button>
                   <button
                     type="submit"
                     [disabled]="passwordForm.invalid"
-                    class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
+                    class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
                     {{ translate('register.createAccount') }}
                   </button>
                 </div>
@@ -511,7 +511,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <input
                     type="text"
                     formControlName="passportIdNumber"
-                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.passportIdNumberPlaceholder')">
                 </div>
 
@@ -573,7 +573,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     <button
                       type="button"
                       (click)="validateDetails()"
-                      class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
+                      class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
                       {{ translate('register.validateDetails') }}
                     </button>
                   </div>
@@ -588,7 +588,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     <button
                       type="button"
                       (click)="captureFace()"
-                      class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
+                      class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
                       {{ translate('register.captureFace') }}
                     </button>
                   </div>
@@ -599,13 +599,13 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <button
                     type="button"
                     (click)="goToPreviousStep()"
-                    class="px-12 py-6 text-2xl font-bold text-blue-600 bg-transparent border-2 border-blue-600 hover:bg-blue-50 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 min-h-[80px]">
+                    class="px-12 py-6 text-2xl font-bold text-blue-600 bg-transparent border-2 border-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 min-h-[80px]">
                     {{ translate('register.previousStep') }}
                   </button>
                   <button
                     type="submit"
                     [disabled]="!isIdentityValidated()"
-                    class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
+                    class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
                     {{ translate('register.completeRegistration') }}
                   </button>
                 </div>

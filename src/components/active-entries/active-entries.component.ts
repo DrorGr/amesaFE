@@ -61,7 +61,7 @@ import { LocaleService } from '../../services/locale.service';
               [attr.aria-label]="translateWithParams('entries.viewEntryDetails', { house: entry.houseTitle })"
               role="link"
               tabindex="0"
-              class="focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+              class="focus:outline-none">
               <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="flex-1">
                   <div class="flex items-center gap-3 mb-2">

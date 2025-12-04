@@ -34,7 +34,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
           (click)="openLocationMap()"
           (keydown.enter)="openLocationMap()"
           (keydown.space)="openLocationMap(); $event.preventDefault()"
-          class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+          class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none"
           [attr.aria-label]="'View ' + house().title + ' location on map'">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
@@ -43,7 +43,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
         
         <!-- Status Badge - Green Oval (Centered, Same Height as Icons) -->
         <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
-          <span class="bg-emerald-500 text-white px-4 py-2 rounded-[20px] text-sm font-semibold shadow-lg whitespace-nowrap">
+          <span class="bg-emerald-500 text-white px-4 py-2 rounded-[20px] text-sm font-semibold shadow-lg whitespace-nowrap flex items-center h-8">
             {{ getStatusText() }}
           </span>
         </div>
@@ -56,7 +56,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
           (keydown.space)="toggleFavorite(); $event.preventDefault()"
           [disabled]="isTogglingFavorite"
           [class.animate-pulse]="isTogglingFavorite"
-          class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-2 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="absolute top-4 right-4 z-20 bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full shadow-lg transition-colors duration-200 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
           [title]="isFavorite() ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
           <svg 
@@ -146,7 +146,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
                 (keydown.enter)="quickEntry()"
                 (keydown.space)="quickEntry(); $event.preventDefault()"
                 [disabled]="isQuickEntering || house().status !== 'active'"
-                class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 md:py-2 px-6 md:px-4 rounded-lg font-semibold transition-all duration-200 border-none cursor-pointer text-lg md:text-sm disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-400"
+                class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 md:py-2 px-6 md:px-4 rounded-lg font-semibold transition-all duration-200 border-none cursor-pointer text-lg md:text-sm disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none"
                 [class.bg-gray-400]="(isQuickEntering || house().status !== 'active')"
                 [class.cursor-not-allowed]="(isQuickEntering || house().status !== 'active')">
                 <ng-container *ngIf="isQuickEntering; else quickEntryBlock">
@@ -163,7 +163,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
                 (keydown.enter)="purchaseTicket()"
                 (keydown.space)="purchaseTicket(); $event.preventDefault()"
                 [disabled]="isPurchasing || house().status !== 'active'"
-                class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none focus:ring-2 focus:ring-blue-400"
+                class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none"
                 [class.bg-gray-400]="(isPurchasing || house().status !== 'active')"
                 [class.cursor-not-allowed]="(isPurchasing || house().status !== 'active')">
                 <ng-container *ngIf="isPurchasing; else buyTicketBlock">

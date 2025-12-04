@@ -52,7 +52,7 @@ import { TranslationService } from '../../services/translation.service';
                     required
                     [attr.aria-label]="translate('auth.email')"
                     [attr.aria-required]="'true'"
-                    class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400"
+                    class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     placeholder="{{ translate('auth.enterEmail') }}">
                 </div>
 

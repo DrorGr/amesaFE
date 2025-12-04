@@ -75,7 +75,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
                 [max]="product()!.maxQuantityPerUser || 999"
                 [attr.aria-label]="translate('payment.checkout.quantityInput')"
                 [attr.aria-describedby]="'quantity-help'"
-                class="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 w-20 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                class="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 w-20 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none">
             </div>
             <div id="quantity-help" class="sr-only">
               {{ translate('payment.checkout.quantityHelp') }}
@@ -116,7 +116,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
                 value="stripe"
                 name="payment-method"
                 [attr.aria-label]="translate('payment.checkout.stripeMethod')"
-                class="mr-2 w-4 h-4 text-blue-600 dark:text-blue-400 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                class="mr-2 w-4 h-4 text-blue-600 dark:text-blue-400">
               <span>{{ translate('payment.checkout.stripeMethod') }}</span>
             </label>
             <label class="flex items-center cursor-pointer text-gray-700 dark:text-gray-300">
@@ -126,7 +126,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
                 value="crypto"
                 name="payment-method"
                 [attr.aria-label]="translate('payment.checkout.cryptoMethod')"
-                class="mr-2 w-4 h-4 text-blue-600 dark:text-blue-400 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                class="mr-2 w-4 h-4 text-blue-600 dark:text-blue-400">
               <span>{{ translate('payment.checkout.cryptoMethod') }}</span>
             </label>
           </div>
@@ -142,7 +142,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
             (keydown.space)="proceedToPayment(); $event.preventDefault()"
             [attr.aria-label]="translate('payment.checkout.continueButton')"
             [attr.aria-describedby]="!canProceed() ? 'continue-help' : null"
-            class="bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+            class="bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none transition-colors duration-200">
             {{ translate('payment.checkout.continueButton') }}
           </button>
           @if (!canProceed()) {

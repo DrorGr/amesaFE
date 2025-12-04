@@ -40,17 +40,17 @@ import { FocusTrapService } from '../../services/focus-trap.service';
             <div class="flex flex-col sm:flex-row gap-3 md:gap-2">
               <button
                 (click)="rejectAll()"
-                class="px-6 py-3 md:px-4 md:py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                class="px-6 py-3 md:px-4 md:py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none">
                 {{ translate('cookieConsent.banner.rejectAll') }}
               </button>
               <button
                 (click)="customize()"
-                class="px-6 py-3 md:px-4 md:py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                class="px-6 py-3 md:px-4 md:py-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none">
                 {{ translate('cookieConsent.banner.customize') }}
               </button>
               <button
                 (click)="acceptAll()"
-                class="px-6 py-3 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="px-6 py-3 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none">
                 {{ translate('cookieConsent.banner.acceptAll') }}
               </button>
             </div>
@@ -84,7 +84,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
             </h2>
             <button
               (click)="closePreferences()"
-              class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 p-2 focus:outline-none focus:ring-2 focus:ring-gray-500 rounded"
+              class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 p-2 focus:outline-none rounded"
               [attr.aria-label]="translate('cookieConsent.preferences.cancel')">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -205,17 +205,17 @@ import { FocusTrapService } from '../../services/focus-trap.service';
           <div class="p-4 md:p-6 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row gap-3 md:gap-2 bg-white dark:bg-gray-800">
             <button
               (click)="rejectAll()"
-              class="flex-1 px-4 py-3 md:py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
+              class="flex-1 px-4 py-3 md:py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none">
               {{ translate('cookieConsent.preferences.rejectAll') }}
             </button>
             <button
               (click)="acceptAll()"
-              class="flex-1 px-4 py-3 md:py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
+              class="flex-1 px-4 py-3 md:py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none">
               {{ translate('cookieConsent.preferences.acceptAll') }}
             </button>
             <button
               (click)="savePreferences()"
-              class="flex-1 px-4 py-3 md:py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              class="flex-1 px-4 py-3 md:py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg font-semibold text-lg md:text-base min-h-[60px] md:min-h-[44px] transition-colors duration-200 focus:outline-none">
               {{ translate('cookieConsent.preferences.save') }}
             </button>
           </div>

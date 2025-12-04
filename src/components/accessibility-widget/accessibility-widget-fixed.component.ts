@@ -47,7 +47,7 @@ interface AccessibilitySettings {
                 </div>
                 <button 
                   (click)="toggleWidget()"
-                  class="text-white/80 hover:text-white transition-colors duration-200 p-1 focus:outline-none focus:ring-2 focus:ring-white/50 rounded"
+                  class="text-white/80 hover:text-white transition-colors duration-200 p-1 focus:outline-none rounded"
                   [attr.aria-label]="translate('accessibility.close')">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -65,18 +65,18 @@ interface AccessibilitySettings {
                 <div class="grid grid-cols-2 gap-2 mb-2">
                   <button 
                     (click)="resetSettings()"
-                    class="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    class="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors duration-200 focus:outline-none">
                     {{ translate('accessibility.reset') }}
                   </button>
                   <button 
                     (click)="saveSettings()"
-                    class="px-3 py-2 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900 dark:hover:bg-purple-800 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    class="px-3 py-2 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900 dark:hover:bg-purple-800 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-medium transition-colors duration-200 focus:outline-none">
                     {{ translate('accessibility.save') }}
                   </button>
                 </div>
                 <button 
                   (click)="testAllFeatures()"
-                  class="w-full px-3 py-2 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 text-green-700 dark:text-green-300 rounded-lg text-xs font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500">
+                  class="w-full px-3 py-2 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 text-green-700 dark:text-green-300 rounded-lg text-xs font-medium transition-colors duration-200 focus:outline-none">
                   🧪 Test All Features
                 </button>
               </div>
@@ -95,7 +95,7 @@ interface AccessibilitySettings {
                     step="2"
                     [(ngModel)]="settings.fontSize"
                     (input)="applySettings()"
-                    class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none"
                     [attr.aria-label]="translate('accessibility.fontSize')">
                   <span class="text-lg text-gray-600 dark:text-gray-400">A</span>
                 </div>
@@ -110,7 +110,7 @@ interface AccessibilitySettings {
                 <select 
                   [(ngModel)]="settings.contrast"
                   (change)="applySettings()"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
                   <option value="normal">{{ translate('accessibility.contrastNormal') }}</option>
                   <option value="high">{{ translate('accessibility.contrastHigh') }}</option>
                   <option value="inverted">{{ translate('accessibility.contrastInverted') }}</option>
@@ -125,7 +125,7 @@ interface AccessibilitySettings {
                 <select 
                   [(ngModel)]="settings.colorBlind"
                   (change)="applySettings()"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
                   <option value="none">{{ translate('accessibility.colorBlindNone') }}</option>
                   <option value="protanopia">{{ translate('accessibility.colorBlindProtanopia') }}</option>
                   <option value="deuteranopia">{{ translate('accessibility.colorBlindDeuteranopia') }}</option>
@@ -141,7 +141,7 @@ interface AccessibilitySettings {
                 <select 
                   [(ngModel)]="settings.cursorSize"
                   (change)="applySettings()"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
                   <option value="normal">{{ translate('accessibility.cursorNormal') }}</option>
                   <option value="large">{{ translate('accessibility.cursorLarge') }}</option>
                   <option value="extra-large">{{ translate('accessibility.cursorExtraLarge') }}</option>
@@ -245,7 +245,7 @@ interface AccessibilitySettings {
         <div class="relative">
           <button
             (click)="toggleWidget()"
-            class="w-14 h-14 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-500/50"
+            class="w-14 h-14 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group transform hover:scale-105 focus:outline-none"
             [attr.aria-label]="translate('accessibility.toggleWidget')"
             [attr.aria-expanded]="isOpen()">
             
@@ -260,7 +260,7 @@ interface AccessibilitySettings {
           @if (showCloseButton()) {
             <button
               (click)="hideWidget()"
-              class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center group transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-400"
+              class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center group transform hover:scale-110 focus:outline-none"
               [attr.aria-label]="translate('accessibility.hideWidget')">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>

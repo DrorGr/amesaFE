@@ -79,7 +79,7 @@ import { LocaleService } from '../../services/locale.service';
                 (keydown.enter)="clearFilters()"
                 (keydown.space)="clearFilters(); $event.preventDefault()"
                 [attr.aria-label]="translate(LOTTERY_TRANSLATION_KEYS.filters.clear)"
-                class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors focus:outline-none">
                 {{ translate(LOTTERY_TRANSLATION_KEYS.filters.clear) }}
               </button>
             </div>
@@ -99,7 +99,7 @@ import { LocaleService } from '../../services/locale.service';
                 [attr.aria-label]="translateWithParams('entries.viewEntryDetails', { house: entry.houseTitle })"
                 role="link"
                 tabindex="0"
-                class="focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                class="focus:outline-none">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div class="flex-1">
                     <div class="flex items-center gap-3 mb-2">

@@ -81,7 +81,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
           (click)="goBack()"
           (keydown)="handleBackKeyDown($event)"
           [attr.aria-label]="translate('common.back')"
-          class="mb-6 flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 rounded">
+          class="mb-6 flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors focus:outline-none rounded">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
@@ -117,7 +117,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   (click)="openLocationMap()"
                   (keydown.enter)="openLocationMap()"
                   (keydown.space)="openLocationMap(); $event.preventDefault()"
-                  class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                  class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none"
                   [attr.aria-label]="'View ' + house()!.title + ' location on map'">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
@@ -126,7 +126,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
 
                 <!-- Status Badge - Green Oval (Centered, Same Height as Icons) -->
                 <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
-                  <span class="bg-emerald-500 text-white px-4 py-2 rounded-[20px] text-sm font-semibold shadow-lg whitespace-nowrap">
+                  <span class="bg-emerald-500 text-white px-4 py-2 rounded-[20px] text-sm font-semibold shadow-lg whitespace-nowrap flex items-center h-8">
                     {{ getStatusText() }}
                   </span>
                 </div>
@@ -139,7 +139,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   [disabled]="isTogglingFavorite()"
                   [class.favorite-button-pulse]="isTogglingFavorite() || isFavorite()"
                   [class.favorite-button-glow]="isFavorite()"
-                  class="absolute top-4 right-4 z-20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 p-2 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 border-2 border-white dark:border-gray-800 favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="absolute top-4 right-4 z-20 bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full shadow-lg transition-colors duration-200 cursor-pointer focus:outline-none favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
                   [attr.aria-label]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')"
                   [title]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')">
                   <svg 
@@ -171,7 +171,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                     [class.border-gray-300]="currentImageIndex() !== i"
                     [class.dark:border-blue-400]="currentImageIndex() === i"
                     [class.dark:border-gray-600]="currentImageIndex() !== i"
-                    class="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded overflow-hidden border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    class="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded overflow-hidden border-2 transition-all hover:scale-105 focus:outline-none"
                     [attr.aria-label]="translateWithParams('house.viewImage', { current: i + 1, total: allImages().length })"
                     [attr.aria-current]="currentImageIndex() === i ? 'true' : 'false'">
                     <img
@@ -191,7 +191,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                     [class.bg-gray-300]="currentImageIndex() !== i"
                     [class.dark:bg-blue-400]="currentImageIndex() === i"
                     [class.dark:bg-gray-600]="currentImageIndex() !== i"
-                    class="w-2 h-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    class="w-2 h-2 rounded-full transition-all focus:outline-none"
                     [attr.aria-label]="translateWithParams('house.goToImage', { current: i + 1, total: allImages().length })"
                     [attr.aria-current]="currentImageIndex() === i ? 'true' : 'false'">
                   </button>
@@ -407,7 +407,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   [disabled]="enteringLottery() || (house()!.isParticipantCapReached && !canEnterResponse()?.isExistingParticipant)"
                   [attr.aria-busy]="enteringLottery()"
                   [attr.aria-label]="enteringLottery() ? translate('common.loading') : translate('entry.enterLottery')"
-                  class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+                  class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 flex items-center justify-center focus:outline-none">
                   <span *ngIf="!enteringLottery()">{{ translate('entry.enterLottery') }}</span>
                   <div *ngIf="enteringLottery()" class="flex items-center">
                     <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" aria-hidden="true"></div>

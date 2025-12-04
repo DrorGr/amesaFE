@@ -21,7 +21,7 @@ import { takeUntil, filter } from 'rxjs/operators';
         [attr.aria-label]="translate('languageSelector.button')"
         [attr.aria-expanded]="isOpen()"
         [attr.aria-haspopup]="true"
-        class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+        class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none"
         [attr.aria-describedby]="'language-selector-description'">
         <!-- Current Language Flag -->
         <img 

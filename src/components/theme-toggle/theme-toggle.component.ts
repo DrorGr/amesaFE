@@ -16,7 +16,7 @@ import { TranslationService } from '../../services/translation.service';
       (keydown.space)="toggleTheme(); $event.preventDefault()"
       [attr.aria-label]="currentTheme() === 'light' ? translate('theme.switchToDark') : translate('theme.switchToLight')"
       [attr.aria-pressed]="currentTheme() === 'dark'"
-      class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 hover:scale-110 transform mobile-theme-button focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+      class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 hover:scale-110 transform mobile-theme-button focus:outline-none"
       [title]="currentTheme() === 'light' ? translate('theme.switchToDark') : translate('theme.switchToLight')">
       @if (currentTheme() === 'light') {
         <svg class="w-5 h-5 mobile-theme-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

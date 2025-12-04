@@ -96,7 +96,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="showAnimations"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.showAnimations') }}
@@ -190,7 +190,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="highContrast"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.highContrast') }}
@@ -204,7 +204,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="colorBlindAssist"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.colorBlindAssist') }}
@@ -218,7 +218,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="screenReaderOptimized"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.screenReaderOptimized') }}
@@ -232,7 +232,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="keyboardNavigation"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.keyboardNavigation') }}
@@ -246,7 +246,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="reducedMotion"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.reducedMotion') }}
@@ -260,7 +260,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="largeClickTargets"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.largeClickTargets') }}
@@ -281,7 +281,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="emailNotifications"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.emailNotifications') }}
@@ -295,7 +295,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="pushNotifications"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.pushNotifications') }}
@@ -309,7 +309,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="lotteryResults"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.lotteryResults') }}
@@ -323,7 +323,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="newLotteries"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.newLotteries') }}
@@ -337,7 +337,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="promotions"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.promotions') }}
@@ -351,7 +351,7 @@ import { Language } from '../../interfaces/user-preferences.interface';
                 <input 
                   type="checkbox" 
                   formControlName="soundEnabled"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
                 >
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {{ translationService.translate('preferences.soundEnabled') }}
