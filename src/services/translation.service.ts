@@ -106,11 +106,10 @@ export class TranslationService {
 
   /**
    * Get translation for a key in the current language
-   * Strips language prefixes like [EN], [ES], [FR], [PL] from translation values
    */
   translate(key: string): string {
     const translations = this.currentTranslations();
-    let translation = translations[key];
+    const translation = translations[key];
     
     if (!translation) {
       this.logger.warn('Missing translation', { 
@@ -121,9 +120,6 @@ export class TranslationService {
       return key;
     }
     
-    // Strip language prefixes like [EN], [ES], [FR], [PL], [HE], [AR] from translation values
-    translation = translation.replace(/^\[(EN|ES|FR|PL|HE|AR)\]\s*/i, '').trim();
-    
     return translation;
   }
 
@@ -131,7 +127,6 @@ export class TranslationService {
    * Get translation for a key with parameter substitution
    * @param key Translation key
    * @param params Parameters to substitute in the translation (e.g., {name: "John"} replaces {name} in translation)
-   * Language prefixes are automatically stripped by translate() method
    */
   translateWithParams(key: string, params: Record<string, any>): string {
     let translation = this.translate(key);
