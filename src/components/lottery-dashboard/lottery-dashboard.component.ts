@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { LoggingService } from '../../services/logging.service';
+import { ToastService } from '../../services/toast.service';
 import { HouseDto, LotteryTicketDto } from '../../models/house.model';
 import { UserLotteryStats, HouseRecommendation } from '../../interfaces/lottery.interface';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
@@ -120,10 +121,10 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
               </a>
             </div>
             
-            <ng-container *ngIf="activeEntries().length > 0; else noActiveEntries">
+            @if (activeEntries().length > 0) {
               <div class="space-y-4">
+                @for (entry of activeEntries().slice(0, 3); track entry.id) {
                 <div 
-                  *ngFor="let entry of activeEntries().slice(0, 3)" 
                   class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
@@ -135,7 +136,32 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                         {{ formatDate(entry.purchaseDate) }}
                       </p>
                     </div>
-                    <div class="ml-4">
+                    <div class="ml-4 flex items-center gap-2">
+                      <button
+                        (click)="toggleFavorite(entry.houseId, $event)"
+                        (keydown.enter)="toggleFavorite(entry.houseId, $event)"
+                        (keydown.space)="toggleFavorite(entry.houseId, $event); $event.preventDefault()"
+                        [class.text-red-500]="isFavorite(entry.houseId)"
+                        [class.text-gray-400]="!isFavorite(entry.houseId)"
+                        [class.animate-pulse]="isTogglingFavorite(entry.houseId)"
+                        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                        [attr.aria-label]="isFavorite(entry.houseId) ? 'Remove from favorites' : 'Add to favorites'"
+                        [title]="isFavorite(entry.houseId) ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
+                        <svg 
+                          class="w-5 h-5 transition-all duration-300"
+                          [class.fill-current]="isFavorite(entry.houseId)"
+                          [class.stroke-current]="!isFavorite(entry.houseId)"
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24">
+                          <path 
+                            stroke-linecap="round" 
+                            stroke-linejoin="round" 
+                            stroke-width="2" 
+                            [attr.d]="isFavorite(entry.houseId) ? 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' : 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'">
+                          </path>
+                        </svg>
+                      </button>
                       <span 
                         class="px-3 py-1 rounded-full text-xs font-semibold"
                         [class.bg-green-100]="entry.status === 'active'"
@@ -147,15 +173,15 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                     </div>
                   </div>
                 </div>
+                }
               </div>
-            </ng-container>
-            <ng-template #noActiveEntries>
+            } @else {
               <div class="text-center py-8">
                 <p class="text-gray-500 dark:text-gray-400">
                   {{ translate(LOTTERY_TRANSLATION_KEYS.entries.empty) }}
                 </p>
               </div>
-            </ng-template>
+            }
           </div>
 
           <!-- Favorite Houses Section -->
@@ -174,10 +200,10 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
               </a>
             </div>
             
-            <ng-container *ngIf="favoriteHouses().length > 0; else noFavorites">
+            @if (favoriteHouses().length > 0) {
               <div class="space-y-4">
+                @for (house of favoriteHouses().slice(0, 3); track house.id) {
                 <div 
-                  *ngFor="let house of favoriteHouses().slice(0, 3)" 
                   class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   [routerLink]="['/houses', house.id]"
                   (keydown.enter)="navigateToHouse(house.id)"
@@ -200,15 +226,15 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                     </div>
                   </div>
                 </div>
+                }
               </div>
-            </ng-container>
-            <ng-template #noFavorites>
+            } @else {
               <div class="text-center py-8">
                 <p class="text-gray-500 dark:text-gray-400">
                   {{ translate(LOTTERY_TRANSLATION_KEYS.favorites.empty) }}
                 </p>
               </div>
-            </ng-template>
+            }
           </div>
         </div>
 
@@ -218,10 +244,10 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
             {{ translate(LOTTERY_TRANSLATION_KEYS.recommendations.title) }}
           </h2>
           
-          <ng-container *ngIf="recommendations().length > 0; else noRecommendations">
+          @if (recommendations().length > 0) {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (rec of recommendations().slice(0, 3); track rec.id) {
               <div 
-                *ngFor="let rec of recommendations().slice(0, 3)"
                 class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 [routerLink]="['/houses', rec.id]"
                 (keydown.enter)="navigateToHouse(rec.id)"
@@ -238,15 +264,15 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                   {{ rec.reason }}
                 </p>
               </div>
+              }
             </div>
-          </ng-container>
-          <ng-template #noRecommendations>
+          } @else {
             <div class="text-center py-8">
               <p class="text-gray-500 dark:text-gray-400">
                 {{ translate(LOTTERY_TRANSLATION_KEYS.recommendations.empty) }}
               </p>
             </div>
-          </ng-template>
+          }
         </div>
       </div>
     </main>
@@ -266,6 +292,7 @@ export class LotteryDashboardComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private logger = inject(LoggingService);
   private router = inject(Router);
+  private toastService = inject(ToastService);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -278,6 +305,7 @@ export class LotteryDashboardComponent implements OnInit, OnDestroy {
   
   favoriteHouses = signal<HouseDto[]>([]);
   isLoading = signal<boolean>(true);
+  private togglingFavorites = signal<Set<string>>(new Set());
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -351,6 +379,55 @@ export class LotteryDashboardComponent implements OnInit, OnDestroy {
       minimumFractionDigits: 1, 
       maximumFractionDigits: 1 
     });
+  }
+
+  isFavorite(houseId: string): boolean {
+    return this.favoriteHouseIds().includes(houseId);
+  }
+
+  isTogglingFavorite(houseId: string): boolean {
+    return this.togglingFavorites().has(houseId);
+  }
+
+  async toggleFavorite(houseId: string, event: Event): Promise<void> {
+    event.stopPropagation();
+    
+    if (!this.currentUser()) {
+      this.toastService.warning(
+        this.translate('house.signInToParticipate') || 'Please sign in to add houses to favorites',
+        3000
+      );
+      return;
+    }
+
+    if (this.isTogglingFavorite(houseId)) {
+      return;
+    }
+
+    this.togglingFavorites.update(set => new Set(set).add(houseId));
+    
+    try {
+      const result = await this.lotteryService.toggleFavorite(houseId).toPromise();
+      
+      if (result) {
+        const message = result.added 
+          ? (this.translate(LOTTERY_TRANSLATION_KEYS.favorites.added) || 'Added to favorites')
+          : (this.translate(LOTTERY_TRANSLATION_KEYS.favorites.removed) || 'Removed from favorites');
+        this.toastService.success(message, 2000);
+      }
+    } catch (error) {
+      this.logger.error('Error toggling favorite', { error, houseId }, 'LotteryDashboardComponent');
+      this.toastService.error(
+        this.translate('lottery.common.error') || 'Failed to update favorites',
+        3000
+      );
+    } finally {
+      this.togglingFavorites.update(set => {
+        const newSet = new Set(set);
+        newSet.delete(houseId);
+        return newSet;
+      });
+    }
   }
 }
 
