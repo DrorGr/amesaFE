@@ -23,7 +23,7 @@
     "@angular/router": "20.2.1",
     "@microsoft/signalr": "^9.0.6",
     "@stripe/stripe-js": "^8.5.3",
-    "angularx-qrcode": "^21.0.0",
+    "angularx-qrcode": "^20.0.0",
     "autoprefixer": "^10.4.21",
     "html5-qrcode": "^2.3.8",
     "rxjs": "^7.8.1",
