@@ -58,8 +58,8 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       </svg>
                     </button>
                     
-                    <!-- Status Badge - Top Right, pill shape, matching image -->
-                    <div class="absolute top-4 right-4 z-20">
+                    <!-- Status Badge - Top Middle, pill shape, matching image -->
+                    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
                       <span 
                         [class]="getStatusClasses(house.status)"
                         [class.animate-seesaw]="house.status === 'active' && vibrationTrigger() > 0"
