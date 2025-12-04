@@ -68,7 +68,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
           </svg>
         </button>
         
-        <div class="absolute top-16 right-4 z-20">
+        <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
           <span class="bg-emerald-500 text-white px-3 py-2 rounded-full text-sm md:text-sm font-semibold shadow-lg">
             {{ getStatusText() }}
           </span>
