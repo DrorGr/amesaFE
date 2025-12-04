@@ -166,11 +166,11 @@ html {
 
 /* Modal styles */
 .modal-backdrop {
-  @apply fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 animate-fadeIn;
+  @apply fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-[150] animate-fadeIn;
 }
 
 .modal-content {
-  @apply bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300;
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 z-[151];
 }
 
 /* Typography */
