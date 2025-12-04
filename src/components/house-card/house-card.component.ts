@@ -34,16 +34,18 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
           (click)="openLocationMap()"
           (keydown.enter)="openLocationMap()"
           (keydown.space)="openLocationMap(); $event.preventDefault()"
-          class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none"
+          class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none"
           [attr.aria-label]="'View ' + house().title + ' location on map'">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
           </svg>
         </button>
         
         <!-- Status Badge - Green Oval (Centered, Same Height as Icons) -->
         <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
-          <span class="bg-emerald-500 text-white px-4 py-2 rounded-[20px] text-sm font-semibold shadow-lg whitespace-nowrap flex items-center h-8">
+          <span 
+            [class.animate-seesaw]="house().status === 'active' && vibrationTrigger() > 0"
+            class="bg-emerald-500 text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
             {{ getStatusText() }}
           </span>
         </div>
@@ -56,11 +58,11 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
           (keydown.space)="toggleFavorite(); $event.preventDefault()"
           [disabled]="isTogglingFavorite"
           [class.animate-pulse]="isTogglingFavorite"
-          class="absolute top-4 right-4 z-20 bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full shadow-lg transition-colors duration-200 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          class="absolute top-4 right-4 z-20 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
           [title]="isFavorite() ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
           <svg 
-            class="w-4 h-4 transition-all duration-300"
+            class="w-6 h-6 transition-all duration-300"
             [class.text-red-500]="isFavorite()"
             [class.text-white]="!isFavorite()"
             [attr.fill]="isFavorite() ? 'currentColor' : 'none'"
@@ -298,6 +300,28 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
       .text-center p {
         font-size: 1.75rem !important;
       }
+      
+      /* Animation: rotates like a seesaw board, one end up while other end down, then reverses */
+      @keyframes seesaw {
+        0%, 100% {
+          transform: rotate(0deg);
+        }
+        25% {
+          transform: rotate(-4deg);
+        }
+        50% {
+          transform: rotate(0deg);
+        }
+        75% {
+          transform: rotate(4deg);
+        }
+      }
+      
+      .animate-seesaw {
+        animation: seesaw 0.3s ease-in-out;
+        animation-iteration-count: 2;
+        transform-origin: center center;
+      }
     }
   `]
 })
@@ -312,6 +336,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   
   house = input.required<House>();
   private countdownInterval?: number;
+  private vibrationInterval?: number;
   isPurchasing = false;
   isTogglingFavorite = false;
   isQuickEntering = false;
@@ -322,6 +347,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   // Use signals for dynamic values to prevent change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
   currentTime = signal<number>(Date.now());
+  vibrationTrigger = signal<number>(0);
   
   // Computed signal to check if this house is favorited
   isFavorite = computed(() => {
@@ -445,11 +471,26 @@ export class HouseCardComponent implements OnInit, OnDestroy {
         this.currentViewers.set(Math.floor(Math.random() * 46) + 5);
       }
     }, 1000);
+    
+    // Start seesaw animation for active status badges (every 5 seconds)
+    this.vibrationInterval = window.setInterval(() => {
+      if (this.house().status === 'active') {
+        // Trigger animation by updating signal
+        this.vibrationTrigger.set(Date.now());
+        // Remove animation class after animation completes (600ms - 2 iterations × 0.3s)
+        setTimeout(() => {
+          this.vibrationTrigger.set(0);
+        }, 600);
+      }
+    }, 5000);
   }
 
   ngOnDestroy() {
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
+    }
+    if (this.vibrationInterval) {
+      clearInterval(this.vibrationInterval);
     }
   }
 

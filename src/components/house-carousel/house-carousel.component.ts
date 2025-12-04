@@ -54,9 +54,9 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                     <!-- Location Icon - Top Left, matching image ratio -->
                     <button 
                       (click)="openLocationMap(house)"
-                      class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none"
+                      class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none"
                       [attr.aria-label]="'View ' + house.title + ' location on map'">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                       </svg>
                     </button>
@@ -66,7 +66,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       <span 
                         [class]="getStatusClasses(house.status)"
                         [class.animate-seesaw]="house.status === 'active' && vibrationTrigger() > 0"
-                        class="text-white px-4 py-2 rounded-[20px] text-sm font-semibold shadow-lg whitespace-nowrap flex items-center h-8">
+                        class="text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
                         {{ getStatusText(house) }}
                       </span>
                     </div>
@@ -78,9 +78,9 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       (keydown.space)="toggleFavorite(house.id, $event); $event.preventDefault()"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
                       [title]="isFavorite(house.id) ? (translate('lottery.favorites.removeFromFavorites') || 'Remove from favorites') : (translate('lottery.favorites.addToFavorites') || 'Add to favorites')"
-                      class="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-20 cursor-pointer focus:outline-none"
+                      class="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-20 cursor-pointer focus:outline-none"
                       [disabled]="isTogglingFavorite(house.id)">
-                      <svg class="w-4 h-4 transition-all duration-300"
+                      <svg class="w-6 h-6 transition-all duration-300"
                            [class.text-red-500]="isFavorite(house.id)"
                            [class.text-white]="!isFavorite(house.id)"
                            [attr.fill]="isFavorite(house.id) ? 'currentColor' : 'none'"

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed, effect, HostListener } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HouseDto } from '../../models/house.model';
@@ -66,6 +66,28 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
     .heart-fill-animation {
       animation: heart-fill 0.6s ease-out;
     }
+    
+    /* Animation: rotates like a seesaw board, one end up while other end down, then reverses */
+    @keyframes seesaw {
+      0%, 100% {
+        transform: rotate(0deg);
+      }
+      25% {
+        transform: rotate(-4deg);
+      }
+      50% {
+        transform: rotate(0deg);
+      }
+      75% {
+        transform: rotate(4deg);
+      }
+    }
+    
+    .animate-seesaw {
+      animation: seesaw 0.3s ease-in-out;
+      animation-iteration-count: 2;
+      transform-origin: center center;
+    }
   `],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4 md:px-8">
@@ -117,16 +139,18 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   (click)="openLocationMap()"
                   (keydown.enter)="openLocationMap()"
                   (keydown.space)="openLocationMap(); $event.preventDefault()"
-                  class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none"
+                  class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none"
                   [attr.aria-label]="'View ' + house()!.title + ' location on map'">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                   </svg>
                 </button>
 
                 <!-- Status Badge - Green Oval (Centered, Same Height as Icons) -->
                 <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
-                  <span class="bg-emerald-500 text-white px-4 py-2 rounded-[20px] text-sm font-semibold shadow-lg whitespace-nowrap flex items-center h-8">
+                  <span 
+                    [class.animate-seesaw]="house()!.status === 'active' && vibrationTrigger() > 0"
+                    class="bg-emerald-500 text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
                     {{ getStatusText() }}
                   </span>
                 </div>
@@ -139,11 +163,11 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   [disabled]="isTogglingFavorite()"
                   [class.favorite-button-pulse]="isTogglingFavorite() || isFavorite()"
                   [class.favorite-button-glow]="isFavorite()"
-                  class="absolute top-4 right-4 z-20 bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full shadow-lg transition-colors duration-200 cursor-pointer focus:outline-none favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="absolute top-4 right-4 z-20 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 cursor-pointer focus:outline-none favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
                   [attr.aria-label]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')"
                   [title]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')">
                   <svg 
-                    class="w-4 h-4 transition-all duration-300"
+                    class="w-6 h-6 transition-all duration-300"
                     [class.text-red-500]="isFavorite()"
                     [class.text-white]="!isFavorite()"
                     [class.heart-fill-animation]="isFavorite()"
@@ -423,7 +447,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
     </div>
   `
 })
-export class HouseDetailComponent implements OnInit {
+export class HouseDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private lotteryService = inject(LotteryService);
@@ -439,9 +463,12 @@ export class HouseDetailComponent implements OnInit {
   isTogglingFavorite = signal<boolean>(false);
   checkingCanEnter = signal<boolean>(false);
   enteringLottery = signal<boolean>(false);
+  vibrationTrigger = signal<number>(0);
   
   // Image gallery state
   currentImageIndex = signal<number>(0);
+  
+  private vibrationInterval?: number;
   
   // Favorites
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
@@ -483,6 +510,25 @@ export class HouseDetailComponent implements OnInit {
 
     // Load house first, then check canEnter after house loads
     this.loadHouse(houseId);
+    
+    // Start seesaw animation for active status badges (every 5 seconds)
+    this.vibrationInterval = window.setInterval(() => {
+      const h = this.house();
+      if (h && h.status === 'active') {
+        // Trigger animation by updating signal
+        this.vibrationTrigger.set(Date.now());
+        // Remove animation class after animation completes (600ms - 2 iterations × 0.3s)
+        setTimeout(() => {
+          this.vibrationTrigger.set(0);
+        }, 600);
+      }
+    }, 5000);
+  }
+  
+  ngOnDestroy(): void {
+    if (this.vibrationInterval) {
+      clearInterval(this.vibrationInterval);
+    }
   }
 
   loadHouse(houseId: string): void {
