@@ -44,9 +44,8 @@ import { CookieConsentService } from './services/cookie-consent.service';
         [isVisible]="(translationService.isLoading$ | async) ?? false"
       ></app-translation-loader>
       
-      <nav id="main-navigation" role="navigation">
-        <app-topbar></app-topbar>
-      </nav>
+      <!-- Topbar - Remove nav wrapper to allow sticky positioning -->
+      <app-topbar></app-topbar>
       
       <div class="transition-all duration-500 ease-in-out">
         @if (isLoading | async) {
