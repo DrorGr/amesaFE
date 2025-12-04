@@ -322,7 +322,10 @@ export class LotteryService {
         throw new Error('Failed to purchase tickets');
       }),
       catchError(error => {
-        console.error('Error purchasing tickets:', error);
+        // Suppress errors for 200 status (response format issues, not actual errors)
+        if (error?.status !== 200) {
+          console.error('Error purchasing tickets:', error);
+        }
         return throwError(() => error);
       })
     );

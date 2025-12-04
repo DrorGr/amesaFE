@@ -47,11 +47,21 @@ export class ApiService {
     if (isTestEnvironment) {
       this.baseUrl = '/api/v1';
     } else {
-      // Fix: If localhost detected in production OR if baseUrl is relative and we're on CloudFront
-      if (this.baseUrl.includes('localhost') || 
-          (!this.baseUrl.startsWith('http') && typeof window !== 'undefined' && window.location.hostname.includes('cloudfront.net'))) {
+      // In development (localhost), use relative URLs so proxy can handle routing to ALB
+      const isDevelopment = typeof window !== 'undefined' && 
+                          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      
+      if (isDevelopment) {
+        // Use relative URL for proxy routing in development
+        this.baseUrl = '/api/v1';
+      } else if (!this.baseUrl.startsWith('http') && typeof window !== 'undefined' && window.location.hostname.includes('cloudfront.net')) {
+        // Fix: If baseUrl is relative and we're on CloudFront (production), use absolute URL
+        console.warn('[API Service] Relative baseUrl detected on CloudFront, using production URL');
+        this.baseUrl = 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
+      }
+      // If baseUrl already includes localhost in non-dev environment, that's an error
+      else if (this.baseUrl.includes('localhost') && !isDevelopment) {
         console.error('[API Service] ERROR: Invalid baseUrl detected! Fixing...');
-        // Force production URL
         this.baseUrl = 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
         console.log('[API Service] Fixed baseUrl to:', this.baseUrl);
       }
@@ -199,6 +209,14 @@ export class ApiService {
     if (error.status === 200) {
       // 200 responses shouldn't be logged as errors - likely response format mismatch
       // The calling code will handle this appropriately
+      return throwError(() => error);
+    }
+    
+    // Suppress 500 errors FIRST - these are backend issues, not frontend bugs
+    // Check for 500 status or identity/status endpoint (which returns 500)
+    if (error.status === 500 || error.url?.includes('/identity/status')) {
+      // Suppress 500 errors completely - these are backend issues, not frontend bugs
+      // Logging them creates console noise without actionable information
       return throwError(() => error);
     }
     

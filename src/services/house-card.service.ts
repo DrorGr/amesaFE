@@ -197,7 +197,10 @@ export class HouseCardService {
         return { success: false, message: 'Purchase failed' };
       }
     } catch (error: any) {
-      console.error('Error purchasing ticket:', error);
+      // Suppress errors for 200 status (response format issues, not actual errors)
+      if (error?.status !== 200) {
+        console.error('Error purchasing ticket:', error);
+      }
       // Check if it's a verification error
       if (error?.error?.error?.code === 'ID_VERIFICATION_REQUIRED' || 
           error?.error?.message?.includes('ID_VERIFICATION_REQUIRED') ||
