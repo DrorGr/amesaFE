@@ -26,6 +26,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
         <img 
           [src]="house().imageUrl" 
           [alt]="house().title"
+          (error)="onImageError($event)"
           class="w-full h-full object-cover rounded-t-xl">
         
         <!-- Location Icon -->
@@ -547,5 +548,13 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     } finally {
       this.isQuickEntering = false;
     }
+  }
+
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    // Set fallback placeholder image
+    img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+    img.classList.add('opacity-100');
+    // Don't log warnings for missing images - they're handled gracefully
   }
 }

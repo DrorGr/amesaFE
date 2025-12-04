@@ -592,8 +592,10 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   onImageError(event: Event) {
     const img = event.target as HTMLImageElement;
-    img.classList.add('opacity-50');
-    console.warn('Failed to load image:', img.src);
+    // Set fallback placeholder image
+    img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+    img.classList.add('opacity-100');
+    // Don't log warnings for missing images - they're handled gracefully
   }
 
   private loadCurrentSlideImages() {

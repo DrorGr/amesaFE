@@ -143,17 +143,11 @@ export class TranslationService {
    * Set the current language and load translations if not cached
    */
   setLanguage(language: Language): void {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:129',message:'setLanguage called',data:{language,currentLanguage:this.currentLanguage(),hasCache:this.translationsCache().has(language),cacheStale:this.isCacheStale(language)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-    // #endregion
     // Check if translations are loaded for this language
     const isLanguageLoaded = this.translationsCache().has(language) && !this.isCacheStale(language);
     
     // If language is already set AND translations are loaded, skip
     if (this.currentLanguage() === language && isLanguageLoaded) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:136',message:'setLanguage skipped - already loaded',data:{language},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-      // #endregion
       return; // Already set to this language with translations loaded
     }
 
@@ -164,9 +158,6 @@ export class TranslationService {
     
     // Load translations if not in cache or cache is stale
     if (!this.translationsCache().has(language) || this.isCacheStale(language)) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:147',message:'Calling loadTranslations',data:{language,reason:'not in cache or stale'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-      // #endregion
       // Load translations first, then switch language when ready
       // loadTranslations will handle isLoading, loadingProgress, and loadingMessage
       this.loadTranslations(language, true); // true = switch language after loading
@@ -291,15 +282,9 @@ export class TranslationService {
    * @param switchAfterLoad - If true, switch current language after translations are loaded
    */
   private loadTranslations(language: Language, switchAfterLoad: boolean = false): void {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:193',message:'loadTranslations entry',data:{language,switchAfterLoad,isLoading:this.isLoading.value,currentLanguage:this.currentLanguage()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-    // #endregion
     // Only block if loading the SAME language (prevent duplicate requests)
     // Allow loading different languages (will handle via Observable unsubscribe if needed)
     if (this.isLoading.value && this.currentLanguage() === language) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:197',message:'Early return - already loading same language',data:{language,isLoading:this.isLoading.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-      // #endregion
       this.logger.debug('Already loading same language, skipping', { language }, 'TranslationService');
       return; // Already loading same language
     }
@@ -312,16 +297,10 @@ export class TranslationService {
 
     const url = `translations/${language}`;
     this.logger.debug('Making API request', { url, language }, 'TranslationService');
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:196',message:'Starting API request',data:{url,language,baseUrl:this.apiService.getBaseUrl(),fullUrl:`${this.apiService.getBaseUrl()}/${url}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-    // #endregion
 
     // Add timeout of 10 seconds
     const timeoutDuration = 10000;
     const timeoutTimer = setTimeout(() => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:219',message:'API request timeout triggered',data:{language,timeoutDuration},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-      // #endregion
       this.logger.warn('API request timeout', { language, timeoutDuration }, 'TranslationService');
       // CRITICAL: Reset isLoading before calling handleTranslationLoadError (which also resets it, but this ensures it happens)
       this.isLoading.next(false);
@@ -334,19 +313,9 @@ export class TranslationService {
           clearTimeout(timeoutTimer);
           this.loadingProgress.next(50);
           this.loadingMessage.next('Processing translations...');
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:208',message:'API Response received',data:{hasSuccess:response.hasOwnProperty('success'),hasData:response.hasOwnProperty('data'),successValue:response.success,dataValue:response.data,responseKeys:Object.keys(response),responseStr:JSON.stringify(response).substring(0,200)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-          // #endregion
           this.logger.debug('API Response received', { response }, 'TranslationService');
         }),
         map(response => {
-          // #region agent log
-          const hasSuccess = response.hasOwnProperty('success');
-          const hasData = response.hasOwnProperty('data');
-          const successValue = (response as any).success;
-          const dataValue = (response as any).data;
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:214',message:'Checking response properties',data:{hasSuccess,hasData,successValue,dataValue,responseType:typeof response,allKeys:Object.keys(response),responseStr:JSON.stringify(response).substring(0,300)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-          // #endregion
           if (response.success && response.data) {
             const translationCount = Object.keys(response.data.translations || {}).length;
             this.logger.debug('Translations data received', { 
@@ -355,9 +324,6 @@ export class TranslationService {
             }, 'TranslationService');
             return response.data;
           }
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:223',message:'Invalid response format detected',data:{hasSuccess,hasData,successValue,dataValue,responseStr:JSON.stringify(response).substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-          // #endregion
           this.logger.error('Invalid response format', { response }, 'TranslationService');
           throw new Error('Invalid response format');
         }),
@@ -416,22 +382,14 @@ export class TranslationService {
         }),
         catchError(error => {
           clearTimeout(timeoutTimer);
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:304',message:'Translation load error caught',data:{language,errorDetails:error instanceof Error ? error.message : String(error),errorType:typeof error,errorKeys:error && typeof error === 'object' ? Object.keys(error) : []},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-          // #endregion
           return this.handleTranslationLoadError(language, error);
         })
       )
       .subscribe({
         next: () => {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:318',message:'Observable subscription completed successfully',data:{language},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-          // #endregion
+          // Subscription completed successfully
         },
         error: (err) => {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:323',message:'Observable subscription error',data:{language,errorDetails:err instanceof Error ? err.message : String(err),errorType:typeof err},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-          // #endregion
           this.logger.error('Translation subscription error', { language, error: err }, 'TranslationService');
           // CRITICAL: Reset isLoading on subscription error
           this.isLoading.next(false);
@@ -440,9 +398,7 @@ export class TranslationService {
           this.loadingMessage.next('Initializing...');
         },
         complete: () => {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:332',message:'Observable subscription completed',data:{language},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-          // #endregion
+          // Subscription completed
         }
       });
   }
@@ -458,9 +414,6 @@ export class TranslationService {
       url: (error as any)?.url || 'Unknown',
       language
     };
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translation.service.ts:345',message:'Translation load error',data:{...errorDetails,errorType:error?.constructor?.name,errorStr:JSON.stringify(error).substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-    // #endregion
     this.logger.error('Failed to load translations', errorDetails, 'TranslationService');
     
     const errorMessage = `Failed to load ${language.toUpperCase()} translations from server`;
