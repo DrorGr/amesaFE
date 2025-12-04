@@ -266,6 +266,22 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
         height: 2rem !important;
       }
     }
+    
+    /* Glow pulse animation for favorites button (blue color like promotion badge) */
+    @keyframes favoritesGlowPulse {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+        outline: 2px solid transparent;
+      }
+      50% {
+        box-shadow: 0 0 20px 8px rgba(59, 130, 246, 0.6);
+        outline: 2px solid rgba(59, 130, 246, 0.8);
+        outline-offset: 2px;
+      }
+    }
+    .favorites-glow-pulse {
+      animation: favoritesGlowPulse 1s ease-in-out;
+    }
   `]
 })
 export class TopbarComponent implements OnInit {

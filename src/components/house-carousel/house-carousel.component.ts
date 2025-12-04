@@ -79,7 +79,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       class="absolute top-4 right-4 bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 text-white p-4.5 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none"
                       [disabled]="isTogglingFavorite(house.id)">
                       <svg class="w-9 h-9 transition-all duration-200"
-                           [class.text-white]="isFavorite(house.id)"
+                           [class.text-red-500]="isFavorite(house.id)"
                            [class.text-white]="!isFavorite(house.id)"
                            [class.fill-current]="isFavorite(house.id)"
                            [class.stroke-current]="!isFavorite(house.id)"
@@ -247,7 +247,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
             [style.top.px]="heart.startY + (heart.endY - heart.startY) * (heart.active ? 1 : 0)"
             [style.transition]="heart.active ? 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)' : 'none'"
             [style.opacity]="heart.active ? '0' : '1'">
-            <svg class="w-9 h-9 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-9 h-9 text-red-500" fill="currentColor" viewBox="0 0 24 24">
               <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
             </svg>
           </div>
@@ -981,33 +981,33 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Animate heart icon flying from carousel to topbar favorites button
+   * Animate heart icon flying from carousel to topbar favorites text
    */
   animateHeartToFavorites(startX: number, startY: number): void {
-    // Find the favorites button in the topbar - try multiple selectors
-    let favoritesButton: HTMLElement | null = null;
+    // Find the favorites button/text in the topbar - try multiple selectors
+    let favoritesElement: HTMLElement | null = null;
     
-    // Try to find by text content
+    // Try to find by text content in button
     const navButtons = document.querySelectorAll('nav button');
     for (let i = 0; i < navButtons.length; i++) {
       const btn = navButtons[i] as HTMLElement;
       const text = btn.textContent?.toLowerCase() || '';
       if (text.includes('favorite') || text.includes('favourites')) {
-        favoritesButton = btn;
+        favoritesElement = btn;
         break;
       }
     }
     
-    if (!favoritesButton) {
+    if (!favoritesElement) {
       // Try aria-label
-      favoritesButton = document.querySelector('button[aria-label*="favorite" i]') as HTMLElement;
+      favoritesElement = document.querySelector('button[aria-label*="favorite" i]') as HTMLElement;
     }
     
-    if (!favoritesButton) {
-      return; // Can't find the button, skip animation
+    if (!favoritesElement) {
+      return; // Can't find the element, skip animation
     }
     
-    const rect = favoritesButton.getBoundingClientRect();
+    const rect = favoritesElement.getBoundingClientRect();
     const endX = rect.left + rect.width / 2;
     const endY = rect.top + rect.height / 2;
     
@@ -1021,10 +1021,10 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       // Remove heart and trigger glow after animation completes
       setTimeout(() => {
         this.flyingHeart.set(null);
-        // Add glow class to favorites button (blue color like promotion badge)
-        favoritesButton!.classList.add('favorites-glow-pulse');
+        // Add glow class to favorites button/text (blue color like promotion badge)
+        favoritesElement!.classList.add('favorites-glow-pulse');
         setTimeout(() => {
-          favoritesButton!.classList.remove('favorites-glow-pulse');
+          favoritesElement!.classList.remove('favorites-glow-pulse');
         }, 1000);
       }, 800);
     }, 50);

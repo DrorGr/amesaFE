@@ -35,11 +35,12 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
               *ngFor="let house of favoriteHouses()" 
               class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
               <!-- House Image -->
-              <div class="relative h-48 bg-gray-200">
+              <div class="relative h-64 md:h-80 bg-gray-200">
                 <img 
                   [src]="(house.images && house.images[0]) ? house.images[0].imageUrl : ''" 
                   [alt]="house.title"
-                  class="w-full h-full object-cover">
+                  class="w-full h-full object-cover"
+                  (error)="onImageError($event)">
                 
                 <!-- Favorite Button -->
                 <button
@@ -302,6 +303,13 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
 
   translateWithParams(key: string, params: Record<string, any>): string {
     return this.translationService.translateWithParams(key, params);
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    // Replace with a placeholder SVG image
+    img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+    img.onerror = null; // Prevent infinite loop
   }
 }
 
