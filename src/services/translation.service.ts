@@ -109,7 +109,7 @@ export class TranslationService {
    */
   translate(key: string): string {
     const translations = this.currentTranslations();
-    let translation = translations[key];
+    const translation = translations[key];
     
     if (!translation) {
       this.logger.warn('Missing translation', { 
@@ -120,26 +120,24 @@ export class TranslationService {
       return key;
     }
     
-    // Strip language prefixes like [EN], [ES], [FR], [PL] from translation values
-    translation = translation.replace(/^\[(EN|ES|FR|PL|HE|AR)\]\s*/i, '').trim();
-    
     return translation;
   }
 
   /**
-   * Get translation for a key with parameter substitution
-   * @param key Translation key
-   * @param params Parameters to substitute in the translation (e.g., {name: "John"} replaces {name} in translation)
+   * Get translation with parameter substitution
+   * Replaces {paramName} placeholders in translation strings with actual values
+   * @param key - Translation key
+   * @param params - Object with parameter values to substitute
+   * @returns Translated string with parameters replaced
    */
   translateWithParams(key: string, params: Record<string, any>): string {
     let translation = this.translate(key);
     
-    // Strip language prefixes (translate() already does this, but ensure it's done)
-    translation = translation.replace(/^\[(EN|ES|FR|PL|HE|AR)\]\s*/i, '').trim();
-    
-    // Replace parameters in the translation string
-    Object.entries(params).forEach(([param, value]) => {
-      translation = translation.replace(new RegExp(`\\{${param}\\}`, 'g'), String(value));
+    // Replace {paramName} placeholders with actual values
+    Object.keys(params).forEach(paramKey => {
+      const placeholder = `{${paramKey}}`;
+      const value = params[paramKey]?.toString() || '';
+      translation = translation.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value);
     });
     
     return translation;
@@ -159,13 +157,15 @@ export class TranslationService {
 
     this.logger.info('Switching language', { language }, 'TranslationService');
     
-    // Clear any previous errors
-    this.error.next(null);
+    // Always show loader when changing language for better UX
+    this.isLoading.next(true);
+    this.loadingProgress.next(10);
+    this.loadingMessage.next(`Switching to ${language.toUpperCase()}...`);
+    this.error.next(null); // Clear any previous errors
     
     // Load translations if not in cache or cache is stale
     if (!this.translationsCache().has(language) || this.isCacheStale(language)) {
       // Load translations first, then switch language when ready
-      // loadTranslations will handle isLoading, loadingProgress, and loadingMessage
       this.loadTranslations(language, true); // true = switch language after loading
     } else {
       // Translations are cached, safe to switch immediately
@@ -368,11 +368,6 @@ export class TranslationService {
           if (translationCount > 0) {
             this.loadingMessage.next('Translations loaded successfully!');
             this.error.next(null);
-            
-            // Keep UI message for UX, but don't block app startup
-            setTimeout(() => {
-              this.loadingMessage.next('Initializing...');
-            }, 500);
           } else {
             this.loadingMessage.next(`No translations available for ${language.toUpperCase()}`);
             setTimeout(() => {
