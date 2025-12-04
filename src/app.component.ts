@@ -193,7 +193,7 @@ import { CookieConsentService } from './services/cookie-consent.service';
         <app-auth-modal 
           [mode]="authModalService.mode()"
           (close)="authModalService.close()"
-          (success)="authModalService.close()">
+          (success)="onAuthSuccess()">
         </app-auth-modal>
       }
       
@@ -314,6 +314,17 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
+  }
+
+  onAuthSuccess(): void {
+    // Close the auth modal
+    this.authModalService.close();
+    
+    // Reset route loading state to prevent stuck loader
+    // This ensures the loader disappears even if no navigation occurs
+    setTimeout(() => {
+      this.routeLoadingService.setLoading(false);
+    }, 100);
   }
 
   translate(key: string): string {
