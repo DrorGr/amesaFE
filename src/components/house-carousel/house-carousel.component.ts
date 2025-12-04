@@ -524,20 +524,35 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
       transform-origin: center center;
     }
     
-    /* Glow pulse animation for favorites button (blue color like promotion badge) */
+    /* Glow pulse animation for favorites button (warm orange-red glow matching topbar) */
+    /* Note: This animation is applied to topbar element, so topbar's animation takes precedence */
+    /* Keeping here for reference, but topbar's animation is what actually runs */
     @keyframes favoritesGlowPulse {
-      0%, 100% {
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-        outline: 2px solid transparent;
+      0% {
+        box-shadow: 0 0 0 0 rgba(249, 115, 22, 0);
+        text-shadow: 0 0 0 rgba(249, 115, 22, 0);
+        background: transparent;
       }
       50% {
-        box-shadow: 0 0 20px 8px rgba(59, 130, 246, 0.6);
-        outline: 2px solid rgba(59, 130, 246, 0.8);
-        outline-offset: 2px;
+        box-shadow: 0 0 30px 12px rgba(249, 115, 22, 0.8),
+                    0 0 50px 20px rgba(249, 115, 22, 0.4),
+                    0 0 70px 30px rgba(249, 115, 22, 0.2);
+        text-shadow: 0 0 20px rgba(249, 115, 22, 0.9),
+                     0 0 40px rgba(249, 115, 22, 0.6),
+                     0 0 60px rgba(249, 115, 22, 0.3);
+        background: radial-gradient(circle at center, rgba(249, 115, 22, 0.3) 0%, transparent 70%);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(249, 115, 22, 0);
+        text-shadow: 0 0 0 rgba(249, 115, 22, 0);
+        background: transparent;
       }
     }
     .favorites-glow-pulse {
-      animation: favoritesGlowPulse 1s ease-in-out;
+      animation: favoritesGlowPulse 1.5s ease-in-out;
+      position: relative;
+      padding: 4px 12px;
+      border-radius: 8px;
     }
   `]
 })
