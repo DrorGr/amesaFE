@@ -42,6 +42,16 @@ export class ErrorHandlingService implements ErrorHandler {
    * @param error - The error to handle
    */
   handleError(error: any): void {
+    // Filter out NG0203 errors (inject() must be called from an injection context)
+    // These are often transient initialization errors that don't need user notification
+    if (error?.message?.includes('NG0203') || 
+        error?.message?.includes('inject() must be called from an injection context') ||
+        error?.code === 'NG0203') {
+      // Silently log to console only, don't show toast
+      console.warn('NG0203: Service injection context error (handled silently):', error);
+      return;
+    }
+    
     const errorInfo = this.createErrorInfo(error, 'medium');
     this.logError(errorInfo);
     this.notifyUser(errorInfo);

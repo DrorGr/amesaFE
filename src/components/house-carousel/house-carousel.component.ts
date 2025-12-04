@@ -6,12 +6,13 @@ import { LotteryService } from '../../services/lottery.service';
 import { LocaleService } from '../../services/locale.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
+import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 
 @Component({
   selector: 'app-house-carousel',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, VerificationGateComponent],
   template: `
     <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 md:py-4 transition-colors duration-300 relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -47,26 +48,26 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                         (error)="onImageError($event)">
                     }
                     
-                    <!-- Location Icon -->
+                    <!-- Location Icon - 50% bigger -->
                     <button 
                       (click)="openLocationMap(house)"
-                      class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                      class="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-4.5 rounded-full shadow-lg transition-colors duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
                       [attr.aria-label]="'View ' + house.title + ' location on map'">
-                      <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                       </svg>
                     </button>
                     
-                    <!-- Favorites Button -->
+                    <!-- Favorites Button - Top Right, 50% bigger, same size as location -->
                     <button 
                       (click)="toggleFavorite(house.id, $event)"
                       (keydown.enter)="toggleFavorite(house.id, $event)"
                       (keydown.space)="toggleFavorite(house.id, $event); $event.preventDefault()"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
                       [title]="isFavorite(house.id) ? (translate('lottery.favorites.removeFromFavorites') || 'Remove from favorites') : (translate('lottery.favorites.addToFavorites') || 'Add to favorites')"
-                      class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 text-gray-800 dark:text-white p-3 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      class="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 text-gray-800 dark:text-white p-4.5 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
                       [disabled]="isTogglingFavorite(house.id)">
-                      <svg class="w-6 h-6 transition-all duration-200"
+                      <svg class="w-9 h-9 transition-all duration-200"
                            [class.text-red-500]="isFavorite(house.id)"
                            [class.text-gray-400]="!isFavorite(house.id)"
                            [class.fill-current]="isFavorite(house.id)"
@@ -81,12 +82,12 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       </svg>
                     </button>
                     
-                    <!-- Status Badge -->
+                    <!-- Status Badge - Top Middle, 50% bigger, pill shape -->
                     <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
                       <span 
                         [class]="getStatusClasses(house.status)"
                         [class.animate-vibrate]="house.status === 'active' && vibrationTrigger() > 0"
-                        class="text-white px-4.5 py-3 rounded-full text-base font-semibold shadow-lg">
+                        class="text-white px-8 py-4.5 rounded-full text-lg font-semibold shadow-lg inline-block">
                         {{ getStatusText(house) }}
                       </span>
                     </div>
@@ -204,21 +205,48 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       </div>
                     </div>
                     
-                    <!-- Buy Ticket / Notify Me Button -->
-                    @if (house.status === 'ended') {
-                      <button 
-                        disabled
-                        class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button cursor-not-allowed opacity-60">
-                        {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
-                      </button>
-                    } @else if (house.status === 'upcoming') {
-                      <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
-                        {{ translate('carousel.notifyMe') || 'Notify Me' }}
-                      </button>
+                    <!-- Buttons Section -->
+                    @if (currentUser()?.isAuthenticated) {
+                      <app-verification-gate [isVerificationRequired]="true">
+                        <!-- Quick Entry Button (only show if favorited and active) -->
+                        @if (isFavorite(house.id) && house.status === 'active') {
+                          <button
+                            (click)="quickEntry(house.id, $event)"
+                            (keydown.enter)="quickEntry(house.id, $event)"
+                            (keydown.space)="quickEntry(house.id, $event); $event.preventDefault()"
+                            [disabled]="isQuickEntering(house.id)"
+                            class="w-full mt-6 md:mt-4 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            @if (isQuickEntering(house.id)) {
+                              {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
+                            } @else {
+                              ⚡ {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
+                            }
+                          </button>
+                        }
+                        
+                        <!-- Buy Ticket / Notify Me Button -->
+                        @if (house.status === 'ended') {
+                          <button 
+                            disabled
+                            class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button cursor-not-allowed opacity-60">
+                            {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
+                          </button>
+                        } @else if (house.status === 'upcoming') {
+                          <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
+                            {{ translate('carousel.notifyMe') || 'Notify Me' }}
+                          </button>
+                        } @else {
+                          <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
+                            {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
+                          </button>
+                        }
+                      </app-verification-gate>
                     } @else {
-                      <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
-                        {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
-                      </button>
+                      <!-- Sign In Prompt -->
+                      <div class="text-center mt-6 md:mt-4">
+                        <p class="text-2xl md:text-xl text-gray-600 dark:text-gray-300 mb-4 md:mb-3">{{ translate('house.signInToParticipate') }}</p>
+                        <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400">€{{ house.ticketPrice }} {{ translate('house.perTicket') }}</div>
+                      </div>
                     }
                   </div>
                 </div>
@@ -475,23 +503,26 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
       }
     }
     
-    /* Vibration animation for Active status */
+    /* Vibration animation for Active status - up and down motion with middle as pivot */
     @keyframes vibrate {
       0%, 100% {
         transform: translateX(-50%) translateY(0);
       }
       25% {
-        transform: translateX(-50%) translateY(-4px);
+        transform: translateX(-50%) translateY(-6px);
+      }
+      50% {
+        transform: translateX(-50%) translateY(0);
       }
       75% {
-        transform: translateX(-50%) translateY(4px);
+        transform: translateX(-50%) translateY(6px);
       }
     }
     
     .animate-vibrate {
-      animation: vibrate 0.3s ease-in-out;
+      animation: vibrate 0.5s ease-in-out;
       animation-iteration-count: 1;
-      transform-origin: center;
+      transform-origin: center center;
     }
   `]
 })
@@ -503,6 +534,15 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private togglingFavorites = signal<Set<string>>(new Set());
+  private quickEntering = signal<Set<string>>(new Set());
+  
+  // Make LOTTERY_TRANSLATION_KEYS available in template
+  readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
+  
+  // Expose authService for template
+  get currentUser() {
+    return this.authService.getCurrentUser();
+  }
   
   // Use global mobile detection
   isMobile = this.mobileDetectionService.isMobile;
@@ -552,10 +592,10 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       if (currentHouse && currentHouse.status === 'active') {
         // Trigger animation by updating signal
         this.vibrationTrigger.set(Date.now());
-        // Remove animation class after animation completes (300ms)
+        // Remove animation class after animation completes (500ms)
         setTimeout(() => {
           this.vibrationTrigger.set(0);
-        }, 300);
+        }, 500);
       }
     }, 3000);
   }
@@ -862,6 +902,10 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     return this.togglingFavorites().has(houseId);
   }
 
+  isQuickEntering(houseId: string): boolean {
+    return this.quickEntering().has(houseId);
+  }
+
   async toggleFavorite(houseId: string, event: Event): Promise<void> {
     event.stopPropagation();
     
@@ -898,6 +942,57 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       );
     } finally {
       this.togglingFavorites.update(set => {
+        const newSet = new Set(set);
+        newSet.delete(houseId);
+        return newSet;
+      });
+    }
+  }
+
+  /**
+   * Quick entry from favorites
+   */
+  async quickEntry(houseId: string, event: Event): Promise<void> {
+    event.stopPropagation();
+    
+    if (!this.authService.getCurrentUser()()?.isAuthenticated || this.isQuickEntering(houseId)) {
+      return;
+    }
+
+    if (!this.isFavorite(houseId)) {
+      this.toastService.warning(
+        this.translate('lottery.favorites.mustBeFavorite') || 'This house must be in your favorites to use quick entry',
+        3000
+      );
+      return;
+    }
+
+    this.quickEntering.update(set => new Set(set).add(houseId));
+
+    try {
+      const result = await this.lotteryService.quickEntryFromFavorite({
+        houseId: houseId,
+        quantity: 1,
+        paymentMethodId: 'default'
+      }).toPromise();
+      
+      if (result && result.ticketsPurchased > 0) {
+        this.toastService.success(
+          this.translate(LOTTERY_TRANSLATION_KEYS.quickEntry.success) || 'Quick entry successful!',
+          3000
+        );
+      }
+    } catch (error: any) {
+      console.error('Error with quick entry:', error);
+      // Suppress errors for 200 status (response format issues, not actual errors)
+      if (error?.status !== 200) {
+        this.toastService.error(
+          this.translate(LOTTERY_TRANSLATION_KEYS.quickEntry.error) || 'Failed to complete quick entry',
+          3000
+        );
+      }
+    } finally {
+      this.quickEntering.update(set => {
         const newSet = new Set(set);
         newSet.delete(houseId);
         return newSet;
