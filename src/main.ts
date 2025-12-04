@@ -21,14 +21,14 @@ import { provideRouter, withPreloading, withInMemoryScrolling } from '@angular/r
 import { CustomPreloadingStrategy } from './app.preloading-strategy';
 import { provideHttpClient } from '@angular/common/http';
 
-// Initialize translation service - LOAD FIRST, before preferences
+// CRITICAL: Initialize translations FIRST and BLOCK until loaded
+// This ensures translations are available before any component renders
 function initializeTranslations(translationService: TranslationService) {
   return () => {
     // Determine initial language with priority (NO network requests):
     // 1. localStorage (amesa_language key) - fastest, no network
     // 2. Browser/system language (navigator.language)
     // 3. Default to 'en' if none of the above are available
-    // NOTE: UserPreferencesService is NOT checked here to avoid waiting for network requests
 
     let initialLanguage: 'en' | 'es' | 'fr' | 'pl' = 'en';
     const supportedLanguages: ('en' | 'es' | 'fr' | 'pl')[] = ['en', 'es', 'fr', 'pl'];
@@ -47,45 +47,42 @@ function initializeTranslations(translationService: TranslationService) {
       }
     }
 
-    // Start loading translations in background (non-blocking)
-    // App will start immediately, translations will load asynchronously
-    translationService.loadTranslationsAsync(initialLanguage)
+    // CRITICAL: Wait for translations to load before app starts
+    // This blocks app initialization until translations are ready
+    return translationService.loadTranslationsAsync(initialLanguage)
       .catch(error => {
-        // Log error but don't block app startup
+        // Log error but still allow app to start (fail-open design)
         console.error('Failed to load initial translations:', error);
+        // Return resolved promise to allow app to continue
+        return Promise.resolve();
       });
-    
-    // Resolve immediately to allow app to start without waiting for translations
-    // Translations will load in the background and update when ready
-    return Promise.resolve();
   };
 }
 
-// Initialize services with cross-dependencies
+// Initialize services with cross-dependencies - NON-BLOCKING
+// This runs AFTER translations are loaded, but doesn't block app startup
 function initializeServices(
   userPreferencesService: UserPreferencesService,
   themeService: ThemeService,
-  accessibilityService: AccessibilityService,
-  authService: AuthService
+  accessibilityService: AccessibilityService
 ) {
   return () => {
     // Set up the theme service reference in user preferences to avoid circular dependency
     userPreferencesService.setThemeService(themeService);
     
-    // Initialize theme from storage for faster loading
+    // Initialize theme from storage for faster loading (synchronous, no network)
     themeService.initializeFromStorage();
     
-    // Load user preferences if authenticated
-    // Note: Preferences are loaded automatically by UserPreferencesService constructor
-    // We just need to apply them to theme and accessibility services
+    // Load user preferences from localStorage (synchronous, no network)
+    // Note: Server sync happens later via subscription, not during initialization
     const prefs = userPreferencesService.getPreferences();
     
-    // Initialize theme from user preferences
+    // Initialize theme from user preferences (synchronous)
     if (prefs.appearance?.theme) {
       themeService.updateThemeFromPreferences(prefs.appearance.theme);
     }
     
-    // Initialize accessibility from user preferences
+    // Initialize accessibility from user preferences (synchronous)
     if (prefs.accessibility) {
       // Apply accessibility settings
       if (prefs.accessibility.highContrast) {
@@ -104,6 +101,8 @@ function initializeServices(
       }
     }
     
+    // Resolve immediately - all operations are synchronous
+    // Network requests (like auth status check, house loading) happen later via service subscriptions
     return Promise.resolve();
   };
 }
@@ -125,15 +124,18 @@ bootstrapApplication(AppComponent, {
     RoutePerformanceService,
     { provide: ErrorHandler, useClass: ErrorHandlingService },
     {
+      // CRITICAL: Translations load FIRST and BLOCK app startup
       provide: APP_INITIALIZER,
       useFactory: initializeTranslations,
       deps: [TranslationService],
       multi: true
     },
     {
+      // Services initialize AFTER translations, but don't block
+      // Removed AuthService dependency to prevent blocking network requests
       provide: APP_INITIALIZER,
       useFactory: initializeServices,
-      deps: [UserPreferencesService, ThemeService, AccessibilityService, AuthService],
+      deps: [UserPreferencesService, ThemeService, AccessibilityService],
       multi: true
     },
     provideRouter(

@@ -62,8 +62,12 @@ export class LotteryService {
   private cleanup$ = new Subject<void>();
   
   constructor(private apiService: ApiService) {
-    // Load houses automatically when service is initialized
-    this.loadHousesInternal();
+    // CRITICAL: Defer house loading to avoid blocking app initialization
+    // This prevents hanging requests during app bootstrap
+    // Houses will load after app is fully initialized
+    setTimeout(() => {
+      this.loadHousesInternal();
+    }, 0);
     
     // Setup SignalR subscriptions for real-time updates (FE-2.6)
     this.setupRealtimeSubscriptions();

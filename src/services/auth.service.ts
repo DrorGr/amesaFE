@@ -86,9 +86,14 @@ export class AuthService {
   private readonly REFRESH_BEFORE_EXPIRY = 5 * 60 * 1000; // 5 minutes before expiry
 
   constructor(private apiService: ApiService) {
-    // Check if user is already authenticated on service initialization
-    this.checkAuthStatus();
-    // Start proactive token refresh monitoring
+    // CRITICAL: Defer auth status check to avoid blocking app initialization
+    // This allows translations and other critical services to load first
+    // Use setTimeout to defer until after app bootstrap completes
+    setTimeout(() => {
+      this.checkAuthStatus();
+    }, 0);
+    
+    // Start proactive token refresh monitoring (non-blocking)
     this.startTokenRefreshMonitoring();
     // Register token refresh callback for automatic retry on 401 errors
     this.apiService.setTokenRefreshCallback(() => this.refreshToken());
