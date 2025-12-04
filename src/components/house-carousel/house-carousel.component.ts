@@ -174,8 +174,8 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                   <!-- Lottery Information -->
                   <div class="space-y-2 md:space-y-2 flex-grow flex flex-col justify-center">
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('carousel.propertyValue') }}</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">€{{ formatPrice(house.price) }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('common.price') }}</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">{{ formatPrice(house.price) }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
                       <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('house.city') }}</span>
@@ -186,8 +186,8 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">{{ house.address || '123 Park Ave' }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('carousel.ticketPrice') }}</span>
-                      <span class="font-bold text-blue-600 dark:text-blue-400 text-xl md:text-3xl">€{{ house.ticketPrice }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('house.ticketPrice') || translate('common.price') }}</span>
+                      <span class="font-bold text-blue-600 dark:text-blue-400 text-xl md:text-3xl">{{ formatPrice(house.ticketPrice) }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
                       <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('house.odds') }}</span>
@@ -213,7 +213,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                           <button 
                             disabled
                             class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button cursor-not-allowed opacity-60">
-                            {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
+                            {{ translate('carousel.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
                           </button>
                         } @else if (house.status === 'upcoming') {
                           <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
@@ -221,7 +221,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                           </button>
                         } @else {
                           <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
-                            {{ translate('carousel.buyTicket') }} - €{{ house.ticketPrice }}
+                            {{ translate('carousel.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
                           </button>
                         }
                       </app-verification-gate>
@@ -229,7 +229,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       <!-- Sign In Prompt -->
                       <div class="text-center mt-6 md:mt-4">
                         <p class="text-2xl md:text-xl text-gray-600 dark:text-gray-300 mb-4 md:mb-3">{{ translate('house.signInToParticipate') }}</p>
-                        <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400">€{{ house.ticketPrice }} {{ translate('house.perTicket') }}</div>
+                        <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400">{{ formatPrice(house.ticketPrice) }} {{ translate('house.perTicket') }}</div>
                       </div>
                     }
                   </div>
@@ -798,7 +798,8 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
   
   formatPrice(price: number): string {
-    return this.localeService.formatCurrency(price, 'USD');
+    // Use locale-aware currency formatting (removes hardcoded USD)
+    return this.localeService.formatCurrency(price);
   }
 
   formatDate(date: Date): string {
