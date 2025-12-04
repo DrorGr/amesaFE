@@ -1,6 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, throwError, Subscription, of, Subject } from 'rxjs';
-import { map, catchError, tap, switchMap, takeUntil, take, mergeMap } from 'rxjs/operators';
+import { map, catchError, tap, switchMap, takeUntil, take, mergeMap, finalize } from 'rxjs/operators';
 import { ApiService, PagedResponse } from './api.service';
 import { RetryService } from './retry.service';
 import { 
@@ -54,6 +54,9 @@ export class LotteryService {
   private houseCache = new Map<string, { house: HouseDto, timestamp: number }>();
   private readonly HOUSE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   
+  // Guard to prevent duplicate house loading requests
+  private isLoadingHouses = false;
+  
   private realtimeService = inject(RealtimeService, { optional: true });
   private subscriptions = new Subscription();
   private retryService = inject(RetryService);
@@ -63,11 +66,11 @@ export class LotteryService {
   
   constructor(private apiService: ApiService) {
     // CRITICAL: Defer house loading to avoid blocking app initialization
-    // This prevents hanging requests during app bootstrap
-    // Houses will load after app is fully initialized
+    // Wait longer to ensure auth token is ready if user is authenticated
+    // This prevents hanging requests when auth token isn't ready yet
     setTimeout(() => {
       this.loadHousesInternal();
-    }, 0);
+    }, 200); // Increased delay to ensure auth token is ready in API service
     
     // Setup SignalR subscriptions for real-time updates (FE-2.6)
     this.setupRealtimeSubscriptions();
@@ -185,8 +188,20 @@ export class LotteryService {
       return; // Use cached data
     }
     
+    // CRITICAL: Prevent duplicate requests if already loading
+    // This prevents multiple simultaneous requests that can cause hanging
+    if (this.isLoadingHouses) {
+      return; // Already loading, don't make duplicate request
+    }
+    
+    this.isLoadingHouses = true;
+    
     this.getHousesFromApi().pipe(
-      take(1) // Auto-unsubscribe after first emission to prevent memory leaks
+      take(1), // Auto-unsubscribe after first emission to prevent memory leaks
+      finalize(() => {
+        // Reset flag when request completes (success or error)
+        this.isLoadingHouses = false;
+      })
     ).subscribe({
       next: (response) => {
         // Convert HouseDto to House format
