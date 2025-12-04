@@ -1,4 +1,4 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, Injector } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, HubConnectionState, HttpTransportType } from '@microsoft/signalr';
 import { Subject, Observable, firstValueFrom } from 'rxjs';
 import { ApiService } from './api.service';
@@ -130,7 +130,15 @@ export class RealtimeService {
   public countdownUpdates$ = this.countdownUpdateSubject.asObservable();
   public reservationStatusUpdates$ = this.reservationStatusUpdateSubject.asObservable();
 
-  private authService = inject(AuthService);
+  // Use Injector for lazy injection to break circular dependency: AuthService -> RealtimeService -> AuthService
+  private injector = inject(Injector);
+  private get authService(): AuthService | null {
+    try {
+      return this.injector.get(AuthService, null);
+    } catch {
+      return null;
+    }
+  }
 
   constructor(private apiService: ApiService) {}
 
@@ -269,12 +277,14 @@ export class RealtimeService {
       this.isConnected.set(false);
       
       // Refresh token before reconnecting to ensure valid authentication
-      try {
-        await firstValueFrom(this.authService.refreshToken());
-        console.log('Token refreshed successfully before SignalR reconnect');
-      } catch (refreshError) {
-        console.warn('Token refresh failed during SignalR reconnect:', refreshError);
-        // Continue with reconnect anyway - accessTokenFactory will use current token
+      if (this.authService) {
+        try {
+          await firstValueFrom(this.authService.refreshToken());
+          console.log('Token refreshed successfully before SignalR reconnect');
+        } catch (refreshError) {
+          console.warn('Token refresh failed during SignalR reconnect:', refreshError);
+          // Continue with reconnect anyway - accessTokenFactory will use current token
+        }
       }
     });
 

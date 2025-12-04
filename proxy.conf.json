@@ -1,7 +1,7 @@
 {
   "/api/v1/*": {
-    "target": "https://dgfh2mwcqhlbw.cloudfront.net",
-    "secure": true,
+    "target": "http://amesa-backend-alb-509078867.eu-north-1.elb.amazonaws.com",
+    "secure": false,
     "changeOrigin": true,
     "logLevel": "debug",
     "headers": {
@@ -9,5 +9,12 @@
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization"
     }
+  },
+  "/ws/*": {
+    "target": "http://amesa-backend-alb-509078867.eu-north-1.elb.amazonaws.com",
+    "secure": false,
+    "changeOrigin": true,
+    "ws": true,
+    "logLevel": "debug"
   }
 }

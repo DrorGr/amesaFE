@@ -1,4 +1,4 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError, map, take } from 'rxjs/operators';
@@ -27,13 +27,57 @@ export class AuthService {
   private currentUserDto = signal<UserDto | null>(null);
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   
-  // Inject LotteryService for lottery data loading (circular dependency handled via inject())
-  private lotteryService = inject(LotteryService, { optional: true });
-  private realtimeService = inject(RealtimeService, { optional: true });
-  private userPreferencesService = inject(UserPreferencesService, { optional: true });
-  private themeService = inject(ThemeService, { optional: true });
-  private accessibilityService = inject(AccessibilityService, { optional: true });
-  private translationService = inject(TranslationService, { optional: true });
+  // Use Injector for lazy injection to break circular dependencies
+  private injector = inject(Injector);
+  
+  // Lazy getters to break circular dependencies
+  private get lotteryService(): LotteryService | null {
+    try {
+      return this.injector.get(LotteryService, null);
+    } catch {
+      return null;
+    }
+  }
+  
+  private get realtimeService(): RealtimeService | null {
+    try {
+      return this.injector.get(RealtimeService, null);
+    } catch {
+      return null;
+    }
+  }
+  
+  private get userPreferencesService(): UserPreferencesService | null {
+    try {
+      return this.injector.get(UserPreferencesService, null);
+    } catch {
+      return null;
+    }
+  }
+  
+  private get themeService(): ThemeService | null {
+    try {
+      return this.injector.get(ThemeService, null);
+    } catch {
+      return null;
+    }
+  }
+  
+  private get accessibilityService(): AccessibilityService | null {
+    try {
+      return this.injector.get(AccessibilityService, null);
+    } catch {
+      return null;
+    }
+  }
+  
+  private get translationService(): TranslationService | null {
+    try {
+      return this.injector.get(TranslationService, null);
+    } catch {
+      return null;
+    }
+  }
   
   private router = inject(Router, { optional: true });
 

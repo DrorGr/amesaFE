@@ -218,6 +218,7 @@ bootstrapApplication(AppComponent, {
     TranslationService,
     ThemeService,
     UserPreferencesService,
+    AuthService,
     RouteLoadingService,
     MobileDetectionService,
     ErrorHandlingService,
