@@ -149,16 +149,17 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                         [title]="isFavorite(entry.houseId) ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
                         <svg 
                           class="w-5 h-5 transition-all duration-300"
-                          [class.fill-current]="isFavorite(entry.houseId)"
-                          [class.stroke-current]="!isFavorite(entry.houseId)"
-                          fill="none" 
-                          stroke="currentColor" 
+                          [class.text-red-500]="isFavorite(entry.houseId)"
+                          [class.text-gray-400]="!isFavorite(entry.houseId)"
+                          [style.color]="isFavorite(entry.houseId) ? '#ef4444' : '#9ca3af'"
+                          [attr.fill]="isFavorite(entry.houseId) ? 'currentColor' : 'none'"
+                          [attr.stroke]="!isFavorite(entry.houseId) ? 'currentColor' : 'none'"
+                          stroke-width="2" 
                           viewBox="0 0 24 24">
                           <path 
                             stroke-linecap="round" 
                             stroke-linejoin="round" 
-                            stroke-width="2" 
-                            [attr.d]="isFavorite(entry.houseId) ? 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' : 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'">
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
                           </path>
                         </svg>
                       </button>

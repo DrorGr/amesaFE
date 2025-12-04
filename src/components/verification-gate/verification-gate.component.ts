@@ -44,11 +44,24 @@ export class VerificationGateComponent implements OnInit {
       return;
     }
 
+    // Only check verification status if user is authenticated
+    const user = this.authService.getCurrentUser()();
+    if (!user || !user.isAuthenticated) {
+      this.isLoading.set(false);
+      this.isVerified.set(false);
+      return;
+    }
+
     try {
       const status = await this.verificationService.getVerificationStatus().toPromise();
       this.isVerified.set(status?.verificationStatus === 'verified');
-    } catch (error) {
-      console.error('Error checking verification status:', error);
+    } catch (error: any) {
+      // Only log non-500 errors (500 errors are backend issues, not frontend bugs)
+      // Suppress 500 errors to reduce console noise
+      if (error?.status !== 500 && error?.error?.statusCode !== 500) {
+        console.warn('Error checking verification status:', error);
+      }
+      // Default to not verified on any error
       this.isVerified.set(false);
     } finally {
       this.isLoading.set(false);

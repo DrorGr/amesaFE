@@ -76,19 +76,18 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       (keydown.space)="toggleFavorite(house.id, $event); $event.preventDefault()"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
                       [title]="isFavorite(house.id) ? (translate('lottery.favorites.removeFromFavorites') || 'Remove from favorites') : (translate('lottery.favorites.addToFavorites') || 'Add to favorites')"
-                      class="absolute top-4 right-4 bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 text-white p-4.5 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none"
+                      class="absolute top-4 right-4 bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 p-4.5 rounded-full shadow-lg transition-all duration-200 z-10 cursor-pointer focus:outline-none"
                       [disabled]="isTogglingFavorite(house.id)">
                       <svg class="w-9 h-9 transition-all duration-200"
                            [class.text-red-500]="isFavorite(house.id)"
                            [class.text-white]="!isFavorite(house.id)"
-                           [class.fill-current]="isFavorite(house.id)"
-                           [class.stroke-current]="!isFavorite(house.id)"
-                           fill="none" 
-                           stroke="currentColor" 
+                           [style.color]="isFavorite(house.id) ? '#ef4444' : '#ffffff'"
+                           [attr.fill]="isFavorite(house.id) ? 'currentColor' : 'none'"
+                           [attr.stroke]="!isFavorite(house.id) ? 'currentColor' : 'none'"
                            stroke-width="2" 
                            viewBox="0 0 24 24">
                         <path 
-                          [attr.d]="isFavorite(house.id) ? 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' : 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'">
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
                         </path>
                       </svg>
                     </button>
@@ -1021,11 +1020,11 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       // Remove heart and trigger glow after animation completes
       setTimeout(() => {
         this.flyingHeart.set(null);
-        // Add glow class to favorites button/text (blue color like promotion badge)
+        // Add glow class to favorites button/text (warm orange-red glow)
         favoritesElement!.classList.add('favorites-glow-pulse');
         setTimeout(() => {
           favoritesElement!.classList.remove('favorites-glow-pulse');
-        }, 1000);
+        }, 1500);
       }, 800);
     }, 50);
   }

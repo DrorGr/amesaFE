@@ -83,22 +83,22 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                   <span *ngIf="house.squareFeet">{{ formatSqft(house.squareFeet) }} {{ translate('house.sqft') }}</span>
                 </div>
                 
-                <!-- Quick Entry Button -->
+                <!-- Buy Ticket Button -->
                 <button
-                  (click)="quickEntry($event, house)"
-                  [disabled]="isQuickEntering()(house.id) || house.status !== 'active'"
-                  [attr.aria-label]="translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow)"
-                  [attr.aria-describedby]="house.status !== 'active' ? 'quick-entry-disabled-' + house.id : null"
-                  class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                  <ng-container *ngIf="isQuickEntering()(house.id); else quickEntryText">
-                    {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
+                  (click)="purchaseTicket($event, house)"
+                  [disabled]="isPurchasing()(house.id) || house.status !== 'active'"
+                  [attr.aria-label]="translate('house.buyTicket')"
+                  [attr.aria-describedby]="house.status !== 'active' ? 'buy-ticket-disabled-' + house.id : null"
+                  class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                  <ng-container *ngIf="isPurchasing()(house.id); else buyTicketText">
+                    {{ translate('house.processing') }}
                   </ng-container>
-                  <ng-template #quickEntryText>
-                    ⚡ {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
+                  <ng-template #buyTicketText>
+                    {{ translate('house.buyTicket') }} - €{{ formatPrice(house.ticketPrice) }}
                   </ng-template>
                 </button>
                 @if (house.status !== 'active') {
-                  <div [id]="'quick-entry-disabled-' + house.id" class="sr-only">
+                  <div [id]="'buy-ticket-disabled-' + house.id" class="sr-only">
                     {{ translate('entry.lotteryNotActive') }}
                   </div>
                 }
@@ -158,7 +158,7 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
   currentUser = this.authService.getCurrentUser();
   favoriteHouses = signal<HouseDto[]>([]);
   removingFavorites = signal<Set<string>>(new Set());
-  quickEntering = signal<Set<string>>(new Set());
+  purchasing = signal<Set<string>>(new Set());
   
   // Watch favorite IDs changes to auto-refresh
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
@@ -169,8 +169,8 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
     return (houseId: string) => set.has(houseId);
   });
   
-  isQuickEntering = computed(() => {
-    const set = this.quickEntering();
+  isPurchasing = computed(() => {
+    const set = this.purchasing();
     return (houseId: string) => set.has(houseId);
   });
 
@@ -254,33 +254,34 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
     }
   }
 
-  async quickEntry(event: Event, house: HouseDto): Promise<void> {
+  async purchaseTicket(event: Event, house: HouseDto): Promise<void> {
     event.stopPropagation();
     
-    if (!this.currentUser() || this.quickEntering().has(house.id)) {
+    if (!this.currentUser() || this.purchasing().has(house.id)) {
       return;
     }
 
-    this.quickEntering.set(new Set([...this.quickEntering(), house.id]));
+    this.purchasing.set(new Set([...this.purchasing(), house.id]));
 
     try {
-      const result = await this.lotteryService.quickEntryFromFavorite({
+      const result = await this.lotteryService.purchaseTicket({
         houseId: house.id,
-        quantity: 1, // API contract specifies "quantity", matches backend [JsonPropertyName("quantity")]
-        paymentMethodId: 'default'
+        quantity: 1,
+        paymentMethodId: 'default' // TODO: Get from user preferences or payment setup
       }).toPromise();
       
-      if (result) {
-        console.log('Quick entry successful!', result);
-        // TODO: Show success notification
+      if (result && result.ticketsPurchased > 0) {
+        this.toastService.success(this.translationService.translate('house.ticketPurchased') || 'Ticket purchased successfully!');
+      } else {
+        this.toastService.error(this.translationService.translate('house.purchaseFailed') || 'Failed to purchase ticket');
       }
     } catch (error) {
-      console.error('Error with quick entry:', error);
-      // TODO: Show error notification
+      console.error('Error purchasing ticket:', error);
+      this.toastService.error(this.translationService.translate('house.purchaseFailed') || 'Failed to purchase ticket');
     } finally {
-      const newSet = new Set(this.quickEntering());
+      const newSet = new Set(this.purchasing());
       newSet.delete(house.id);
-      this.quickEntering.set(newSet);
+      this.purchasing.set(newSet);
     }
   }
 
