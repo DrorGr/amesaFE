@@ -216,10 +216,9 @@ export class AuthService {
               });
             }
             
-            // Connect to SignalR for real-time updates (FE-2.6)
-            if (this.realtimeService && response.data.user) {
-              this.connectToSignalR(response.data.user.id);
-            }
+            // SignalR connection removed from login flow to prevent blocking
+            // Components will connect when needed via ensureConnection()
+            // (e.g., notification sidebar, live inventory, reservation status)
           }
         }
       }),
@@ -416,10 +415,9 @@ export class AuthService {
             });
           }
           
-          // Connect to SignalR for real-time updates (FE-2.6)
-          if (this.realtimeService && userData) {
-            this.connectToSignalR(userData.id);
-          }
+          // SignalR connection removed from auth check to prevent blocking
+          // Components will connect when needed via ensureConnection()
+          // (e.g., notification sidebar, live inventory, reservation status)
         }
       }),
       map(response => {
