@@ -360,6 +360,11 @@ export class AuthService {
       return;
     }
 
+    // Clean up any existing connection first to prevent stale state
+    this.realtimeService.stopConnection().catch(() => {
+      // Ignore errors during cleanup
+    });
+
     // Delay SignalR connection to prevent blocking app startup
     // Connect after a short delay to allow app to render first
     setTimeout(async () => {

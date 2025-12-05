@@ -417,21 +417,62 @@ export class RealtimeService {
       return;
     }
 
+    // Clean up any existing stale connection before starting new one
+    const staleConnection = this.connection;
+    if (staleConnection) {
+      console.log('[SignalR] Cleaning up stale connection before starting new one');
+      try {
+        // Force stop with timeout to prevent hanging
+        const stopPromise = staleConnection.stop();
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Stop timeout')), 3000);
+        });
+        await Promise.race([stopPromise, timeoutPromise]);
+      } catch (error) {
+        console.warn('[SignalR] Error cleaning up stale connection (continuing anyway):', error);
+      } finally {
+        // Always nullify connection and reset state
+        this.connection = null;
+        this.connectionState.set(HubConnectionState.Disconnected);
+        this.isConnected.set(false);
+        // Release any stuck lock
+        this.releaseConnectionLock();
+      }
+    }
+
     // Acquire connection lock (prevent concurrent connection attempts)
     const lockAcquired = await this.acquireConnectionLock();
     if (!lockAcquired) {
       console.log('[SignalR] Connection already in progress, waiting for existing attempt...');
-      // Wait for existing connection attempt to complete
-      await this.connectionLock;
+      
+      // Add timeout to lock wait to prevent indefinite hanging
+      const lockWaitTimeout = 10000; // 10 seconds
+      const lockWaitPromise = this.connectionLock;
+      const timeoutPromise: Promise<never> = new Promise((_, reject) => {
+        setTimeout(() => {
+          console.warn('[SignalR] Lock wait timeout, forcing lock release');
+          this.releaseConnectionLock(); // Force release stuck lock
+          reject(new Error('Connection lock wait timeout'));
+        }, lockWaitTimeout);
+      });
+      
+      try {
+        await Promise.race([lockWaitPromise, timeoutPromise]);
+      } catch (error) {
+        console.warn('[SignalR] Lock wait failed, proceeding with new connection attempt');
+      }
       
       // Check if connection succeeded while we were waiting
-      if (this.connection && this.connection.state === HubConnectionState.Connected) {
+      // (connection could have been established by concurrent attempt during lock wait)
+      // Use type assertion to work around TypeScript control flow narrowing
+      const concurrentConnection = this.connection as HubConnection | null;
+      if (concurrentConnection && concurrentConnection.state === HubConnectionState.Connected) {
         console.log('[SignalR] Connection established by concurrent attempt');
         return;
       }
       
       // If connection failed, we can try again
-      // (lock will be released by previous attempt)
+      // (lock will be released by previous attempt or timeout)
       console.log('[SignalR] Previous connection attempt failed, retrying...');
     }
 
@@ -564,14 +605,27 @@ export class RealtimeService {
   }
 
   async stopConnection(): Promise<void> {
+    // Release lock first to prevent hanging
+    this.releaseConnectionLock();
+    
     if (this.connection) {
       try {
-        await this.connection.stop();
-        this.connectionState.set(HubConnectionState.Disconnected);
-        this.isConnected.set(false);
+        // Stop connection with timeout to prevent hanging
+        const stopPromise = this.connection.stop();
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Stop timeout')), 5000);
+        });
+        
+        await Promise.race([stopPromise, timeoutPromise]);
         console.log('SignalR connection stopped');
       } catch (error) {
         console.error('Error stopping SignalR connection:', error);
+        // Force cleanup even if stop fails
+      } finally {
+        // Always nullify connection and reset state
+        this.connection = null;
+        this.connectionState.set(HubConnectionState.Disconnected);
+        this.isConnected.set(false);
       }
     }
   }
