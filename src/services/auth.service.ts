@@ -1,7 +1,7 @@
 import { Injectable, signal, inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { tap, catchError, map, take } from 'rxjs/operators';
+import { tap, catchError, map, take, finalize } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { 
   User, 
@@ -113,16 +113,26 @@ export class AuthService {
   private checkAuthStatus(): void {
     const token = localStorage.getItem('access_token');
     if (token) {
+      // Add timeout to prevent hanging on stale/invalid tokens
+      const timeout = setTimeout(() => {
+        console.warn('[Auth] Auth check timeout after 10 seconds, clearing potentially invalid token');
+        this.logout();
+      }, 10000); // 10 second timeout
+      
       // Fixed: Use take(1) for auto-cleanup to prevent memory leaks
       this.getCurrentUserProfile().pipe(
-        take(1) // Auto-unsubscribe after first emission
+        take(1), // Auto-unsubscribe after first emission
+        finalize(() => clearTimeout(timeout)) // Clear timeout on completion (success or error)
       ).subscribe({
         next: (user) => {
+          clearTimeout(timeout);
           this.setUser(user);
           // Initialize preferences on auth status check
           this.initializeUserPreferences();
         },
-        error: () => {
+        error: (err) => {
+          clearTimeout(timeout);
+          console.warn('[Auth] Auth check failed:', err);
           this.logout();
         }
       });

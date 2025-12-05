@@ -47,6 +47,15 @@ export class TranslationService {
       baseUrl: this.apiService.getBaseUrl()
     }, 'TranslationService');
     
+    // CRITICAL: Reset isLoading on service initialization to prevent stuck state
+    // This ensures fresh state on app restart and prevents deadlock from previous sessions
+    if (this.isLoading.value) {
+      this.logger.warn('Resetting stuck isLoading state on service init', undefined, 'TranslationService');
+      this.isLoading.next(false);
+      this.loadingProgress.next(0);
+      this.loadingMessage.next('Initializing...');
+    }
+    
     // Initial translations will be loaded by setLanguage('en') called from APP_INITIALIZER in main.ts
     // This prevents redundant API calls on startup
   }
@@ -279,7 +288,46 @@ export class TranslationService {
       }, 15000);
     });
     
-    return this.loadingPromise;
+    // CRITICAL: Add fail-safe timeout wrapper to prevent app hang
+    // This ensures APP_INITIALIZER never blocks forever, even if promise rejects
+    return new Promise<void>((resolve, reject) => {
+      const failSafeTimeout = setTimeout(() => {
+        this.logger.error('loadTranslationsAsync fail-safe timeout - forcing resolve to prevent app hang', { language }, 'TranslationService');
+        // Force reset isLoading if stuck
+        if (this.isLoading.value) {
+          this.isLoading.next(false);
+          this.loadingProgress.next(0);
+          this.loadingMessage.next('Initializing...');
+        }
+        // Fail-open: allow app to start even if translations failed
+        resolve();
+      }, 8000); // 8 second timeout (less than 15s to fail faster)
+      
+      // Check if loadingPromise exists before using it
+      if (this.loadingPromise) {
+        this.loadingPromise
+          .then(() => {
+            clearTimeout(failSafeTimeout);
+            resolve();
+          })
+          .catch((error) => {
+            clearTimeout(failSafeTimeout);
+            // Still resolve to allow app to start (fail-open design)
+            this.logger.error('loadTranslationsAsync error - resolving anyway to prevent app hang', { language, error }, 'TranslationService');
+            // Force reset isLoading if stuck
+            if (this.isLoading.value) {
+              this.isLoading.next(false);
+              this.loadingProgress.next(0);
+              this.loadingMessage.next('Initializing...');
+            }
+            resolve(); // Fail-open: allow app to start
+          });
+      } else {
+        // No loading promise - resolve immediately
+        clearTimeout(failSafeTimeout);
+        resolve();
+      }
+    });
   }
 
   /**
@@ -288,11 +336,22 @@ export class TranslationService {
    * @param switchAfterLoad - If true, switch current language after translations are loaded
    */
   private loadTranslations(language: Language, switchAfterLoad: boolean = false): void {
-    // Only block if loading the SAME language (prevent duplicate requests)
-    // Allow loading different languages (will handle via Observable unsubscribe if needed)
+    // CRITICAL FIX: If isLoading is true but no actual loading is happening,
+    // reset it to prevent deadlock from previous session
     if (this.isLoading.value && this.currentLanguage() === language) {
-      this.logger.debug('Already loading same language, skipping', { language }, 'TranslationService');
-      return; // Already loading same language
+      // Check if we actually have a loading promise (real loading in progress)
+      if (!this.loadingPromise || this.loadingLanguage !== language) {
+        // Stuck state from previous session - reset it
+        this.logger.warn('Resetting stuck isLoading state', { language }, 'TranslationService');
+        this.isLoading.next(false);
+        this.loadingProgress.next(0);
+        this.loadingMessage.next('Initializing...');
+        // Continue with loading after reset
+      } else {
+        // Real loading in progress - skip
+        this.logger.debug('Already loading same language, skipping', { language }, 'TranslationService');
+        return; // Already loading same language
+      }
     }
 
     this.logger.info('Loading translations', { language }, 'TranslationService');
