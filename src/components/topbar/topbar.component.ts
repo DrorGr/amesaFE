@@ -40,9 +40,9 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
               (click)="navigateToDashboard()"
               (keydown.enter)="navigateToDashboard()"
               (keydown.space)="navigateToDashboard(); $event.preventDefault()"
-              [attr.aria-label]="translate('nav.myLottery')"
+              [attr.aria-label]="translate('nav.lotteries')"
               [class]="isOnDashboardPage() ? 'bg-[#2D3748] dark:bg-[#2D3748] text-white dark:text-white border border-[#374151] dark:border-[#374151] px-4 py-2 text-lg font-bold transition-all duration-200 rounded-lg mobile-nav-button focus:outline-none' : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-4 py-2 text-lg font-bold transition-all duration-200 hover:-translate-y-0.5 transform mobile-nav-button focus:outline-none'">
-              {{ translate('nav.myLottery') }}
+              {{ translate('nav.lotteries') }}
             </button>
             
             @if (isOnFavoritesPage()) {
@@ -149,10 +149,10 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
                 (click)="navigateToDashboard()"
                 (keydown.enter)="navigateToDashboard()"
                 (keydown.space)="navigateToDashboard(); $event.preventDefault()"
-                [attr.aria-label]="translate('nav.myLottery')"
+                [attr.aria-label]="translate('nav.lotteries')"
                 role="menuitem"
                 [class]="isOnDashboardPage() ? 'block w-full text-left px-8 py-6 text-3xl bg-[#2D3748] dark:bg-[#2D3748] text-white dark:text-white border border-[#374151] dark:border-[#374151] font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none' : 'block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none'">
-                {{ translate('nav.myLottery') }}
+                {{ translate('nav.lotteries') }}
               </button>
               
               @if (isOnFavoritesPage()) {
