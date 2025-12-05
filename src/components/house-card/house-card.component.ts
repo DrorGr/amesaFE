@@ -146,27 +146,9 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
         <div class="mt-auto flex-shrink-0 space-y-2">
           <ng-container *ngIf="currentUser(); else signInBlock">
             <app-verification-gate [isVerificationRequired]="true">
-              <!-- On Favorites Page: Show "Enter Now" button (styled like Buy Ticket) when favorited -->
+              <!-- Enter Now Button: Show when favorited (purple style, with lightning icon) -->
               <button
-                *ngIf="isOnFavoritesPage() && isFavorite()"
-                (click)="quickEntry()"
-                (keydown.enter)="quickEntry()"
-                (keydown.space)="quickEntry(); $event.preventDefault()"
-                [disabled]="isQuickEntering || house().status !== 'active'"
-                class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none"
-                [class.bg-gray-400]="(isQuickEntering || house().status !== 'active')"
-                [class.cursor-not-allowed]="(isQuickEntering || house().status !== 'active')">
-                <ng-container *ngIf="isQuickEntering; else enterNowBlock">
-                  {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
-                </ng-container>
-                <ng-template #enterNowBlock>
-                  {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
-                </ng-template>
-              </button>
-              
-              <!-- Not on Favorites Page: Show Quick Entry button (purple) if favorited -->
-              <button
-                *ngIf="!isOnFavoritesPage() && isFavorite()"
+                *ngIf="isFavorite()"
                 (click)="quickEntry()"
                 (keydown.enter)="quickEntry()"
                 (keydown.space)="quickEntry(); $event.preventDefault()"
@@ -182,9 +164,9 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
                 </ng-template>
               </button>
               
-              <!-- Regular Purchase Button: Show if NOT on favorites page, OR if on favorites page but not favorited -->
+              <!-- Regular Purchase Button: Show only when NOT favorited -->
               <button
-                *ngIf="!isOnFavoritesPage() || (isOnFavoritesPage() && !isFavorite())"
+                *ngIf="!isFavorite()"
                 (click)="purchaseTicket()"
                 (keydown.enter)="purchaseTicket()"
                 (keydown.space)="purchaseTicket(); $event.preventDefault()"
