@@ -83,22 +83,22 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
                   <span *ngIf="house.squareFeet">{{ formatSqft(house.squareFeet) }} {{ translate('house.sqft') }}</span>
                 </div>
                 
-                <!-- Buy Ticket Button -->
+                <!-- Enter Now Button (replaces Buy Ticket on favorites page) -->
                 <button
-                  (click)="purchaseTicket($event, house)"
+                  (click)="quickEntry($event, house)"
                   [disabled]="isPurchasing()(house.id) || house.status !== 'active'"
-                  [attr.aria-label]="translate('house.buyTicket')"
-                  [attr.aria-describedby]="house.status !== 'active' ? 'buy-ticket-disabled-' + house.id : null"
+                  [attr.aria-label]="translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow)"
+                  [attr.aria-describedby]="house.status !== 'active' ? 'enter-now-disabled-' + house.id : null"
                   class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                  <ng-container *ngIf="isPurchasing()(house.id); else buyTicketText">
-                    {{ translate('house.processing') }}
+                  <ng-container *ngIf="isPurchasing()(house.id); else enterNowText">
+                    {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.processing) }}
                   </ng-container>
-                  <ng-template #buyTicketText>
-                    {{ translate('house.buyTicket') }} - €{{ formatPrice(house.ticketPrice) }}
+                  <ng-template #enterNowText>
+                    {{ translate(LOTTERY_TRANSLATION_KEYS.quickEntry.enterNow) }}
                   </ng-template>
                 </button>
                 @if (house.status !== 'active') {
-                  <div [id]="'buy-ticket-disabled-' + house.id" class="sr-only">
+                  <div [id]="'enter-now-disabled-' + house.id" class="sr-only">
                     {{ translate('entry.lotteryNotActive') }}
                   </div>
                 }
@@ -254,7 +254,7 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
     }
   }
 
-  async purchaseTicket(event: Event, house: HouseDto): Promise<void> {
+  async quickEntry(event: Event, house: HouseDto): Promise<void> {
     event.stopPropagation();
     
     if (!this.currentUser() || this.purchasing().has(house.id)) {
@@ -264,20 +264,20 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
     this.purchasing.set(new Set([...this.purchasing(), house.id]));
 
     try {
-      const result = await this.lotteryService.purchaseTicket({
+      const result = await this.lotteryService.quickEntryFromFavorite({
         houseId: house.id,
         quantity: 1,
         paymentMethodId: 'default' // TODO: Get from user preferences or payment setup
       }).toPromise();
       
       if (result && result.ticketsPurchased > 0) {
-        this.toastService.success(this.translationService.translate('house.ticketPurchased') || 'Ticket purchased successfully!');
+        this.toastService.success(this.translationService.translate(LOTTERY_TRANSLATION_KEYS.quickEntry.success) || 'Entered lottery successfully!');
       } else {
-        this.toastService.error(this.translationService.translate('house.purchaseFailed') || 'Failed to purchase ticket');
+        this.toastService.error(this.translationService.translate(LOTTERY_TRANSLATION_KEYS.quickEntry.error) || 'Failed to enter lottery');
       }
     } catch (error) {
-      console.error('Error purchasing ticket:', error);
-      this.toastService.error(this.translationService.translate('house.purchaseFailed') || 'Failed to purchase ticket');
+      console.error('Error with quick entry:', error);
+      this.toastService.error(this.translationService.translate(LOTTERY_TRANSLATION_KEYS.quickEntry.error) || 'Failed to enter lottery');
     } finally {
       const newSet = new Set(this.purchasing());
       newSet.delete(house.id);

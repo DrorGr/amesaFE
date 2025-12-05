@@ -6,6 +6,7 @@ import { LotteryService } from '../../services/lottery.service';
 import { LocaleService } from '../../services/locale.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
+import { HeartAnimationService } from '../../services/heart-animation.service';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 
@@ -77,11 +78,12 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       (keydown.enter)="toggleFavorite(house.id, $event)"
                       (keydown.space)="toggleFavorite(house.id, $event); $event.preventDefault()"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
-                      [title]="isFavorite(house.id) ? (translate('lottery.favorites.removeFromFavorites') || 'Remove from favorites') : (translate('lottery.favorites.addToFavorites') || 'Add to favorites')"
+                      [title]="isFavorite(house.id) ? (translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) || 'Remove from favorites') : (translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites) || 'Add to favorites')"
+                      [disabled]="isTogglingFavorite(house.id)"
+                      [class.animate-pulse]="isTogglingFavorite(house.id)"
                       [class.favorite-button-red-hover]="!isFavorite(house.id)"
                       [class.favorite-button-red-filled]="isFavorite(house.id)"
-                      class="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-20 cursor-pointer focus:outline-none"
-                      [disabled]="isTogglingFavorite(house.id)">
+                      class="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-20 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
                       <svg class="w-6 h-6 transition-all duration-300 favorite-heart-icon"
                            [class.text-red-500]="isFavorite(house.id)"
                            [class.text-white]="!isFavorite(house.id)"
@@ -249,20 +251,6 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
             }
           </div>
         </div>
-        
-        <!-- Flying Heart Animation -->
-        @if (flyingHeart(); as heart) {
-          <div 
-            class="fixed z-[9999] pointer-events-none"
-            [style.left.px]="heart.startX + (heart.endX - heart.startX) * (heart.active ? 1 : 0)"
-            [style.top.px]="heart.startY + (heart.endY - heart.startY) * (heart.active ? 1 : 0)"
-            [style.transition]="heart.active ? 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)' : 'none'"
-            [style.opacity]="heart.active ? '0' : '1'">
-            <svg class="w-9 h-9 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-            </svg>
-          </div>
-        }
         
         <!-- Fixed Navigation Controls - Bottom of component -->
         <!-- Mobile Navigation - Bottom -->
@@ -604,6 +592,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private localeService = inject(LocaleService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
+  private heartAnimationService = inject(HeartAnimationService);
   private togglingFavorites = signal<Set<string>>(new Set());
   private quickEntering = signal<Set<string>>(new Set());
   
@@ -628,7 +617,6 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private intersectionObserver: IntersectionObserver | null = null;
   loadedImages = new Set<string>();
   vibrationTrigger = signal<number>(0);
-  flyingHeart = signal<{ active: boolean; startX: number; startY: number; endX: number; endY: number } | null>(null);
   
   // Use signals for values that change over time to avoid change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
@@ -833,6 +821,10 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
   
   goToHouseImage(index: number) {
+    const currentHouse = this.getCurrentHouse();
+    if (!currentHouse || index < 0 || index >= currentHouse.images.length) {
+      return;
+    }
     this.currentHouseImageIndex = index;
     // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
@@ -981,6 +973,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   async toggleFavorite(houseId: string, event: Event): Promise<void> {
     event.stopPropagation();
+    event.preventDefault();
     
     if (!this.authService.getCurrentUser()()?.isAuthenticated) {
       this.toastService.warning(
@@ -996,38 +989,32 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
     this.togglingFavorites.update(set => new Set(set).add(houseId));
 
-    // Get the source button position for animation
-    const sourceButton = (event.target as HTMLElement).closest('button');
-    let sourceX = 0;
-    let sourceY = 0;
-    if (sourceButton) {
-      const rect = sourceButton.getBoundingClientRect();
-      sourceX = rect.left + rect.width / 2;
-      sourceY = rect.top + rect.height / 2;
-    }
+    // Get the source button for animation
+    const sourceButton = (event.target as HTMLElement).closest('button') as HTMLElement;
 
     try {
       const result = await this.lotteryService.toggleFavorite(houseId).toPromise();
       if (result) {
-        const message = result.added 
+        // State is automatically updated by LotteryService
+        const message = result.message || (result.added 
           ? (this.translate(LOTTERY_TRANSLATION_KEYS.favorites.added) || 'Added to favorites')
-          : (this.translate(LOTTERY_TRANSLATION_KEYS.favorites.removed) || 'Removed from favorites');
+          : (this.translate(LOTTERY_TRANSLATION_KEYS.favorites.removed) || 'Removed from favorites'));
         this.toastService.success(message, 2000);
         
-        // Trigger animation only when adding to favorites
+        // Trigger heart animation when adding to favorites
         if (result.added && sourceButton) {
-          this.animateHeartToFavorites(sourceX, sourceY);
+          this.triggerHeartAnimation(sourceButton);
         }
       }
     } catch (error: any) {
       // Suppress errors for 200 status (response format issues, not actual errors)
       if (error?.status !== 200) {
         console.error('Error toggling favorite:', error);
+        this.toastService.error(
+          this.translate('lottery.common.error') || 'Failed to update favorites',
+          3000
+        );
       }
-      this.toastService.error(
-        this.translate('lottery.common.error') || 'Failed to update favorites',
-        3000
-      );
     } finally {
       this.togglingFavorites.update(set => {
         const newSet = new Set(set);
@@ -1038,10 +1025,10 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Animate heart icon flying from carousel to topbar favorites text
+   * Trigger heart animation from button to favorites tab
    */
-  animateHeartToFavorites(startX: number, startY: number): void {
-    // Find the favorites button/text in the topbar - try multiple selectors
+  private triggerHeartAnimation(sourceButton: HTMLElement): void {
+    // Find favorites button in topbar
     let favoritesElement: HTMLElement | null = null;
     
     // Try to find by text content in button
@@ -1060,31 +1047,12 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       favoritesElement = document.querySelector('button[aria-label*="favorite" i]') as HTMLElement;
     }
     
-    if (!favoritesElement) {
-      return; // Can't find the element, skip animation
+    if (favoritesElement && sourceButton) {
+      this.heartAnimationService.animateHeart({
+        fromElement: sourceButton,
+        toElement: favoritesElement
+      });
     }
-    
-    const rect = favoritesElement.getBoundingClientRect();
-    const endX = rect.left + rect.width / 2;
-    const endY = rect.top + rect.height / 2;
-    
-    // Start animation
-    this.flyingHeart.set({ active: false, startX, startY, endX, endY });
-    
-    // Trigger animation after a brief delay
-    setTimeout(() => {
-      this.flyingHeart.update(heart => heart ? { ...heart, active: true } : null);
-      
-      // Remove heart and trigger glow after animation completes
-      setTimeout(() => {
-        this.flyingHeart.set(null);
-        // Add glow class to favorites button/text (warm orange-red glow)
-        favoritesElement!.classList.add('favorites-glow-pulse');
-        setTimeout(() => {
-          favoritesElement!.classList.remove('favorites-glow-pulse');
-        }, 1500);
-      }, 800);
-    }, 50);
   }
 
   /**
