@@ -841,7 +841,8 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.currentHouseImageIndex = index;
     
     // Determine if the selected image is primary or secondary
-    const selectedImage = currentHouse.images[index];
+    // Note: HouseImage interface doesn't include isPrimary, but actual data does
+    const selectedImage = currentHouse.images[index] as any;
     if (selectedImage.isPrimary) {
       // If primary image, reset secondary index to show primary
       this.currentSecondaryImageIndex = -1;
