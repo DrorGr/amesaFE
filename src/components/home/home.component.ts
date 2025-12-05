@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeroSectionComponent } from '../hero-section/hero-section.component';
 import { StatsSectionComponent } from '../stats-section/stats-section.component';
 import { HouseCarouselComponent } from '../house-carousel/house-carousel.component';
 import { LotteryDashboardAccordionComponent } from '../lottery-dashboard-accordion/lottery-dashboard-accordion.component';
+import { LotteryService } from '../../services/lottery.service';
 
 @Component({
   selector: 'app-home',
@@ -26,4 +27,12 @@ import { LotteryDashboardAccordionComponent } from '../lottery-dashboard-accordi
     </main>
   `
 })
-export class HomeComponent {}
+export class HomeComponent implements OnInit {
+  private lotteryService = inject(LotteryService);
+  
+  ngOnInit(): void {
+    // Load houses when home component initializes
+    // This ensures houses are only loaded when needed
+    this.lotteryService.ensureHousesLoaded();
+  }
+}

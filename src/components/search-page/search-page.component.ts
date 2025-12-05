@@ -231,7 +231,7 @@ interface SearchFilters {
                         </p>
                         <div class="flex items-center justify-between mb-3">
                           <span class="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                            Gé¼{{ formatPrice(house.price) }}
+                            Gï¿½{{ formatPrice(house.price) }}
                           </span>
                           <span 
                             class="px-2 py-1 text-xs rounded-full font-semibold"

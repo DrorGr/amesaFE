@@ -400,18 +400,21 @@ export class TopbarComponent implements OnInit {
         this.currentUrl.set(event.url);
       });
 
-    // Load notifications if user is logged in
+    // Defer notification loading to avoid blocking initial render
+    // Load after 2 seconds to allow other critical data to load first
     const user = this.currentUser();
     if (user && user.isAuthenticated) {
-      this.notificationService.getUserNotifications().subscribe({
-        next: () => {
-          // Notifications loaded, unread count will update automatically
-        },
-        error: (error) => {
-          // Silently fail - notifications will load when sidebar opens
-          console.warn('Failed to load notifications on init:', error);
-        }
-      });
+      setTimeout(() => {
+        this.notificationService.getUserNotifications().subscribe({
+          next: () => {
+            // Notifications loaded, unread count will update automatically
+          },
+          error: (error) => {
+            // Silently fail - notifications will load when sidebar opens
+            console.warn('Failed to load notifications on init:', error);
+          }
+        });
+      }, 2000); // 2 second delay
     }
   }
 

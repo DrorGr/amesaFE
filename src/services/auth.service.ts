@@ -87,12 +87,12 @@ export class AuthService {
   private isLoggingOut = false; // Flag to prevent double logout
 
   constructor(private apiService: ApiService) {
-    // CRITICAL: Defer auth status check to avoid blocking app initialization
-    // This allows translations and other critical services to load first
-    // Use setTimeout to defer until after app bootstrap completes
+    // CRITICAL: Defer auth status check to allow initial render (1000ms delay)
+    // This ensures app UI is visible before auth check starts
+    // Increased delay from 0ms to 1000ms to allow initial render
     setTimeout(() => {
       this.checkAuthStatus();
-    }, 0);
+    }, 1000);
     
     // Start proactive token refresh monitoring (non-blocking)
     this.startTokenRefreshMonitoring();
@@ -114,10 +114,11 @@ export class AuthService {
     const token = localStorage.getItem('access_token');
     if (token) {
       // Add timeout to prevent hanging on stale/invalid tokens
+      // Reduced timeout to 5 seconds for faster failure
       const timeout = setTimeout(() => {
-        console.warn('[Auth] Auth check timeout after 10 seconds, clearing potentially invalid token');
+        console.warn('[Auth] Auth check timeout after 5 seconds, clearing potentially invalid token');
         this.logout();
-      }, 10000); // 10 second timeout
+      }, 5000); // Reduced from 10s to 5s
       
       // Fixed: Use take(1) for auto-cleanup to prevent memory leaks
       this.getCurrentUserProfile().pipe(

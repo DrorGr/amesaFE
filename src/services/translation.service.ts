@@ -223,7 +223,45 @@ export class TranslationService {
       return this.loadingPromise;
     }
     
-    // If already loaded and not stale, resolve immediately
+    // Check localStorage cache first for instant load
+    const cacheKey = `amesa_translations_${language}`;
+    const cacheTimestampKey = `amesa_translations_${language}_timestamp`;
+    
+    if (typeof localStorage !== 'undefined') {
+      const cached = localStorage.getItem(cacheKey);
+      const cachedTimestamp = localStorage.getItem(cacheTimestampKey);
+      
+      if (cached && cachedTimestamp) {
+        try {
+          const translations = JSON.parse(cached);
+          const timestamp = new Date(cachedTimestamp);
+          const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+          
+          // Use cache if less than 1 hour old
+          if (timestamp > oneHourAgo) {
+            const newCache = new Map(this.translationsCache());
+            newCache.set(language, translations);
+            this.translationsCache.set(newCache);
+            this.lastUpdated.set(language, timestamp);
+            this.currentLanguage.set(language);
+            
+            // CRITICAL: Ensure isLoading is false
+            if (this.isLoading.value) {
+              this.isLoading.next(false);
+              this.loadingProgress.next(0);
+            }
+            
+            // Resolve immediately with cached data
+            return Promise.resolve();
+          }
+        } catch (e) {
+          // Invalid cache, continue to API load
+          this.logger.warn('Failed to parse cached translations', { error: e, language }, 'TranslationService');
+        }
+      }
+    }
+    
+    // If already loaded in memory and not stale, resolve immediately
     if (this.translationsCache().has(language) && !this.isCacheStale(language)) {
       this.currentLanguage.set(language);
       // CRITICAL: Ensure isLoading is false
@@ -410,6 +448,20 @@ export class TranslationService {
           newCache.set(language, data.translations || {});
           this.translationsCache.set(newCache);
           this.lastUpdated.set(language, new Date(data.lastUpdated));
+          
+          // Save to localStorage for instant next load
+          if (typeof localStorage !== 'undefined') {
+            try {
+              const cacheKey = `amesa_translations_${language}`;
+              const cacheTimestampKey = `amesa_translations_${language}_timestamp`;
+              localStorage.setItem(cacheKey, JSON.stringify(data.translations || {}));
+              localStorage.setItem(cacheTimestampKey, new Date().toISOString());
+              this.logger.debug('Translations cached to localStorage', { language, translationCount }, 'TranslationService');
+            } catch (e) {
+              // localStorage quota exceeded or disabled - non-critical
+              this.logger.warn('Failed to cache translations to localStorage', { error: e, language }, 'TranslationService');
+            }
+          }
           
           // Switch language AFTER translations are cached (if requested)
           if (switchAfterLoad) {

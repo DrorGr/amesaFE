@@ -22,8 +22,8 @@ import { CustomPreloadingStrategy } from './app.preloading-strategy';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
-// CRITICAL: Initialize translations FIRST and BLOCK until loaded
-// This ensures translations are available before any component renders
+// NON-BLOCKING: Initialize translations in background
+// App starts immediately, translations load in background and update UI when ready
 function initializeTranslations(translationService: TranslationService) {
   return () => {
     // Determine initial language with priority (NO network requests):
@@ -48,15 +48,16 @@ function initializeTranslations(translationService: TranslationService) {
       }
     }
 
-    // CRITICAL: Wait for translations to load before app starts
-    // This blocks app initialization until translations are ready
-    return translationService.loadTranslationsAsync(initialLanguage)
-      .catch(error => {
-        // Log error but still allow app to start (fail-open design)
-        console.error('Failed to load initial translations:', error);
-        // Return resolved promise to allow app to continue
-        return Promise.resolve();
-      });
+    // NON-BLOCKING: Start loading in background, don't wait
+    // App will bootstrap immediately, translations will update UI when loaded
+    translationService.loadTranslationsAsync(initialLanguage).catch(error => {
+      // Log error but don't block app startup
+      console.error('Failed to load initial translations:', error);
+      // Non-critical error - app continues
+    });
+    
+    // Resolve immediately to allow app to bootstrap
+    return Promise.resolve();
   };
 }
 
@@ -125,7 +126,7 @@ bootstrapApplication(AppComponent, {
     RoutePerformanceService,
     { provide: ErrorHandler, useClass: ErrorHandlingService },
     {
-      // CRITICAL: Translations load FIRST and BLOCK app startup
+      // NON-BLOCKING: Translations load in background, app starts immediately
       provide: APP_INITIALIZER,
       useFactory: initializeTranslations,
       deps: [TranslationService],

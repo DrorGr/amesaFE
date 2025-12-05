@@ -5,7 +5,6 @@ import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 // Test deployment - CI/CD pipeline test - GitHub Secrets configured!
 import { TopbarComponent } from './components/topbar/topbar.component';
-import { LoadingComponent } from './components/loading/loading.component';
 import { TranslationLoaderComponent } from './components/translation-loader/translation-loader.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { AuthModalComponent } from './components/auth-modal/auth-modal.component';
@@ -14,7 +13,6 @@ import { ToastComponent } from './components/toast/toast.component';
 import { CookieConsentComponent } from './components/cookie-consent/cookie-consent.component';
 import { SkipLinksComponent } from './components/skip-links/skip-links.component';
 import { TranslationService } from './services/translation.service';
-import { RouteLoadingService } from './services/route-loading.service';
 import { ToastService } from './services/toast.service';
 import { CookieConsentService } from './services/cookie-consent.service';
 // Services are available for dependency injection but not used directly in this component
@@ -26,7 +24,6 @@ import { CookieConsentService } from './services/cookie-consent.service';
     CommonModule,
     RouterOutlet,
     TopbarComponent,
-    LoadingComponent,
     TranslationLoaderComponent,
     ChatbotComponent,
     AuthModalComponent,
@@ -48,11 +45,7 @@ import { CookieConsentService } from './services/cookie-consent.service';
       <app-topbar></app-topbar>
       
       <div class="transition-all duration-500 ease-in-out">
-        @if (isLoading | async) {
-          <app-loading></app-loading>
-        } @else {
-          <router-outlet></router-outlet>
-        }
+        <router-outlet></router-outlet>
       </div>
       
       <footer id="footer" role="contentinfo" class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-8">
@@ -209,7 +202,6 @@ import { CookieConsentService } from './services/cookie-consent.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
   public translationService = inject(TranslationService);
-  private routeLoadingService = inject(RouteLoadingService);
   private router = inject(Router);
   private toastService = inject(ToastService);
   private cookieConsentService = inject(CookieConsentService);
@@ -218,8 +210,6 @@ export class AppComponent implements OnInit, OnDestroy {
   
   // Services are injected but not used directly in this component
   // They are available for dependency injection in child components
-
-  isLoading = this.routeLoadingService.loading$;
 
   ngOnInit(): void {
     // Expose debug log viewer to window for console access
@@ -320,11 +310,8 @@ export class AppComponent implements OnInit, OnDestroy {
     // Close the auth modal
     this.authModalService.close();
     
-    // Reset route loading state to prevent stuck loader
-    // This ensures the loader disappears even if no navigation occurs
-    setTimeout(() => {
-      this.routeLoadingService.setLoading(false);
-    }, 100);
+    // Note: Route loading state management removed since we no longer show loading component
+    // Route navigation will happen automatically without blocking UI
   }
 
   translate(key: string): string {
