@@ -23,14 +23,14 @@ interface Promotion {
     @if (isOpen()) {
       <!-- Backdrop -->
       <div 
-        class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ease-in-out"
+        class="fixed inset-0 bg-black bg-opacity-50 z-[110] transition-opacity duration-300 ease-in-out"
         (click)="close.emit()">
       </div>
     }
     
       <!-- Menu -->
       <div 
-        class="fixed left-0 top-32 h-[calc(100vh-8rem)] w-80 md:w-96 bg-white dark:bg-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out" 
+        class="fixed left-0 top-0 h-full w-80 md:w-96 bg-white dark:bg-gray-900 shadow-xl z-[110] transform transition-transform duration-300 ease-in-out" 
         [class.translate-x-0]="isOpen()"
         [class.-translate-x-full]="!isOpen()">
         <!-- Header -->

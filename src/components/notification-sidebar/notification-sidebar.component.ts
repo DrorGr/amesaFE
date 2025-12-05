@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
     <!-- Backdrop -->
     @if (isOpen()) {
       <div 
-        class="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
+        class="fixed inset-0 bg-black/50 z-[110] transition-opacity duration-300"
         (click)="close()"
         [attr.aria-label]="translate('notifications.sidebar.close')">
       </div>
@@ -22,7 +22,7 @@ import { Subscription } from 'rxjs';
     
     <!-- Sidebar -->
     <div 
-      class="fixed right-0 top-0 h-full w-full md:w-96 bg-white dark:bg-gray-800 shadow-xl z-50 transform transition-transform duration-300 ease-in-out"
+      class="fixed right-0 top-0 h-full w-full md:w-96 bg-white dark:bg-gray-800 shadow-xl z-[110] transform transition-transform duration-300 ease-in-out"
       [class.translate-x-0]="isOpen()"
       [class.translate-x-full]="!isOpen()"
       role="dialog"

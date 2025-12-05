@@ -13,8 +13,8 @@ import { interval } from 'rxjs';
           {{ translate('countdown.ended') || 'Ended' }}
         </span>
       } @else {
-        <span class="text-gray-700 dark:text-gray-300" role="timer" [attr.aria-label]="getTimeRemainingLabel()">
-          {{ timeRemaining().days }}d {{ timeRemaining().hours }}h {{ timeRemaining().minutes }}m
+        <span class="text-gray-700 dark:text-gray-300 font-mono" role="timer" [attr.aria-label]="getTimeRemainingLabel()">
+          {{ formatTimeRemaining() }}
         </span>
       }
     </div>
@@ -29,10 +29,11 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
   targetDate = input.required<Date | string>();
   translateFn = input<(key: string) => string>();
   
-  timeRemaining = signal<{ days: number; hours: number; minutes: number; ended: boolean }>({
+  timeRemaining = signal<{ days: number; hours: number; minutes: number; seconds: number; ended: boolean }>({
     days: 0,
     hours: 0,
     minutes: 0,
+    seconds: 0,
     ended: false
   });
   
@@ -40,10 +41,10 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateTimeRemaining();
-    // Update every minute
+    // Update every second for real-time countdown
     this.intervalSubscription = setInterval(() => {
       this.updateTimeRemaining();
-    }, 60000);
+    }, 1000);
   }
 
   ngOnDestroy(): void {
@@ -61,15 +62,16 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
     const diff = target.getTime() - now.getTime();
 
     if (diff <= 0) {
-      this.timeRemaining.set({ days: 0, hours: 0, minutes: 0, ended: true });
+      this.timeRemaining.set({ days: 0, hours: 0, minutes: 0, seconds: 0, ended: true });
       return;
     }
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    this.timeRemaining.set({ days, hours, minutes, ended: false });
+    this.timeRemaining.set({ days, hours, minutes, seconds, ended: false });
   }
 
   translate(key: string): string {
@@ -82,7 +84,20 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
     if (time.ended) {
       return this.translate('countdown.ended') || 'Ended';
     }
-    return `${time.days} days, ${time.hours} hours, ${time.minutes} minutes remaining`;
+    return `${time.days} days, ${time.hours} hours, ${time.minutes} minutes, ${time.seconds} seconds remaining`;
+  }
+
+  formatTimeRemaining(): string {
+    const time = this.timeRemaining();
+    if (time.ended) {
+      return '00:00:00:00';
+    }
+    // Format: DD:HH:MM:SS
+    const days = time.days.toString().padStart(2, '0');
+    const hours = time.hours.toString().padStart(2, '0');
+    const minutes = time.minutes.toString().padStart(2, '0');
+    const seconds = time.seconds.toString().padStart(2, '0');
+    return `${days}:${hours}:${minutes}:${seconds}`;
   }
 }
 

@@ -237,10 +237,10 @@ export class HouseCarouselService {
   getOdds(house: any): string {
     if (!house || !house.totalTickets || house.totalTickets === 0) return 'N/A';
     const ticketsSold = house.ticketsSold || 0;
-    const remaining = house.totalTickets - ticketsSold;
-    if (remaining === 0) return '0%';
-    const odds = (1 / remaining) * 100;
-    return odds < 0.01 ? '<0.01%' : this.localeService.formatNumber(odds, { style: 'percent', minimumFractionDigits: 2 });
+    const availableTickets = house.totalTickets - ticketsSold;
+    if (availableTickets <= 0) return 'N/A';
+    // Odds = 1 : available tickets (ratio between a ticket and possible entries)
+    return `1:${this.localeService.formatNumber(availableTickets)}`;
   }
 
   getRemainingTickets(house: any): number {

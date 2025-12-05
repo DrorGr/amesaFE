@@ -66,7 +66,11 @@ export class HouseCardService {
 
   getOdds(house: House): string {
     if (!house.totalTickets || house.totalTickets === 0) return 'N/A';
-    return `1:${this.localeService.formatNumber(house.totalTickets)}`;
+    const soldTickets = house.soldTickets || 0;
+    const availableTickets = house.totalTickets - soldTickets;
+    if (availableTickets <= 0) return 'N/A';
+    // Odds = 1 : available tickets (ratio between a ticket and possible entries)
+    return `1:${this.localeService.formatNumber(availableTickets)}`;
   }
 
   getRemainingTickets(house: House): number {
@@ -99,7 +103,7 @@ export class HouseCardService {
     const timeLeft = endTime - currentTime;
 
     if (timeLeft <= 0) {
-      return '00:00:00';
+      return '00:00:00:00';
     }
 
     const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
@@ -107,12 +111,8 @@ export class HouseCardService {
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-    // Show seconds only when less than 24 hours left
-    if (days === 0 && hours < 24) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    } else {
-      return `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    }
+    // Format: DD:HH:MM:SS (always show days, hours, minutes, seconds)
+    return `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
   // Status and text utilities

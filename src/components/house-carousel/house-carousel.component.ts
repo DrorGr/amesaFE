@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { LotteryService } from '../../services/lottery.service';
@@ -7,6 +8,7 @@ import { LocaleService } from '../../services/locale.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
+import { RealtimeService } from '../../services/realtime.service';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 
@@ -593,6 +595,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private heartAnimationService = inject(HeartAnimationService);
+  private realtimeService = inject(RealtimeService);
   private togglingFavorites = signal<Set<string>>(new Set());
   private quickEntering = signal<Set<string>>(new Set());
   
@@ -615,12 +618,16 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private countdownInterval?: number;
   private vibrationInterval?: any;
   private intersectionObserver: IntersectionObserver | null = null;
+  private inventorySubscription?: Subscription;
   loadedImages = new Set<string>();
   vibrationTrigger = signal<number>(0);
   
   // Use signals for values that change over time to avoid change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
   currentTime = signal<number>(Date.now());
+  
+  // Map to track dynamic soldTickets for each house (houseId -> soldTickets)
+  private soldTicketsMap = signal<Map<string, number>>(new Map());
 
   // Use computed signal to get active houses from lottery service
   houses = computed(() => {
@@ -632,6 +639,12 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   favoriteHouseIds = computed(() => this.lotteryService.getFavoriteHouseIds());
 
   ngOnInit() {
+    // Initialize soldTickets map from houses
+    this.initializeSoldTicketsMap();
+    
+    // Setup real-time inventory updates
+    this.setupRealtimeUpdates();
+    
     // Auto-rotation disabled - only manual navigation via arrows
     // this.startAutoSlide(); // Disabled - user controls navigation
     this.setupIntersectionObserver();
@@ -671,6 +684,13 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
     }
+    if (this.inventorySubscription) {
+      this.inventorySubscription.unsubscribe();
+    }
+    // Leave lottery groups for all houses
+    this.houses().forEach(house => {
+      this.realtimeService.leaveLotteryGroup(house.id);
+    });
   }
 
 
@@ -869,7 +889,8 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   getTicketProgressForHouse(house: any): number {
-    return Math.round((house.soldTickets / house.totalTickets) * 100);
+    const ticketsSold = this.getDynamicSoldTickets(house);
+    return Math.round((ticketsSold / house.totalTickets) * 100);
   }
   
   getImageIndexForHouse(houseIndex: number): number {
@@ -877,12 +898,47 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   getOdds(house: any): string {
-    const totalTickets = house.totalTickets;
-    return `1:${this.localeService.formatNumber(totalTickets)}`;
+    if (!house || !house.totalTickets || house.totalTickets === 0) return 'N/A';
+    const ticketsSold = this.getDynamicSoldTickets(house);
+    const availableTickets = house.totalTickets - ticketsSold;
+    if (availableTickets <= 0) return 'N/A';
+    // Odds = 1 : available tickets (ratio between a ticket and possible entries)
+    return `1:${this.localeService.formatNumber(availableTickets)}`;
   }
 
   getRemainingTickets(house: any): number {
-    return house.totalTickets - house.soldTickets;
+    if (!house || !house.totalTickets) return 0;
+    const ticketsSold = this.getDynamicSoldTickets(house);
+    return Math.max(0, house.totalTickets - ticketsSold);
+  }
+  
+  private getDynamicSoldTickets(house: any): number {
+    const map = this.soldTicketsMap();
+    return map.get(house.id) ?? (house.soldTickets || 0);
+  }
+  
+  private initializeSoldTicketsMap(): void {
+    const map = new Map<string, number>();
+    this.houses().forEach(house => {
+      map.set(house.id, house.soldTickets || 0);
+    });
+    this.soldTicketsMap.set(map);
+  }
+  
+  private setupRealtimeUpdates(): void {
+    // Join lottery groups for all houses
+    this.realtimeService.ensureConnection().then(() => {
+      this.houses().forEach(house => {
+        this.realtimeService.joinLotteryGroup(house.id);
+      });
+    });
+    
+    // Subscribe to inventory updates
+    this.inventorySubscription = this.realtimeService.inventoryUpdates$.subscribe(update => {
+      const map = new Map(this.soldTicketsMap());
+      map.set(update.houseId, update.soldTickets);
+      this.soldTicketsMap.set(map);
+    });
   }
 
   getLotteryCountdown(house: any): string {
@@ -891,7 +947,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     const timeLeft = endTime - now;
 
     if (timeLeft <= 0) {
-      return '00:00:00';
+      return '00:00:00:00';
     }
 
     const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
@@ -899,12 +955,8 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-    // Show seconds only when less than 24 hours left
-    if (days === 0 && hours < 24) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    } else {
-      return `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    }
+    // Format: DD:HH:MM:SS (always show days, hours, minutes, seconds)
+    return `${days.toString().padStart(2, '0')}:${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
   getCurrentViewers(): number {
