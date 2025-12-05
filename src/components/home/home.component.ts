@@ -4,6 +4,7 @@ import { HeroSectionComponent } from '../hero-section/hero-section.component';
 import { HouseGridComponent } from '../house-grid/house-grid.component';
 import { StatsSectionComponent } from '../stats-section/stats-section.component';
 import { HouseCarouselComponent } from '../house-carousel/house-carousel.component';
+import { LotteryDashboardAccordionComponent } from '../lottery-dashboard-accordion/lottery-dashboard-accordion.component';
 
 @Component({
   selector: 'app-home',
@@ -13,10 +14,14 @@ import { HouseCarouselComponent } from '../house-carousel/house-carousel.compone
     HeroSectionComponent,
     HouseGridComponent,
     StatsSectionComponent,
-    HouseCarouselComponent
+    HouseCarouselComponent,
+    LotteryDashboardAccordionComponent
   ],
   template: `
     <main role="main" id="main-content">
+      <!-- Lottery Dashboard Accordion - Visible to all users -->
+      <app-lottery-dashboard-accordion></app-lottery-dashboard-accordion>
+      
       <app-hero-section></app-hero-section>
       <app-house-carousel></app-house-carousel>
       <app-stats-section></app-stats-section>
