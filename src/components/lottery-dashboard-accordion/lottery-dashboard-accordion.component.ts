@@ -23,13 +23,21 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
         overflow: 'hidden',
         paddingTop: '0px',
         paddingBottom: '0px',
+        paddingLeft: '0px',
+        paddingRight: '0px',
         marginTop: '0px',
-        marginBottom: '0px'
+        marginBottom: '0px',
+        borderTopWidth: '0px'
       })),
       state('true', style({
         maxHeight: '2000px',
         opacity: 1,
-        overflow: 'visible'
+        overflow: 'visible',
+        paddingTop: '1rem',
+        paddingBottom: '1rem',
+        paddingLeft: '1rem',
+        paddingRight: '1rem',
+        borderTopWidth: '1px'
       })),
       transition('false => true', [
         animate('400ms cubic-bezier(0.4, 0, 0.2, 1)')
@@ -93,8 +101,8 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
         id="dashboard-accordion-content"
         [@slideDown]="isExpanded().toString()"
         [attr.aria-hidden]="!isExpanded()"
-        class="overflow-hidden">
-        <div class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700" aria-live="polite" aria-atomic="true">
+        class="overflow-hidden border-t border-gray-200 dark:border-gray-700">
+        <div aria-live="polite" aria-atomic="true">
           @if (!currentUser()) {
             <!-- Not logged in - show login prompt -->
             <div class="py-8 text-center">
