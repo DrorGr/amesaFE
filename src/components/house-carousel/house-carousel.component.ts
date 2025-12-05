@@ -19,9 +19,25 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
         <div class="overflow-hidden">
-          <div class="flex transition-transform duration-500 ease-in-out" 
-               [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
-            @for (house of houses(); track house.id; let houseIndex = $index) {
+          @if (houses().length === 0 || lotteryService.isHousesLoading) {
+            <!-- Skeleton loader for house carousel -->
+            <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 px-2 md:px-0" role="status" aria-busy="true" aria-live="polite">
+              <!-- Image skeleton -->
+              <div class="flex-1 max-w-5xl">
+                <div class="w-full h-64 md:h-96 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse"></div>
+              </div>
+              <!-- Content skeleton -->
+              <div class="flex-1 max-w-md">
+                <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
+                <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2 animate-pulse w-3/4"></div>
+                <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse w-1/2"></div>
+                <div class="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+          } @else {
+            <div class="flex transition-transform duration-500 ease-in-out" 
+                 [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
+              @for (house of houses(); track house.id; let houseIndex = $index) {
               <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 relative px-2 md:px-0 mobile-carousel-container">
                 <!-- Main House Image -->
                 <div class="flex-1 max-w-5xl flex flex-col mb-4">
@@ -250,11 +266,13 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
               </div>
             }
           </div>
+          }
         </div>
         
         <!-- Fixed Navigation Controls - Bottom of component -->
         <!-- Mobile Navigation - Bottom -->
-        <div class="md:hidden">
+        @if (houses().length > 0 && !lotteryService.isHousesLoading) {
+          <div class="md:hidden">
           <div class="flex items-center justify-between px-6 py-6">
             <!-- Left Navigation Button -->
             <button 
@@ -289,10 +307,12 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
             </button>
           </div>
         </div>
+        }
         
         <!-- Desktop Navigation -->
         <!-- Desktop Navigation - Only visible on desktop -->
-        <div class="hidden md:block">
+        @if (houses().length > 0 && !lotteryService.isHousesLoading) {
+          <div class="hidden md:block">
           <!-- Desktop Container Dots - Bottom center -->
           <div class="flex justify-center space-x-3 py-4">
             @for (house of houses(); track house.id) {
@@ -307,6 +327,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
             }
           </div>
         </div>
+        }
         
       </div>
       
@@ -588,7 +609,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
 export class HouseCarouselComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private mobileDetectionService = inject(MobileDetectionService);
-  private lotteryService = inject(LotteryService);
+  lotteryService = inject(LotteryService);
   private localeService = inject(LocaleService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);

@@ -68,8 +68,19 @@ import { Subscription } from 'rxjs';
       <div class="overflow-y-auto h-[calc(100vh-64px)] p-4">
         <!-- Loading State -->
         @if (isLoading()) {
-          <div class="flex items-center justify-center py-12">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <!-- Skeleton loader for notifications -->
+          <div class="space-y-4 p-4" role="status" aria-busy="true" aria-live="polite">
+            @for (item of [1,2,3,4,5]; track item) {
+              <div class="bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md border border-gray-300 dark:border-gray-600 animate-pulse p-4">
+                <div class="flex gap-3">
+                  <div class="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full flex-shrink-0"></div>
+                  <div class="flex-1">
+                    <div class="h-5 bg-gray-300 dark:bg-gray-600 rounded mb-2 w-3/4"></div>
+                    <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            }
           </div>
         }
 

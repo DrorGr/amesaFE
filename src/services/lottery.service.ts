@@ -65,15 +65,32 @@ export class LotteryService {
   private cleanup$ = new Subject<void>();
   
   constructor(private apiService: ApiService) {
-    // CRITICAL: Defer house loading to avoid blocking app initialization
-    // Wait longer to ensure auth token is ready if user is authenticated
-    // This prevents hanging requests when auth token isn't ready yet
-    setTimeout(() => {
-      this.loadHousesInternal();
-    }, 200); // Increased delay to ensure auth token is ready in API service
+    // REMOVED: Houses loading from constructor
+    // Houses will be loaded on-demand when home component initializes
+    // This prevents blocking app startup with unnecessary API calls
     
     // Setup SignalR subscriptions for real-time updates (FE-2.6)
     this.setupRealtimeSubscriptions();
+  }
+  
+  /**
+   * Ensure houses are loaded - call this when houses data is needed
+   * Only loads if not already loaded or currently loading
+   */
+  public ensureHousesLoaded(): void {
+    // Only load if not already loaded or loading
+    if (this.houses().length === 0 && !this.isLoadingHouses) {
+      this.loadHousesInternal();
+    }
+  }
+  
+  /**
+   * Get loading state for houses data
+   * Useful for components to show skeleton loaders
+   * Note: Checking houses().length === 0 also works for skeleton display
+   */
+  public get isHousesLoading(): boolean {
+    return this.isLoadingHouses;
   }
   
   /**

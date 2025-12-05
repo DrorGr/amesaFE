@@ -119,8 +119,26 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
               </button>
             </div>
           } @else if (isLoading()) {
-            <div class="flex items-center justify-center py-8" role="status" aria-busy="true">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" aria-label="Loading dashboard data"></div>
+            <!-- Skeleton loader for dashboard -->
+            <div class="px-4 py-4" role="status" aria-busy="true" aria-live="polite">
+              <!-- Stats skeleton -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 pt-4">
+                @for (item of [1,2,3,4]; track item) {
+                  <div class="bg-gray-200 dark:bg-gray-700 rounded-lg p-3 border border-gray-300 dark:border-gray-600 animate-pulse">
+                    <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded mb-2 w-2/3"></div>
+                    <div class="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+                  </div>
+                }
+              </div>
+              <!-- Entries skeleton -->
+              <div class="space-y-3">
+                @for (item of [1,2,3]; track item) {
+                  <div class="bg-gray-200 dark:bg-gray-700 rounded-lg p-4 animate-pulse">
+                    <div class="h-5 bg-gray-300 dark:bg-gray-600 rounded mb-2 w-3/4"></div>
+                    <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+                  </div>
+                }
+              </div>
             </div>
           } @else if (error()) {
             <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4" role="alert">
@@ -229,7 +247,8 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
   activeEntriesCount = computed(() => this.activeEntries().length);
 
   ngOnInit(): void {
-    this.loadDashboardData();
+    // Don't load data on init - wait for user to expand accordion
+    // This prevents unnecessary API calls when accordion is closed
   }
   
   ngOnDestroy(): void {
@@ -237,7 +256,16 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
   }
 
   toggleAccordion(): void {
+    const wasExpanded = this.isExpanded();
     this.isExpanded.set(!this.isExpanded());
+    
+    // Load data when expanding (only if not already loaded)
+    if (!wasExpanded && this.isExpanded() && this.currentUser()) {
+      // Only load if we don't have data yet
+      if (this.activeEntries().length === 0 && !this.isLoading()) {
+        this.loadDashboardData();
+      }
+    }
   }
 
   async loadDashboardData(): Promise<void> {
