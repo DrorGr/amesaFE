@@ -149,12 +149,18 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                     <div class="flex space-x-1 mt-1">
                       @for (image of house.images; track $index) {
                         <button 
-                          (click)="goToHouseImage($index)"
-                          class="w-2 h-2 rounded-full transition-all hover:scale-125"
+                          (click)="goToHouseImage($index); $event.stopPropagation()"
+                          type="button"
+                          class="w-2 h-2 rounded-full transition-all hover:scale-125 cursor-pointer focus:outline-none"
                           [class.bg-blue-500]="currentSlide === houseIndex && currentHouseImageIndex === $index"
                           [class.bg-gray-300]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
                           [class.dark:bg-blue-400]="currentSlide === houseIndex && currentHouseImageIndex === $index"
-                          [class.dark:bg-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)">
+                          [class.dark:bg-gray-600]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                          [class.opacity-50]="!(currentSlide === houseIndex && currentHouseImageIndex === $index)"
+                          [class.w-3]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [class.h-3]="currentSlide === houseIndex && currentHouseImageIndex === $index"
+                          [attr.aria-label]="'Go to image ' + ($index + 1) + ' of ' + house.images.length"
+                          [attr.aria-current]="(currentSlide === houseIndex && currentHouseImageIndex === $index) ? 'true' : 'false'">
                         </button>
                       }
                     </div>
@@ -218,7 +224,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                           <button 
                             disabled
                             class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button cursor-not-allowed opacity-60">
-                            {{ translate('carousel.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
+                            {{ translate('house.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
                           </button>
                         } @else if (house.status === 'upcoming') {
                           <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
@@ -226,7 +232,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                           </button>
                         } @else {
                           <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
-                            {{ translate('carousel.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
+                            {{ translate('house.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
                           </button>
                         }
                       </app-verification-gate>
