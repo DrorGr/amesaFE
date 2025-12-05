@@ -23,7 +23,7 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **Version Control**: Git with GitHub repositories
 - **Package Management**: npm (frontend), NuGet (backend)
 
-## Current Status (2025-12-02)
+## Current Status (2025-12-05)
 - **Production environment fully operational** ✅
 - **Backend Admin Panel**: ✅ Deployed and working on production
 - **CloudFront configurations**: API routing configured
@@ -203,6 +203,38 @@ git checkout main
 
 ---
 
+## Recent Changes (2025-12-05) - NOTIFICATION BELL IMPLEMENTATION
+1. ✅ **Notification Bell with Sidebar - FULLY IMPLEMENTED** - Complete notification UI system
+   - **Status**: ✅ **DEPLOYED AND OPERATIONAL** - Frontend complete, ALB routing configured
+   - **Frontend Implementation**:
+     - Created `NotificationSidebarComponent` - Slide-in sidebar from right with notification list
+     - Added notification bell icon to topbar (positioned to right of user menu)
+     - Bell shows red dot and ringing animation when unread notifications exist
+     - Clicking bell when not logged in shows toast with login prompt (uses existing `auth.loginRequired` translation)
+     - Clicking bell when logged in opens notification sidebar
+     - Unread notifications highlighted (bold, blue background, border)
+     - Read notifications grayed out
+     - Mark as read (individual and bulk), delete notifications
+     - Real-time updates via SignalR integration
+     - Removed redundant notification settings button from user menu
+   - **ALB Routing Configuration**:
+     - **Priority 93**: `/api/v1/notifications` (exact match) → `amesa-notification-service-tg`
+     - **Priority 95**: `/api/v1/notifications/*` (subpaths) → `amesa-notification-service-tg`
+     - **Priority 96**: `/health/notifications` (health check) → `amesa-notification-service-tg`
+     - **Issue Fixed**: Missing ALB routing rules causing 503 Service Unavailable errors
+     - **Solution**: Created all three routing rules to properly route notification requests
+   - **Translation Keys**: Created SQL script with 32 translation keys (8 keys × 4 languages)
+     - `notifications.sidebar.*` - Sidebar UI translations
+     - `nav.notifications` - Navigation label
+   - **Files Created**:
+     - `src/components/notification-sidebar/notification-sidebar.component.ts` - Sidebar component
+     - `MetaData/Scripts/add-notification-sidebar-translations.sql` - Translation SQL script
+   - **Files Modified**:
+     - `src/components/topbar/topbar.component.ts` - Added notification bell, positioned after user menu
+     - `src/components/user-menu/user-menu.component.ts` - Removed redundant notification settings button
+   - **Commit**: `e2e9a20` - "feat: Add notification bell with sidebar"
+   - **Status**: ✅ **COMPLETE** - Notification bell fully operational, ALB routing configured
+
 ## Recent Changes (2025-12-01) - TRANSLATION PERFORMANCE & IMAGE GALLERY FIXES
 - ✅ **Translation Loading Performance Optimization** - Fixed app startup hang and slow first load
   - Removed 500ms blocking delay that was preventing APP_INITIALIZER from resolving
@@ -265,5 +297,5 @@ git checkout main
 - Performance optimizations
 
 ---
-**Last Updated**: 2025-12-02
+**Last Updated**: 2025-12-05
 **Note**: This file should be updated whenever project structure, environment configuration, infrastructure, or deployment processes change.

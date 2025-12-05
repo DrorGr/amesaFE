@@ -37,9 +37,9 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
             </p>
             <div class="flex flex-col sm:flex-row gap-6">
               <button 
-                (click)="navigateToHome()"
-                (keydown.enter)="navigateToHome()"
-                (keydown.space)="navigateToHome(); $event.preventDefault()"
+                (click)="navigateToLotteries()"
+                (keydown.enter)="navigateToLotteries()"
+                (keydown.space)="navigateToLotteries(); $event.preventDefault()"
                 [attr.aria-label]="translate('hero.browseLotteries')"
                 class="px-12 py-6 text-3xl md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button focus:outline-none">
                 {{ translate('hero.browseLotteries') }}
@@ -280,6 +280,11 @@ export class HeroSectionComponent {
 
   navigateToHome() {
     this.router.navigate(['/']);
+    this.scrollToTop();
+  }
+
+  navigateToLotteries() {
+    this.router.navigate(['/lottery/dashboard']);
     this.scrollToTop();
   }
 

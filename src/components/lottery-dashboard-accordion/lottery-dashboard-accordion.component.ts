@@ -22,7 +22,9 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
         opacity: 0,
         overflow: 'hidden',
         paddingTop: '0px',
-        paddingBottom: '0px'
+        paddingBottom: '0px',
+        marginTop: '0px',
+        marginBottom: '0px'
       })),
       state('true', style({
         maxHeight: '2000px',

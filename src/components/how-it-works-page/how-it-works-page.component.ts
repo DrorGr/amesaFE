@@ -99,7 +99,9 @@ import { TranslationService } from '../../services/translation.service';
               {{ translate('howItWorks.ctaDescription') }}
             </p>
             <button
-              (click)="navigateToHome()"
+              (click)="navigateToLotteries()"
+              (keydown.enter)="navigateToLotteries()"
+              (keydown.space)="navigateToLotteries(); $event.preventDefault()"
               class="btn-outline bg-white text-blue-600 hover:bg-gray-100 border-white">
               {{ translate('howItWorks.browseLotteries') }}
             </button>
@@ -122,6 +124,11 @@ export class HowItWorksPageComponent {
 
   navigateToHome() {
     this.router.navigate(['/']);
+    this.scrollToTop();
+  }
+
+  navigateToLotteries() {
+    this.router.navigate(['/lottery/dashboard']);
     this.scrollToTop();
   }
 

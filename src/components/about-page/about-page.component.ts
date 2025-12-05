@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 
 @Component({
@@ -39,7 +40,11 @@ import { TranslationService } from '../../services/translation.service';
             
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row gap-4 mt-4">
-              <button class="bg-white text-blue-600 hover:bg-gray-100 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+              <button 
+                (click)="navigateToLotteries()"
+                (keydown.enter)="navigateToLotteries()"
+                (keydown.space)="navigateToLotteries(); $event.preventDefault()"
+                class="bg-white text-blue-600 hover:bg-gray-100 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
                 {{ translate('about.browseLotteries') }}
               </button>
               <button class="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
@@ -180,7 +185,11 @@ import { TranslationService } from '../../services/translation.service';
               {{ translate('about.joinUsDescription') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button class="bg-white text-blue-600 hover:bg-gray-100 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+              <button 
+                (click)="navigateToLotteries()"
+                (keydown.enter)="navigateToLotteries()"
+                (keydown.space)="navigateToLotteries(); $event.preventDefault()"
+                class="bg-white text-blue-600 hover:bg-gray-100 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
                 {{ translate('about.browseLotteries') }}
               </button>
               <button class="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold text-2xl px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
@@ -198,8 +207,21 @@ import { TranslationService } from '../../services/translation.service';
 })
 export class AboutPageComponent {
   private translationService = inject(TranslationService);
+  private router = inject(Router);
 
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  navigateToLotteries(): void {
+    this.router.navigate(['/lottery/dashboard']);
+    this.scrollToTop();
+  }
+
+  private scrollToTop(): void {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }
 }
