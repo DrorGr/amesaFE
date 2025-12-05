@@ -11,11 +11,12 @@ import { UserLotteryStats, HouseRecommendation } from '../../interfaces/lottery.
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { LocaleService } from '../../services/locale.service';
 import { UserPreferencesService } from '../../services/user-preferences.service';
+import { HouseGridComponent } from '../house-grid/house-grid.component';
 
 @Component({
   selector: 'app-lottery-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HouseGridComponent],
   template: `
     <main class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 md:p-8">
       <div class="max-w-7xl mx-auto">
@@ -212,41 +213,9 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
           </div>
         </div>
 
-        <!-- Recommendations Section -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h2 class="text-2xl md:text-xl font-bold text-gray-900 dark:text-white mb-6">
-            {{ translate(LOTTERY_TRANSLATION_KEYS.recommendations.title) }}
-          </h2>
-          
-          @if (recommendations().length > 0) {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              @for (rec of recommendations().slice(0, 3); track rec.id) {
-              <div 
-                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer focus:outline-none"
-                [routerLink]="['/houses', rec.id]"
-                (keydown.enter)="navigateToHouse(rec.id)"
-                (keydown.space)="navigateToHouse(rec.id); $event.preventDefault()"
-                [attr.aria-label]="'View recommended house: ' + rec.title"
-                tabindex="0"
-                role="link">
-                <p class="font-semibold text-gray-900 dark:text-white">{{ rec.title }}</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ rec.location }}</p>
-                <p class="text-sm font-semibold text-blue-600 dark:text-blue-400 mt-1">
-                  {{ formatPrice(rec.price) }}
-                </p>
-                <p class="text-xs text-purple-600 dark:text-purple-400 mt-2">
-                  {{ rec.reason }}
-                </p>
-              </div>
-              }
-            </div>
-          } @else {
-            <div class="text-center py-8">
-              <p class="text-gray-500 dark:text-gray-400">
-                {{ translate(LOTTERY_TRANSLATION_KEYS.recommendations.empty) }}
-              </p>
-            </div>
-          }
+        <!-- House Grid - All Lottery Houses -->
+        <div class="mb-8">
+          <app-house-grid></app-house-grid>
         </div>
       </div>
     </main>
@@ -274,7 +243,6 @@ export class LotteryDashboardComponent implements OnInit, OnDestroy {
   currentUser = this.authService.getCurrentUser();
   activeEntries = this.lotteryService.getActiveEntries();
   stats = this.lotteryService.getUserLotteryStats();
-  recommendations = this.lotteryService.getRecommendationsSignal();
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
   
   favoriteHouses = signal<HouseDto[]>([]);
@@ -303,9 +271,6 @@ export class LotteryDashboardComponent implements OnInit, OnDestroy {
       
       // Load statistics
       await this.lotteryService.getLotteryAnalytics().toPromise();
-      
-      // Load recommendations
-      await this.lotteryService.getRecommendations(3).toPromise();
       
       // Load favorite houses
       const favorites = await this.lotteryService.getFavoriteHouses().toPromise();

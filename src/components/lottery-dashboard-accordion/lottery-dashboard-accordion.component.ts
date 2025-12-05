@@ -89,7 +89,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
       
       <div 
         id="dashboard-accordion-content"
-        [@slideDown]="isExpanded()"
+        [@slideDown]="isExpanded().toString()"
         [attr.aria-hidden]="!isExpanded()"
         class="overflow-hidden">
         <div class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700" aria-live="polite" aria-atomic="true">

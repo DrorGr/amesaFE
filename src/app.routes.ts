@@ -57,8 +57,7 @@ export const routes: Routes = [
   },
   {
     path: 'lottery/dashboard',
-    loadComponent: () => import('./components/lottery-dashboard/lottery-dashboard.component').then(m => m.LotteryDashboardComponent),
-    canActivate: [AuthGuard]
+    loadComponent: () => import('./components/lottery-dashboard/lottery-dashboard.component').then(m => m.LotteryDashboardComponent)
   },
   {
     path: 'lottery/favorites',

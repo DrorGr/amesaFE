@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeroSectionComponent } from '../hero-section/hero-section.component';
-import { HouseGridComponent } from '../house-grid/house-grid.component';
 import { StatsSectionComponent } from '../stats-section/stats-section.component';
 import { HouseCarouselComponent } from '../house-carousel/house-carousel.component';
 import { LotteryDashboardAccordionComponent } from '../lottery-dashboard-accordion/lottery-dashboard-accordion.component';
@@ -12,7 +11,6 @@ import { LotteryDashboardAccordionComponent } from '../lottery-dashboard-accordi
   imports: [
     CommonModule,
     HeroSectionComponent,
-    HouseGridComponent,
     StatsSectionComponent,
     HouseCarouselComponent,
     LotteryDashboardAccordionComponent
@@ -25,7 +23,6 @@ import { LotteryDashboardAccordionComponent } from '../lottery-dashboard-accordi
       <app-hero-section></app-hero-section>
       <app-house-carousel></app-house-carousel>
       <app-stats-section></app-stats-section>
-      <app-house-grid></app-house-grid>
     </main>
   `
 })
