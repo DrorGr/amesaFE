@@ -88,6 +88,22 @@ export interface ReservationStatusUpdateEvent {
   processedAt?: Date;
 }
 
+export enum SignalRErrorType {
+  NetworkError = 'network',
+  AuthenticationError = 'authentication',
+  ServerError = 'server',
+  TimeoutError = 'timeout',
+  UnknownError = 'unknown'
+}
+
+export interface SignalRError {
+  type: SignalRErrorType;
+  message: string;
+  originalError?: any;
+  timestamp: Date;
+  retryable: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -95,6 +111,11 @@ export class RealtimeService {
   private connection: HubConnection | null = null;
   private isConnected = signal<boolean>(false);
   private connectionState = signal<HubConnectionState>(HubConnectionState.Disconnected);
+  
+  // Connection locking (prevents duplicate simultaneous connection attempts)
+  private connectionLock: Promise<void> = Promise.resolve();
+  private isConnecting = false;
+  private connectionLockResolve: (() => void) | null = null;
   
   // Event subjects
   private lotteryUpdateSubject = new Subject<LotteryUpdateEvent>();
@@ -154,6 +175,204 @@ export class RealtimeService {
     return this.connection;
   }
 
+  /**
+   * Acquire connection lock
+   * Returns true if lock acquired, false if already connecting
+   */
+  private async acquireConnectionLock(): Promise<boolean> {
+    if (this.isConnecting) {
+      return false;
+    }
+    
+    this.isConnecting = true;
+    this.connectionLock = new Promise((resolve) => {
+      // Store resolve function to release lock later
+      this.connectionLockResolve = resolve;
+    });
+    
+    return true;
+  }
+
+  /**
+   * Release connection lock
+   */
+  private releaseConnectionLock(): void {
+    this.isConnecting = false;
+    if (this.connectionLockResolve) {
+      this.connectionLockResolve();
+      this.connectionLockResolve = null;
+    }
+    // Reset lock to resolved promise for next use
+    this.connectionLock = Promise.resolve();
+  }
+
+  /**
+   * Handle connection errors with categorization and user notification
+   */
+  private handleConnectionError(error: any, context: string): SignalRError {
+    const errorType = this.categorizeError(error);
+    const errorMessage = this.getErrorMessage(error, errorType);
+    const retryable = this.isRetryableError(errorType);
+    
+    const signalRError: SignalRError = {
+      type: errorType,
+      message: errorMessage,
+      originalError: error,
+      timestamp: new Date(),
+      retryable
+    };
+    
+    // Log error with context
+    console.error(`[SignalR] ${context} error:`, {
+      type: errorType,
+      message: errorMessage,
+      retryable,
+      error: error instanceof Error ? {
+        message: error.message,
+        stack: error.stack
+      } : error
+    });
+    
+    // Notify user for critical errors (non-retryable or auth errors)
+    if (!retryable || errorType === SignalRErrorType.AuthenticationError) {
+      // TODO: Integrate with notification service when available
+      console.warn(`[SignalR] User notification needed: ${errorMessage}`);
+    }
+    
+    return signalRError;
+  }
+
+  /**
+   * Categorize error type
+   */
+  private categorizeError(error: any): SignalRErrorType {
+    if (error?.message?.includes('timeout') || error?.message?.includes('Timeout')) {
+      return SignalRErrorType.TimeoutError;
+    }
+    
+    if (error?.status === 401 || error?.status === 403) {
+      return SignalRErrorType.AuthenticationError;
+    }
+    
+    if (error?.status >= 500) {
+      return SignalRErrorType.ServerError;
+    }
+    
+    if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+      return SignalRErrorType.NetworkError;
+    }
+    
+    return SignalRErrorType.UnknownError;
+  }
+
+  /**
+   * Get user-friendly error message
+   */
+  private getErrorMessage(error: any, type: SignalRErrorType): string {
+    switch (type) {
+      case SignalRErrorType.AuthenticationError:
+        return 'Authentication failed. Please log in again.';
+      case SignalRErrorType.TimeoutError:
+        return 'Connection timeout. Please check your internet connection.';
+      case SignalRErrorType.NetworkError:
+        return 'Network error. Please check your internet connection.';
+      case SignalRErrorType.ServerError:
+        return 'Server error. Please try again later.';
+      default:
+        return error?.message || 'Connection failed. Please try again.';
+    }
+  }
+
+  /**
+   * Determine if error is retryable
+   */
+  private isRetryableError(type: SignalRErrorType): boolean {
+    switch (type) {
+      case SignalRErrorType.AuthenticationError:
+        return false; // Auth errors should not retry
+      case SignalRErrorType.NetworkError:
+      case SignalRErrorType.TimeoutError:
+      case SignalRErrorType.ServerError:
+        return true; // These can be retried
+      default:
+        return true; // Default to retryable
+    }
+  }
+
+  /**
+   * Validate token before connection attempt
+   * Returns true if token is valid and not expiring soon
+   * Automatically refreshes token if expiring within 2 minutes
+   */
+  private async validateTokenBeforeConnection(): Promise<boolean> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.warn('[SignalR] No access token available');
+      return false;
+    }
+
+    // Basic token format validation (JWT should have 3 parts)
+    const tokenParts = token.split('.');
+    if (tokenParts.length !== 3) {
+      console.warn('[SignalR] Invalid token format');
+      return false;
+    }
+
+    // Check token expiration
+    const expiresAtStr = localStorage.getItem('token_expires_at');
+    if (expiresAtStr) {
+      try {
+        const expiresAt = new Date(expiresAtStr);
+        const now = new Date();
+        const timeUntilExpiry = expiresAt.getTime() - now.getTime();
+        
+        // If token expires within 2 minutes, refresh it first
+        if (timeUntilExpiry > 0 && timeUntilExpiry < 2 * 60 * 1000) {
+          const minutesUntilExpiry = Math.floor(timeUntilExpiry / 60000);
+          console.log(`[SignalR] Token expiring in ${minutesUntilExpiry} minutes, refreshing before connection...`);
+          
+          if (this.authService) {
+            try {
+              await firstValueFrom(this.authService.refreshToken());
+              console.log('[SignalR] Token refreshed successfully before connection');
+              
+              // Verify new token expiration
+              const newExpiresAtStr = localStorage.getItem('token_expires_at');
+              if (newExpiresAtStr) {
+                const newExpiresAt = new Date(newExpiresAtStr);
+                const newTimeUntilExpiry = newExpiresAt.getTime() - new Date().getTime();
+                const newMinutesUntilExpiry = Math.floor(newTimeUntilExpiry / 60000);
+                console.log(`[SignalR] New token expires in ${newMinutesUntilExpiry} minutes`);
+              }
+              
+              return true;
+            } catch (refreshError) {
+              console.error('[SignalR] Token refresh failed before connection:', refreshError);
+              // Return false to abort connection
+              return false;
+            }
+          } else {
+            console.warn('[SignalR] AuthService not available for token refresh');
+            // Continue with existing token (may still work)
+            return true;
+          }
+        }
+        
+        // If token already expired, don't attempt connection
+        if (timeUntilExpiry <= 0) {
+          console.warn('[SignalR] Token already expired, cannot connect');
+          return false;
+        }
+      } catch (error) {
+        console.error('[SignalR] Error checking token expiration:', error);
+        // Continue with connection attempt if expiration check fails
+        // (may be missing expiration info, but token might still be valid)
+      }
+    }
+
+    return true;
+  }
+
   onConnected(): Observable<void> {
     const subject = new Subject<void>();
     if (this.connection && this.connection.state === HubConnectionState.Connected) {
@@ -192,12 +411,40 @@ export class RealtimeService {
   }
 
   async startConnection(): Promise<void> {
+    // Check if already connected
     if (this.connection && this.connection.state === HubConnectionState.Connected) {
       console.log('[SignalR] Already connected, skipping start');
       return;
     }
 
+    // Acquire connection lock (prevent concurrent connection attempts)
+    const lockAcquired = await this.acquireConnectionLock();
+    if (!lockAcquired) {
+      console.log('[SignalR] Connection already in progress, waiting for existing attempt...');
+      // Wait for existing connection attempt to complete
+      await this.connectionLock;
+      
+      // Check if connection succeeded while we were waiting
+      if (this.connection && this.connection.state === HubConnectionState.Connected) {
+        console.log('[SignalR] Connection established by concurrent attempt');
+        return;
+      }
+      
+      // If connection failed, we can try again
+      // (lock will be released by previous attempt)
+      console.log('[SignalR] Previous connection attempt failed, retrying...');
+    }
+
     try {
+      // Validate token before connection attempt
+      const isValidToken = await this.validateTokenBeforeConnection();
+      if (!isValidToken) {
+        console.warn('[SignalR] Token validation failed, aborting connection');
+        this.connectionState.set(HubConnectionState.Disconnected);
+        this.isConnected.set(false);
+        this.releaseConnectionLock();
+        return;
+      }
       // Get base URL and construct SignalR URL properly
       const baseUrl = this.apiService.getBaseUrl();
       
@@ -276,14 +523,10 @@ export class RealtimeService {
         this.connectionState.set(this.connection.state);
         this.isConnected.set(true);
       } catch (error: any) {
-        // If connection failed, clean up and don't throw (allow app to continue)
-        console.error('[SignalR] Connection failed:', error);
-        console.error('[SignalR] Error details:', {
-          message: error?.message,
-          stack: error?.stack,
-          connectionState: this.connection?.state
-        });
+        // Handle connection error with categorization
+        const signalRError = this.handleConnectionError(error, 'Connection start');
         
+        // Clean up connection
         if (this.connection) {
           try {
             await this.connection.stop();
@@ -292,23 +535,31 @@ export class RealtimeService {
           }
           this.connection = null;
         }
+        
         this.connectionState.set(HubConnectionState.Disconnected);
         this.isConnected.set(false);
+        // Release lock before returning
+        this.releaseConnectionLock();
         // Don't throw - allow app to continue without SignalR
-        // Connection will retry automatically via automaticReconnect
+        // Connection will retry automatically via automaticReconnect if retryable
         return;
       }
     } catch (error) {
       // Outer catch for any errors during connection setup
-      console.error('[SignalR] Error setting up connection:', error);
-      console.error('[SignalR] Setup error details:', {
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
+      const signalRError = this.handleConnectionError(error, 'Connection setup');
+      
       this.connectionState.set(HubConnectionState.Disconnected);
       this.isConnected.set(false);
+      // Release lock before returning
+      this.releaseConnectionLock();
       // Don't throw - allow app to continue without SignalR
       return;
+    } finally {
+      // Always release lock when done (success or failure)
+      // Check if lock was actually acquired (isConnecting might be false if lock wasn't acquired)
+      if (this.isConnecting) {
+        this.releaseConnectionLock();
+      }
     }
   }
 
