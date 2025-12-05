@@ -10,6 +10,7 @@ import { ToastService } from '../../services/toast.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
 import { LocaleService } from '../../services/locale.service';
 import { ParticipantStatsComponent } from '../participant-stats/participant-stats.component';
+import { LiveInventoryComponent } from '../live-inventory/live-inventory.component';
 import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
 import { QuickEntryRequest } from '../../interfaces/lottery.interface';
 
@@ -19,7 +20,8 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
   imports: [
     CommonModule,
     RouterModule,
-    ParticipantStatsComponent
+    ParticipantStatsComponent,
+    LiveInventoryComponent
   ],
   styles: [`
     /* Favorite Button Animations - Matching promotions glow */
@@ -329,6 +331,15 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
             <!-- Participant Stats -->
             <app-participant-stats [houseId]="house()!.id"></app-participant-stats>
 
+            <!-- Live Inventory -->
+            <app-live-inventory 
+              [houseId]="house()!.id" 
+              [title]="translate('house.availableTickets')">
+            </app-live-inventory>
+          </div>
+
+          <!-- Additional Lottery Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <!-- Lottery Details Card -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">

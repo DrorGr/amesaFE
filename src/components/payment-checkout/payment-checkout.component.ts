@@ -7,11 +7,14 @@ import { PaymentService } from '../../services/payment.service';
 import { TranslationService } from '../../services/translation.service';
 import { LocaleService } from '../../services/locale.service';
 import { FocusTrapService } from '../../services/focus-trap.service';
+import { ReservationService, Reservation } from '../../services/reservation.service';
+import { ReservationCountdownComponent } from '../reservation-countdown/reservation-countdown.component';
+import { ReservationStatusComponent } from '../reservation-status/reservation-status.component';
 
 @Component({
   selector: 'app-payment-checkout',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ReservationCountdownComponent, ReservationStatusComponent],
   template: `
     <div class="container mx-auto px-4 py-8 max-w-4xl" #checkoutContainer>
       <!-- Screen reader announcement -->
@@ -103,6 +106,38 @@ import { FocusTrapService } from '../../services/focus-trap.service';
           </div>
         }
 
+        <!-- Reservation Error -->
+        @if (reservationError()) {
+          <div 
+            class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4"
+            role="alert"
+            [attr.aria-live]="'assertive'">
+            {{ reservationError() }}
+          </div>
+        }
+
+        <!-- Reservation Status (if reservation exists) -->
+        @if (reservationId() && !reservationError()) {
+          <div class="mb-6">
+            <app-reservation-status [reservationId]="reservationId()!"></app-reservation-status>
+          </div>
+        }
+
+        <!-- Reservation Countdown (if reservation exists and is pending) -->
+        @if (reservation() && reservation()!.status === 'pending' && reservation()!.expiresAt) {
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4 mb-6">
+            <div class="flex items-center justify-between">
+              <span class="text-yellow-800 dark:text-yellow-200 font-medium">
+                {{ translate('payment.checkout.reservationExpires') || 'Reservation expires in' }}:
+              </span>
+              <app-reservation-countdown 
+                [houseId]="reservation()!.houseId" 
+                [targetDate]="reservation()!.expiresAt">
+              </app-reservation-countdown>
+            </div>
+          </div>
+        }
+
         <!-- Payment Method Selection -->
         <div class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-6 mb-6 shadow-sm">
           <h2 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
@@ -176,6 +211,9 @@ export class PaymentCheckoutComponent implements OnInit {
   error = signal<string | null>(null);
   validationErrors = signal<string[]>([]);
   calculatedPrice = signal<number>(0);
+  reservation = signal<Reservation | null>(null);
+  reservationId = signal<string | null>(null);
+  reservationError = signal<string | null>(null);
 
   totalPrice = computed(() => {
     const price = this.calculatedPrice();
@@ -191,6 +229,7 @@ export class PaymentCheckoutComponent implements OnInit {
   private translationService = inject(TranslationService);
   localeService = inject(LocaleService); // Public for template access
   private focusTrapService = inject(FocusTrapService);
+  private reservationService = inject(ReservationService);
 
   constructor(
     private productService: ProductService,
@@ -205,11 +244,41 @@ export class PaymentCheckoutComponent implements OnInit {
 
   ngOnInit() {
     const productId = this.route.snapshot.queryParams['productId'];
+    const reservationId = this.route.snapshot.queryParams['reservationId'];
+    
+    if (reservationId) {
+      this.reservationId.set(reservationId);
+      this.loadReservation(reservationId);
+    }
+    
     if (productId) {
       this.loadProduct(productId);
-    } else {
+    } else if (!reservationId) {
       this.error.set(this.translate('payment.checkout.noProductSelected'));
     }
+  }
+
+  loadReservation(reservationId: string) {
+    this.reservationError.set(null);
+    this.reservationService.getReservation(reservationId).subscribe({
+      next: (reservation) => {
+        this.reservation.set(reservation);
+        this.reservationError.set(null);
+        // If we have a reservation, load the associated product
+        if (reservation.houseId) {
+          // Note: We'd need to get productId from houseId - this may require additional service call
+          // For now, reservation status will show without product details
+        }
+      },
+      error: (err) => {
+        console.error('Error loading reservation:', err);
+        this.reservationError.set(
+          err?.error?.message || 
+          this.translate('payment.checkout.failedToLoadReservation') || 
+          'Failed to load reservation'
+        );
+      }
+    });
   }
 
   loadProduct(productId: string) {
