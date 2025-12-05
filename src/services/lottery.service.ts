@@ -1,6 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, throwError, Subscription, of, Subject } from 'rxjs';
-import { map, catchError, tap, switchMap, takeUntil, take, mergeMap, finalize } from 'rxjs/operators';
+import { map, catchError, tap, switchMap, takeUntil, take, mergeMap, finalize, filter } from 'rxjs/operators';
 import { ApiService, PagedResponse } from './api.service';
 import { RetryService } from './retry.service';
 import { 
@@ -23,7 +23,7 @@ import {
   LotteryParticipantStats,
   CanEnterLotteryResponse
 } from '../interfaces/watchlist.interface';
-import { RealtimeService, FavoriteUpdateEvent, EntryStatusChangeEvent, DrawReminderEvent, RecommendationEvent } from './realtime.service';
+import { RealtimeService, FavoriteUpdateEvent, EntryStatusChangeEvent, DrawReminderEvent, RecommendationEvent, InventoryUpdateEvent, CountdownUpdateEvent } from './realtime.service';
 
 @Injectable({
   providedIn: 'root'
@@ -49,10 +49,22 @@ export class LotteryService {
   // Caching for houses list
   private housesCache: { data: House[], timestamp: number } | null = null;
   private readonly HOUSES_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  private readonly HOUSES_LOCALSTORAGE_KEY = 'amesa_houses_cache';
+  private readonly HOUSES_LOCALSTORAGE_TTL = 30 * 60 * 1000; // 30 minutes
   
   // Caching for individual houses
   private houseCache = new Map<string, { house: HouseDto, timestamp: number }>();
   private readonly HOUSE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  private readonly HOUSE_LOCALSTORAGE_PREFIX = 'amesa_house_';
+  private readonly HOUSE_LOCALSTORAGE_TTL = 60 * 60 * 1000; // 1 hour
+  
+  // localStorage caching for user lottery data
+  private readonly FAVORITES_LOCALSTORAGE_KEY = 'amesa_favorites_cache';
+  private readonly FAVORITES_LOCALSTORAGE_TTL = 15 * 60 * 1000; // 15 minutes
+  private readonly ACTIVE_ENTRIES_LOCALSTORAGE_KEY = 'amesa_active_entries_cache';
+  private readonly ACTIVE_ENTRIES_LOCALSTORAGE_TTL = 15 * 60 * 1000; // 15 minutes
+  private readonly USER_STATS_LOCALSTORAGE_KEY = 'amesa_user_stats_cache';
+  private readonly USER_STATS_LOCALSTORAGE_TTL = 15 * 60 * 1000; // 15 minutes
   
   // Guard to prevent duplicate house loading requests
   private isLoadingHouses = false;
@@ -121,6 +133,10 @@ export class LotteryService {
         } else if (event.updateType === 'removed') {
           this.favoriteHouseIds.set(currentFavorites.filter(id => id !== event.houseId));
         }
+        
+        // Invalidate cache
+        this.safeInvalidateCache('favorites');
+        this.safeInvalidateCache(`house:${event.houseId}`);
       });
     this.subscriptions.add(favoriteSub);
     
@@ -135,6 +151,15 @@ export class LotteryService {
             : entry
         );
         this.activeEntries.set(updatedEntries);
+        
+        // CRITICAL: Invalidate cache immediately (real-time data changed)
+        this.safeInvalidateCache('activeEntries');
+        this.safeInvalidateCache('userStats');
+        
+        // If entry won or refunded, also invalidate houses list
+        if (event.newStatus === 'winner' || event.newStatus === 'refunded') {
+          this.safeInvalidateCache('housesList');
+        }
       });
     this.subscriptions.add(entryStatusSub);
     
@@ -164,6 +189,123 @@ export class LotteryService {
       )
       .subscribe();
     this.subscriptions.add(recommendationSub);
+    
+    // CRITICAL: Inventory updates - MUST invalidate house cache immediately
+    // Ticket counts (ticketsSold, availableTickets) change in real-time
+    const inventoryUpdateSub = this.realtimeService.inventoryUpdates$
+      .pipe(takeUntil(this.cleanup$))
+      .subscribe((event: InventoryUpdateEvent) => {
+        // Invalidate house cache immediately (ticket counts changed)
+        this.safeInvalidateCache(`house:${event.houseId}`);
+        this.safeInvalidateCache('housesList');
+        
+        // Optional: Optimistically update in-memory cache to prevent UI flicker
+        const cached = this.houseCache.get(event.houseId);
+        if (cached) {
+          try {
+            cached.house.ticketsSold = event.soldTickets;
+            // HouseDto has participationPercentage, update it
+            if (cached.house.totalTickets > 0) {
+              cached.house.participationPercentage = (event.soldTickets / cached.house.totalTickets) * 100;
+            }
+            // Update timestamp to prevent immediate re-fetch
+            cached.timestamp = Date.now();
+          } catch (error) {
+            console.warn('Failed to optimistically update house cache:', error);
+            // Still invalidate cache to ensure fresh data
+            this.safeInvalidateCache(`house:${event.houseId}`);
+          }
+        }
+        
+        // Update houses list signal if house is in list (optimistic update)
+        const houses = this.houses();
+        const houseIndex = houses.findIndex(h => h.id === event.houseId);
+        if (houseIndex >= 0) {
+          try {
+            const updatedHouses = [...houses];
+            updatedHouses[houseIndex] = {
+              ...updatedHouses[houseIndex],
+              soldTickets: event.soldTickets
+            };
+            this.houses.set(updatedHouses);
+          } catch (error) {
+            console.warn('Failed to optimistically update houses signal:', error);
+          }
+        }
+      });
+    this.subscriptions.add(inventoryUpdateSub);
+
+    // CRITICAL: Ticket purchased - invalidate house availability immediately
+    const ticketPurchasedSub = this.realtimeService.generalEvents$
+      .pipe(
+        filter(event => event.type === 'ticket_purchased'),
+        takeUntil(this.cleanup$)
+      )
+      .subscribe((event) => {
+        const data = event.data;
+        if (data?.houseId) {
+          // Invalidate house cache (availability changed)
+          this.safeInvalidateCache(`house:${data.houseId}`);
+          this.safeInvalidateCache('housesList');
+          
+          // Also invalidate user data (safer - ensures fresh data for all users)
+          // Note: If you want to optimize, you can check if data.userId matches current user
+          // This requires injecting AuthService or getting current user ID
+          this.safeInvalidateCache('activeEntries');
+          this.safeInvalidateCache('userStats');
+        }
+      });
+    this.subscriptions.add(ticketPurchasedSub);
+
+    // Countdown updates - invalidate if house ended
+    const countdownUpdateSub = this.realtimeService.countdownUpdates$
+      .pipe(takeUntil(this.cleanup$))
+      .subscribe((event: CountdownUpdateEvent) => {
+        // Only invalidate if house ended (status change)
+        if (event.isEnded) {
+          this.safeInvalidateCache(`house:${event.houseId}`);
+          this.safeInvalidateCache('housesList');
+        }
+      });
+    this.subscriptions.add(countdownUpdateSub);
+
+    // Lottery draw completed - invalidate all affected caches
+    const drawCompletedSub = this.realtimeService.generalEvents$
+      .pipe(
+        filter(event => event.type === 'lottery_draw_completed'),
+        takeUntil(this.cleanup$)
+      )
+      .subscribe((event) => {
+        const data = event.data;
+        if (data?.houseId) {
+          // Draw completed - invalidate all affected caches
+          this.safeInvalidateCache('housesList');
+          this.safeInvalidateCache('activeEntries');
+          this.safeInvalidateCache('userStats');
+          this.safeInvalidateCache(`house:${data.houseId}`);
+          
+          // Reload immediately (critical data)
+          this.reloadActiveEntries();
+          this.reloadUserStats();
+        }
+      });
+    this.subscriptions.add(drawCompletedSub);
+
+    // Lottery draw started - invalidate house cache (status might change)
+    const drawStartedSub = this.realtimeService.generalEvents$
+      .pipe(
+        filter(event => event.type === 'lottery_draw_started'),
+        takeUntil(this.cleanup$)
+      )
+      .subscribe((event) => {
+        const data = event.data;
+        if (data?.houseId) {
+          // Draw started - invalidate house cache (status might change)
+          this.safeInvalidateCache('housesList');
+          this.safeInvalidateCache(`house:${data.houseId}`);
+        }
+      });
+    this.subscriptions.add(drawStartedSub);
   }
 
   getHouses() {
@@ -199,7 +341,27 @@ export class LotteryService {
   // Load houses from API and update the signal
   private loadHousesInternal(): void {
     const now = Date.now();
-    // Check cache first
+    
+    // Check localStorage cache first (persists across page refreshes)
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const cached = localStorage.getItem(this.HOUSES_LOCALSTORAGE_KEY);
+        if (cached) {
+          const cacheData = JSON.parse(cached);
+          if (cacheData.timestamp && (now - cacheData.timestamp) < this.HOUSES_LOCALSTORAGE_TTL) {
+            // Use cached data
+            this.houses.set(cacheData.data);
+            this.housesCache = { data: cacheData.data, timestamp: cacheData.timestamp };
+            return;
+          }
+        }
+      } catch (e) {
+        // Invalid cache, continue to in-memory cache check
+        console.warn('Failed to load houses from localStorage cache:', e);
+      }
+    }
+    
+    // Check in-memory cache (faster, but lost on refresh)
     if (this.housesCache && (now - this.housesCache.timestamp) < this.HOUSES_CACHE_TTL) {
       this.houses.set(this.housesCache.data);
       return; // Use cached data
@@ -224,8 +386,23 @@ export class LotteryService {
         // Convert HouseDto to House format
         const houses: House[] = response.items.map(dto => this.convertHouseDtoToHouse(dto));
         this.houses.set(houses);
-        // Update cache
-        this.housesCache = { data: houses, timestamp: Date.now() };
+        
+        // Update in-memory cache
+        const timestamp = Date.now();
+        this.housesCache = { data: houses, timestamp };
+        
+        // Save to localStorage for persistence
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem(this.HOUSES_LOCALSTORAGE_KEY, JSON.stringify({
+              data: houses,
+              timestamp: timestamp
+            }));
+          } catch (e) {
+            // localStorage quota exceeded - non-critical, continue with in-memory cache
+            console.warn('Failed to cache houses to localStorage:', e);
+          }
+        }
       },
       error: (error) => {
         console.error('Failed to load houses:', error);
@@ -239,7 +416,8 @@ export class LotteryService {
    * Force refresh houses from API (bypasses cache)
    */
   refreshHouses(): void {
-    this.housesCache = null; // Clear cache
+    // Clear both in-memory and localStorage caches
+    this.clearHousesCache();
     this.loadHousesInternal();
   }
 
@@ -271,7 +449,28 @@ export class LotteryService {
   // Get single house by ID
   getHouseById(id: string): Observable<HouseDto> {
     const now = Date.now();
-    // Check cache first
+    
+    // Check localStorage cache first (persists across page refreshes)
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const cached = localStorage.getItem(`${this.HOUSE_LOCALSTORAGE_PREFIX}${id}`);
+        if (cached) {
+          const cacheData = JSON.parse(cached);
+          if (cacheData.timestamp && (now - cacheData.timestamp) < this.HOUSE_LOCALSTORAGE_TTL) {
+            // Use cached data
+            const houseDto = cacheData.house as HouseDto;
+            // Also update in-memory cache
+            this.houseCache.set(id, { house: houseDto, timestamp: cacheData.timestamp });
+            return of(houseDto);
+          }
+        }
+      } catch (e) {
+        // Invalid cache, continue to in-memory cache check
+        console.warn(`Failed to load house ${id} from localStorage cache:`, e);
+      }
+    }
+    
+    // Check in-memory cache (faster, but lost on refresh)
     const cached = this.houseCache.get(id);
     if (cached && (now - cached.timestamp) < this.HOUSE_CACHE_TTL) {
       return of(cached.house);
@@ -282,8 +481,23 @@ export class LotteryService {
     ).pipe(
       map(response => {
         if (response.success && response.data) {
-          // Update cache
-          this.houseCache.set(id, { house: response.data, timestamp: Date.now() });
+          // Update in-memory cache
+          const timestamp = Date.now();
+          this.houseCache.set(id, { house: response.data, timestamp });
+          
+          // Save to localStorage for persistence
+          if (typeof localStorage !== 'undefined') {
+            try {
+              localStorage.setItem(`${this.HOUSE_LOCALSTORAGE_PREFIX}${id}`, JSON.stringify({
+                house: response.data,
+                timestamp: timestamp
+              }));
+            } catch (e) {
+              // localStorage quota exceeded - non-critical, continue with in-memory cache
+              console.warn(`Failed to cache house ${id} to localStorage:`, e);
+            }
+          }
+          
           return response.data;
         }
         throw new Error('House not found');
@@ -296,10 +510,29 @@ export class LotteryService {
   }
   
   /**
-   * Clear cache for a specific house (useful when house is updated)
+   * Clear cache for a specific house (in-memory and localStorage)
    */
   clearHouseCache(id: string): void {
+    // Clear in-memory cache
     this.houseCache.delete(id);
+    
+    // Clear localStorage cache
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(`${this.HOUSE_LOCALSTORAGE_PREFIX}${id}`);
+    }
+  }
+  
+  /**
+   * Clear houses list cache (in-memory and localStorage)
+   */
+  private clearHousesCache(): void {
+    // Clear in-memory cache
+    this.housesCache = null;
+    
+    // Clear localStorage cache
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(this.HOUSES_LOCALSTORAGE_KEY);
+    }
   }
   
   /**
@@ -308,6 +541,149 @@ export class LotteryService {
   clearAllHouseCaches(): void {
     this.houseCache.clear();
     this.housesCache = null;
+    
+    // Clear all house localStorage caches
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(this.HOUSES_LOCALSTORAGE_KEY);
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith(this.HOUSE_LOCALSTORAGE_PREFIX)) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
+  }
+  
+  /**
+   * Invalidate specific cache or all caches
+   * @param cacheKey - Cache key to invalidate ('favorites', 'activeEntries', 'userStats', 'housesList', 'house:{id}', or '*' for all)
+   */
+  private invalidateCache(cacheKey: string): void {
+    // Handle wildcard - clear all caches
+    if (cacheKey === '*') {
+      this.clearAllCaches();
+      return;
+    }
+    
+    // Handle specific cache types
+    switch (cacheKey) {
+      case 'favorites':
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem(this.FAVORITES_LOCALSTORAGE_KEY);
+        }
+        break;
+      case 'activeEntries':
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem(this.ACTIVE_ENTRIES_LOCALSTORAGE_KEY);
+        }
+        break;
+      case 'userStats':
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem(this.USER_STATS_LOCALSTORAGE_KEY);
+        }
+        break;
+      case 'housesList':
+        this.clearHousesCache();
+        break;
+      default:
+        // Handle house:{houseId} pattern
+        if (cacheKey.startsWith('house:')) {
+          const houseId = cacheKey.replace('house:', '');
+          this.clearHouseCache(houseId);
+        }
+        break;
+    }
+  }
+  
+  /**
+   * Clear all caches (in-memory and localStorage)
+   */
+  private clearAllCaches(): void {
+    // Clear in-memory caches
+    this.housesCache = null;
+    this.houseCache.clear();
+    
+    // Clear localStorage caches
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(this.HOUSES_LOCALSTORAGE_KEY);
+      localStorage.removeItem(this.FAVORITES_LOCALSTORAGE_KEY);
+      localStorage.removeItem(this.ACTIVE_ENTRIES_LOCALSTORAGE_KEY);
+      localStorage.removeItem(this.USER_STATS_LOCALSTORAGE_KEY);
+      
+      // Clear all house caches
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith(this.HOUSE_LOCALSTORAGE_PREFIX)) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
+  }
+  
+  /**
+   * Clear all user-specific caches (not houses list)
+   * Used on login to clear old user data
+   */
+  clearAllUserCaches(): void {
+    // Clear user-specific caches (not houses list)
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(this.FAVORITES_LOCALSTORAGE_KEY);
+      localStorage.removeItem(this.ACTIVE_ENTRIES_LOCALSTORAGE_KEY);
+      localStorage.removeItem(this.USER_STATS_LOCALSTORAGE_KEY);
+    }
+    // Signals are already cleared by clearLotteryData()
+  }
+  
+  /**
+   * Safe cache invalidation wrapper
+   * Logs errors but doesn't throw - cache invalidation failure shouldn't break app
+   */
+  private safeInvalidateCache(cacheKey: string): void {
+    try {
+      this.invalidateCache(cacheKey);
+    } catch (error) {
+      // Log error but don't throw - cache invalidation failure shouldn't break app
+      console.warn(`Failed to invalidate cache: ${cacheKey}`, error);
+    }
+  }
+  
+  /**
+   * Reload active entries immediately (for critical updates)
+   */
+  private reloadActiveEntries(): void {
+    this.getUserActiveEntries().pipe(take(1)).subscribe({
+      error: (error) => {
+        console.warn('Failed to reload active entries:', error);
+      }
+    });
+  }
+  
+  /**
+   * Reload user stats immediately (for critical updates)
+   */
+  private reloadUserStats(): void {
+    this.getLotteryAnalytics().pipe(take(1)).subscribe({
+      error: (error) => {
+        console.warn('Failed to reload user stats:', error);
+      }
+    });
+  }
+  
+  /**
+   * Handle house status changes - invalidate caches when status changes significantly
+   */
+  private handleHouseStatusChange(houseId: string, oldStatus: string, newStatus: string): void {
+    // If status changed significantly (active -> ended, etc.), invalidate caches
+    if (oldStatus !== newStatus) {
+      this.safeInvalidateCache('housesList');
+      this.safeInvalidateCache(`house:${houseId}`);
+      
+      // If house ended, also invalidate user data (entries might have changed)
+      if (newStatus === 'ended' || newStatus === 'completed') {
+        this.safeInvalidateCache('activeEntries');
+        this.safeInvalidateCache('userStats');
+      }
+    }
   }
 
   // Get available tickets for a house
@@ -349,6 +725,13 @@ export class LotteryService {
       map(response => {
         if (response.success && response.data) {
           const data = response.data as any;
+          
+          // Invalidate caches (critical data changed)
+          this.safeInvalidateCache('activeEntries');
+          this.safeInvalidateCache('userStats');
+          this.safeInvalidateCache('housesList');
+          this.safeInvalidateCache(`house:${purchaseRequest.houseId}`);
+          
           return {
             ticketsPurchased: data.ticketsPurchased,
             totalCost: data.totalCost,
@@ -467,12 +850,46 @@ export class LotteryService {
    * Endpoint: GET /api/v1/houses/favorites
    */
   getFavoriteHouses(): Observable<HouseDto[]> {
+    const now = Date.now();
+    
+    // Check localStorage cache first
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const cached = localStorage.getItem(this.FAVORITES_LOCALSTORAGE_KEY);
+        if (cached) {
+          const cacheData = JSON.parse(cached);
+          if (cacheData.timestamp && (now - cacheData.timestamp) < this.FAVORITES_LOCALSTORAGE_TTL) {
+            // Use cached data - update signals
+            const favoriteIds = cacheData.favoriteIds || cacheData.data?.map((h: HouseDto) => h.id) || [];
+            this.favoriteHouseIds.set(favoriteIds);
+            return of(cacheData.data || []);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load favorites from localStorage cache:', e);
+      }
+    }
+    
+    // Load from API
     return this.apiService.get<HouseDto[]>('houses/favorites').pipe(
       map(response => {
         if (response.success && response.data) {
           // Update favorite IDs signal
           const favoriteIds = response.data.map(house => house.id);
           this.favoriteHouseIds.set(favoriteIds);
+          
+          // Save to localStorage
+          if (typeof localStorage !== 'undefined') {
+            try {
+              localStorage.setItem(this.FAVORITES_LOCALSTORAGE_KEY, JSON.stringify({
+                data: response.data,
+                favoriteIds: favoriteIds,
+                timestamp: Date.now()
+              }));
+            } catch (e) {
+              console.warn('Failed to cache favorites to localStorage:', e);
+            }
+          }
           
           return response.data;
         }
@@ -552,6 +969,11 @@ export class LotteryService {
           if (!currentFavorites.includes(houseId)) {
             this.favoriteHouseIds.set([...currentFavorites, houseId]);
           }
+          
+          // Invalidate caches
+          this.safeInvalidateCache('favorites');
+          this.safeInvalidateCache(`house:${houseId}`);
+          
           // Refresh from backend in background to ensure sync (debounced)
           this.debouncedRefreshFavorites();
           return response.data;
@@ -631,6 +1053,11 @@ export class LotteryService {
           // Update favorite IDs signal
           const currentFavorites = this.favoriteHouseIds();
           this.favoriteHouseIds.set(currentFavorites.filter(id => id !== houseId));
+          
+          // Invalidate caches
+          this.safeInvalidateCache('favorites');
+          this.safeInvalidateCache(`house:${houseId}`);
+          
           return response.data;
         } else if (!response.success && response.message) {
           // Backend returned success: false with a message
@@ -707,11 +1134,44 @@ export class LotteryService {
    * Endpoint: GET /api/v1/tickets/active
    */
   getUserActiveEntries(): Observable<LotteryTicketDto[]> {
+    const now = Date.now();
+    
+    // Check localStorage cache first
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const cached = localStorage.getItem(this.ACTIVE_ENTRIES_LOCALSTORAGE_KEY);
+        if (cached) {
+          const cacheData = JSON.parse(cached);
+          if (cacheData.timestamp && (now - cacheData.timestamp) < this.ACTIVE_ENTRIES_LOCALSTORAGE_TTL) {
+            // Use cached data - update signal
+            this.activeEntries.set(cacheData.data);
+            return of(cacheData.data);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load active entries from localStorage cache:', e);
+      }
+    }
+    
+    // Load from API
     return this.apiService.get<LotteryTicketDto[]>('tickets/active').pipe(
       map(response => {
         if (response.success && response.data) {
           // Update active entries signal
           this.activeEntries.set(response.data);
+          
+          // Save to localStorage
+          if (typeof localStorage !== 'undefined') {
+            try {
+              localStorage.setItem(this.ACTIVE_ENTRIES_LOCALSTORAGE_KEY, JSON.stringify({
+                data: response.data,
+                timestamp: Date.now()
+              }));
+            } catch (e) {
+              console.warn('Failed to cache active entries to localStorage:', e);
+            }
+          }
+          
           return response.data;
         }
         throw new Error('Failed to fetch active entries');
@@ -747,11 +1207,44 @@ export class LotteryService {
    * Endpoint: GET /api/v1/tickets/analytics
    */
   getLotteryAnalytics(): Observable<UserLotteryStats> {
+    const now = Date.now();
+    
+    // Check localStorage cache first
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const cached = localStorage.getItem(this.USER_STATS_LOCALSTORAGE_KEY);
+        if (cached) {
+          const cacheData = JSON.parse(cached);
+          if (cacheData.timestamp && (now - cacheData.timestamp) < this.USER_STATS_LOCALSTORAGE_TTL) {
+            // Use cached data - update signal
+            this.userLotteryStats.set(cacheData.data);
+            return of(cacheData.data);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load user stats from localStorage cache:', e);
+      }
+    }
+    
+    // Load from API
     return this.apiService.get<UserLotteryStats>('tickets/analytics').pipe(
       map(response => {
         if (response.success && response.data) {
           // Update stats signal
           this.userLotteryStats.set(response.data);
+          
+          // Save to localStorage
+          if (typeof localStorage !== 'undefined') {
+            try {
+              localStorage.setItem(this.USER_STATS_LOCALSTORAGE_KEY, JSON.stringify({
+                data: response.data,
+                timestamp: Date.now()
+              }));
+            } catch (e) {
+              console.warn('Failed to cache user stats to localStorage:', e);
+            }
+          }
+          
           return response.data;
         }
         throw new Error('Failed to fetch lottery analytics');
@@ -773,6 +1266,11 @@ export class LotteryService {
     ).pipe(
       map(response => {
         if (response.success && response.data) {
+          // Invalidate caches (critical data changed)
+          this.safeInvalidateCache('activeEntries');
+          this.safeInvalidateCache('userStats');
+          this.safeInvalidateCache('housesList');
+          
           return response.data;
         }
         throw new Error('Failed to process quick entry');

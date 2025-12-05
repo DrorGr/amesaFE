@@ -253,6 +253,10 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
   isExpanded = signal(false); // Start closed by default
   error = signal<string | null>(null);
   
+  // sessionStorage caching for dashboard data
+  private readonly DASHBOARD_SESSIONSTORAGE_KEY = 'amesa_dashboard_cache';
+  private readonly DASHBOARD_SESSIONSTORAGE_TTL = 5 * 60 * 1000; // 5 minutes
+  
   activeEntriesCount = computed(() => this.activeEntries().length);
 
   ngOnInit(): void {
@@ -282,12 +286,49 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const now = Date.now();
+    
+    // Check sessionStorage cache (cleared on tab close)
+    if (typeof sessionStorage !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem(this.DASHBOARD_SESSIONSTORAGE_KEY);
+        if (cached) {
+          const cacheData = JSON.parse(cached);
+          if (cacheData.timestamp && (now - cacheData.timestamp) < this.DASHBOARD_SESSIONSTORAGE_TTL) {
+            // Use cached data - signals are already updated by service methods
+            // But we need to update local component state
+            this.isLoading.set(false);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load dashboard data from sessionStorage cache:', e);
+      }
+    }
+
     this.isLoading.set(true);
     this.error.set(null);
     
     try {
-      await firstValueFrom(this.lotteryService.getUserActiveEntries());
-      await firstValueFrom(this.lotteryService.getLotteryAnalytics());
+      // Load both in parallel (existing implementation)
+      const [entries, stats] = await Promise.all([
+        firstValueFrom(this.lotteryService.getUserActiveEntries()),
+        firstValueFrom(this.lotteryService.getLotteryAnalytics())
+      ]);
+      
+      // Save to sessionStorage
+      if (typeof sessionStorage !== 'undefined') {
+        try {
+          sessionStorage.setItem(this.DASHBOARD_SESSIONSTORAGE_KEY, JSON.stringify({
+            activeEntries: entries,
+            stats: stats,
+            timestamp: Date.now()
+          }));
+        } catch (e) {
+          console.warn('Failed to cache dashboard data to sessionStorage:', e);
+        }
+      }
+      
       this.error.set(null);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load dashboard data';

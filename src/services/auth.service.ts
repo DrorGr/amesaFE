@@ -209,9 +209,13 @@ export class AuthService {
             
             // Load lottery data if available
             if (response.data.lotteryData && this.lotteryService) {
+              // Clear old user caches before initializing new data
+              this.lotteryService.clearAllUserCaches();
               this.lotteryService.initializeLotteryData(response.data.lotteryData);
             } else if (this.lotteryService) {
-              // If lotteryData not in response, explicitly fetch favorites from backend
+              // If lotteryData not in response, clear caches and fetch fresh
+              this.lotteryService.clearAllUserCaches();
+              // Explicitly fetch favorites from backend
               // This ensures favorites are loaded even if backend doesn't include them in login response
               // Fixed: Use take(1) for auto-cleanup to prevent memory leaks
               this.lotteryService.getFavoriteHouses().pipe(
