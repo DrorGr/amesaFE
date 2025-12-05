@@ -63,6 +63,11 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
 
     if (diff <= 0) {
       this.timeRemaining.set({ days: 0, hours: 0, minutes: 0, seconds: 0, ended: true });
+      // CRITICAL: Stop interval when countdown ends to prevent unnecessary updates
+      if (this.intervalSubscription) {
+        clearInterval(this.intervalSubscription);
+        this.intervalSubscription = undefined;
+      }
       return;
     }
 

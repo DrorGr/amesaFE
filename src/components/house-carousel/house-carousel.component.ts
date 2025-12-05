@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { LotteryService } from '../../services/lottery.service';
@@ -8,7 +7,6 @@ import { LocaleService } from '../../services/locale.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
-import { RealtimeService } from '../../services/realtime.service';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 
@@ -595,7 +593,6 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private heartAnimationService = inject(HeartAnimationService);
-  private realtimeService = inject(RealtimeService);
   private togglingFavorites = signal<Set<string>>(new Set());
   private quickEntering = signal<Set<string>>(new Set());
   
@@ -615,19 +612,13 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   currentSecondaryImageIndex = -1; // -1 means show primary image, >= 0 means show secondary image at that index
   isTransitioning = false;
   private autoSlideInterval: any;
-  private countdownInterval?: number;
   private vibrationInterval?: any;
   private intersectionObserver: IntersectionObserver | null = null;
-  private inventorySubscription?: Subscription;
   loadedImages = new Set<string>();
   vibrationTrigger = signal<number>(0);
   
   // Use signals for values that change over time to avoid change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
-  currentTime = signal<number>(Date.now());
-  
-  // Map to track dynamic soldTickets for each house (houseId -> soldTickets)
-  private soldTicketsMap = signal<Map<string, number>>(new Map());
 
   // Use computed signal to get active houses from lottery service
   houses = computed(() => {
@@ -639,25 +630,10 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   favoriteHouseIds = computed(() => this.lotteryService.getFavoriteHouseIds());
 
   ngOnInit() {
-    // Initialize soldTickets map from houses
-    this.initializeSoldTicketsMap();
-    
-    // Setup real-time inventory updates
-    this.setupRealtimeUpdates();
-    
     // Auto-rotation disabled - only manual navigation via arrows
-    // this.startAutoSlide(); // Disabled - user controls navigation
     this.setupIntersectionObserver();
     // Load the first slide images immediately
     setTimeout(() => this.loadCurrentSlideImages(), 100);
-    // Start countdown timer - update signal to trigger change detection properly
-    this.countdownInterval = window.setInterval(() => {
-      this.currentTime.set(Date.now());
-      // Update viewers count occasionally (every 5 seconds) for realism
-      if (Math.random() < 0.2) {
-        this.currentViewers.set(Math.floor(Math.random() * 46) + 5);
-      }
-    }, 1000);
     
     // Start seesaw animation for active status badges (every 5 seconds)
     this.vibrationInterval = setInterval(() => {
@@ -675,22 +651,12 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopAutoSlide();
-    if (this.countdownInterval) {
-      clearInterval(this.countdownInterval);
-    }
     if (this.vibrationInterval) {
       clearInterval(this.vibrationInterval);
     }
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
     }
-    if (this.inventorySubscription) {
-      this.inventorySubscription.unsubscribe();
-    }
-    // Leave lottery groups for all houses
-    this.houses().forEach(house => {
-      this.realtimeService.leaveLotteryGroup(house.id);
-    });
   }
 
 
@@ -889,7 +855,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   getTicketProgressForHouse(house: any): number {
-    const ticketsSold = this.getDynamicSoldTickets(house);
+    const ticketsSold = house.soldTickets || 0;
     return Math.round((ticketsSold / house.totalTickets) * 100);
   }
   
@@ -899,7 +865,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   getOdds(house: any): string {
     if (!house || !house.totalTickets || house.totalTickets === 0) return 'N/A';
-    const ticketsSold = this.getDynamicSoldTickets(house);
+    const ticketsSold = house.soldTickets || 0;
     const availableTickets = house.totalTickets - ticketsSold;
     if (availableTickets <= 0) return 'N/A';
     // Odds = 1 : available tickets (ratio between a ticket and possible entries)
@@ -908,41 +874,12 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   getRemainingTickets(house: any): number {
     if (!house || !house.totalTickets) return 0;
-    const ticketsSold = this.getDynamicSoldTickets(house);
+    const ticketsSold = house.soldTickets || 0;
     return Math.max(0, house.totalTickets - ticketsSold);
-  }
-  
-  private getDynamicSoldTickets(house: any): number {
-    const map = this.soldTicketsMap();
-    return map.get(house.id) ?? (house.soldTickets || 0);
-  }
-  
-  private initializeSoldTicketsMap(): void {
-    const map = new Map<string, number>();
-    this.houses().forEach(house => {
-      map.set(house.id, house.soldTickets || 0);
-    });
-    this.soldTicketsMap.set(map);
-  }
-  
-  private setupRealtimeUpdates(): void {
-    // Join lottery groups for all houses
-    this.realtimeService.ensureConnection().then(() => {
-      this.houses().forEach(house => {
-        this.realtimeService.joinLotteryGroup(house.id);
-      });
-    });
-    
-    // Subscribe to inventory updates
-    this.inventorySubscription = this.realtimeService.inventoryUpdates$.subscribe(update => {
-      const map = new Map(this.soldTicketsMap());
-      map.set(update.houseId, update.soldTickets);
-      this.soldTicketsMap.set(map);
-    });
   }
 
   getLotteryCountdown(house: any): string {
-    const now = this.currentTime();
+    const now = Date.now();
     const endTime = new Date(house.lotteryEndDate).getTime();
     const timeLeft = endTime - now;
 

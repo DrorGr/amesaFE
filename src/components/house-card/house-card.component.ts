@@ -1,14 +1,12 @@
 import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { House } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { HouseCardService } from '../../services/house-card.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
-import { RealtimeService } from '../../services/realtime.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 
@@ -369,7 +367,6 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private houseCardService = inject(HouseCardService);
   private heartAnimationService = inject(HeartAnimationService);
-  private realtimeService = inject(RealtimeService);
   private router = inject(Router);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
@@ -377,9 +374,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   
   house = input.required<House>();
   isFavoritesPage = input<boolean>(false);
-  private countdownInterval?: number;
   private vibrationInterval?: number;
-  private inventorySubscription?: Subscription;
   isPurchasing = false;
   isTogglingFavorite = false;
   isQuickEntering = false;
@@ -389,11 +384,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   
   // Use signals for dynamic values to prevent change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
-  currentTime = signal<number>(Date.now());
   vibrationTrigger = signal<number>(0);
-  
-  // Dynamic soldTickets that updates from real-time inventory updates
-  soldTickets = signal<number>(0);
   
   // Computed signal to check if this house is favorited
   isFavorite = computed(() => {
@@ -409,15 +400,6 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     // Otherwise, auto-detect from current route
     return this.router.url.includes('/lottery/favorites');
   });
-  
-  // Computed signal for house with dynamic soldTickets
-  dynamicHouse = computed(() => {
-    const house = this.house();
-    return {
-      ...house,
-      soldTickets: this.soldTickets() || house.soldTickets
-    };
-  });
 
   formatPrice(price: number): string {
     return this.houseCardService.formatPrice(price);
@@ -428,7 +410,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   getTicketProgress(): number {
-    const house = this.dynamicHouse();
+    const house = this.house();
     return (house.soldTickets / house.totalTickets) * 100;
   }
 
@@ -506,11 +488,11 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   getOdds(): string {
-    return this.houseCardService.getOdds(this.dynamicHouse());
+    return this.houseCardService.getOdds(this.house());
   }
 
   getRemainingTickets(): number {
-    const house = this.dynamicHouse();
+    const house = this.house();
     return house.totalTickets - house.soldTickets;
   }
 
@@ -529,21 +511,6 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Initialize soldTickets from house input
-    this.soldTickets.set(this.house().soldTickets);
-    
-    // Setup real-time inventory updates
-    this.setupRealtimeUpdates();
-    
-    // Update countdown every second
-    this.countdownInterval = window.setInterval(() => {
-      this.currentTime.set(Date.now());
-      // Occasionally update viewers count (every 3-5 seconds)
-      if (Math.random() < 0.2) {
-        this.currentViewers.set(Math.floor(Math.random() * 46) + 5);
-      }
-    }, 1000);
-    
     // Start seesaw animation for active status badges (every 5 seconds)
     this.vibrationInterval = window.setInterval(() => {
       if (this.house().status === 'active') {
@@ -556,40 +523,17 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       }
     }, 5000);
   }
-  
-  private setupRealtimeUpdates(): void {
-    // Join lottery group for real-time updates
-    this.realtimeService.ensureConnection().then(() => {
-      this.realtimeService.joinLotteryGroup(this.house().id);
-    });
-    
-    // Subscribe to inventory updates
-    this.inventorySubscription = this.realtimeService.inventoryUpdates$.subscribe(update => {
-      if (update.houseId === this.house().id) {
-        // Update soldTickets dynamically
-        this.soldTickets.set(update.soldTickets);
-      }
-    });
-  }
 
   ngOnDestroy() {
-    if (this.countdownInterval) {
-      clearInterval(this.countdownInterval);
-    }
     if (this.vibrationInterval) {
       clearInterval(this.vibrationInterval);
     }
-    if (this.inventorySubscription) {
-      this.inventorySubscription.unsubscribe();
-    }
-    // Leave lottery group
-    this.realtimeService.leaveLotteryGroup(this.house().id);
   }
 
   getLotteryCountdown(): string {
     const house = this.house();
     if (!house || !house.lotteryEndDate) return '00:00:00:00';
-    const now = this.currentTime();
+    const now = Date.now();
     const endTime = new Date(house.lotteryEndDate).getTime();
     const timeLeft = endTime - now;
 
