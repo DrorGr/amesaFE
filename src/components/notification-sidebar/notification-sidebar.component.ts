@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
     <!-- Backdrop -->
     @if (isOpen()) {
       <div 
-        class="fixed inset-0 bg-black/50 z-[110] transition-opacity duration-300"
+        class="fixed inset-0 bg-black bg-opacity-50 z-[110] transition-opacity duration-300 ease-in-out"
         (click)="close()"
         [attr.aria-label]="translate('notifications.sidebar.close')">
       </div>
@@ -22,7 +22,7 @@ import { Subscription } from 'rxjs';
     
     <!-- Sidebar -->
     <div 
-      class="fixed right-0 top-0 h-full w-full md:w-96 bg-white dark:bg-gray-800 shadow-xl z-[110] transform transition-transform duration-300 ease-in-out"
+      class="fixed right-0 top-0 h-full w-80 md:w-96 bg-white dark:bg-gray-900 shadow-xl z-[110] transform transition-transform duration-300 ease-in-out"
       [class.translate-x-0]="isOpen()"
       [class.translate-x-full]="!isOpen()"
       role="dialog"
@@ -30,25 +30,28 @@ import { Subscription } from 'rxjs';
       [attr.aria-modal]="isOpen()">
       
       <!-- Header -->
-      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-          {{ translate('notifications.sidebar.title') }}
-        </h2>
-        <button
-          (click)="close()"
-          (keydown.enter)="close()"
-          (keydown.space)="close(); $event.preventDefault()"
-          [attr.aria-label]="translate('notifications.sidebar.close')"
-          class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
+      <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-blue-500">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-bold text-white">
+            {{ translate('notifications.sidebar.title') }}
+          </h2>
+          <button
+            (click)="close()"
+            (keydown.enter)="close()"
+            (keydown.space)="close(); $event.preventDefault()"
+            (keydown.escape)="close()"
+            [attr.aria-label]="translate('notifications.sidebar.close')"
+            class="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white hover:bg-opacity-20 focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <!-- Mark All as Read Button -->
       @if (notifications().length > 0 && unreadCount() > 0) {
-        <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <button
             (click)="markAllAsRead()"
             (keydown.enter)="markAllAsRead()"
@@ -62,7 +65,7 @@ import { Subscription } from 'rxjs';
       }
 
       <!-- Content -->
-      <div class="flex-1 overflow-y-auto h-[calc(100vh-120px)]">
+      <div class="overflow-y-auto h-[calc(100vh-64px)] p-4">
         <!-- Loading State -->
         @if (isLoading()) {
           <div class="flex items-center justify-center py-12">
@@ -84,60 +87,62 @@ import { Subscription } from 'rxjs';
 
         <!-- Notifications List -->
         @if (!isLoading() && notifications().length > 0) {
-          <div class="divide-y divide-gray-200 dark:divide-gray-700">
+          <div class="space-y-4">
             @for (notification of notifications(); track notification.id) {
               <div 
-                class="p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
                 [class.bg-blue-50]="!notification.isRead"
                 [class.dark:bg-blue-900/20]="!notification.isRead"
                 [class.border-l-4]="!notification.isRead"
                 [class.border-blue-600]="!notification.isRead">
                 
-                <!-- Notification Content -->
-                <div class="flex items-start justify-between gap-3">
-                  <div class="flex-1 min-w-0">
-                    <h3 
-                      class="text-sm font-semibold text-gray-900 dark:text-white mb-1"
-                      [class.font-bold]="!notification.isRead"
-                      [class.text-gray-500]="notification.isRead"
-                      [class.dark:text-gray-400]="notification.isRead">
-                      {{ notification.title }}
-                    </h3>
-                    <p 
-                      class="text-sm text-gray-600 dark:text-gray-300 mb-2"
-                      [class.text-gray-500]="notification.isRead"
-                      [class.dark:text-gray-400]="notification.isRead">
-                      {{ notification.message }}
-                    </p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500">
-                      {{ formatDate(notification.createdAt) }}
-                    </p>
+                <div class="p-4">
+                  <div class="flex items-start justify-between gap-3 mb-3">
+                    <div class="flex-1 min-w-0">
+                      <h3 
+                        class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
+                        [class.font-bold]="!notification.isRead"
+                        [class.text-gray-500]="notification.isRead"
+                        [class.dark:text-gray-400]="notification.isRead">
+                        {{ notification.title }}
+                      </h3>
+                      <p 
+                        class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2"
+                        [class.text-gray-500]="notification.isRead"
+                        [class.dark:text-gray-400]="notification.isRead">
+                        {{ notification.message }}
+                      </p>
+                    </div>
                   </div>
-
-                  <!-- Actions -->
-                  <div class="flex items-center gap-2 flex-shrink-0">
-                    @if (!notification.isRead) {
+                  
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ formatDate(notification.createdAt) }}
+                    </span>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      @if (!notification.isRead) {
+                        <button
+                          (click)="markAsRead(notification.id); $event.stopPropagation()"
+                          (keydown.enter)="markAsRead(notification.id); $event.stopPropagation()"
+                          (keydown.space)="markAsRead(notification.id); $event.preventDefault(); $event.stopPropagation()"
+                          [attr.aria-label]="translate('notifications.sidebar.markAsRead')"
+                          class="p-1.5 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                        </button>
+                      }
                       <button
-                        (click)="markAsRead(notification.id)"
-                        (keydown.enter)="markAsRead(notification.id)"
-                        (keydown.space)="markAsRead(notification.id); $event.preventDefault()"
-                        [attr.aria-label]="translate('notifications.sidebar.markAsRead')"
-                        class="p-1.5 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                        (click)="deleteNotification(notification.id); $event.stopPropagation()"
+                        (keydown.enter)="deleteNotification(notification.id); $event.stopPropagation()"
+                        (keydown.space)="deleteNotification(notification.id); $event.preventDefault(); $event.stopPropagation()"
+                        [attr.aria-label]="translate('notifications.sidebar.delete')"
+                        class="p-1.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                         </svg>
                       </button>
-                    }
-                    <button
-                      (click)="deleteNotification(notification.id)"
-                      (keydown.enter)="deleteNotification(notification.id)"
-                      (keydown.space)="deleteNotification(notification.id); $event.preventDefault()"
-                      [attr.aria-label]="translate('notifications.sidebar.delete')"
-                      class="p-1.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                      </svg>
-                    </button>
+                    </div>
                   </div>
                 </div>
               </div>
