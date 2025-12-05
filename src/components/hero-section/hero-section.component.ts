@@ -55,7 +55,6 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
             </div>
           </div>
           
-          <!-- Right side - House Carousel -->
         </div>
       </div>
     </section>
@@ -273,120 +272,9 @@ export class HeroSectionComponent {
 
   promotionsMenuOpen = signal(false);
   isPromotionsMinimized = signal(false);
-  
-  currentSlide = 0;
-  currentHouseImageIndex = 0;
-
-  houses = [
-    {
-      id: 1,
-      name: 'Modern Downtown Condo',
-      images: [
-        {
-          url: 'https://images.pexels.com/photos/1918291/pexels-photo-1918291.jpeg',
-          alt: 'Modern downtown condo exterior'
-        },
-        {
-          url: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg',
-          alt: 'Modern living room'
-        },
-        {
-          url: 'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg',
-          alt: 'Modern kitchen'
-        },
-        {
-          url: 'https://images.pexels.com/photos/1571468/pexels-photo-1571468.jpeg',
-          alt: 'Modern bedroom'
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Suburban Family Home',
-      images: [
-        {
-          url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg',
-          alt: 'Suburban family home exterior'
-        },
-        {
-          url: 'https://images.pexels.com/photos/1571471/pexels-photo-1571471.jpeg',
-          alt: 'Family living room'
-        },
-        {
-          url: 'https://images.pexels.com/photos/1571457/pexels-photo-1571457.jpeg',
-          alt: 'Family kitchen'
-        },
-        {
-          url: 'https://images.pexels.com/photos/1571463/pexels-photo-1571463.jpeg',
-          alt: 'Family dining room'
-        }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Luxury Waterfront Villa',
-      images: [
-        {
-          url: 'https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg',
-          alt: 'Luxury waterfront villa exterior'
-        },
-        {
-          url: 'https://images.pexels.com/photos/1571475/pexels-photo-1571475.jpeg',
-          alt: 'Luxury living area'
-        },
-        {
-          url: 'https://images.pexels.com/photos/1571477/pexels-photo-1571477.jpeg',
-          alt: 'Luxury master bedroom'
-        },
-        {
-          url: 'https://images.pexels.com/photos/1571479/pexels-photo-1571479.jpeg',
-          alt: 'Luxury bathroom'
-        }
-      ]
-    }
-  ];
 
   translate(key: string): string {
     return this.translationService.translate(key);
-  }
-  
-  getCurrentHouse() {
-    return this.houses[this.currentSlide];
-  }
-  
-  getCurrentHouseImage() {
-    return this.getCurrentHouse().images[this.currentHouseImageIndex];
-  }
-  
-  nextSlide() {
-    this.currentSlide = (this.currentSlide + 1) % this.houses.length;
-    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-  }
-  
-  previousSlide() {
-    this.currentSlide = this.currentSlide === 0 ? this.houses.length - 1 : this.currentSlide - 1;
-    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-  }
-  
-  goToSlide(index: number) {
-    this.currentSlide = index;
-    this.currentHouseImageIndex = 0; // Reset to first image when changing houses
-  }
-  
-  nextHouseImage() {
-    const currentHouse = this.getCurrentHouse();
-    this.currentHouseImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
-  }
-  
-  previousHouseImage() {
-    const currentHouse = this.getCurrentHouse();
-    this.currentHouseImageIndex = this.currentHouseImageIndex === 0 
-      ? currentHouse.images.length - 1 
-      : this.currentHouseImageIndex - 1;
-  }
-  
-  goToHouseImage(index: number) {
-    this.currentHouseImageIndex = index;
   }
 
   navigateToHome() {
