@@ -20,6 +20,7 @@ import { routes } from './app.routes';
 import { provideRouter, withPreloading, withInMemoryScrolling } from '@angular/router';
 import { CustomPreloadingStrategy } from './app.preloading-strategy';
 import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 // CRITICAL: Initialize translations FIRST and BLOCK until loaded
 // This ensures translations are available before any component renders
@@ -146,6 +147,7 @@ bootstrapApplication(AppComponent, {
         anchorScrolling: 'enabled'
       })
     ),
-    provideHttpClient()
+    provideHttpClient(),
+    provideAnimations() // Required for Angular animations to work
   ]
 });

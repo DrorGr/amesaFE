@@ -18,6 +18,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
   animations: [
     trigger('slideDown', [
       state('false', style({
+        height: '0px',
         maxHeight: '0px',
         opacity: 0,
         overflow: 'hidden',
@@ -25,16 +26,15 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
         paddingBottom: '0px',
         paddingLeft: '0px',
         paddingRight: '0px',
-        marginTop: '0px',
-        marginBottom: '0px',
         borderTopWidth: '0px'
       })),
       state('true', style({
+        height: '*',
         maxHeight: '2000px',
         opacity: 1,
         overflow: 'visible',
         paddingTop: '1rem',
-        paddingBottom: '1rem',
+        paddingBottom: '0px',
         paddingLeft: '1rem',
         paddingRight: '1rem',
         borderTopWidth: '1px'
@@ -101,8 +101,9 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
         id="dashboard-accordion-content"
         [@slideDown]="isExpanded().toString()"
         [attr.aria-hidden]="!isExpanded()"
-        class="overflow-hidden border-t border-gray-200 dark:border-gray-700">
-        <div aria-live="polite" aria-atomic="true">
+        class="overflow-hidden border-t border-gray-200 dark:border-gray-700"
+        >
+        <div aria-live="polite" aria-atomic="true" class="px-4">
           @if (!currentUser()) {
             <!-- Not logged in - show login prompt -->
             <div class="py-8 text-center">
