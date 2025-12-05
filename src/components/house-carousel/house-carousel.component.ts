@@ -9,6 +9,7 @@ import { ToastService } from '../../services/toast.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-house-carousel',
@@ -43,16 +44,50 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                 <div class="flex-1 max-w-5xl flex flex-col mb-4">
                   <div class="relative overflow-hidden rounded-xl shadow-lg group">
                     @if (isImageLoaded(getCurrentMainImage(house, houseIndex).url)) {
-                        <img
-                          [src]="getCurrentMainImage(house, houseIndex).url" 
-                          [alt]="getCurrentMainImage(house, houseIndex).alt"
-                          [loading]="houseIndex === 0 && currentSlide === 0 ? 'eager' : 'lazy'"
-                          decoding="async"
-                          fetchpriority="high"
-                          (error)="onImageError($event)"
-                          class="w-full h-64 md:h-96 object-cover object-center opacity-100 transition-opacity duration-300 mobile-carousel-image"
-                          (load)="onImageLoad($event)"
-                          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+'">
+                        @let currentImage = getCurrentMainImage(house, houseIndex);
+                        @let imageId = getImageIdFromUrl(currentImage.url);
+                        @let isS3Url = currentImage.url.includes('/houses/');
+                        @if (isS3Url && imageId) {
+                          <!-- Responsive picture element for S3/CloudFront images -->
+                          <picture>
+                            <!-- Mobile: 500×375 -->
+                            <source 
+                              [srcset]="getImageUrl(currentImage.url, 'mobile', house.id, imageId)" 
+                              type="image/webp"
+                              media="(max-width: 768px)">
+                            <source 
+                              [srcset]="getImageUrl(currentImage.url, 'mobile', house.id, imageId).replace('.webp', '.jpg')" 
+                              type="image/jpeg"
+                              media="(max-width: 768px)">
+                            
+                            <!-- Desktop: 800×600 for carousel -->
+                            <source 
+                              [srcset]="getImageUrl(currentImage.url, 'carousel', house.id, imageId)" 
+                              type="image/webp">
+                            <img 
+                              [src]="getImageUrl(currentImage.url, 'carousel', house.id, imageId).replace('.webp', '.jpg')" 
+                              [alt]="currentImage.alt"
+                              [loading]="houseIndex === 0 && currentSlide === 0 ? 'eager' : 'lazy'"
+                              decoding="async"
+                              fetchpriority="high"
+                              (error)="onImageError($event)"
+                              class="w-full h-64 md:h-96 object-cover object-center opacity-100 transition-opacity duration-300 mobile-carousel-image"
+                              (load)="onImageLoad($event)"
+                              onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+'">
+                          </picture>
+                        } @else {
+                          <!-- Fallback to regular img for Unsplash URLs (during migration) -->
+                          <img
+                            [src]="currentImage.url" 
+                            [alt]="currentImage.alt"
+                            [loading]="houseIndex === 0 && currentSlide === 0 ? 'eager' : 'lazy'"
+                            decoding="async"
+                            fetchpriority="high"
+                            (error)="onImageError($event)"
+                            class="w-full h-64 md:h-96 object-cover object-center opacity-100 transition-opacity duration-300 mobile-carousel-image"
+                            (load)="onImageLoad($event)"
+                            onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+'">
+                        }
                     } @else {
                       <div class="w-full h-64 md:h-96 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                         <div class="animate-pulse flex flex-col items-center space-y-2">
@@ -1022,6 +1057,41 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       }
     // Fallback to primary image
     return this.getPrimaryImage(house.images);
+  }
+
+  /**
+   * Get optimized image URL for a specific size
+   * Supports both S3/CloudFront URLs (new format) and Unsplash URLs (legacy)
+   * @param imageUrl Original image URL
+   * @param size Image size: 'thumbnail' | 'mobile' | 'carousel' | 'detail' | 'full'
+   * @param houseId House ID for S3 URL construction
+   * @param imageId Image ID for S3 URL construction
+   * @returns Optimized image URL
+   */
+  getImageUrl(imageUrl: string, size: 'thumbnail' | 'mobile' | 'carousel' | 'detail' | 'full' = 'carousel', houseId?: string, imageId?: string): string {
+    // If S3 URL (contains /houses/), construct size-specific URL
+    if (imageUrl.includes('/houses/') && houseId && imageId) {
+      // Extract base URL (CloudFront or S3)
+      const urlParts = imageUrl.split('/houses/');
+      const baseUrl = urlParts[0];
+      
+      // Construct new URL with size parameter
+      return `${baseUrl}/houses/${houseId}/${imageId}/${size}.webp`;
+    }
+    
+    // Fallback to original URL (for Unsplash during migration)
+    return imageUrl;
+  }
+
+  /**
+   * Get image ID from URL (extracts from S3 path structure)
+   * @param imageUrl Image URL
+   * @returns Image ID or null if not found
+   */
+  getImageIdFromUrl(imageUrl: string): string | null {
+    // S3 URL format: .../houses/{houseId}/{imageId}/...
+    const match = imageUrl.match(/\/houses\/[^\/]+\/([^\/]+)\//);
+    return match ? match[1] : null;
   }
 
   // Favorites methods
