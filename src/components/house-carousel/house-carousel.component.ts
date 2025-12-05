@@ -609,7 +609,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   
   currentSlide = 0;
   currentHouseImageIndex = 0;
-  currentSecondaryImageIndex = 0;
+  currentSecondaryImageIndex = -1; // -1 means show primary image, >= 0 means show secondary image at that index
   isTransitioning = false;
   private autoSlideInterval: any;
   private countdownInterval?: number;
@@ -787,6 +787,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   nextSlide() {
     this.currentSlide = (this.currentSlide + 1) % this.houses().length;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+    this.currentSecondaryImageIndex = -1; // Reset to show primary image
     // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
   }
@@ -794,6 +795,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   previousSlide() {
     this.currentSlide = this.currentSlide === 0 ? this.houses().length - 1 : this.currentSlide - 1;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+    this.currentSecondaryImageIndex = -1; // Reset to show primary image
     // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
   }
@@ -802,22 +804,31 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     if (index < 0 || index >= this.houses().length) return;
     this.currentSlide = index;
     this.currentHouseImageIndex = 0; // Reset to first image when changing houses
+    this.currentSecondaryImageIndex = -1; // Reset to show primary image
     // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
   }
   
   nextHouseImage() {
     const currentHouse = this.getCurrentHouse();
-    this.currentHouseImageIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
-    // Auto-rotation disabled - no reset needed
+    if (!currentHouse) {
+      return;
+    }
+    
+    const nextIndex = (this.currentHouseImageIndex + 1) % currentHouse.images.length;
+    this.goToHouseImage(nextIndex);
   }
   
   previousHouseImage() {
     const currentHouse = this.getCurrentHouse();
-    this.currentHouseImageIndex = this.currentHouseImageIndex === 0 
+    if (!currentHouse) {
+      return;
+    }
+    
+    const prevIndex = this.currentHouseImageIndex === 0 
       ? currentHouse.images.length - 1 
       : this.currentHouseImageIndex - 1;
-    // Auto-rotation disabled - no reset needed
+    this.goToHouseImage(prevIndex);
   }
   
   goToHouseImage(index: number) {
@@ -825,7 +836,24 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     if (!currentHouse || index < 0 || index >= currentHouse.images.length) {
       return;
     }
+    
+    // Update the house image index
     this.currentHouseImageIndex = index;
+    
+    // Determine if the selected image is primary or secondary
+    const selectedImage = currentHouse.images[index];
+    if (selectedImage.isPrimary) {
+      // If primary image, reset secondary index to show primary
+      this.currentSecondaryImageIndex = -1;
+    } else {
+      // If secondary image, find its index in the secondary images array
+      const secondaryImages = this.getSecondaryImages(currentHouse.images);
+      const secondaryIndex = secondaryImages.findIndex(img => img === selectedImage);
+      if (secondaryIndex >= 0) {
+        this.currentSecondaryImageIndex = secondaryIndex;
+      }
+    }
+    
     // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
   }
@@ -941,19 +969,37 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   // Navigate to a secondary image
   goToSecondaryImage(index: number) {
+    const currentHouse = this.getCurrentHouse();
+    if (!currentHouse) {
+      return;
+    }
+    
+    const secondaryImages = this.getSecondaryImages(currentHouse.images);
+    if (index < 0 || index >= secondaryImages.length) {
+      return;
+    }
+    
+    // Update secondary index
     this.currentSecondaryImageIndex = index;
+    
+    // Find the actual index of this secondary image in the full images array
+    const selectedSecondaryImage = secondaryImages[index];
+    const actualIndex = currentHouse.images.findIndex(img => img === selectedSecondaryImage);
+    if (actualIndex >= 0) {
+      this.currentHouseImageIndex = actualIndex;
+    }
+    
     // Auto-rotation disabled - no reset needed
     this.loadCurrentSlideImages();
   }
 
   // Get the current main image to display (primary by default, or selected secondary)
   getCurrentMainImage(house: any, houseIndex: number): any {
-    if (houseIndex === this.currentSlide && this.currentSecondaryImageIndex >= 0) {
-      const secondaryImages = this.getSecondaryImages(house.images);
-      if (secondaryImages.length > 0 && this.currentSecondaryImageIndex < secondaryImages.length) {
-        return secondaryImages[this.currentSecondaryImageIndex];
+    // If this is the current slide, use currentHouseImageIndex to get the actual image
+    if (houseIndex === this.currentSlide && this.currentHouseImageIndex >= 0 && this.currentHouseImageIndex < house.images.length) {
+      return house.images[this.currentHouseImageIndex];
       }
-    }
+    // Fallback to primary image
     return this.getPrimaryImage(house.images);
   }
 
