@@ -11,11 +11,12 @@ import { UserLotteryStats, HouseRecommendation } from '../../interfaces/lottery.
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { LocaleService } from '../../services/locale.service';
 import { UserPreferencesService } from '../../services/user-preferences.service';
+import { ActiveEntriesAccordionComponent } from '../active-entries-accordion/active-entries-accordion.component';
 
 @Component({
   selector: 'app-lottery-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ActiveEntriesAccordionComponent],
   template: `
     <main class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 md:p-8">
       <div class="max-w-7xl mx-auto">
@@ -28,6 +29,11 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
             {{ translate(LOTTERY_TRANSLATION_KEYS.dashboard.welcome) }}
           </p>
         </header>
+
+        <!-- Active Entries Accordion -->
+        <div class="mb-6">
+          <app-active-entries-accordion></app-active-entries-accordion>
+        </div>
 
         <!-- Statistics Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">

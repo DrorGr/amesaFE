@@ -78,11 +78,14 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       (keydown.space)="toggleFavorite(house.id, $event); $event.preventDefault()"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
                       [title]="isFavorite(house.id) ? (translate('lottery.favorites.removeFromFavorites') || 'Remove from favorites') : (translate('lottery.favorites.addToFavorites') || 'Add to favorites')"
+                      [class.favorite-button-red-hover]="!isFavorite(house.id)"
+                      [class.favorite-button-red-filled]="isFavorite(house.id)"
                       class="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-20 cursor-pointer focus:outline-none"
                       [disabled]="isTogglingFavorite(house.id)">
-                      <svg class="w-6 h-6 transition-all duration-300"
+                      <svg class="w-6 h-6 transition-all duration-300 favorite-heart-icon"
                            [class.text-red-500]="isFavorite(house.id)"
                            [class.text-white]="!isFavorite(house.id)"
+                           [class.heart-beat]="isFavorite(house.id)"
                            [attr.fill]="isFavorite(house.id) ? 'currentColor' : 'none'"
                            [attr.stroke]="!isFavorite(house.id) ? 'currentColor' : 'none'"
                            stroke-width="2" 
@@ -188,7 +191,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
                       <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">{{ house.address || '123 Park Ave' }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('house.ticketPrice') || translate('common.price') }}</span>
+                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('house.perTicket') }}</span>
                       <span class="font-bold text-blue-600 dark:text-blue-400 text-xl md:text-3xl">{{ formatPrice(house.ticketPrice) }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
@@ -555,6 +558,36 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
       position: relative;
       padding: 4px 12px;
       border-radius: 8px;
+    }
+    
+    /* Red hover glow for favorites button - around the heart icon */
+    .favorite-button-red-hover:hover .favorite-heart-icon {
+      filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.8)) drop-shadow(0 0 16px rgba(239, 68, 68, 0.6)) drop-shadow(0 0 24px rgba(239, 68, 68, 0.4));
+    }
+    
+    .favorite-button-red-filled .favorite-heart-icon {
+      filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.7)) drop-shadow(0 0 12px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 18px rgba(239, 68, 68, 0.3));
+    }
+    
+    /* Beating heart animation for favorited items */
+    @keyframes heart-beat {
+      0%, 100% {
+        transform: scale(1);
+      }
+      25% {
+        transform: scale(1.1);
+      }
+      50% {
+        transform: scale(1);
+      }
+      75% {
+        transform: scale(1.1);
+      }
+    }
+    
+    .heart-beat {
+      animation: heart-beat 1.5s ease-in-out infinite;
+      transform-origin: center center;
     }
   `]
 })

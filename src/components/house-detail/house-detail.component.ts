@@ -7,6 +7,7 @@ import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { ErrorMessageService } from '../../services/error-message.service';
 import { ToastService } from '../../services/toast.service';
+import { HeartAnimationService } from '../../services/heart-animation.service';
 import { LocaleService } from '../../services/locale.service';
 import { ParticipantStatsComponent } from '../participant-stats/participant-stats.component';
 import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
@@ -88,6 +89,36 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
       animation-iteration-count: 2;
       transform-origin: center center;
     }
+    
+    /* Red hover glow for favorites button - around the heart icon */
+    .favorite-button-red-hover:hover .favorite-heart-icon {
+      filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.8)) drop-shadow(0 0 16px rgba(239, 68, 68, 0.6)) drop-shadow(0 0 24px rgba(239, 68, 68, 0.4));
+    }
+    
+    .favorite-button-red-filled .favorite-heart-icon {
+      filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.7)) drop-shadow(0 0 12px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 18px rgba(239, 68, 68, 0.3));
+    }
+    
+    /* Beating heart animation for favorited items */
+    @keyframes heart-beat {
+      0%, 100% {
+        transform: scale(1);
+      }
+      25% {
+        transform: scale(1.1);
+      }
+      50% {
+        transform: scale(1);
+      }
+      75% {
+        transform: scale(1.1);
+      }
+    }
+    
+    .heart-beat {
+      animation: heart-beat 1.5s ease-in-out infinite;
+      transform-origin: center center;
+    }
   `],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4 md:px-8">
@@ -157,20 +188,21 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                 
                 <!-- Favorite Button - Purple Circular (Same Size as Location Icon) -->
                 <button
-                  (click)="toggleFavorite()"
-                  (keydown.enter)="toggleFavorite()"
-                  (keydown.space)="toggleFavorite(); $event.preventDefault()"
+                  (click)="toggleFavorite($event)"
+                  (keydown.enter)="toggleFavorite($event)"
+                  (keydown.space)="toggleFavorite($event); $event.preventDefault()"
                   [disabled]="isTogglingFavorite()"
-                  [class.favorite-button-pulse]="isTogglingFavorite() || isFavorite()"
-                  [class.favorite-button-glow]="isFavorite()"
+                  [class.favorite-button-pulse]="isTogglingFavorite()"
+                  [class.favorite-button-red-hover]="!isFavorite()"
+                  [class.favorite-button-red-filled]="isFavorite()"
                   class="absolute top-4 right-4 z-20 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 cursor-pointer focus:outline-none favorite-button disabled:opacity-50 disabled:cursor-not-allowed"
                   [attr.aria-label]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')"
                   [title]="isFavorite() ? translate('favorites.removeFromFavorites') : translate('favorites.addToFavorites')">
                   <svg 
-                    class="w-6 h-6 transition-all duration-300"
+                    class="w-6 h-6 transition-all duration-300 favorite-heart-icon"
                     [class.text-red-500]="isFavorite()"
                     [class.text-white]="!isFavorite()"
-                    [class.heart-fill-animation]="isFavorite()"
+                    [class.heart-beat]="isFavorite()"
                     [attr.fill]="isFavorite() ? 'currentColor' : 'none'"
                     [attr.stroke]="!isFavorite() ? 'currentColor' : 'none'"
                     stroke-width="2"
@@ -190,7 +222,7 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                 <div class="flex gap-2 overflow-x-auto pb-2">
                   <button
                     *ngFor="let image of allImages(); let i = index"
-                    (click)="selectImage(i)"
+                    (click)="selectImage(i); $event.stopPropagation()"
                     [class.border-blue-500]="currentImageIndex() === i"
                     [class.border-gray-300]="currentImageIndex() !== i"
                     [class.dark:border-blue-400]="currentImageIndex() === i"
@@ -210,12 +242,19 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                 <div class="flex justify-center gap-2 mt-3">
                   <button
                     *ngFor="let image of allImages(); let i = index"
-                    (click)="selectImage(i)"
+                    (click)="selectImage(i); $event.stopPropagation()"
+                    type="button"
                     [class.bg-blue-500]="currentImageIndex() === i"
                     [class.bg-gray-300]="currentImageIndex() !== i"
                     [class.dark:bg-blue-400]="currentImageIndex() === i"
                     [class.dark:bg-gray-600]="currentImageIndex() !== i"
-                    class="w-2 h-2 rounded-full transition-all focus:outline-none"
+                    [class.opacity-50]="currentImageIndex() !== i"
+                    [class.scale-125]="currentImageIndex() === i"
+                    [class.w-4]="currentImageIndex() === i"
+                    [class.h-4]="currentImageIndex() === i"
+                    [class.w-3]="currentImageIndex() !== i"
+                    [class.h-3]="currentImageIndex() !== i"
+                    class="rounded-full transition-all duration-200 focus:outline-none hover:scale-125 cursor-pointer"
                     [attr.aria-label]="translateWithParams('house.goToImage', { current: i + 1, total: allImages().length })"
                     [attr.aria-current]="currentImageIndex() === i ? 'true' : 'false'">
                   </button>
@@ -455,6 +494,7 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private errorMessageService = inject(ErrorMessageService);
   private toastService = inject(ToastService);
+  private heartAnimationService = inject(HeartAnimationService);
 
   house = signal<HouseDto | null>(null);
   loading = signal<boolean>(true);
@@ -579,7 +619,12 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleFavorite(): void {
+  toggleFavorite(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    
     const h = this.house();
     if (!h) return;
     
@@ -598,12 +643,19 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
     // Check if already in favorites
     const isCurrentlyFavorite = this.isFavorite();
     
+    // Get source button for animation
+    const sourceButton = event?.target ? (event.target as HTMLElement).closest('button') : null;
+    
     this.lotteryService.toggleFavorite(h.id).subscribe({
       next: (result) => {
         this.isTogglingFavorite.set(false);
         if (result) {
           if (result.added) {
             this.toastService.success(this.translate('favorites.added'), 3000);
+            // Trigger heart animation when adding to favorites
+            if (sourceButton) {
+              this.triggerHeartAnimation(sourceButton);
+            }
           } else {
             this.toastService.success(this.translate('favorites.removed'), 3000);
           }
@@ -623,6 +675,37 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+  
+  /**
+   * Trigger heart animation from button to favorites tab
+   */
+  private triggerHeartAnimation(sourceButton: HTMLElement): void {
+    // Find favorites button in topbar
+    let favoritesElement: HTMLElement | null = null;
+    
+    // Try to find by text content in button
+    const navButtons = document.querySelectorAll('nav button');
+    for (let i = 0; i < navButtons.length; i++) {
+      const btn = navButtons[i] as HTMLElement;
+      const text = btn.textContent?.toLowerCase() || '';
+      if (text.includes('favorite') || text.includes('favourites')) {
+        favoritesElement = btn;
+        break;
+      }
+    }
+    
+    if (!favoritesElement) {
+      // Try aria-label
+      favoritesElement = document.querySelector('button[aria-label*="favorite" i]') as HTMLElement;
+    }
+    
+    if (favoritesElement && sourceButton) {
+      this.heartAnimationService.animateHeart({
+        fromElement: sourceButton,
+        toElement: favoritesElement
+      });
+    }
   }
 
   enterLottery(): void {

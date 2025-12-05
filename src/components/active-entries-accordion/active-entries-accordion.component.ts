@@ -114,7 +114,7 @@ import { LocaleService } from '../../services/locale.service';
                   <button
                     (click)="navigateToActiveEntries()"
                     class="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium">
-                    {{ translate('nav.viewAllEntries') }} GåÆ
+                    {{ translate('nav.viewAllEntries') }} â†’ï¿½ï¿½
                   </button>
                 </div>
               </div>

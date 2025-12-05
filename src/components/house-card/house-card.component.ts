@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { HouseCardService } from '../../services/house-card.service';
+import { HeartAnimationService } from '../../services/heart-animation.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 
@@ -53,18 +54,21 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
         <!-- Favorite Button - Purple Circular (Same Size as Location Icon) -->
         <button
           *ngIf="currentUser()"
-          (click)="toggleFavorite()"
-          (keydown.enter)="toggleFavorite()"
-          (keydown.space)="toggleFavorite(); $event.preventDefault()"
+          (click)="toggleFavorite($event)"
+          (keydown.enter)="toggleFavorite($event)"
+          (keydown.space)="toggleFavorite($event); $event.preventDefault()"
           [disabled]="isTogglingFavorite"
           [class.animate-pulse]="isTogglingFavorite"
+          [class.favorite-button-red-hover]="!isFavorite()"
+          [class.favorite-button-red-filled]="isFavorite()"
           class="absolute top-4 right-4 z-20 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
           [title]="isFavorite() ? translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) : translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites)">
           <svg 
-            class="w-6 h-6 transition-all duration-300"
+            class="w-6 h-6 transition-all duration-300 favorite-heart-icon"
             [class.text-red-500]="isFavorite()"
             [class.text-white]="!isFavorite()"
+            [class.heart-beat]="isFavorite()"
             [attr.fill]="isFavorite() ? 'currentColor' : 'none'"
             [attr.stroke]="!isFavorite() ? 'currentColor' : 'none'"
             stroke-width="2"
@@ -322,6 +326,36 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
         animation-iteration-count: 2;
         transform-origin: center center;
       }
+      
+      /* Red hover glow for favorites button - around the heart icon */
+      .favorite-button-red-hover:hover .favorite-heart-icon {
+        filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.8)) drop-shadow(0 0 16px rgba(239, 68, 68, 0.6)) drop-shadow(0 0 24px rgba(239, 68, 68, 0.4));
+      }
+      
+      .favorite-button-red-filled .favorite-heart-icon {
+        filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.7)) drop-shadow(0 0 12px rgba(239, 68, 68, 0.5)) drop-shadow(0 0 18px rgba(239, 68, 68, 0.3));
+      }
+      
+      /* Beating heart animation for favorited items */
+      @keyframes heart-beat {
+        0%, 100% {
+          transform: scale(1);
+        }
+        25% {
+          transform: scale(1.1);
+        }
+        50% {
+          transform: scale(1);
+        }
+        75% {
+          transform: scale(1.1);
+        }
+      }
+      
+      .heart-beat {
+        animation: heart-beat 1.5s ease-in-out infinite;
+        transform-origin: center center;
+      }
     }
   `]
 })
@@ -330,6 +364,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private houseCardService = inject(HouseCardService);
+  private heartAnimationService = inject(HeartAnimationService);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -536,12 +571,20 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   /**
    * Toggle favorite status for this house
    */
-  async toggleFavorite(): Promise<void> {
+  async toggleFavorite(event?: Event): Promise<void> {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    
     if (!this.currentUser() || this.isTogglingFavorite) {
       return;
     }
 
     this.isTogglingFavorite = true;
+    
+    // Get source button for animation
+    const sourceButton = event?.target ? (event.target as HTMLElement).closest('button') : null;
     
     try {
       const house = this.house();
@@ -551,12 +594,48 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       if (result) {
         // State is automatically updated by LotteryService
         console.log(result.message || (result.added ? 'Added to favorites' : 'Removed from favorites'));
+        
+        // Trigger heart animation when adding to favorites
+        if (result.added && sourceButton) {
+          this.triggerHeartAnimation(sourceButton);
+        }
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
       // TODO: Show error toast notification
     } finally {
       this.isTogglingFavorite = false;
+    }
+  }
+  
+  /**
+   * Trigger heart animation from button to favorites tab
+   */
+  private triggerHeartAnimation(sourceButton: HTMLElement): void {
+    // Find favorites button in topbar
+    let favoritesElement: HTMLElement | null = null;
+    
+    // Try to find by text content in button
+    const navButtons = document.querySelectorAll('nav button');
+    for (let i = 0; i < navButtons.length; i++) {
+      const btn = navButtons[i] as HTMLElement;
+      const text = btn.textContent?.toLowerCase() || '';
+      if (text.includes('favorite') || text.includes('favourites')) {
+        favoritesElement = btn;
+        break;
+      }
+    }
+    
+    if (!favoritesElement) {
+      // Try aria-label
+      favoritesElement = document.querySelector('button[aria-label*="favorite" i]') as HTMLElement;
+    }
+    
+    if (favoritesElement && sourceButton) {
+      this.heartAnimationService.animateHeart({
+        fromElement: sourceButton,
+        toElement: favoritesElement
+      });
     }
   }
 
