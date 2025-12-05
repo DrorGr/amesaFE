@@ -375,6 +375,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   house = input.required<House>();
   isFavoritesPage = input<boolean>(false);
   private vibrationInterval?: number;
+  private countdownInterval?: number;
   isPurchasing = false;
   isTogglingFavorite = false;
   isQuickEntering = false;
@@ -385,6 +386,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   // Use signals for dynamic values to prevent change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
   vibrationTrigger = signal<number>(0);
+  currentTime = signal<number>(Date.now()); // Signal for countdown updates
   
   // Computed signal to check if this house is favorited
   isFavorite = computed(() => {
@@ -522,18 +524,26 @@ export class HouseCardComponent implements OnInit, OnDestroy {
         }, 600);
       }
     }, 5000);
+
+    // Update countdown every second
+    this.countdownInterval = window.setInterval(() => {
+      this.currentTime.set(Date.now());
+    }, 1000);
   }
 
   ngOnDestroy() {
     if (this.vibrationInterval) {
       clearInterval(this.vibrationInterval);
     }
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
   }
 
   getLotteryCountdown(): string {
     const house = this.house();
     if (!house || !house.lotteryEndDate) return '00:00:00:00';
-    const now = Date.now();
+    const now = this.currentTime(); // Use signal instead of Date.now() for reactive updates
     const endTime = new Date(house.lotteryEndDate).getTime();
     const timeLeft = endTime - now;
 

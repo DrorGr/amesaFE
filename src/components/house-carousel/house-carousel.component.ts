@@ -613,12 +613,14 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   isTransitioning = false;
   private autoSlideInterval: any;
   private vibrationInterval?: any;
+  private countdownInterval?: any;
   private intersectionObserver: IntersectionObserver | null = null;
   loadedImages = new Set<string>();
   vibrationTrigger = signal<number>(0);
   
   // Use signals for values that change over time to avoid change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
+  currentTime = signal<number>(Date.now()); // Signal for countdown updates
 
   // Use computed signal to get active houses from lottery service
   houses = computed(() => {
@@ -647,12 +649,20 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         }, 600);
       }
     }, 5000);
+
+    // Update countdown every second
+    this.countdownInterval = setInterval(() => {
+      this.currentTime.set(Date.now());
+    }, 1000);
   }
 
   ngOnDestroy() {
     this.stopAutoSlide();
     if (this.vibrationInterval) {
       clearInterval(this.vibrationInterval);
+    }
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
     }
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
@@ -879,7 +889,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   getLotteryCountdown(house: any): string {
-    const now = Date.now();
+    const now = this.currentTime(); // Use signal instead of Date.now() for reactive updates
     const endTime = new Date(house.lotteryEndDate).getTime();
     const timeLeft = endTime - now;
 
