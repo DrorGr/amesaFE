@@ -1,8 +1,7 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, effect, EffectRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
@@ -15,38 +14,9 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
   selector: 'app-lottery-dashboard-accordion',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  animations: [
-    trigger('slideDown', [
-      state('false', style({
-        maxHeight: '0px',
-        opacity: 0,
-        overflow: 'hidden',
-        paddingTop: '0px',
-        paddingBottom: '0px'
-      })),
-      state('true', style({
-        maxHeight: '2000px',
-        opacity: 1,
-        overflow: 'visible'
-      })),
-      transition('false => true', [
-        animate('400ms cubic-bezier(0.4, 0, 0.2, 1)')
-      ]),
-      transition('true => false', [
-        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)')
-      ])
-    ])
-  ],
   template: `
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-20 z-[99]">
-      <button 
-        (click)="toggleAccordion()"
-        (keydown.enter)="toggleAccordion()"
-        (keydown.space)="toggleAccordion(); $event.preventDefault()"
-        [attr.aria-label]="translate('nav.lotteries')"
-        [attr.aria-expanded]="isExpanded()"
-        [attr.aria-controls]="'dashboard-accordion-content'"
-        class="w-full px-4 py-3 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 relative focus:outline-none">
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm fixed top-20 left-0 right-0 z-[99]">
+      <div class="w-full px-4 py-3 flex items-center justify-center relative">
         <div class="flex items-center gap-3 absolute left-4">
           @if (currentUser() && activeEntriesCount() > 0) {
             <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-semibold">
@@ -59,22 +29,11 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
             {{ translate('nav.lotteries') }}
           </span>
         </div>
-        <svg 
-          [class.rotate-180]="isExpanded()" 
-          class="w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform duration-300 ease-in-out absolute right-4" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-          aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-      </button>
+      </div>
       
       <div 
         id="dashboard-accordion-content"
-        [@slideDown]="isExpanded()"
-        [attr.aria-hidden]="!isExpanded()"
-        class="overflow-hidden">
+        class="overflow-visible">
         <div class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700" aria-live="polite" aria-atomic="true">
           @if (!currentUser()) {
             <!-- Not logged in - show login prompt -->
@@ -165,16 +124,6 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
               </div>
             }
 
-            <!-- View Full Dashboard Link -->
-            <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
-              <button
-                (click)="navigateToDashboard()"
-                (keydown.enter)="navigateToDashboard()"
-                (keydown.space)="navigateToDashboard(); $event.preventDefault()"
-                class="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium focus:outline-none">
-                {{ translate('nav.viewFullDashboard') || 'View Full Dashboard' }} →
-              </button>
-            </div>
           }
         </div>
       </div>
@@ -205,28 +154,16 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
   stats = this.lotteryService.getUserLotteryStats();
   activeEntries = this.lotteryService.getActiveEntries();
   isLoading = signal(false);
-  isExpanded = signal(false);
   error = signal<string | null>(null);
   
   activeEntriesCount = computed(() => this.activeEntries().length);
-  private autoExpandEffect?: EffectRef;
 
   ngOnInit(): void {
     this.loadDashboardData();
-    
-    // Auto-expand if user has entries
-    this.autoExpandEffect = effect(() => {
-      if (this.activeEntries().length > 0 && !this.isExpanded()) {
-        this.isExpanded.set(true);
-      }
-    });
   }
   
   ngOnDestroy(): void {
-    if (this.autoExpandEffect) {
-      this.autoExpandEffect.destroy();
-      this.autoExpandEffect = undefined;
-    }
+    // Cleanup if needed
   }
 
   async loadDashboardData(): Promise<void> {
@@ -253,10 +190,6 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleAccordion(): void {
-    this.isExpanded.set(!this.isExpanded());
-  }
-
   translate(key: string): string {
     return this.translationService.translate(key);
   }
@@ -270,10 +203,6 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
       minimumFractionDigits: 1, 
       maximumFractionDigits: 1 
     });
-  }
-
-  navigateToDashboard(): void {
-    this.router.navigate(['/lottery/dashboard']);
   }
 
   navigateToLogin(): void {

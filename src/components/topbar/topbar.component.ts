@@ -4,7 +4,6 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
-import { ThemeToggleComponent } from '../theme-toggle/theme-toggle.component';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { ToastService } from '../../services/toast.service';
@@ -15,7 +14,7 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, LanguageSwitcherComponent, ThemeToggleComponent, UserMenuComponent, NotificationSidebarComponent],
+  imports: [CommonModule, LanguageSwitcherComponent, UserMenuComponent, NotificationSidebarComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <nav class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-[100] transition-colors duration-300" style="position: sticky; top: 0; z-index: 100;">
@@ -89,7 +88,6 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
           </div>
 
           <div class="flex items-center space-x-3 mobile-controls">
-            <app-theme-toggle></app-theme-toggle>
             <app-language-switcher></app-language-switcher>
             <app-user-menu></app-user-menu>
             
@@ -143,7 +141,6 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
 
             <!-- Right side: User components + Hamburger -->
             <div class="flex items-center space-x-3 mobile-controls">
-              <app-theme-toggle></app-theme-toggle>
               <app-language-switcher></app-language-switcher>
               <app-user-menu></app-user-menu>
               

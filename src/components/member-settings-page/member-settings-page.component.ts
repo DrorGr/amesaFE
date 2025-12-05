@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -458,7 +458,7 @@ interface StarReward {
                         <label class="relative inline-flex items-center cursor-pointer">
                           <input
                             type="checkbox"
-                            [(ngModel)]="settings.darkMode"
+                            [checked]="isDarkMode()"
                             (change)="toggleDarkMode()"
                             class="sr-only peer">
                           <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -664,6 +664,9 @@ export class MemberSettingsPageComponent implements OnInit, OnDestroy {
   copySuccess = this.memberSettingsService.copySuccess;
   userProfile = this.memberSettingsService.userProfile;
   profileForm = this.memberSettingsService.profileForm;
+  
+  // Theme state
+  isDarkMode = computed(() => this.themeService.currentTheme() === 'dark');
 
   // Local state for UI-only data
   isLoading = signal(true);
@@ -726,7 +729,6 @@ export class MemberSettingsPageComponent implements OnInit, OnDestroy {
 
   settings = {
     pushMessages: true,
-    darkMode: false,
     language: 'en',
     aiDescription: false,
     beTheFirst: true

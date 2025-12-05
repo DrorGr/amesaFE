@@ -18,8 +18,8 @@ import { LotteryDashboardAccordionComponent } from '../lottery-dashboard-accordi
     LotteryDashboardAccordionComponent
   ],
   template: `
-    <main role="main" id="main-content">
-      <!-- Lottery Dashboard Accordion - Visible to all users -->
+    <main role="main" id="main-content" class="pt-32">
+      <!-- Lottery Dashboard Accordion - Visible to all users, fixed position -->
       <app-lottery-dashboard-accordion></app-lottery-dashboard-accordion>
       
       <app-hero-section></app-hero-section>
