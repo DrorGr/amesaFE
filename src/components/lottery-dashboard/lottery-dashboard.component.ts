@@ -11,12 +11,11 @@ import { UserLotteryStats, HouseRecommendation } from '../../interfaces/lottery.
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { LocaleService } from '../../services/locale.service';
 import { UserPreferencesService } from '../../services/user-preferences.service';
-import { HouseGridComponent } from '../house-grid/house-grid.component';
 
 @Component({
   selector: 'app-lottery-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, HouseGridComponent],
+  imports: [CommonModule, RouterModule],
   template: `
     <main class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 md:p-8">
       <div class="max-w-7xl mx-auto">
@@ -75,11 +74,6 @@ import { HouseGridComponent } from '../house-grid/house-grid.component';
               </p>
             </div>
           </div>
-        </div>
-
-        <!-- House Grid (Primary Content) -->
-        <div class="mb-8">
-          <app-house-grid></app-house-grid>
         </div>
 
         <!-- Sidebar Content (Active Entries, Favorites, Recommendations) -->

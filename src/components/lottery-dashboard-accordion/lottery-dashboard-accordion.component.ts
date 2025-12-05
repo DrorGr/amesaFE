@@ -193,7 +193,7 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
     }
     
     #dashboard-accordion-content {
-      display: block;
+      /* Animation controls visibility via maxHeight and overflow */
     }
   `]
 })
