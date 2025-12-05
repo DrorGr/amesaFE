@@ -328,10 +328,27 @@ export class NotificationPreferencesComponent implements OnInit, OnDestroy {
         this.preferences.set(prefs);
         this.isLoading.set(false);
       },
-      error: (error) => {
+      error: (error: any) => {
         this.logger.error('Failed to load notification preferences', error);
-        this.errorMessage.set(this.translate('notifications.preferences.loadError'));
-        this.isLoading.set(false);
+        
+        // Handle 400/404 errors gracefully - endpoint might not exist yet
+        if (error?.status === 400 || error?.status === 404) {
+          // Set default preferences if endpoint doesn't exist
+          this.preferences.set({
+            emailNotifications: true,
+            smsNotifications: false,
+            pushNotifications: false,
+            marketingEmails: false,
+            lotteryUpdates: true,
+            paymentNotifications: true,
+            systemAnnouncements: true
+          });
+          this.isLoading.set(false);
+          console.warn('Notification preferences endpoint not available, using defaults');
+        } else {
+          this.errorMessage.set(this.translate('notifications.preferences.loadError') || 'Failed to load preferences');
+          this.isLoading.set(false);
+        }
       }
     });
     

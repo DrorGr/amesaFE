@@ -78,13 +78,27 @@ export class WebPushService {
     }
 
     try {
+      // Check if service worker is already registered
+      const existingRegistration = await navigator.serviceWorker.getRegistration();
+      if (existingRegistration) {
+        this.serviceWorkerRegistration = existingRegistration;
+        console.log('Service Worker already registered');
+        return;
+      }
+
+      // Register new service worker
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/'
       });
       this.serviceWorkerRegistration = registration;
       console.log('Service Worker registered successfully');
-    } catch (error) {
-      console.error('Service Worker registration failed:', error);
+    } catch (error: any) {
+      // Only log error if it's not a 404 (file doesn't exist yet)
+      if (error?.message && !error.message.includes('404')) {
+        console.error('Service Worker registration failed:', error);
+      } else {
+        console.warn('Service Worker file not found. Web push will not work until sw.js is deployed.');
+      }
     }
   }
 

@@ -33,7 +33,12 @@
           },
           "options": {
             "assets": [
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "sw.js",
+                "input": "src",
+                "output": "/"
+              }
             ],
             "index": "src/index.html",
             "browser": "src/main.ts",
