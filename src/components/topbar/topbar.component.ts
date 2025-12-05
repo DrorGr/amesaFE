@@ -91,6 +91,7 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
           <div class="flex items-center space-x-3 mobile-controls">
             <app-theme-toggle></app-theme-toggle>
             <app-language-switcher></app-language-switcher>
+            <app-user-menu></app-user-menu>
             
             <!-- Notification Bell (always visible) -->
             <button
@@ -120,8 +121,6 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
                 }
               }
             </button>
-            
-            <app-user-menu></app-user-menu>
           </div>
         </div>
         }
@@ -146,6 +145,7 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
             <div class="flex items-center space-x-3 mobile-controls">
               <app-theme-toggle></app-theme-toggle>
               <app-language-switcher></app-language-switcher>
+              <app-user-menu></app-user-menu>
               
               <!-- Notification Bell (always visible) -->
               <button
@@ -175,8 +175,6 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
                   }
                 }
               </button>
-              
-              <app-user-menu></app-user-menu>
               
               <!-- Hamburger Menu Button -->
               <button

@@ -11,13 +11,12 @@ import { UserLotteryStats, HouseRecommendation } from '../../interfaces/lottery.
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { LocaleService } from '../../services/locale.service';
 import { UserPreferencesService } from '../../services/user-preferences.service';
-import { LotteryDashboardAccordionComponent } from '../lottery-dashboard-accordion/lottery-dashboard-accordion.component';
 import { HouseGridComponent } from '../house-grid/house-grid.component';
 
 @Component({
   selector: 'app-lottery-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, LotteryDashboardAccordionComponent, HouseGridComponent],
+  imports: [CommonModule, RouterModule, HouseGridComponent],
   template: `
     <main class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 md:p-8">
       <div class="max-w-7xl mx-auto">
@@ -30,11 +29,6 @@ import { HouseGridComponent } from '../house-grid/house-grid.component';
             {{ translate(LOTTERY_TRANSLATION_KEYS.dashboard.welcome) }}
           </p>
         </header>
-
-        <!-- Dashboard Accordion (Quick Access) -->
-        <div class="mb-6">
-          <app-lottery-dashboard-accordion></app-lottery-dashboard-accordion>
-        </div>
 
         <!-- Statistics Section (Compact) -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
