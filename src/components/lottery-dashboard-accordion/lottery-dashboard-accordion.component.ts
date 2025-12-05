@@ -39,7 +39,13 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
   ],
   template: `
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm fixed top-20 left-0 right-0 z-[99]">
-      <div class="w-full px-4 py-3 flex items-center justify-center relative">
+      <button
+        (click)="toggleAccordion()"
+        (keydown.enter)="toggleAccordion()"
+        (keydown.space)="toggleAccordion(); $event.preventDefault()"
+        [attr.aria-label]="isExpanded() ? 'Close dashboard' : 'Open dashboard'"
+        [attr.aria-expanded]="isExpanded()"
+        class="w-full px-4 py-3 flex items-center justify-center relative hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none">
         <div class="flex items-center gap-3 absolute left-4">
           @if (currentUser() && activeEntriesCount() > 0) {
             <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-semibold">
@@ -51,12 +57,12 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
           <span class="text-gray-700 dark:text-gray-300 font-semibold text-center">
             {{ translate('nav.lotteries') }}
           </span>
-          <!-- Small close button at center middle -->
+          <!-- Small close button at center middle (only when expanded) -->
           @if (isExpanded()) {
             <button
-              (click)="toggleAccordion()"
-              (keydown.enter)="toggleAccordion()"
-              (keydown.space)="toggleAccordion(); $event.preventDefault()"
+              (click)="toggleAccordion(); $event.stopPropagation()"
+              (keydown.enter)="toggleAccordion(); $event.stopPropagation()"
+              (keydown.space)="toggleAccordion(); $event.preventDefault(); $event.stopPropagation()"
               [attr.aria-label]="'Close dashboard'"
               class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 p-1.5 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none z-10 shadow-sm">
               <svg 
@@ -70,24 +76,16 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
             </button>
           }
         </div>
-        <button
-          (click)="toggleAccordion()"
-          (keydown.enter)="toggleAccordion()"
-          (keydown.space)="toggleAccordion(); $event.preventDefault()"
-          [attr.aria-label]="isExpanded() ? 'Close dashboard' : 'Open dashboard'"
-          [attr.aria-expanded]="isExpanded()"
-          class="absolute right-4 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none">
-          <svg 
-            [class.rotate-180]="isExpanded()" 
-            class="w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform duration-300 ease-in-out" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-            aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
-      </div>
+        <svg 
+          [class.rotate-180]="isExpanded()" 
+          class="w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform duration-300 ease-in-out absolute right-4" 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+          aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
       
       <div 
         id="dashboard-accordion-content"
@@ -214,7 +212,7 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
   stats = this.lotteryService.getUserLotteryStats();
   activeEntries = this.lotteryService.getActiveEntries();
   isLoading = signal(false);
-  isExpanded = signal(true); // Start expanded by default
+  isExpanded = signal(false); // Start closed by default
   error = signal<string | null>(null);
   
   activeEntriesCount = computed(() => this.activeEntries().length);
