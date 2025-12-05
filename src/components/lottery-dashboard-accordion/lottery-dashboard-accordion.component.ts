@@ -121,23 +121,32 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
           } @else if (isLoading()) {
             <!-- Skeleton loader for dashboard -->
             <div class="px-4 py-4" role="status" aria-busy="true" aria-live="polite">
-              <!-- Stats skeleton -->
+              <!-- Stats skeleton - Match exact structure and colors -->
               <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 pt-4">
                 @for (item of [1,2,3,4]; track item) {
                   <div class="bg-gray-200 dark:bg-gray-700 rounded-lg p-3 border border-gray-300 dark:border-gray-600 animate-pulse">
-                    <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded mb-2 w-2/3"></div>
+                    <!-- Label skeleton - text-xs size -->
+                    <div class="h-3 bg-gray-300 dark:bg-gray-600 rounded mb-1 w-2/3"></div>
+                    <!-- Value skeleton - text-2xl size -->
                     <div class="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
                   </div>
                 }
               </div>
-              <!-- Entries skeleton -->
-              <div class="space-y-3">
-                @for (item of [1,2,3]; track item) {
-                  <div class="bg-gray-200 dark:bg-gray-700 rounded-lg p-4 animate-pulse">
-                    <div class="h-5 bg-gray-300 dark:bg-gray-600 rounded mb-2 w-3/4"></div>
-                    <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
-                  </div>
-                }
+              <!-- Active Entries skeleton - Match exact structure -->
+              <div class="mb-4">
+                <!-- Heading skeleton -->
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-1/3 animate-pulse"></div>
+                <!-- Entries skeleton - space-y-2, p-2 -->
+                <div class="space-y-2">
+                  @for (item of [1,2,3]; track item) {
+                    <div class="bg-gray-200 dark:bg-gray-700 rounded p-2 animate-pulse">
+                      <!-- Title skeleton - font-medium, truncate -->
+                      <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded mb-1 w-3/4"></div>
+                      <!-- Ticket number skeleton - text-xs -->
+                      <div class="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/4"></div>
+                    </div>
+                  }
+                </div>
               </div>
             </div>
           } @else if (error()) {
