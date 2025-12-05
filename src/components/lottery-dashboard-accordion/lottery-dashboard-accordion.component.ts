@@ -2,6 +2,7 @@ import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
@@ -14,6 +15,28 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
   selector: 'app-lottery-dashboard-accordion',
   standalone: true,
   imports: [CommonModule, RouterModule],
+  animations: [
+    trigger('slideDown', [
+      state('false', style({
+        maxHeight: '0px',
+        opacity: 0,
+        overflow: 'hidden',
+        paddingTop: '0px',
+        paddingBottom: '0px'
+      })),
+      state('true', style({
+        maxHeight: '2000px',
+        opacity: 1,
+        overflow: 'visible'
+      })),
+      transition('false => true', [
+        animate('400ms cubic-bezier(0.4, 0, 0.2, 1)')
+      ]),
+      transition('true => false', [
+        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)')
+      ])
+    ])
+  ],
   template: `
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm fixed top-20 left-0 right-0 z-[99]">
       <div class="w-full px-4 py-3 flex items-center justify-center relative">
@@ -24,16 +47,53 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
             </span>
           }
         </div>
-        <div class="flex items-center justify-center flex-1">
+        <div class="flex items-center justify-center flex-1 relative">
           <span class="text-gray-700 dark:text-gray-300 font-semibold text-center">
             {{ translate('nav.lotteries') }}
           </span>
+          <!-- Small close button at center middle -->
+          @if (isExpanded()) {
+            <button
+              (click)="toggleAccordion()"
+              (keydown.enter)="toggleAccordion()"
+              (keydown.space)="toggleAccordion(); $event.preventDefault()"
+              [attr.aria-label]="'Close dashboard'"
+              class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 p-1.5 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none z-10 shadow-sm">
+              <svg 
+                class="w-3 h-3 text-gray-600 dark:text-gray-400" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+                aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          }
         </div>
+        <button
+          (click)="toggleAccordion()"
+          (keydown.enter)="toggleAccordion()"
+          (keydown.space)="toggleAccordion(); $event.preventDefault()"
+          [attr.aria-label]="isExpanded() ? 'Close dashboard' : 'Open dashboard'"
+          [attr.aria-expanded]="isExpanded()"
+          class="absolute right-4 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none">
+          <svg 
+            [class.rotate-180]="isExpanded()" 
+            class="w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform duration-300 ease-in-out" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
       </div>
       
       <div 
         id="dashboard-accordion-content"
-        class="overflow-visible">
+        [@slideDown]="isExpanded()"
+        [attr.aria-hidden]="!isExpanded()"
+        class="overflow-hidden">
         <div class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700" aria-live="polite" aria-atomic="true">
           @if (!currentUser()) {
             <!-- Not logged in - show login prompt -->
@@ -154,6 +214,7 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
   stats = this.lotteryService.getUserLotteryStats();
   activeEntries = this.lotteryService.getActiveEntries();
   isLoading = signal(false);
+  isExpanded = signal(true); // Start expanded by default
   error = signal<string | null>(null);
   
   activeEntriesCount = computed(() => this.activeEntries().length);
@@ -164,6 +225,10 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
   
   ngOnDestroy(): void {
     // Cleanup if needed
+  }
+
+  toggleAccordion(): void {
+    this.isExpanded.set(!this.isExpanded());
   }
 
   async loadDashboardData(): Promise<void> {
