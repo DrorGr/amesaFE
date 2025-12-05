@@ -1,5 +1,6 @@
 import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { House } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
@@ -147,7 +148,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
             <app-verification-gate [isVerificationRequired]="true">
               <!-- On Favorites Page: Show "Enter Now" button (styled like Buy Ticket) when favorited -->
               <button
-                *ngIf="isFavoritesPage() && isFavorite()"
+                *ngIf="isOnFavoritesPage() && isFavorite()"
                 (click)="quickEntry()"
                 (keydown.enter)="quickEntry()"
                 (keydown.space)="quickEntry(); $event.preventDefault()"
@@ -165,7 +166,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
               
               <!-- Not on Favorites Page: Show Quick Entry button (purple) if favorited -->
               <button
-                *ngIf="!isFavoritesPage() && isFavorite()"
+                *ngIf="!isOnFavoritesPage() && isFavorite()"
                 (click)="quickEntry()"
                 (keydown.enter)="quickEntry()"
                 (keydown.space)="quickEntry(); $event.preventDefault()"
@@ -183,7 +184,7 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
               
               <!-- Regular Purchase Button: Show if NOT on favorites page, OR if on favorites page but not favorited -->
               <button
-                *ngIf="!isFavoritesPage() || (isFavoritesPage() && !isFavorite())"
+                *ngIf="!isOnFavoritesPage() || (isOnFavoritesPage() && !isFavorite())"
                 (click)="purchaseTicket()"
                 (keydown.enter)="purchaseTicket()"
                 (keydown.space)="purchaseTicket(); $event.preventDefault()"
@@ -384,6 +385,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private houseCardService = inject(HouseCardService);
   private heartAnimationService = inject(HeartAnimationService);
+  private router = inject(Router);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -407,6 +409,16 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   // Computed signal to check if this house is favorited
   isFavorite = computed(() => {
     return this.favoriteHouseIds().includes(this.house().id);
+  });
+  
+  // Computed signal to detect if we're on the favorites page (auto-detect from route or use input)
+  isOnFavoritesPage = computed(() => {
+    // If input is explicitly provided, use it
+    if (this.isFavoritesPage() !== false) {
+      return this.isFavoritesPage();
+    }
+    // Otherwise, auto-detect from current route
+    return this.router.url.includes('/lottery/favorites');
   });
 
   formatPrice(price: number): string {
