@@ -84,6 +84,7 @@ export class AuthService {
   private tokenRefreshInterval: any = null;
   private readonly REFRESH_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
   private readonly REFRESH_BEFORE_EXPIRY = 5 * 60 * 1000; // 5 minutes before expiry
+  private isLoggingOut = false; // Flag to prevent double logout
 
   constructor(private apiService: ApiService) {
     // CRITICAL: Defer auth status check to avoid blocking app initialization
@@ -277,6 +278,12 @@ export class AuthService {
   }
 
   logout(): void {
+    // Prevent double logout
+    if (this.isLoggingOut) {
+      return;
+    }
+    this.isLoggingOut = true;
+
     // Stop token refresh monitoring
     this.stopTokenRefreshMonitoring();
 
@@ -325,6 +332,11 @@ export class AuthService {
     } catch (error) {
       console.error('Error clearing localStorage on logout:', error);
     }
+    
+    // Reset logout flag after a short delay to allow navigation to complete
+    setTimeout(() => {
+      this.isLoggingOut = false;
+    }, 100);
     
     // Redirect to homepage
     if (this.router) {
@@ -577,6 +589,8 @@ export class AuthService {
   refreshToken(): Observable<AuthResponse> {
     const refreshToken = localStorage.getItem('refresh_token');
     if (!refreshToken) {
+      // Stop monitoring if no refresh token available
+      this.stopTokenRefreshMonitoring();
       return throwError(() => new Error('No refresh token available'));
     }
 
@@ -611,8 +625,16 @@ export class AuthService {
       }),
       catchError(error => {
         console.error('Token refresh error:', error);
+        // Stop monitoring before logout to prevent race conditions
+        this.stopTokenRefreshMonitoring();
         // If refresh fails, clear tokens and logout
-        this.logout();
+        // Use setTimeout to avoid calling logout during error handling
+        setTimeout(() => {
+          if (!localStorage.getItem('refresh_token') && !this.isLoggingOut) {
+            // Only logout if refresh token is still missing and not already logging out
+            this.logout();
+          }
+        }, 10); // Small delay to ensure other operations complete
         return throwError(() => error);
       })
     );
@@ -641,6 +663,22 @@ export class AuthService {
    * Check token expiration and refresh if needed
    */
   private checkAndRefreshToken(): void {
+    // Check if refresh token exists before attempting refresh
+    const refreshToken = localStorage.getItem('refresh_token');
+    const accessToken = localStorage.getItem('access_token');
+    
+    if (!refreshToken) {
+      // No refresh token available
+      this.stopTokenRefreshMonitoring();
+      if (accessToken) {
+        // Have access token but no refresh token - session expired
+        // Logout to clear stale auth state
+        this.logout();
+      }
+      // If no tokens at all, user is not logged in - just stop monitoring (already done above)
+      return;
+    }
+
     const expiresAtStr = localStorage.getItem('token_expires_at');
     if (!expiresAtStr) {
       return; // No token expiration info
@@ -663,7 +701,9 @@ export class AuthService {
           },
           error: (err) => {
             console.warn('Proactive token refresh failed:', err);
-            // Don't logout on proactive refresh failure - will fail on next API call
+            // If refresh fails (e.g., refresh token expired), logout will be called by refreshToken()
+            // Stop monitoring to prevent repeated attempts
+            this.stopTokenRefreshMonitoring();
           }
         });
       }
