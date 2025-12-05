@@ -1,10 +1,14 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 import { ThemeService } from '../../services/theme.service';
 import { MemberSettingsService } from '../../services/member-settings.service';
+import { NotificationPreferencesComponent } from '../notification-preferences/notification-preferences.component';
+import { TelegramLinkComponent } from '../telegram-link/telegram-link.component';
+import { WebPushPermissionComponent } from '../web-push-permission/web-push-permission.component';
+import { Subject, takeUntil } from 'rxjs';
 
 interface UserProfile {
   firstName: string;
@@ -42,7 +46,14 @@ interface StarReward {
 @Component({
   selector: 'app-member-settings-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    ReactiveFormsModule,
+    NotificationPreferencesComponent,
+    TelegramLinkComponent,
+    WebPushPermissionComponent
+  ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <!-- Hero Section -->
@@ -530,6 +541,35 @@ interface StarReward {
               </div>
             }
 
+            <!-- Notifications Tab -->
+            @if (activeTab() === 'notifications') {
+              <div class="space-y-6">
+                <!-- Notification Preferences -->
+                <div>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    {{ translate('member.notificationPreferences') }}
+                  </h4>
+                  <app-notification-preferences [embedded]="true"></app-notification-preferences>
+                </div>
+
+                <!-- Telegram Link -->
+                <div>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    {{ translate('member.telegramIntegration') }}
+                  </h4>
+                  <app-telegram-link [embedded]="true"></app-telegram-link>
+                </div>
+
+                <!-- Web Push Permissions -->
+                <div>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    {{ translate('member.webPushNotifications') }}
+                  </h4>
+                  <app-web-push-permission [embedded]="true"></app-web-push-permission>
+                </div>
+              </div>
+            }
+
             <!-- Stars Tab -->
             @if (activeTab() === 'stars') {
               <div>
@@ -611,9 +651,12 @@ interface StarReward {
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
   `]
 })
-export class MemberSettingsPageComponent implements OnInit {
+export class MemberSettingsPageComponent implements OnInit, OnDestroy {
   private memberSettingsService = inject(MemberSettingsService);
   private themeService = inject(ThemeService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private destroy$ = new Subject<void>();
 
   // Delegate to service
   activeTab = this.memberSettingsService.activeTab;
@@ -630,6 +673,7 @@ export class MemberSettingsPageComponent implements OnInit {
     { id: 'general', title: 'member.generalInfo', icon: '👤' },
     { id: 'promotions', title: 'member.promotions', icon: '🎁' },
     { id: 'settings', title: 'member.settings', icon: '⚙️' },
+    { id: 'notifications', title: 'member.notificationsSettings', icon: '🔔' },
     { id: 'stars', title: 'member.stars', icon: '⭐' }
   ];
 
@@ -690,6 +734,20 @@ export class MemberSettingsPageComponent implements OnInit {
 
   ngOnInit() {
     this.loadUserProfile();
+    
+    // Check for query parameter to set active tab
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        if (params['tab'] === 'notifications') {
+          this.setActiveTab('notifications');
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   async loadUserProfile() {
