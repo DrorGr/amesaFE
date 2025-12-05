@@ -2,6 +2,7 @@ import { Component, inject, OnInit, OnDestroy, signal, computed, effect, EffectR
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
@@ -14,8 +15,30 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
   selector: 'app-lottery-dashboard-accordion',
   standalone: true,
   imports: [CommonModule, RouterModule],
+  animations: [
+    trigger('slideDown', [
+      state('false', style({
+        maxHeight: '0px',
+        opacity: 0,
+        overflow: 'hidden',
+        paddingTop: '0px',
+        paddingBottom: '0px'
+      })),
+      state('true', style({
+        maxHeight: '2000px',
+        opacity: 1,
+        overflow: 'visible'
+      })),
+      transition('false => true', [
+        animate('400ms cubic-bezier(0.4, 0, 0.2, 1)')
+      ]),
+      transition('true => false', [
+        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)')
+      ])
+    ])
+  ],
   template: `
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-20 z-[99]">
       <button 
         (click)="toggleAccordion()"
         (keydown.enter)="toggleAccordion()"
@@ -23,20 +46,22 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
         [attr.aria-label]="translate('nav.lotteries')"
         [attr.aria-expanded]="isExpanded()"
         [attr.aria-controls]="'dashboard-accordion-content'"
-        class="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 relative focus:outline-none">
-        <div class="flex items-center gap-3">
-          <span class="text-gray-700 dark:text-gray-300 font-semibold">
-            {{ translate('nav.lotteries') }}
-          </span>
+        class="w-full px-4 py-3 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 relative focus:outline-none">
+        <div class="flex items-center gap-3 absolute left-4">
           @if (currentUser() && activeEntriesCount() > 0) {
             <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-semibold">
               {{ activeEntriesCount() }}
             </span>
           }
         </div>
+        <div class="flex items-center justify-center flex-1">
+          <span class="text-gray-700 dark:text-gray-300 font-semibold text-center">
+            {{ translate('nav.lotteries') }}
+          </span>
+        </div>
         <svg 
           [class.rotate-180]="isExpanded()" 
-          class="w-5 h-5 text-gray-600 dark:text-gray-400 transition-all duration-300" 
+          class="w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform duration-300 ease-in-out absolute right-4" 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -47,12 +72,9 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
       
       <div 
         id="dashboard-accordion-content"
-        [class.max-h-0]="!isExpanded()"
-        [class.max-h-[2000px]]="isExpanded()"
-        [class.opacity-0]="!isExpanded()"
-        [class.opacity-100]="isExpanded()"
+        [@slideDown]="isExpanded()"
         [attr.aria-hidden]="!isExpanded()"
-        class="overflow-hidden transition-all duration-300 ease-in-out">
+        class="overflow-hidden">
         <div class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700" aria-live="polite" aria-atomic="true">
           @if (!currentUser()) {
             <!-- Not logged in - show login prompt -->
@@ -160,6 +182,10 @@ import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-ke
   `,
   styles: [`
     :host {
+      display: block;
+    }
+    
+    #dashboard-accordion-content {
       display: block;
     }
   `]
