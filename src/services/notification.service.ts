@@ -1,6 +1,6 @@
 import { Injectable, signal, inject, OnDestroy } from '@angular/core';
-import { Observable, throwError, Subject } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { Observable, throwError, Subject, forkJoin, of } from 'rxjs';
+import { map, catchError, tap, switchMap } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { RealtimeService } from './realtime.service';
 import { Subscription } from 'rxjs';
@@ -16,6 +16,26 @@ export interface NotificationDto {
   readAt?: Date;
 }
 
+// Backend DTOs
+interface ChannelPreferencesDto {
+  id: string;
+  userId: string;
+  channel: string;
+  enabled: boolean;
+  notificationTypes?: string[];
+  quietHoursStart?: string;
+  quietHoursEnd?: string;
+}
+
+interface UpdateChannelPreferencesRequest {
+  channel: string;
+  enabled?: boolean;
+  notificationTypes?: string[];
+  quietHoursStart?: string;
+  quietHoursEnd?: string;
+}
+
+// Frontend DTOs
 export interface NotificationPreferencesDto {
   emailNotifications: boolean;
   smsNotifications: boolean;
@@ -144,10 +164,32 @@ export class NotificationService implements OnDestroy {
 
   // Get notification preferences
   getNotificationPreferences(): Observable<NotificationPreferencesDto> {
-    return this.apiService.get<NotificationPreferencesDto>('notifications/preferences').pipe(
+    return this.apiService.get<ChannelPreferencesDto[]>('notifications/preferences/channels').pipe(
       map(response => {
         if (response.success && response.data) {
-          return response.data;
+          // Transform backend List<ChannelPreferencesDto> to frontend NotificationPreferencesDto
+          const channels = response.data;
+          const emailChannel = channels.find(c => c.channel.toLowerCase() === 'email');
+          const smsChannel = channels.find(c => c.channel.toLowerCase() === 'sms');
+          const pushChannel = channels.find(c => c.channel.toLowerCase() === 'push' || c.channel.toLowerCase() === 'webpush');
+          
+          // Extract notification types from channels
+          const allNotificationTypes = new Set<string>();
+          channels.forEach(c => {
+            if (c.notificationTypes) {
+              c.notificationTypes.forEach(t => allNotificationTypes.add(t.toLowerCase()));
+            }
+          });
+
+          return {
+            emailNotifications: emailChannel?.enabled ?? true,
+            smsNotifications: smsChannel?.enabled ?? false,
+            pushNotifications: pushChannel?.enabled ?? false,
+            marketingEmails: allNotificationTypes.has('marketing'),
+            lotteryUpdates: allNotificationTypes.has('lottery'),
+            paymentNotifications: allNotificationTypes.has('payment'),
+            systemAnnouncements: allNotificationTypes.has('system')
+          };
         }
         throw new Error('Failed to fetch notification preferences');
       }),
@@ -160,13 +202,65 @@ export class NotificationService implements OnDestroy {
 
   // Update notification preferences
   updateNotificationPreferences(preferences: UpdateNotificationPreferencesRequest): Observable<NotificationPreferencesDto> {
-    return this.apiService.put<NotificationPreferencesDto>('notifications/preferences', preferences).pipe(
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        }
-        throw new Error('Failed to update notification preferences');
-      }),
+    // Build notification types list
+    const notificationTypes: string[] = [];
+    if (preferences.marketingEmails) notificationTypes.push('Marketing');
+    if (preferences.lotteryUpdates) notificationTypes.push('Lottery');
+    if (preferences.paymentNotifications) notificationTypes.push('Payment');
+    if (preferences.systemAnnouncements) notificationTypes.push('System');
+
+    // Update each channel separately (backend requires one channel per request)
+    const updates: Observable<any>[] = [];
+
+    if (preferences.emailNotifications !== undefined) {
+      updates.push(
+        this.apiService.put<ChannelPreferencesDto>('notifications/preferences/channels', {
+          channel: 'Email',
+          enabled: preferences.emailNotifications,
+          notificationTypes: preferences.emailNotifications ? notificationTypes : []
+        } as UpdateChannelPreferencesRequest)
+      );
+    }
+
+    if (preferences.smsNotifications !== undefined) {
+      updates.push(
+        this.apiService.put<ChannelPreferencesDto>('notifications/preferences/channels', {
+          channel: 'SMS',
+          enabled: preferences.smsNotifications,
+          notificationTypes: preferences.smsNotifications ? notificationTypes : []
+        } as UpdateChannelPreferencesRequest)
+      );
+    }
+
+    if (preferences.pushNotifications !== undefined) {
+      updates.push(
+        this.apiService.put<ChannelPreferencesDto>('notifications/preferences/channels', {
+          channel: 'WebPush',
+          enabled: preferences.pushNotifications,
+          notificationTypes: preferences.pushNotifications ? notificationTypes : []
+        } as UpdateChannelPreferencesRequest)
+      );
+    }
+
+    // If no channel updates, update notification types only
+    if (updates.length === 0 && notificationTypes.length > 0) {
+      // Update all enabled channels with new notification types
+      updates.push(
+        this.apiService.put<ChannelPreferencesDto>('notifications/preferences/channels', {
+          channel: 'Email',
+          notificationTypes: notificationTypes
+        } as UpdateChannelPreferencesRequest)
+      );
+    }
+
+    if (updates.length === 0) {
+      // No updates to make, return current preferences
+      return this.getNotificationPreferences();
+    }
+
+    // Execute all updates in parallel, then fetch updated preferences
+    return forkJoin(updates).pipe(
+      switchMap(() => this.getNotificationPreferences()),
       catchError(error => {
         console.error('Error updating notification preferences:', error);
         return throwError(() => error);

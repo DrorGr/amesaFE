@@ -151,7 +151,7 @@ export class UserService {
 
   // User Profile Management
   getUserProfile(): Observable<UserDto> {
-    return this.apiService.get<UserDto>('users/profile').pipe(
+    return this.apiService.get<UserDto>('auth/me').pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
