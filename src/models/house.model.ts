@@ -39,6 +39,7 @@ export interface HouseDto {
   uniqueParticipants: number;
   isParticipantCapReached: boolean;
   remainingParticipantSlots?: number;
+  productId?: string;
   images: HouseImageDto[];
   createdAt: Date;
 }
@@ -112,6 +113,7 @@ export interface House {
   soldTickets: number;
   ticketPrice: number;
   status: 'active' | 'ended' | 'upcoming';
+  productId?: string;
 }
 
 export interface User {

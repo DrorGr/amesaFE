@@ -1,19 +1,23 @@
 import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { House } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { HouseCardService } from '../../services/house-card.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
+import { ToastService } from '../../services/toast.service';
+import { ProductService } from '../../services/product.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
+import { PaymentModalComponent } from '../payment-modal/payment-modal.component';
 
 @Component({
   selector: 'app-house-card',
   standalone: true,
-  imports: [CommonModule, VerificationGateComponent],
+  imports: [CommonModule, VerificationGateComponent, PaymentModalComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="relative bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col w-full transform hover:scale-105">
@@ -191,6 +195,17 @@ import { VerificationGateComponent } from '../verification-gate/verification-gat
           </ng-template>
         </div>
       </div>
+
+      <!-- Payment Modal -->
+      @if (showPaymentModal()) {
+        <app-payment-modal
+          [productId]="currentProductId() || house().productId || ''"
+          [quantity]="1"
+          [houseTitle]="house().title"
+          (close)="closePaymentModal()"
+          (paymentSuccess)="onPaymentSuccess($event)">
+        </app-payment-modal>
+      }
     </div>
   `,
   styles: [`
@@ -367,6 +382,8 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   private translationService = inject(TranslationService);
   private houseCardService = inject(HouseCardService);
   private heartAnimationService = inject(HeartAnimationService);
+  private toastService = inject(ToastService);
+  private productService = inject(ProductService);
   private router = inject(Router);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
@@ -379,6 +396,8 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   isPurchasing = false;
   isTogglingFavorite = false;
   isQuickEntering = false;
+  showPaymentModal = signal(false);
+  currentProductId = signal<string | null>(null); // Store productId for payment modal
   
   currentUser = this.authService.getCurrentUser();
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
@@ -453,26 +472,84 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const house = this.house();
+    if (!house) return;
+
+    // Fetch product ID if not available (on-demand for performance)
+    let productId = house.productId;
+    if (!productId) {
+      try {
+        this.isPurchasing = true;
+        const product = await firstValueFrom(this.productService.getProductByHouseId(house.id));
+        if (product?.id) {
+          productId = product.id;
+        } else {
+          throw new Error('Product not found');
+        }
+      } catch (error: any) {
+        console.error('Error fetching product for house:', error);
+        this.toastService.error('Product not available for this house. Please try again later.', 5000);
+        // Fallback to direct purchase if product fetch fails
+        await this.purchaseTicketDirect();
+        return;
+      } finally {
+        this.isPurchasing = false;
+      }
+    }
+
+    // Ensure productId is set before showing modal
+    if (!productId) {
+      this.toastService.error('Product not available for this house. Please try again later.', 5000);
+      return;
+    }
+
+    // Store productId for payment modal
+    this.currentProductId.set(productId);
+    
+    // Show payment modal with product ID
+    this.showPaymentModal.set(true);
+  }
+
+  closePaymentModal() {
+    this.showPaymentModal.set(false);
+    this.currentProductId.set(null); // Clear productId when modal closes
+  }
+
+  async onPaymentSuccess(event: { paymentIntentId: string; transactionId?: string }) {
+    this.showPaymentModal.set(false);
+    
+    // Payment was successful - webhook will create tickets
+    // Show success message
+    this.toastService.success('Payment successful! Your tickets will be created shortly.', 5000);
+    
+    // Refresh house data to show updated ticket counts
+    // The webhook will create tickets and publish TicketPurchasedEvent
+    // SignalR will update the UI automatically
+  }
+
+  // Fallback method for direct purchase (if product ID not available)
+  private async purchaseTicketDirect() {
     this.isPurchasing = true;
     
     try {
       const house = this.house();
       if (!house) return;
-      const result = await this.lotteryService.purchaseTicket({
+      const result = await firstValueFrom(this.lotteryService.purchaseTicket({
         houseId: house.id,
         quantity: 1,
-        paymentMethodId: 'default' // You'll need to implement payment method selection
-      }).toPromise();
+        paymentMethodId: 'default' // Fallback to direct purchase
+      }));
       
       if (result && result.ticketsPurchased > 0) {
-        console.log('Ticket purchased successfully!');
+        this.toastService.success(`Successfully purchased ${result.ticketsPurchased} ticket(s)!`, 3000);
       } else {
-        console.log('Failed to purchase ticket');
+        this.toastService.error('Failed to purchase ticket. Please try again.', 4000);
       }
     } catch (error: any) {
       // Suppress errors for 200 status (response format issues, not actual errors)
       if (error?.status !== 200) {
         console.error('Error purchasing ticket:', error);
+        this.toastService.error('Failed to purchase ticket. Please try again.', 4000);
       }
       // Check if it's a verification error
       if (error?.error?.error?.code === 'ID_VERIFICATION_REQUIRED' || 
@@ -596,7 +673,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     try {
       const house = this.house();
       if (!house) return;
-      const result = await this.lotteryService.toggleFavorite(house.id).toPromise();
+      const result = await firstValueFrom(this.lotteryService.toggleFavorite(house.id));
       
       if (result) {
         // State is automatically updated by LotteryService
@@ -660,11 +737,11 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     try {
       const house = this.house();
       if (!house) return;
-      const result = await this.lotteryService.quickEntryFromFavorite({
+      const result = await firstValueFrom(this.lotteryService.quickEntryFromFavorite({
         houseId: house.id,
         quantity: 1, // API contract specifies "quantity", matches backend [JsonPropertyName("quantity")]
         paymentMethodId: 'default' // TODO: Get from user preferences or payment service
-      }).toPromise();
+      }));
       
       if (result && result.ticketsPurchased > 0) {
         console.log('Quick entry successful!', result);

@@ -97,5 +97,20 @@ export class ProductService {
       })
     );
   }
+
+  getProductByHouseId(houseId: string): Observable<ProductDto> {
+    return this.apiService.get<ProductDto>(`products/by-house/${houseId}`).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to fetch product for house');
+      }),
+      catchError(error => {
+        console.error('Error fetching product for house:', error);
+        return throwError(() => error);
+      })
+    );
+  }
 }
 
