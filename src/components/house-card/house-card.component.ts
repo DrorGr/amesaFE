@@ -64,7 +64,9 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         <!-- Status Badge - Color based on status (Centered, Same Height as Icons) -->
         <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
           <span 
-            [class]="getStatusClasses(house().status)"
+            [class.bg-emerald-500]="house().status === 'active'"
+            [class.bg-yellow-500]="house().status === 'upcoming'"
+            [class.bg-gray-500]="house().status === 'ended'"
             [class.animate-seesaw]="house().status === 'active' && vibrationTrigger()"
             class="text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
             {{ getStatusText() }}
@@ -561,29 +563,6 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   // Get current user DTO for verification status
   currentUserDto = this.authService.getCurrentUserDto();
   
-  // Debug logging helper - works in both dev and production
-  private debugLog(location: string, message: string, data: any, hypothesisId: string) {
-    const logData = {
-      location,
-      message,
-      data,
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId
-    };
-    // Always log to console.error (kept in production)
-    console.error('[DEBUG]', logData);
-    // Also try to send to debug endpoint (works in local dev)
-    if (typeof fetch !== 'undefined') {
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(logData)
-      }).catch(() => {});
-    }
-  }
-  
   currentUser = this.authService.getCurrentUser();
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
   
@@ -677,53 +656,14 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   onBuyTicketClick(event: Event) {
-    // #region agent log
-    this.debugLog(
-      'house-card.component.ts:onBuyTicketClick',
-      'Button click handler called',
-      {
-        eventType: event.type,
-        hasUser: !!this.currentUser(),
-        userId: this.currentUser()?.id,
-        isPurchasing: this.isPurchasing,
-        houseId: this.house()?.id,
-        houseStatus: this.house()?.status,
-        houseStatusLower: this.house()?.status?.toLowerCase(),
-        isFavorite: this.isFavorite(),
-        buttonDisabled: (event.target as HTMLButtonElement)?.disabled
-      },
-      'A'
-    );
-    // #endregion
-    
     // Prevent default and stop propagation
     event.preventDefault();
     event.stopPropagation();
-    
-    // #region agent log
-    this.debugLog(
-      'house-card.component.ts:onBuyTicketClick',
-      'After event preventDefault - checking user',
-      {
-        currentUser: this.currentUser(),
-        currentUserIsAuthenticated: this.currentUser()?.isAuthenticated
-      },
-      'B'
-    );
-    // #endregion
     
     // Check if user is verified (verification gate check)
     // Note: Verification gate wraps the button but doesn't intercept clicks
     // We need to manually check verification status here
     if (!this.currentUser()) {
-      // #region agent log
-      this.debugLog(
-        'house-card.component.ts:onBuyTicketClick',
-        'No user - returning early',
-        {},
-        'B'
-      );
-      // #endregion
       this.toastService.error('Please sign in to purchase tickets', 3000);
       return;
     }
@@ -733,156 +673,32 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   async purchaseTicket() {
-    // #region agent log
-    this.debugLog(
-      'house-card.component.ts:purchaseTicket',
-      'purchaseTicket method entry',
-      {
-        hasUser: !!this.currentUser(),
-        isPurchasing: this.isPurchasing,
-        houseId: this.house()?.id,
-        houseStatus: this.house()?.status
-      },
-      'A,B,C'
-    );
-    // #endregion
-
     if (!this.currentUser()) {
-      // #region agent log
-      this.debugLog(
-        'house-card.component.ts:purchaseTicket',
-        'No user - returning early',
-        {},
-        'B'
-      );
-      // #endregion
       this.toastService.error('Please sign in to purchase tickets', 3000);
       return;
     }
 
     if (this.isPurchasing) {
-      // #region agent log
-      this.debugLog(
-        'house-card.component.ts:purchaseTicket',
-        'Already purchasing - returning early',
-        {},
-        'E'
-      );
-      // #endregion
       return;
     }
 
     const house = this.house();
     if (!house) {
-      // #region agent log
-      this.debugLog(
-        'house-card.component.ts:purchaseTicket',
-        'No house data - returning early',
-        {},
-        'C'
-      );
-      // #endregion
       this.toastService.error('House data not available', 3000);
       return;
     }
 
     // Check house status (case-insensitive)
     const houseStatus = house.status?.toLowerCase();
-    // #region agent log
-    if (typeof fetch !== 'undefined') {
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'house-card.component.ts:purchaseTicket',
-          message: 'House status check',
-          data: {
-            originalStatus: house.status,
-            lowercasedStatus: houseStatus,
-            statusMatch: houseStatus === 'active',
-            statusType: typeof house.status,
-            statusLength: house.status?.length
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'C'
-        })
-      }).catch(() => {});
-    }
-    // #endregion
     if (houseStatus !== 'active') {
-      // #region agent log
-      if (typeof fetch !== 'undefined') {
-        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'house-card.component.ts:purchaseTicket',
-            message: 'House status not active - returning early',
-            data: {
-              originalStatus: house.status,
-              lowercasedStatus: houseStatus
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'C'
-          })
-        }).catch(() => {});
-      }
-      // #endregion
       this.toastService.error('This lottery is not currently active', 3000);
       return;
     }
 
     // Check verification status (verification gate check)
     if (this.verificationService) {
-      // #region agent log
-      if (typeof fetch !== 'undefined') {
-        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'house-card.component.ts:purchaseTicket',
-            message: 'Starting verification check',
-            data: {
-              verificationServiceExists: !!this.verificationService
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'D'
-          })
-        }).catch(() => {});
-      }
-      // #endregion
       try {
         const verificationStatus = await firstValueFrom(this.verificationService.getVerificationStatus());
-        // #region agent log
-        if (typeof fetch !== 'undefined') {
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'house-card.component.ts:purchaseTicket',
-              message: 'Verification status received',
-              data: {
-                verificationStatus: verificationStatus?.verificationStatus,
-                identityVerificationStatus: verificationStatus?.verificationStatus,
-                userVerificationStatus: this.currentUserDto()?.verificationStatus,
-                isVerified: verificationStatus?.verificationStatus === 'verified' || 
-                           this.currentUserDto()?.verificationStatus === 'IdentityVerified' ||
-                           this.currentUserDto()?.verificationStatus === 'FullyVerified'
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'D'
-            })
-          }).catch(() => {});
-        }
-        // #endregion
         
         // Check both identity verification status AND user profile verification status
         const identityVerified = verificationStatus?.verificationStatus === 'verified';
@@ -891,23 +707,6 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
         const isVerified = identityVerified || userFullyVerified;
         
         if (!isVerified) {
-          // #region agent log
-          this.debugLog(
-            'house-card.component.ts:purchaseTicket',
-            'User not verified - blocking purchase',
-            {
-              identityVerificationStatus: verificationStatus?.verificationStatus,
-              userVerificationStatus: userVerificationStatus,
-              identityVerified: identityVerified,
-              userFullyVerified: userFullyVerified,
-              isVerified: isVerified,
-              currentUserDtoExists: !!this.currentUserDto(),
-              currentUserDto: this.currentUserDto(),
-              requiresIdentityVerification: userVerificationStatus === 'EmailVerified' || userVerificationStatus === 'Unverified'
-            },
-            'D'
-          );
-          // #endregion
           
           // Provide more specific error message based on verification status
           let errorMessage = this.translationService.translate('auth.verificationRequired');
@@ -922,46 +721,9 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
           return;
         }
       } catch (error: any) {
-        // #region agent log
-        if (typeof fetch !== 'undefined') {
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'house-card.component.ts:purchaseTicket',
-              message: 'Verification check error',
-              data: {
-                error: error?.message,
-                errorStatus: error?.status,
-                errorVerificationStatus: error?.error?.verificationStatus
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'D'
-            })
-          }).catch(() => {});
-        }
-        // #endregion
-        
         // If verification check fails, check user profile verification status as fallback
         const userVerificationStatusFallback = this.currentUserDto()?.verificationStatus;
         const userFullyVerifiedFallback = userVerificationStatusFallback === 'IdentityVerified' || userVerificationStatusFallback === 'FullyVerified';
-        
-        // #region agent log
-        this.debugLog(
-          'house-card.component.ts:purchaseTicket',
-          'Verification check error - checking user profile as fallback',
-          {
-            error: error?.message,
-            errorStatus: error?.status,
-            errorVerificationStatus: error?.error?.verificationStatus,
-            userVerificationStatusFallback: userVerificationStatusFallback,
-            userFullyVerifiedFallback: userFullyVerifiedFallback
-          },
-          'D'
-        );
-        // #endregion
         
         // Only block if we get a clear "not verified" response AND user profile is not verified
         if ((error?.error?.verificationStatus === 'not_verified' || error?.error?.verificationStatus === 'pending') && !userFullyVerifiedFallback) {
@@ -972,16 +734,6 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
         
         // If user profile shows verified, allow purchase even if identity endpoint failed
         if (userFullyVerifiedFallback) {
-          // #region agent log
-          this.debugLog(
-            'house-card.component.ts:purchaseTicket',
-            'Identity endpoint failed but user profile shows verified - allowing purchase',
-            {
-              userVerificationStatusFallback: userVerificationStatusFallback
-            },
-            'D'
-          );
-          // #endregion
           // Continue with purchase - user is verified according to profile
         }
       }
@@ -1108,126 +860,19 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // #region agent log
-    if (typeof fetch !== 'undefined' && this.buyTicketButton?.nativeElement) {
-      const button = this.buyTicketButton.nativeElement;
-      const computedStyle = window.getComputedStyle(button);
-      const beforeStyle = window.getComputedStyle(button, '::before');
-      const afterStyle = window.getComputedStyle(button, '::after');
-      
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'house-card.component.ts:ngAfterViewInit',
-          message: 'Button element state and computed styles',
-          data: {
-            buttonExists: !!button,
-            buttonClasses: button.className,
-            hasAnimationClass: button.classList.contains('buy-ticket-active-animation'),
-            houseStatus: this.house()?.status,
-            isPurchasing: this.isPurchasing,
-            computedBackground: computedStyle.backgroundColor,
-            computedBackgroundColor: computedStyle.backgroundColor,
-            beforeContent: beforeStyle.content,
-            beforeBackground: beforeStyle.background,
-            beforeAnimation: beforeStyle.animation,
-            beforeZIndex: beforeStyle.zIndex,
-            afterContent: afterStyle.content,
-            afterBackground: afterStyle.background,
-            afterZIndex: afterStyle.zIndex,
-            buttonZIndex: computedStyle.zIndex,
-            buttonPosition: computedStyle.position,
-            buttonOverflow: computedStyle.overflow
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'A,B,C,D,E'
-        })
-      }).catch(() => {});
-    }
-    // #endregion
   }
 
   ngOnInit() {
-    // #region agent log
-    if (typeof fetch !== 'undefined') {
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'house-card.component.ts:ngOnInit',
-          message: 'Component initialized - button state check',
-          data: {
-            houseId: this.house()?.id,
-            houseStatus: this.house()?.status,
-            isFavorite: this.isFavorite(),
-            hasUser: !!this.currentUser(),
-            isPurchasing: this.isPurchasing
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'A,B,C,D,E'
-        })
-      }).catch(() => {});
-    }
-    // #endregion
     // Start seesaw animation for active status badges (every 5 seconds)
     this.vibrationInterval = window.setInterval(() => {
       if (this.house().status === 'active') {
         // Trigger animation by updating signal
         const triggerValue = Date.now();
         this._vibrationTrigger.set(triggerValue);
-        const computedValue = this.vibrationTrigger();
-        // #region agent log
-        if (typeof fetch !== 'undefined') {
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'house-card.component.ts:vibrationInterval',
-              message: 'Vibration signal triggered',
-              data: {
-                triggerValue,
-                computedValue,
-                houseStatus: this.house()?.status,
-                signalValue: this._vibrationTrigger()
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'F'
-            })
-          }).catch(() => {});
-        }
-        // #endregion
         // Remove animation class after animation completes (700ms - 2 iterations × 0.3s = 600ms + 100ms buffer)
         setTimeout(() => {
           this._vibrationTrigger.set(0);
-          const clearedComputed = this.vibrationTrigger();
-          // #region agent log
-          if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                location: 'house-card.component.ts:vibrationInterval:clear',
-                message: 'Vibration signal cleared',
-                data: {
-                  clearedComputed,
-                  signalValue: this._vibrationTrigger()
-                },
-                timestamp: Date.now(),
-                sessionId: 'debug-session',
-                runId: 'run1',
-                hypothesisId: 'F'
-              })
-            }).catch(() => {});
-          }
-          // #endregion
-        }, 600);
+        }, 700);
       }
     }, 5000);
     
@@ -1236,28 +881,6 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
       setTimeout(() => {
         const triggerValue = Date.now();
         this._vibrationTrigger.set(triggerValue);
-        const computedValue = this.vibrationTrigger();
-        // #region agent log
-        if (typeof fetch !== 'undefined') {
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'house-card.component.ts:initialVibration',
-              message: 'Initial vibration signal triggered',
-              data: {
-                triggerValue,
-                computedValue,
-                houseStatus: this.house()?.status
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'F'
-            })
-          }).catch(() => {});
-        }
-        // #endregion
         setTimeout(() => {
           this._vibrationTrigger.set(0);
         }, 700);
@@ -1267,35 +890,6 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
     // Update countdown every second
     this.countdownInterval = window.setInterval(() => {
       this.currentTime.set(Date.now());
-      // #region agent log - Check badge state periodically
-      if (typeof fetch !== 'undefined' && this.house().status === 'active') {
-        setTimeout(() => {
-          const badgeElement = document.querySelector(`span[class*="bg-emerald-500"]`) as HTMLElement;
-          if (badgeElement) {
-            const badgeComputedStyle = window.getComputedStyle(badgeElement);
-            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                location: 'house-card.component.ts:countdownInterval:badgeCheck',
-                message: 'Badge element state check',
-                data: {
-                  hasAnimateSeesaw: badgeElement.classList.contains('animate-seesaw'),
-                  badgeClasses: badgeElement.className,
-                  badgeAnimation: badgeComputedStyle.animation,
-                  vibrationTriggerValue: this.vibrationTrigger(),
-                  houseStatus: this.house()?.status
-                },
-                timestamp: Date.now(),
-                sessionId: 'debug-session',
-                runId: 'run1',
-                hypothesisId: 'F,G'
-              })
-            }).catch(() => {});
-          }
-        }, 100);
-      }
-      // #endregion
     }, 1000);
   }
 

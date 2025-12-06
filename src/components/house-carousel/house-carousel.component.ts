@@ -900,7 +900,6 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           this._vibrationTrigger.set(0);
         }, 700);
-        }, 700);
       }
     }, 5000);
     
@@ -912,7 +911,6 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         this._vibrationTrigger.set(triggerValue);
         setTimeout(() => {
           this._vibrationTrigger.set(0);
-        }, 700);
         }, 700);
       }, 1000);
     }
@@ -1403,73 +1401,20 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     return this.purchasing().has(houseId);
   }
 
-  // Debug logging helper - works in both dev and production
-
   onBuyTicketClick(house: any, event: Event) {
-    // #region agent log
-    this.debugLog(
-      'house-carousel.component.ts:onBuyTicketClick',
-      'Button click handler called',
-      {
-        eventType: event.type,
-        hasUser: !!this.currentUser()?.isAuthenticated,
-        userId: this.currentUser()?.id,
-        isPurchasing: this.isPurchasing(house.id),
-        clickInProgress: this.buyTicketClickInProgress().has(house.id),
-        houseId: house.id,
-        houseStatus: house.status,
-        houseStatusLower: house.status?.toLowerCase(),
-        buttonDisabled: (event.target as HTMLButtonElement)?.disabled,
-        timestamp: Date.now()
-      },
-      'A'
-    );
-    // #endregion
 
     event.preventDefault();
     event.stopPropagation();
 
     // Guard against duplicate clicks
     if (this.buyTicketClickInProgress().has(house.id)) {
-      // #region agent log
-      this.debugLog(
-        'house-carousel.component.ts:onBuyTicketClick',
-        'Duplicate click detected - ignoring',
-        {
-          houseId: house.id,
-          clickInProgress: true
-        },
-        'E'
-      );
-      // #endregion
       return;
     }
 
     // Mark as in progress
     this.buyTicketClickInProgress.update(set => new Set(set).add(house.id));
 
-    // #region agent log
-    this.debugLog(
-      'house-carousel.component.ts:onBuyTicketClick',
-      'After event preventDefault - checking user',
-      {
-        currentUser: this.currentUser(),
-        currentUserIsAuthenticated: this.currentUser()?.isAuthenticated,
-        clickInProgressSet: Array.from(this.buyTicketClickInProgress())
-      },
-      'B'
-    );
-    // #endregion
-
     if (!this.currentUser()?.isAuthenticated) {
-      // #region agent log
-      this.debugLog(
-        'house-carousel.component.ts:onBuyTicketClick',
-        'No user - returning early',
-        {},
-        'B'
-      );
-      // #endregion
       this.buyTicketClickInProgress.update(set => {
         const newSet = new Set(set);
         newSet.delete(house.id);
@@ -1486,156 +1431,41 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         newSet.delete(house.id);
         return newSet;
       });
-      // #region agent log
-      this.debugLog(
-        'house-carousel.component.ts:onBuyTicketClick',
-        'Click handler completed - flag cleared',
-        {
-          houseId: house.id,
-          clickInProgressSet: Array.from(this.buyTicketClickInProgress())
-        },
-        'E'
-      );
-      // #endregion
     });
   }
 
   async purchaseTicket(house: any) {
-    // #region agent log
-    this.debugLog(
-      'house-carousel.component.ts:purchaseTicket',
-      'purchaseTicket method entry',
-      {
-        hasUser: !!this.currentUser()?.isAuthenticated,
-        isPurchasing: this.isPurchasing(house.id),
-        houseId: house.id,
-        houseStatus: house.status
-      },
-      'A,B,C'
-    );
-    // #endregion
-
     if (!this.currentUser()?.isAuthenticated) {
-      // #region agent log
-      this.debugLog(
-        'house-carousel.component.ts:purchaseTicket',
-        'No user - returning early',
-        {},
-        'B'
-      );
-      // #endregion
       this.toastService.error('Please sign in to purchase tickets', 3000);
       return;
     }
 
     if (this.isPurchasing(house.id)) {
-      // #region agent log
-      this.debugLog(
-        'house-carousel.component.ts:purchaseTicket',
-        'Already purchasing - returning early',
-        {},
-        'E'
-      );
-      // #endregion
       return;
     }
 
     if (!house) {
-      // #region agent log
-      this.debugLog(
-        'house-carousel.component.ts:purchaseTicket',
-        'No house data - returning early',
-        {},
-        'C'
-      );
-      // #endregion
       this.toastService.error('House data not available', 3000);
       return;
     }
 
     // Check house status (case-insensitive)
     const houseStatus = house.status?.toLowerCase();
-    // #region agent log
-    this.debugLog(
-      'house-carousel.component.ts:purchaseTicket',
-      'House status check',
-      {
-        originalStatus: house.status,
-        lowercasedStatus: houseStatus,
-        statusMatch: houseStatus === 'active',
-        statusType: typeof house.status,
-        statusLength: house.status?.length
-      },
-      'C'
-    );
-    // #endregion
     if (houseStatus !== 'active') {
-      // #region agent log
-      this.debugLog(
-        'house-carousel.component.ts:purchaseTicket',
-        'House status not active - returning early',
-        {
-          originalStatus: house.status,
-          lowercasedStatus: houseStatus
-        },
-        'C'
-      );
-      // #endregion
       this.toastService.error('This lottery is not currently active', 3000);
       return;
     }
 
     // Check verification status
     if (this.verificationService) {
-      // #region agent log
-      this.debugLog(
-        'house-carousel.component.ts:purchaseTicket',
-        'Starting verification check',
-        {
-          verificationServiceExists: !!this.verificationService
-        },
-        'D'
-      );
-      // #endregion
       try {
         const verificationStatus = await firstValueFrom(this.verificationService.getVerificationStatus());
-        // #region agent log
         const userVerificationStatus = this.authService.getCurrentUserDto()()?.verificationStatus;
         const identityVerified = verificationStatus?.verificationStatus === 'verified';
         const userFullyVerified = userVerificationStatus === 'IdentityVerified' || userVerificationStatus === 'FullyVerified';
         const isVerified = identityVerified || userFullyVerified;
         
-        this.debugLog(
-          'house-carousel.component.ts:purchaseTicket',
-          'Verification status received',
-          {
-            verificationStatus: verificationStatus?.verificationStatus,
-            identityVerificationStatus: verificationStatus?.verificationStatus,
-            userVerificationStatus: userVerificationStatus,
-            isVerified: isVerified
-          },
-          'D'
-        );
-        // #endregion
-        
         if (!isVerified) {
-          // #region agent log
-          this.debugLog(
-            'house-carousel.component.ts:purchaseTicket',
-            'User not verified - blocking purchase',
-            {
-              identityVerificationStatus: verificationStatus?.verificationStatus,
-              userVerificationStatus: userVerificationStatus,
-              identityVerified: identityVerified,
-              userFullyVerified: userFullyVerified,
-              isVerified: isVerified,
-              currentUserDtoExists: !!this.authService.getCurrentUserDto()(),
-              requiresIdentityVerification: userVerificationStatus === 'EmailVerified' || userVerificationStatus === 'Unverified'
-            },
-            'D'
-          );
-          // #endregion
-          
           // Provide more specific error message based on verification status
           let errorMessage = this.translate('auth.verificationRequired');
           if (userVerificationStatus === 'EmailVerified') {
@@ -1649,37 +1479,9 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
           return;
         }
       } catch (error: any) {
-        // #region agent log
-        this.debugLog(
-          'house-carousel.component.ts:purchaseTicket',
-          'Verification check error',
-          {
-            error: error?.message,
-            errorStatus: error?.status,
-            errorVerificationStatus: error?.error?.verificationStatus
-          },
-          'D'
-        );
-        // #endregion
-        
         // If verification check fails, check user profile verification status as fallback
         const userVerificationStatusFallback = this.authService.getCurrentUserDto()()?.verificationStatus;
         const userFullyVerifiedFallback = userVerificationStatusFallback === 'IdentityVerified' || userVerificationStatusFallback === 'FullyVerified';
-        
-        // #region agent log
-        this.debugLog(
-          'house-carousel.component.ts:purchaseTicket',
-          'Verification check error - checking user profile as fallback',
-          {
-            error: error?.message,
-            errorStatus: error?.status,
-            errorVerificationStatus: error?.error?.verificationStatus,
-            userVerificationStatusFallback: userVerificationStatusFallback,
-            userFullyVerifiedFallback: userFullyVerifiedFallback
-          },
-          'D'
-        );
-        // #endregion
         
         // Only block if we get a clear "not verified" response AND user profile is not verified
         if ((error?.error?.verificationStatus === 'not_verified' || error?.error?.verificationStatus === 'pending') && !userFullyVerifiedFallback) {
@@ -1690,16 +1492,6 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         
         // If user profile shows verified, allow purchase even if identity endpoint failed
         if (userFullyVerifiedFallback) {
-          // #region agent log
-          this.debugLog(
-            'house-carousel.component.ts:purchaseTicket',
-            'Identity endpoint failed but user profile shows verified - allowing purchase',
-            {
-              userVerificationStatusFallback: userVerificationStatusFallback
-            },
-            'D'
-          );
-          // #endregion
           // Continue with purchase - user is verified according to profile
         }
       }
@@ -1711,44 +1503,13 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     if (!productId) {
       try {
         this.purchasing.update(set => new Set(set).add(house.id));
-        // #region agent log
-        this.debugLog(
-          'house-carousel.component.ts:purchaseTicket',
-          'Fetching product for house',
-          {
-            houseId: house.id
-          },
-          'A'
-        );
-        // #endregion
         const product = await firstValueFrom(this.productService.getProductByHouseId(house.id));
-        // #region agent log
-        this.debugLog(
-          'house-carousel.component.ts:purchaseTicket',
-          'Product fetched',
-          {
-            product: product,
-            productId: product?.id
-          },
-          'A'
-        );
-        // #endregion
         if (product?.id) {
           productId = product.id;
         } else {
           throw new Error('Product not found');
         }
       } catch (error: any) {
-        // #region agent log
-        this.debugLog(
-          'house-carousel.component.ts:purchaseTicket',
-          'Error fetching product',
-          {
-            error: error?.message
-          },
-          'A'
-        );
-        // #endregion
         this.toastService.error('Product not available for this house. Please try again later.', 5000);
         this.purchasing.update(set => {
           const newSet = new Set(set);
@@ -1767,66 +1528,17 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
     // Ensure productId is set before showing modal
     if (!productId) {
-      // #region agent log
-      this.debugLog(
-        'house-carousel.component.ts:purchaseTicket',
-        'Product ID is still null after fetch attempt',
-        {},
-        'A'
-      );
-      // #endregion
       this.toastService.error('Product not available for this house. Please try again later.', 5000);
       return;
     }
-
-    // #region agent log
-    this.debugLog(
-      'house-carousel.component.ts:purchaseTicket',
-      'Opening payment modal',
-      {
-        productId: productId,
-        houseId: house.id,
-        ticketPrice: house.ticketPrice
-      },
-      'A'
-    );
-    // #endregion
 
     // Store data for payment modal
     this.currentProductId.set(productId);
     this.currentHouseId.set(house.id);
     this.currentTicketPrice.set(house.ticketPrice);
 
-    // #region agent log
-    this.debugLog(
-      'house-carousel.component.ts:purchaseTicket',
-      'About to show payment modal',
-      {
-        productId: productId,
-        houseId: house.id,
-        showPaymentModalBefore: this.showPaymentModal(),
-        currentProductIdBefore: this.currentProductId()
-      },
-      'A'
-    );
-    // #endregion
-
     // Show payment modal
     this.showPaymentModal.set(true);
-
-    // #region agent log
-    this.debugLog(
-      'house-carousel.component.ts:purchaseTicket',
-      'Payment modal shown',
-      {
-        productId: productId,
-        houseId: house.id,
-        showPaymentModalAfter: this.showPaymentModal(),
-        currentProductIdAfter: this.currentProductId()
-      },
-      'A'
-    );
-    // #endregion
   }
 
   closePaymentModal() {
