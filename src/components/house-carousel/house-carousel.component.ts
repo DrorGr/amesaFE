@@ -892,11 +892,11 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         const triggerValue = Date.now();
         this._vibrationTrigger.set(triggerValue);
         console.log('🔴 [HouseCarousel] Vibration triggered:', triggerValue, 'Computed:', this.vibrationTrigger());
-        // Remove animation class after animation completes (600ms - 2 iterations × 0.3s)
+        // Remove animation class after animation completes (700ms - 2 iterations × 0.3s = 600ms + 100ms buffer)
         setTimeout(() => {
           this._vibrationTrigger.set(0);
           console.log('🟢 [HouseCarousel] Vibration cleared, computed:', this.vibrationTrigger());
-        }, 600);
+        }, 700);
       }
     }, 5000);
     
@@ -910,7 +910,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           this._vibrationTrigger.set(0);
           console.log('🟢 [HouseCarousel] Initial vibration cleared, computed:', this.vibrationTrigger());
-        }, 600);
+        }, 700);
       }, 1000);
     }
 

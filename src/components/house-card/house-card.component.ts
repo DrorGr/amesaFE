@@ -366,12 +366,14 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         }
       }
       
+      span.animate-seesaw,
       .animate-seesaw {
         animation-name: seesaw !important;
         animation-duration: 0.3s !important;
         animation-timing-function: ease-in-out !important;
         animation-iteration-count: 2 !important;
         animation-fill-mode: none !important;
+        animation-play-state: running !important;
         transform-origin: center center;
       }
       
@@ -1191,7 +1193,7 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
           }).catch(() => {});
         }
         // #endregion
-        // Remove animation class after animation completes (600ms - 2 iterations × 0.3s)
+        // Remove animation class after animation completes (700ms - 2 iterations × 0.3s = 600ms + 100ms buffer)
         setTimeout(() => {
           this._vibrationTrigger.set(0);
           const clearedComputed = this.vibrationTrigger();
@@ -1248,7 +1250,7 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
         // #endregion
         setTimeout(() => {
           this._vibrationTrigger.set(0);
-        }, 600);
+        }, 700);
       }, 1000);
     }
 
