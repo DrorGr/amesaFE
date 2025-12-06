@@ -468,19 +468,46 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   async purchaseTicket() {
-    if (!this.currentUser() || this.isPurchasing) {
+    console.log('purchaseTicket() called', { 
+      hasUser: !!this.currentUser(), 
+      isPurchasing: this.isPurchasing,
+      house: this.house()?.id,
+      houseStatus: this.house()?.status 
+    });
+
+    if (!this.currentUser()) {
+      console.log('No current user, redirecting to login');
+      this.toastService.error('Please sign in to purchase tickets', 3000);
+      return;
+    }
+
+    if (this.isPurchasing) {
+      console.log('Already purchasing, ignoring click');
       return;
     }
 
     const house = this.house();
-    if (!house) return;
+    if (!house) {
+      console.error('No house data available');
+      return;
+    }
+
+    if (house.status !== 'active') {
+      console.log('House is not active, status:', house.status);
+      this.toastService.error('This lottery is not currently active', 3000);
+      return;
+    }
 
     // Fetch product ID if not available (on-demand for performance)
     let productId = house.productId;
+    console.log('Product ID from house:', productId);
+    
     if (!productId) {
       try {
         this.isPurchasing = true;
+        console.log('Fetching product for house:', house.id);
         const product = await firstValueFrom(this.productService.getProductByHouseId(house.id));
+        console.log('Product fetched:', product);
         if (product?.id) {
           productId = product.id;
         } else {
@@ -499,10 +526,12 @@ export class HouseCardComponent implements OnInit, OnDestroy {
 
     // Ensure productId is set before showing modal
     if (!productId) {
+      console.error('Product ID is still null after fetch attempt');
       this.toastService.error('Product not available for this house. Please try again later.', 5000);
       return;
     }
 
+    console.log('Opening payment modal with product ID:', productId);
     // Store productId for payment modal
     this.currentProductId.set(productId);
     
