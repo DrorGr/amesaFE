@@ -68,6 +68,7 @@ export class StripeService {
       throw new Error('Client secret is required to create payment element');
     }
 
+    // Create elements instance with client secret
     this.elements = stripe.elements({
       clientSecret: clientSecret,
       appearance: {
@@ -82,7 +83,18 @@ export class StripeService {
       layout: 'tabs'
     }) as StripePaymentElement;
 
+    // Wait for the container element to exist
+    const container = document.getElementById(containerId);
+    if (!container) {
+      throw new Error(`Payment element container #${containerId} not found`);
+    }
+
+    // Mount the payment element
     paymentElement.mount(`#${containerId}`);
+    
+    // Wait a bit to ensure the element is fully mounted
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     return paymentElement;
   }
 
@@ -103,27 +115,36 @@ export class StripeService {
 
   async confirmPayment(clientSecret: string): Promise<{ success: boolean; error?: string }> {
     const stripe = await this.stripe;
-    if (!stripe || !this.elements) {
-      return { success: false, error: 'Stripe failed to load or payment element not created' };
+    if (!stripe) {
+      return { success: false, error: 'Stripe failed to load' };
+    }
+
+    if (!this.elements) {
+      return { success: false, error: 'Payment element not created. Please wait for payment form to load.' };
     }
 
     try {
+      // Verify the elements instance is valid and has a mounted payment element
+      // Stripe will throw an error if the payment element isn't properly mounted
       const { error } = await stripe.confirmPayment({
         elements: this.elements,
         clientSecret,
         confirmParams: {
           return_url: `${window.location.origin}/payment/success`
-        }
+        },
+        redirect: 'if_required' // Only redirect if 3D Secure or similar is required
       });
 
       if (error) {
-        return { success: false, error: error.message };
+        console.error('Stripe confirmPayment error:', error);
+        return { success: false, error: error.message || 'Payment failed' };
       }
 
       return { success: true };
     } catch (error: unknown) {
       const err = error as { message?: string };
-      return { success: false, error: err.message || 'Payment failed' };
+      console.error('Error confirming payment:', error);
+      return { success: false, error: err.message || 'Payment failed. Please ensure the payment form is fully loaded.' };
     }
   }
 

@@ -280,7 +280,17 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
       // Wait for the DOM element to be rendered before mounting
       await this.waitForElement('stripe-payment-element');
       
+      // Additional wait to ensure Angular's rendering is complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       this.paymentElement = await this.stripeService.createPaymentElement('stripe-payment-element', paymentIntent.clientSecret);
+      
+      if (!this.paymentElement) {
+        throw new Error('Failed to create payment element');
+      }
+      
+      // Wait a bit more to ensure the element is fully mounted and ready
+      await new Promise(resolve => setTimeout(resolve, 200));
     } catch (err: any) {
       this.error.set(err.message || 'Failed to initialize payment');
       this.loading.set(false);
@@ -310,6 +320,16 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
 
   async confirmPayment() {
     if (!this.paymentElement || !this.clientSecret()) {
+      this.error.set('Payment element is not ready. Please wait for the payment form to load.');
+      this.toastService.error('Payment form is not ready. Please wait a moment and try again.', 3000);
+      return;
+    }
+
+    // Verify the element is still mounted
+    const element = document.getElementById('stripe-payment-element');
+    if (!element || element.children.length === 0) {
+      this.error.set('Payment element is not mounted. Please refresh the page and try again.');
+      this.toastService.error('Payment form error. Please refresh and try again.', 5000);
       return;
     }
 
