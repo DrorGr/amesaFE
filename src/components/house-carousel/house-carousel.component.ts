@@ -700,45 +700,42 @@ import { environment } from '../../environments/environment';
     /* Creates a moving glow effect that travels around the button perimeter like a chasing tail */
     .buy-ticket-active-animation {
       position: relative;
-      z-index: 0;
       overflow: hidden;
       border-radius: 0.5rem;
     }
-    
+
     .buy-ticket-active-animation::before {
       content: '';
       position: absolute;
-      z-index: -2;
-      left: -50%;
-      top: -50%;
-      width: 200%;
-      height: 200%;
-      background-color: transparent;
-      background-repeat: no-repeat;
-      background-position: 0 0;
-      background-image: conic-gradient(
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: conic-gradient(
         from 0deg,
-        transparent 0deg,
-        transparent 240deg,
-        rgba(251, 146, 60, 0.6) 250deg,
-        rgba(251, 146, 60, 1) 270deg,
-        rgba(251, 146, 60, 0.6) 290deg,
-        transparent 300deg,
-        transparent 360deg
+        rgba(251, 146, 60, 0.8),
+        rgba(251, 146, 60, 1),
+        rgba(251, 146, 60, 0.8),
+        rgba(251, 146, 60, 0.4),
+        rgba(251, 146, 60, 0.8),
+        rgba(251, 146, 60, 1),
+        rgba(251, 146, 60, 0.8)
       );
+      border-radius: 0.5rem;
+      z-index: -2;
       animation: buy-ticket-border-rotate 4s linear infinite;
     }
     
     .buy-ticket-active-animation::after {
       content: '';
       position: absolute;
-      z-index: -1;
-      left: 4px;  /* Changed from 3px to 4px */
-      top: 4px;   /* Changed from 3px to 4px */
-      width: calc(100% - 8px);  /* Changed from calc(100% - 6px) to calc(100% - 8px) */
-      height: calc(100% - 8px); /* Changed from calc(100% - 6px) to calc(100% - 8px) */
+      top: 2px;
+      left: 2px;
+      right: 2px;
+      bottom: 2px;
       background: rgb(37, 99, 235); /* bg-blue-600 explicit color */
-      border-radius: calc(0.5rem - 4px); /* Changed from calc(0.5rem - 3px) to calc(0.5rem - 4px) */
+      border-radius: calc(0.5rem - 2px);
+      z-index: -1;
     }
     
     .dark .buy-ticket-active-animation::after {
