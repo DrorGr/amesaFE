@@ -303,10 +303,18 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
       // Wait a bit more to ensure the element is fully mounted and ready
       await new Promise(resolve => setTimeout(resolve, 200));
     } catch (err: any) {
-      this.error.set(err.message || 'Failed to initialize payment');
+      // Handle rate limiting (429) errors specifically
+      if (err.status === 429 || err.error?.error?.code === 'RATE_LIMIT_EXCEEDED') {
+        const rateLimitMessage = this.translate('payment.rateLimitExceeded') || 
+          'Too many payment requests. Please wait a moment and try again.';
+        this.error.set(rateLimitMessage);
+        this.toastService.error(rateLimitMessage, 8000);
+      } else {
+        this.error.set(err.message || 'Failed to initialize payment');
+        this.toastService.error(this.error() || 'Failed to initialize payment', 5000);
+      }
       this.loading.set(false);
       console.error(err);
-      this.toastService.error(this.error() || 'Failed to initialize payment', 5000);
     }
   }
 

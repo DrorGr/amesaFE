@@ -116,9 +116,20 @@ export class StripeService {
         if (response.success && response.data) {
           return response.data;
         }
-        throw new Error('Failed to create payment intent');
+        // Check if it's a rate limit error
+        if (response.error?.code === 'RATE_LIMIT_EXCEEDED') {
+          const err: any = new Error(response.error.message || 'Too many payment requests');
+          err.status = 429;
+          err.error = response.error;
+          throw err;
+        }
+        throw new Error(response.error?.message || 'Failed to create payment intent');
       }),
       catchError(error => {
+        // Preserve rate limit errors
+        if (error.status === 429 || error.error?.code === 'RATE_LIMIT_EXCEEDED') {
+          return throwError(() => error);
+        }
         console.error('Error creating payment intent:', error);
         return throwError(() => error);
       })
