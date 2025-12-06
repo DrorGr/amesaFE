@@ -30,11 +30,24 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
       
 
       <div class="relative h-64 md:h-64 bg-gray-200 flex-shrink-0 group">
-        <img 
-          [src]="house().imageUrl" 
-          [alt]="house().title"
-          (error)="onImageError($event)"
-          class="w-full h-full object-cover rounded-t-xl">
+        <div class="relative w-full h-full">
+          <img 
+            [src]="house().imageUrl" 
+            [alt]="house().title"
+            (error)="onImageError($event)"
+            [class.thumbnail-upcoming]="house().status === 'upcoming'"
+            [class.thumbnail-ended]="house().status === 'ended'"
+            class="w-full h-full object-cover rounded-t-xl">
+          <!-- Thumbnail overlay for status -->
+          <div 
+            *ngIf="house().status === 'upcoming'"
+            class="absolute inset-0 bg-yellow-500 bg-opacity-15 dark:bg-yellow-400 dark:bg-opacity-10 rounded-t-xl pointer-events-none z-0">
+          </div>
+          <div 
+            *ngIf="house().status === 'ended'"
+            class="absolute inset-0 bg-gray-500 bg-opacity-30 dark:bg-gray-600 dark:bg-opacity-40 rounded-t-xl pointer-events-none z-0 thumbnail-ended-overlay">
+          </div>
+        </div>
         
         <!-- Location Icon - Red Circular (Standardized Size) -->
         <button 
@@ -48,11 +61,14 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
           </svg>
         </button>
         
-        <!-- Status Badge - Green Oval (Centered, Same Height as Icons) -->
+        <!-- Status Badge - Color based on status (Centered, Same Height as Icons) -->
         <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
           <span 
             [class.animate-seesaw]="house().status === 'active' && vibrationTrigger() > 0"
-            class="bg-emerald-500 text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
+            [class.bg-emerald-500]="house().status === 'active'"
+            [class.bg-yellow-500]="house().status === 'upcoming'"
+            [class.bg-gray-500]="house().status === 'ended'"
+            class="text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
             {{ getStatusText() }}
           </span>
         </div>
@@ -143,7 +159,7 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
           </div>
 
           <div class="text-center mb-4 md:mb-3">
-            <div class="text-2xl md:text-base text-gray-600 dark:text-gray-300">{{ translate('house.lotteryCountdown') }}</div>
+            <div *ngIf="getLotteryCountdownLabel()" class="text-2xl md:text-base text-gray-600 dark:text-gray-300">{{ getLotteryCountdownLabel() }}</div>
             <div class="text-xl md:text-xl font-bold text-orange-600 dark:text-orange-400 mobile-card-time font-mono">{{ getLotteryCountdown() }}</div>
           </div>
         </div>
@@ -175,7 +191,8 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
                 (click)="onBuyTicketClick($event)"
                 (keydown.enter)="onBuyTicketClick($event)"
                 (keydown.space)="onBuyTicketClick($event); $event.preventDefault()"
-                [disabled]="isPurchasing"
+                [disabled]="isPurchasing || house().status !== 'active'"
+                [class.buy-ticket-active-animation]="house().status === 'active' && !isPurchasing"
                 class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none"
                 [class.bg-gray-400]="isPurchasing || house().status !== 'active'"
                 [class.cursor-not-allowed]="isPurchasing || house().status !== 'active'"
@@ -185,7 +202,7 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
                   {{ translate('house.processing') }}
                 </ng-container>
                 <ng-template #buyTicketBlock>
-                  {{ translate('house.buyTicket') }} - €{{ house().ticketPrice }}
+                  {{ getBuyTicketButtonText() }}
                 </ng-template>
               </button>
             </app-verification-gate>
@@ -375,6 +392,65 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
       .heart-beat {
         animation: heart-beat 1.5s ease-in-out infinite;
         transform-origin: center center;
+      }
+      
+      /* Thumbnail filters for status */
+      .thumbnail-upcoming {
+        filter: sepia(0.2) saturate(1.1) brightness(1.05);
+      }
+      
+      .thumbnail-ended {
+        filter: grayscale(0.8) brightness(0.7);
+      }
+      
+      .thumbnail-ended-overlay {
+        filter: grayscale(0.8) brightness(0.7);
+      }
+      
+      /* Active buy ticket button trailing animation (matching promotions color) */
+      @keyframes buy-ticket-trail {
+        0% {
+          box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.7);
+        }
+        50% {
+          box-shadow: 0 0 20px 4px rgba(251, 146, 60, 0.5), 0 0 40px 8px rgba(251, 146, 60, 0.3);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(251, 146, 60, 0);
+        }
+      }
+      
+      @keyframes buy-ticket-shimmer {
+        0% {
+          left: -100%;
+        }
+        100% {
+          left: 100%;
+        }
+      }
+      
+      .buy-ticket-active-animation {
+        position: relative;
+        animation: buy-ticket-trail 2s ease-in-out infinite;
+        overflow: hidden;
+      }
+      
+      .buy-ticket-active-animation::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(251, 146, 60, 0.3),
+          transparent
+        );
+        animation: buy-ticket-shimmer 2.5s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 1;
       }
     }
   `]
@@ -1007,15 +1083,61 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  getLotteryCountdownLabel(): string {
+    const house = this.house();
+    if (!house) return '';
+    
+    if (house.status === 'ended') {
+      return ''; // No label for ended
+    }
+    
+    if (house.status === 'upcoming' && house.lotteryStartDate) {
+      return this.translate('house.lotteryStartsIn') || 'Lottery starts in';
+    }
+    
+    return this.translate('house.lotteryCountdown');
+  }
+
+  getBuyTicketButtonText(): string {
+    const house = this.house();
+    if (!house) return this.translate('house.buyTicket');
+    
+    if (house.status === 'ended') {
+      return this.translate('house.ended') || 'Ended';
+    }
+    
+    if (house.status === 'upcoming') {
+      return this.translate('house.reserveTicket') || 'Reserve Ticket';
+    }
+    
+    return `${this.translate('house.buyTicket')} - €${house.ticketPrice}`;
+  }
+
   getLotteryCountdown(): string {
     const house = this.house();
-    if (!house || !house.lotteryEndDate) return '00:00:00:00';
-    const now = this.currentTime(); // Use signal instead of Date.now() for reactive updates
-    const endTime = new Date(house.lotteryEndDate).getTime();
-    const timeLeft = endTime - now;
+    if (!house) return '00:00:00:00';
+    
+    // For ended status, just return "Ended"
+    if (house.status === 'ended') {
+      return this.translate('house.ended') || 'Ended';
+    }
+    
+    // For upcoming, use lotteryStartDate if available
+    const targetDate = house.status === 'upcoming' && house.lotteryStartDate 
+      ? new Date(house.lotteryStartDate)
+      : house.lotteryEndDate 
+        ? new Date(house.lotteryEndDate)
+        : null;
+    
+    if (!targetDate) return '00:00:00:00';
+    
+    const now = this.currentTime();
+    const timeLeft = targetDate.getTime() - now;
 
     if (timeLeft <= 0) {
-      return '00:00:00:00';
+      return house.status === 'upcoming' 
+        ? (this.translate('house.ended') || 'Ended')
+        : '00:00:00:00';
     }
 
     const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));

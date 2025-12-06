@@ -121,6 +121,19 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
       animation: heart-beat 1.5s ease-in-out infinite;
       transform-origin: center center;
     }
+    
+    /* Thumbnail filters for status */
+    .thumbnail-upcoming {
+      filter: sepia(0.2) saturate(1.1) brightness(1.05);
+    }
+    
+    .thumbnail-ended {
+      filter: grayscale(0.8) brightness(0.7);
+    }
+    
+    .thumbnail-ended-overlay {
+      filter: grayscale(0.8) brightness(0.7);
+    }
   `],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4 md:px-8">
@@ -161,11 +174,24 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
             <div class="relative">
               <!-- Main Image -->
               <div class="relative h-64 md:h-96 bg-gray-200">
-                <img
-                  [src]="primaryImage()"
-                  (error)="onImageError($event)"
-                  [alt]="house()!.title"
-                  class="w-full h-full object-cover transition-opacity duration-300">
+                <div class="relative w-full h-full">
+                  <img
+                    [src]="primaryImage()"
+                    (error)="onImageError($event)"
+                    [alt]="house()!.title"
+                    [class.thumbnail-upcoming]="house()!.status === 'upcoming'"
+                    [class.thumbnail-ended]="house()!.status === 'ended'"
+                    class="w-full h-full object-cover transition-opacity duration-300">
+                  <!-- Thumbnail overlay for status -->
+                  <div 
+                    *ngIf="house()!.status === 'upcoming'"
+                    class="absolute inset-0 bg-yellow-500 bg-opacity-15 dark:bg-yellow-400 dark:bg-opacity-10 pointer-events-none z-0">
+                  </div>
+                  <div 
+                    *ngIf="house()!.status === 'ended'"
+                    class="absolute inset-0 bg-gray-500 bg-opacity-30 dark:bg-gray-600 dark:bg-opacity-40 pointer-events-none z-0 thumbnail-ended-overlay">
+                  </div>
+                </div>
                 
                 <!-- Location Icon - Red Circular (Standardized Size) -->
                 <button 
@@ -179,11 +205,14 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   </svg>
                 </button>
 
-                <!-- Status Badge - Green Oval (Centered, Same Height as Icons) -->
+                <!-- Status Badge - Color based on status (Centered, Same Height as Icons) -->
                 <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
                   <span 
                     [class.animate-seesaw]="house()!.status === 'active' && vibrationTrigger() > 0"
-                    class="bg-emerald-500 text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
+                    [class.bg-emerald-500]="house()!.status === 'active'"
+                    [class.bg-yellow-500]="house()!.status === 'upcoming'"
+                    [class.bg-gray-500]="house()!.status === 'ended'"
+                    class="text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
                     {{ getStatusText() }}
                   </span>
                 </div>

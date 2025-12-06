@@ -99,12 +99,25 @@ import { environment } from '../../environments/environment';
                           <div class="text-gray-400 dark:text-gray-500 text-sm">Loading...</div>
                         </div>
                       </div>
-                      <img
-                        [attr.data-src]="getCurrentMainImage(house, houseIndex).url" 
-                        [alt]="getCurrentMainImage(house, houseIndex).alt"
-                        class="w-full h-64 md:h-96 object-cover object-center opacity-0 absolute inset-0 transition-opacity duration-300"
-                        (load)="onImageLoad($event)"
-                        (error)="onImageError($event)">
+                      <div class="relative w-full h-full">
+                        <img
+                          [attr.data-src]="getCurrentMainImage(house, houseIndex).url" 
+                          [alt]="getCurrentMainImage(house, houseIndex).alt"
+                          [class.thumbnail-upcoming]="house.status === 'upcoming'"
+                          [class.thumbnail-ended]="house.status === 'ended'"
+                          class="w-full h-64 md:h-96 object-cover object-center opacity-0 absolute inset-0 transition-opacity duration-300"
+                          (load)="onImageLoad($event)"
+                          (error)="onImageError($event)">
+                        <!-- Thumbnail overlay for status -->
+                        <div 
+                          *ngIf="house.status === 'upcoming'"
+                          class="absolute inset-0 bg-yellow-500 bg-opacity-15 dark:bg-yellow-400 dark:bg-opacity-10 pointer-events-none z-0">
+                        </div>
+                        <div 
+                          *ngIf="house.status === 'ended'"
+                          class="absolute inset-0 bg-gray-500 bg-opacity-30 dark:bg-gray-600 dark:bg-opacity-40 pointer-events-none z-0 thumbnail-ended-overlay">
+                        </div>
+                      </div>
                     }
                     
                     <!-- Location Icon - Top Left, matching image ratio -->
@@ -262,7 +275,7 @@ import { environment } from '../../environments/environment';
                       <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">{{ getOdds(house) }}</span>
                     </div>
                     <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('house.lotteryCountdown') }}</span>
+                      <span *ngIf="getLotteryCountdownLabel(house)" class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ getLotteryCountdownLabel(house) }}</span>
                       <span class="font-bold text-orange-600 dark:text-orange-400 text-xl md:text-3xl font-mono">{{ getLotteryCountdown(house) }}</span>
                     </div>
                   
@@ -276,16 +289,16 @@ import { environment } from '../../environments/environment';
                     <!-- Buttons Section -->
                     @if (currentUser()?.isAuthenticated) {
                       <app-verification-gate [isVerificationRequired]="true">
-                        <!-- Buy Ticket / Notify Me Button -->
+                        <!-- Buy Ticket / Reserve Ticket Button -->
                         @if (house.status === 'ended') {
                           <button 
                             disabled
                             class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button cursor-not-allowed opacity-60">
-                            {{ translate('house.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
+                            {{ translate('house.ended') || 'Ended' }}
                           </button>
                         } @else if (house.status === 'upcoming') {
                           <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
-                            {{ translate('carousel.notifyMe') || 'Notify Me' }}
+                            {{ translate('house.reserveTicket') || 'Reserve Ticket' }}
                           </button>
                         } @else {
                           <button 
@@ -293,6 +306,7 @@ import { environment } from '../../environments/environment';
                             (keydown.enter)="onBuyTicketClick(house, $event)"
                             (keydown.space)="onBuyTicketClick(house, $event); $event.preventDefault()"
                             [disabled]="isPurchasing(house.id)"
+                            [class.buy-ticket-active-animation]="house.status === 'active' && !isPurchasing(house.id)"
                             class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button disabled:bg-gray-400 disabled:cursor-not-allowed">
                             @if (isPurchasing(house.id)) {
                               {{ translate('house.processing') }}
@@ -662,6 +676,65 @@ import { environment } from '../../environments/environment';
       animation: heart-beat 1.5s ease-in-out infinite;
       transform-origin: center center;
     }
+    
+    /* Thumbnail filters for status */
+    .thumbnail-upcoming {
+      filter: sepia(0.2) saturate(1.1) brightness(1.05);
+    }
+    
+    .thumbnail-ended {
+      filter: grayscale(0.8) brightness(0.7);
+    }
+    
+    .thumbnail-ended-overlay {
+      filter: grayscale(0.8) brightness(0.7);
+    }
+    
+    /* Active buy ticket button trailing animation (matching promotions color) */
+    @keyframes buy-ticket-trail {
+      0% {
+        box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.7);
+      }
+      50% {
+        box-shadow: 0 0 20px 4px rgba(251, 146, 60, 0.5), 0 0 40px 8px rgba(251, 146, 60, 0.3);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(251, 146, 60, 0);
+      }
+    }
+    
+    @keyframes buy-ticket-shimmer {
+      0% {
+        left: -100%;
+      }
+      100% {
+        left: 100%;
+      }
+    }
+    
+    .buy-ticket-active-animation {
+      position: relative;
+      animation: buy-ticket-trail 2s ease-in-out infinite;
+      overflow: hidden;
+    }
+    
+    .buy-ticket-active-animation::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(251, 146, 60, 0.3),
+        transparent
+      );
+      animation: buy-ticket-shimmer 2.5s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
   `]
 })
 export class HouseCarouselComponent implements OnInit, OnDestroy {
@@ -992,13 +1065,44 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     return Math.max(0, house.totalTickets - ticketsSold);
   }
 
+  getLotteryCountdownLabel(house: any): string {
+    if (!house) return '';
+    
+    if (house.status === 'ended') {
+      return ''; // No label for ended
+    }
+    
+    if (house.status === 'upcoming' && house.lotteryStartDate) {
+      return this.translate('house.lotteryStartsIn') || 'Lottery starts in';
+    }
+    
+    return this.translate('house.lotteryCountdown');
+  }
+
   getLotteryCountdown(house: any): string {
-    const now = this.currentTime(); // Use signal instead of Date.now() for reactive updates
-    const endTime = new Date(house.lotteryEndDate).getTime();
-    const timeLeft = endTime - now;
+    if (!house) return '00:00:00:00';
+    
+    // For ended status, just return "Ended"
+    if (house.status === 'ended') {
+      return this.translate('house.ended') || 'Ended';
+    }
+    
+    // For upcoming, use lotteryStartDate if available
+    const targetDate = house.status === 'upcoming' && house.lotteryStartDate 
+      ? new Date(house.lotteryStartDate)
+      : house.lotteryEndDate 
+        ? new Date(house.lotteryEndDate)
+        : null;
+    
+    if (!targetDate) return '00:00:00:00';
+    
+    const now = this.currentTime();
+    const timeLeft = targetDate.getTime() - now;
 
     if (timeLeft <= 0) {
-      return '00:00:00:00';
+      return house.status === 'upcoming' 
+        ? (this.translate('house.ended') || 'Ended')
+        : '00:00:00:00';
     }
 
     const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
@@ -1039,9 +1143,9 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       case 'active':
         return 'bg-emerald-500';
       case 'ended':
-        return 'bg-red-500';
+        return 'bg-gray-500';
       case 'upcoming':
-        return 'bg-blue-500';
+        return 'bg-yellow-500';
       default:
         return 'bg-gray-500';
     }

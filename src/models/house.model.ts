@@ -109,6 +109,7 @@ export interface House {
   bathrooms: number;
   sqft: number;
   lotteryEndDate: Date;
+  lotteryStartDate?: Date;
   totalTickets: number;
   soldTickets: number;
   ticketPrice: number;

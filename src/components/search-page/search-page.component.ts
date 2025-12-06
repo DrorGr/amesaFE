@@ -218,10 +218,23 @@ interface SearchFilters {
                     <div 
                       class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow cursor-pointer"
                       [routerLink]="['/houses', house.id]">
-                      <img 
-                        [src]="house.imageUrl || 'https://via.placeholder.com/400x300'" 
-                        [alt]="house.title"
-                        class="w-full h-48 object-cover">
+                      <div class="relative w-full h-48">
+                        <img 
+                          [src]="house.imageUrl || 'https://via.placeholder.com/400x300'" 
+                          [alt]="house.title"
+                          [class.thumbnail-upcoming]="house.status === 'upcoming'"
+                          [class.thumbnail-ended]="house.status === 'ended'"
+                          class="w-full h-48 object-cover">
+                        <!-- Thumbnail overlay for status -->
+                        <div 
+                          *ngIf="house.status === 'upcoming'"
+                          class="absolute inset-0 bg-yellow-500 bg-opacity-15 dark:bg-yellow-400 dark:bg-opacity-10 pointer-events-none z-0">
+                        </div>
+                        <div 
+                          *ngIf="house.status === 'ended'"
+                          class="absolute inset-0 bg-gray-500 bg-opacity-30 dark:bg-gray-600 dark:bg-opacity-40 pointer-events-none z-0 thumbnail-ended-overlay">
+                        </div>
+                      </div>
                       <div class="p-4">
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
                           {{ house.title }}
@@ -237,8 +250,10 @@ interface SearchFilters {
                             class="px-2 py-1 text-xs rounded-full font-semibold"
                             [class.bg-green-100]="house.status === 'active'"
                             [class.text-green-800]="house.status === 'active'"
-                            [class.bg-gray-100]="house.status !== 'active'"
-                            [class.text-gray-800]="house.status !== 'active'">
+                            [class.bg-yellow-100]="house.status === 'upcoming'"
+                            [class.text-yellow-800]="house.status === 'upcoming'"
+                            [class.bg-gray-100]="house.status === 'ended'"
+                            [class.text-gray-800]="house.status === 'ended'">
                             {{ getStatusText(house.status) }}
                           </span>
                         </div>
@@ -262,10 +277,23 @@ interface SearchFilters {
                       class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow cursor-pointer"
                       [routerLink]="['/houses', house.id]">
                       <div class="flex gap-4">
-                        <img 
-                          [src]="house.imageUrl || 'https://via.placeholder.com/200x150'" 
-                          [alt]="house.title"
-                          class="w-32 h-24 object-cover rounded-lg">
+                        <div class="relative w-32 h-24">
+                          <img 
+                            [src]="house.imageUrl || 'https://via.placeholder.com/200x150'" 
+                            [alt]="house.title"
+                            [class.thumbnail-upcoming]="house.status === 'upcoming'"
+                            [class.thumbnail-ended]="house.status === 'ended'"
+                            class="w-32 h-24 object-cover rounded-lg">
+                          <!-- Thumbnail overlay for status -->
+                          <div 
+                            *ngIf="house.status === 'upcoming'"
+                            class="absolute inset-0 bg-yellow-500 bg-opacity-15 dark:bg-yellow-400 dark:bg-opacity-10 rounded-lg pointer-events-none z-0">
+                          </div>
+                          <div 
+                            *ngIf="house.status === 'ended'"
+                            class="absolute inset-0 bg-gray-500 bg-opacity-30 dark:bg-gray-600 dark:bg-opacity-40 rounded-lg pointer-events-none z-0 thumbnail-ended-overlay">
+                          </div>
+                        </div>
                         <div class="flex-1">
                           <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
                             {{ house.title }}
@@ -281,8 +309,10 @@ interface SearchFilters {
                               class="px-2 py-1 text-xs rounded-full font-semibold"
                               [class.bg-green-100]="house.status === 'active'"
                               [class.text-green-800]="house.status === 'active'"
-                              [class.bg-gray-100]="house.status !== 'active'"
-                              [class.text-gray-800]="house.status !== 'active'">
+                              [class.bg-yellow-100]="house.status === 'upcoming'"
+                              [class.text-yellow-800]="house.status === 'upcoming'"
+                              [class.bg-gray-100]="house.status === 'ended'"
+                              [class.text-gray-800]="house.status === 'ended'">
                               {{ getStatusText(house.status) }}
                             </span>
                           </div>
@@ -301,6 +331,19 @@ interface SearchFilters {
   styles: [`
     :host {
       display: block;
+    }
+    
+    /* Thumbnail filters for status */
+    .thumbnail-upcoming {
+      filter: sepia(0.2) saturate(1.1) brightness(1.05);
+    }
+    
+    .thumbnail-ended {
+      filter: grayscale(0.8) brightness(0.7);
+    }
+    
+    .thumbnail-ended-overlay {
+      filter: grayscale(0.8) brightness(0.7);
     }
   `]
 })

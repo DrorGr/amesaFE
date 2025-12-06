@@ -811,6 +811,7 @@ export class LotteryService {
       bathrooms: houseDto.bathrooms,
       sqft: houseDto.squareFeet || 0,
       lotteryEndDate: new Date(houseDto.lotteryEndDate),
+      lotteryStartDate: houseDto.lotteryStartDate ? new Date(houseDto.lotteryStartDate) : undefined,
       totalTickets: houseDto.totalTickets,
       soldTickets: houseDto.ticketsSold,
       ticketPrice: houseDto.ticketPrice,
