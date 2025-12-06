@@ -1,5 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
 import { MobileDetectionService } from '../../services/mobile-detection.service';
 import { LotteryService } from '../../services/lottery.service';
@@ -7,14 +9,17 @@ import { LocaleService } from '../../services/locale.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
+import { ProductService } from '../../services/product.service';
+import { IdentityVerificationService } from '../../services/identity-verification.service';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
+import { PaymentModalComponent } from '../payment-modal/payment-modal.component';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-house-carousel',
   standalone: true,
-  imports: [CommonModule, VerificationGateComponent],
+  imports: [CommonModule, VerificationGateComponent, PaymentModalComponent],
   template: `
     <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 md:py-4 transition-colors duration-300 relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -283,11 +288,30 @@ import { environment } from '../../environments/environment';
                             {{ translate('carousel.notifyMe') || 'Notify Me' }}
                           </button>
                         } @else {
-                          <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
-                            {{ translate('house.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
+                          <button 
+                            (click)="onBuyTicketClick(house, $event)"
+                            (keydown.enter)="onBuyTicketClick(house, $event)"
+                            (keydown.space)="onBuyTicketClick(house, $event); $event.preventDefault()"
+                            [disabled]="isPurchasing(house.id)"
+                            class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            @if (isPurchasing(house.id)) {
+                              {{ translate('house.processing') }}
+                            } @else {
+                              {{ translate('house.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
+                            }
                           </button>
                         }
                       </app-verification-gate>
+                      
+                      <!-- Payment Modal -->
+                      @if (showPaymentModal() && currentProductId()) {
+                        <app-payment-modal
+                          [productId]="currentProductId()!"
+                          [quantity]="1"
+                          (paymentSuccess)="onPaymentSuccess($event)"
+                          (close)="closePaymentModal()">
+                        </app-payment-modal>
+                      }
                     } @else {
                       <!-- Sign In Prompt -->
                       <div class="text-center mt-6 md:mt-4">
@@ -648,8 +672,16 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private heartAnimationService = inject(HeartAnimationService);
+  private productService = inject(ProductService);
+  private router = inject(Router);
+  private verificationService = inject(IdentityVerificationService, { optional: true });
   private togglingFavorites = signal<Set<string>>(new Set());
   private quickEntering = signal<Set<string>>(new Set());
+  private purchasing = signal<Set<string>>(new Set());
+  showPaymentModal = signal(false);
+  currentProductId = signal<string | null>(null);
+  currentHouseId = signal<string | null>(null);
+  currentTicketPrice = signal<number | null>(null);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -1154,6 +1186,337 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   isQuickEntering(houseId: string): boolean {
     return this.quickEntering().has(houseId);
+  }
+
+  isPurchasing(houseId: string): boolean {
+    return this.purchasing().has(houseId);
+  }
+
+  // Debug logging helper - works in both dev and production
+  private debugLog(location: string, message: string, data: any, hypothesisId: string) {
+    const logData = {
+      location,
+      message,
+      data,
+      timestamp: Date.now(),
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId
+    };
+    // Always log to console.error (kept in production)
+    console.error('[DEBUG]', logData);
+    // Also try to send to debug endpoint (works in local dev)
+    if (typeof fetch !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(logData)
+      }).catch(() => {});
+    }
+  }
+
+  onBuyTicketClick(house: any, event: Event) {
+    // #region agent log
+    this.debugLog(
+      'house-carousel.component.ts:onBuyTicketClick',
+      'Button click handler called',
+      {
+        eventType: event.type,
+        hasUser: !!this.currentUser()?.isAuthenticated,
+        userId: this.currentUser()?.id,
+        isPurchasing: this.isPurchasing(house.id),
+        houseId: house.id,
+        houseStatus: house.status,
+        houseStatusLower: house.status?.toLowerCase(),
+        buttonDisabled: (event.target as HTMLButtonElement)?.disabled
+      },
+      'A'
+    );
+    // #endregion
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    // #region agent log
+    this.debugLog(
+      'house-carousel.component.ts:onBuyTicketClick',
+      'After event preventDefault - checking user',
+      {
+        currentUser: this.currentUser(),
+        currentUserIsAuthenticated: this.currentUser()?.isAuthenticated
+      },
+      'B'
+    );
+    // #endregion
+
+    if (!this.currentUser()?.isAuthenticated) {
+      // #region agent log
+      this.debugLog(
+        'house-carousel.component.ts:onBuyTicketClick',
+        'No user - returning early',
+        {},
+        'B'
+      );
+      // #endregion
+      this.toastService.error('Please sign in to purchase tickets', 3000);
+      return;
+    }
+
+    this.purchaseTicket(house);
+  }
+
+  async purchaseTicket(house: any) {
+    // #region agent log
+    this.debugLog(
+      'house-carousel.component.ts:purchaseTicket',
+      'purchaseTicket method entry',
+      {
+        hasUser: !!this.currentUser()?.isAuthenticated,
+        isPurchasing: this.isPurchasing(house.id),
+        houseId: house.id,
+        houseStatus: house.status
+      },
+      'A,B,C'
+    );
+    // #endregion
+
+    if (!this.currentUser()?.isAuthenticated) {
+      // #region agent log
+      this.debugLog(
+        'house-carousel.component.ts:purchaseTicket',
+        'No user - returning early',
+        {},
+        'B'
+      );
+      // #endregion
+      this.toastService.error('Please sign in to purchase tickets', 3000);
+      return;
+    }
+
+    if (this.isPurchasing(house.id)) {
+      // #region agent log
+      this.debugLog(
+        'house-carousel.component.ts:purchaseTicket',
+        'Already purchasing - returning early',
+        {},
+        'E'
+      );
+      // #endregion
+      return;
+    }
+
+    if (!house) {
+      // #region agent log
+      this.debugLog(
+        'house-carousel.component.ts:purchaseTicket',
+        'No house data - returning early',
+        {},
+        'C'
+      );
+      // #endregion
+      this.toastService.error('House data not available', 3000);
+      return;
+    }
+
+    // Check house status (case-insensitive)
+    const houseStatus = house.status?.toLowerCase();
+    // #region agent log
+    this.debugLog(
+      'house-carousel.component.ts:purchaseTicket',
+      'House status check',
+      {
+        originalStatus: house.status,
+        lowercasedStatus: houseStatus,
+        statusMatch: houseStatus === 'active',
+        statusType: typeof house.status,
+        statusLength: house.status?.length
+      },
+      'C'
+    );
+    // #endregion
+    if (houseStatus !== 'active') {
+      // #region agent log
+      this.debugLog(
+        'house-carousel.component.ts:purchaseTicket',
+        'House status not active - returning early',
+        {
+          originalStatus: house.status,
+          lowercasedStatus: houseStatus
+        },
+        'C'
+      );
+      // #endregion
+      this.toastService.error('This lottery is not currently active', 3000);
+      return;
+    }
+
+    // Check verification status
+    if (this.verificationService) {
+      // #region agent log
+      this.debugLog(
+        'house-carousel.component.ts:purchaseTicket',
+        'Starting verification check',
+        {
+          verificationServiceExists: !!this.verificationService
+        },
+        'D'
+      );
+      // #endregion
+      try {
+        const verificationStatus = await firstValueFrom(this.verificationService.getVerificationStatus());
+        // #region agent log
+        this.debugLog(
+          'house-carousel.component.ts:purchaseTicket',
+          'Verification status received',
+          {
+            verificationStatus: verificationStatus?.verificationStatus,
+            isVerified: verificationStatus?.verificationStatus === 'verified'
+          },
+          'D'
+        );
+        // #endregion
+        if (verificationStatus?.verificationStatus !== 'verified') {
+          // #region agent log
+          this.debugLog(
+            'house-carousel.component.ts:purchaseTicket',
+            'User not verified - blocking purchase',
+            {
+              verificationStatus: verificationStatus?.verificationStatus
+            },
+            'D'
+          );
+          // #endregion
+          this.toastService.error(this.translate('auth.verificationRequired'), 4000);
+          this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
+          return;
+        }
+      } catch (error: any) {
+        // #region agent log
+        this.debugLog(
+          'house-carousel.component.ts:purchaseTicket',
+          'Verification check error',
+          {
+            error: error?.message,
+            errorStatus: error?.status,
+            errorVerificationStatus: error?.error?.verificationStatus
+          },
+          'D'
+        );
+        // #endregion
+        if (error?.error?.verificationStatus === 'not_verified' || error?.error?.verificationStatus === 'pending') {
+          this.toastService.error(this.translate('auth.verificationRequired'), 4000);
+          this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
+          return;
+        }
+      }
+    }
+
+    // Fetch product ID if not available
+    let productId = house.productId;
+
+    if (!productId) {
+      try {
+        this.purchasing.update(set => new Set(set).add(house.id));
+        // #region agent log
+        this.debugLog(
+          'house-carousel.component.ts:purchaseTicket',
+          'Fetching product for house',
+          {
+            houseId: house.id
+          },
+          'A'
+        );
+        // #endregion
+        const product = await firstValueFrom(this.productService.getProductByHouseId(house.id));
+        // #region agent log
+        this.debugLog(
+          'house-carousel.component.ts:purchaseTicket',
+          'Product fetched',
+          {
+            product: product,
+            productId: product?.id
+          },
+          'A'
+        );
+        // #endregion
+        if (product?.id) {
+          productId = product.id;
+        } else {
+          throw new Error('Product not found');
+        }
+      } catch (error: any) {
+        // #region agent log
+        this.debugLog(
+          'house-carousel.component.ts:purchaseTicket',
+          'Error fetching product',
+          {
+            error: error?.message
+          },
+          'A'
+        );
+        // #endregion
+        this.toastService.error('Product not available for this house. Please try again later.', 5000);
+        this.purchasing.update(set => {
+          const newSet = new Set(set);
+          newSet.delete(house.id);
+          return newSet;
+        });
+        return;
+      } finally {
+        this.purchasing.update(set => {
+          const newSet = new Set(set);
+          newSet.delete(house.id);
+          return newSet;
+        });
+      }
+    }
+
+    // Ensure productId is set before showing modal
+    if (!productId) {
+      // #region agent log
+      this.debugLog(
+        'house-carousel.component.ts:purchaseTicket',
+        'Product ID is still null after fetch attempt',
+        {},
+        'A'
+      );
+      // #endregion
+      this.toastService.error('Product not available for this house. Please try again later.', 5000);
+      return;
+    }
+
+    // #region agent log
+    this.debugLog(
+      'house-carousel.component.ts:purchaseTicket',
+      'Opening payment modal',
+      {
+        productId: productId,
+        houseId: house.id,
+        ticketPrice: house.ticketPrice
+      },
+      'A'
+    );
+    // #endregion
+
+    // Store data for payment modal
+    this.currentProductId.set(productId);
+    this.currentHouseId.set(house.id);
+    this.currentTicketPrice.set(house.ticketPrice);
+
+    // Show payment modal
+    this.showPaymentModal.set(true);
+  }
+
+  closePaymentModal() {
+    this.showPaymentModal.set(false);
+    this.currentProductId.set(null);
+    this.currentHouseId.set(null);
+    this.currentTicketPrice.set(null);
+  }
+
+  async onPaymentSuccess(event: { paymentIntentId: string; transactionId?: string }) {
+    this.showPaymentModal.set(false);
+    this.toastService.success('Payment successful! Your tickets will be created shortly.', 5000);
   }
 
   async toggleFavorite(houseId: string, event: Event): Promise<void> {
