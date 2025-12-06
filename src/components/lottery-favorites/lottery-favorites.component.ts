@@ -29,7 +29,7 @@ import { HouseCardComponent } from '../house-card/house-card.component';
 
         <!-- Favorites Grid using house-card component -->
         <ng-container *ngIf="favoriteHouses().length > 0; else noFavorites">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             <app-house-card 
               *ngFor="let house of favoriteHouses()" 
               [house]="convertToHouse(house)"

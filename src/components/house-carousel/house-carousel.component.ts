@@ -301,7 +301,7 @@ import { environment } from '../../environments/environment';
                             {{ translate('house.ended') || 'Ended' }}
                           </button>
                         } @else if (house.status === 'upcoming') {
-                          <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button relative overflow-visible">
+                          <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button relative overflow-hidden">
                             {{ translate('house.reserveTicket') || 'Reserve Ticket' }}
                           </button>
                         } @else {
@@ -311,7 +311,7 @@ import { environment } from '../../environments/environment';
                             (keydown.space)="onBuyTicketClick(house, $event); $event.preventDefault()"
                             [disabled]="isPurchasing(house.id)"
                             [class.buy-ticket-active-animation]="house.status === 'active' && !isPurchasing(house.id)"
-                            class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button disabled:bg-gray-400 disabled:cursor-not-allowed relative overflow-visible">
+                            class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button disabled:bg-gray-400 disabled:cursor-not-allowed relative overflow-hidden">
                             <span class="relative z-10">
                               @if (isPurchasing(house.id)) {
                                 {{ translate('house.processing') }}
@@ -700,39 +700,40 @@ import { environment } from '../../environments/environment';
     /* Creates a moving glow effect that travels around the button perimeter like a chasing tail */
     .buy-ticket-active-animation {
       position: relative;
-      overflow: visible;
-      border: 3px solid transparent;
+      z-index: 0;
+      overflow: hidden;
+      border-radius: 0.5rem;
     }
     
     .buy-ticket-active-animation::before {
       content: '';
       position: absolute;
-      top: -3px;
-      left: -3px;
-      right: -3px;
-      bottom: -3px;
-      border-radius: 0.5rem;
-      background: conic-gradient(
-        from 0deg,
-        transparent 0deg,
-        transparent 250deg,
-        rgba(251, 146, 60, 0.3) 260deg,
-        rgba(251, 146, 60, 0.8) 270deg,
-        rgba(251, 146, 60, 1) 280deg,
-        rgba(251, 146, 60, 0.8) 290deg,
-        rgba(251, 146, 60, 0.3) 300deg,
-        transparent 310deg,
-        transparent 360deg
+      z-index: -2;
+      left: -50%;
+      top: -50%;
+      width: 200%;
+      height: 200%;
+      background-color: transparent;
+      background-repeat: no-repeat;
+      background-position: 0 0;
+      background-image: conic-gradient(
+        transparent,
+        rgba(251, 146, 60, 1),
+        transparent 30%
       );
-      animation: buy-ticket-border-rotate 2s linear infinite;
-      -webkit-mask: 
-        linear-gradient(#fff 0 0) content-box, 
-        linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      padding: 3px;
-      pointer-events: none;
-      z-index: 0;
+      animation: buy-ticket-border-rotate 4s linear infinite;
+    }
+    
+    .buy-ticket-active-animation::after {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      left: 3px;
+      top: 3px;
+      width: calc(100% - 6px);
+      height: calc(100% - 6px);
+      background: inherit;
+      border-radius: calc(0.5rem - 3px);
     }
     
     @keyframes buy-ticket-border-rotate {

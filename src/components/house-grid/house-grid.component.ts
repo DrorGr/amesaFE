@@ -17,9 +17,9 @@ import { TranslationService } from '../../services/translation.service';
           </h2>
         </div>
 
-        <div class="mobile-house-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; align-items: start; padding-bottom: 2rem; width: 100%;">
+        <div class="mobile-house-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; align-items: stretch; padding-bottom: 2rem; width: 100%;">
           @for (house of houses(); track house.id) {
-            <div style="display: block; width: 100%; height: auto;">
+            <div style="display: block; width: 100%; height: 100%;">
               <app-house-card [house]="house"></app-house-card>
             </div>
           }

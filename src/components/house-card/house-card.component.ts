@@ -21,7 +21,7 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
   imports: [CommonModule, VerificationGateComponent, PaymentModalComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div class="relative bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col w-full transform hover:scale-105">
+    <div class="relative bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-visible flex flex-col w-full h-full transform hover:scale-105">
       <!-- Background Pattern -->
       <div class="absolute inset-0 opacity-10">
         <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500"></div>
@@ -198,7 +198,7 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
                 [disabled]="isPurchasing || house().status === 'ended'"
                 [class.buy-ticket-active-animation]="house().status === 'active' && !isPurchasing"
                 [class.buy-ticket-ended]="house().status === 'ended'"
-                class="w-full bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none relative overflow-visible"
+                class="w-full bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none relative overflow-hidden"
                 [class.hover:bg-blue-700]="house().status !== 'ended' && !isPurchasing"
                 [class.dark:hover:bg-blue-600]="house().status !== 'ended' && !isPurchasing"
                 [class.dark:bg-blue-700]="house().status !== 'ended' && !isPurchasing"
@@ -419,39 +419,40 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
       /* Creates a moving glow effect that travels around the button perimeter like a chasing tail */
       .buy-ticket-active-animation {
         position: relative;
-        overflow: visible;
-        border: 3px solid transparent;
+        z-index: 0;
+        overflow: hidden;
+        border-radius: 0.5rem;
       }
       
       .buy-ticket-active-animation::before {
         content: '';
         position: absolute;
-        top: -3px;
-        left: -3px;
-        right: -3px;
-        bottom: -3px;
-        border-radius: 0.5rem;
-        background: conic-gradient(
-          from 0deg,
-          transparent 0deg,
-          transparent 250deg,
-          rgba(251, 146, 60, 0.3) 260deg,
-          rgba(251, 146, 60, 0.8) 270deg,
-          rgba(251, 146, 60, 1) 280deg,
-          rgba(251, 146, 60, 0.8) 290deg,
-          rgba(251, 146, 60, 0.3) 300deg,
-          transparent 310deg,
-          transparent 360deg
+        z-index: -2;
+        left: -50%;
+        top: -50%;
+        width: 200%;
+        height: 200%;
+        background-color: transparent;
+        background-repeat: no-repeat;
+        background-position: 0 0;
+        background-image: conic-gradient(
+          transparent,
+          rgba(251, 146, 60, 1),
+          transparent 30%
         );
-        animation: buy-ticket-border-rotate 2s linear infinite;
-        -webkit-mask: 
-          linear-gradient(#fff 0 0) content-box, 
-          linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-        padding: 3px;
-        pointer-events: none;
-        z-index: 0;
+        animation: buy-ticket-border-rotate 4s linear infinite;
+      }
+      
+      .buy-ticket-active-animation::after {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        left: 3px;
+        top: 3px;
+        width: calc(100% - 6px);
+        height: calc(100% - 6px);
+        background: inherit;
+        border-radius: calc(0.5rem - 3px);
       }
       
       @keyframes buy-ticket-border-rotate {
