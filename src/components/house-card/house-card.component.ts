@@ -64,7 +64,7 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         <!-- Status Badge - Color based on status (Centered, Same Height as Icons) -->
         <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
           <span 
-            [class.animate-seesaw]="house().status === 'active' && vibrationTrigger() > 0"
+            [class.animate-seesaw]="house().status === 'active' && vibrationTrigger()"
             [class.bg-emerald-500]="house().status === 'active'"
             [class.bg-yellow-500]="house().status === 'upcoming'"
             [class.bg-gray-500]="house().status === 'ended'"
@@ -436,9 +436,14 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         background-repeat: no-repeat;
         background-position: 0 0;
         background-image: conic-gradient(
-          transparent,
-          rgba(251, 146, 60, 1),
-          transparent 30%
+          from 0deg,
+          transparent 0deg,
+          transparent 240deg,
+          rgba(251, 146, 60, 0.6) 250deg,
+          rgba(251, 146, 60, 1) 270deg,
+          rgba(251, 146, 60, 0.6) 290deg,
+          transparent 300deg,
+          transparent 360deg
         );
         animation: buy-ticket-border-rotate 4s linear infinite;
       }
@@ -447,12 +452,12 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         content: '';
         position: absolute;
         z-index: -1;
-        left: 3px;
-        top: 3px;
-        width: calc(100% - 6px);
-        height: calc(100% - 6px);
+        left: 4px;  /* Changed from 3px to 4px */
+        top: 4px;   /* Changed from 3px to 4px */
+        width: calc(100% - 8px);  /* Changed from calc(100% - 6px) to calc(100% - 8px) */
+        height: calc(100% - 8px); /* Changed from calc(100% - 6px) to calc(100% - 8px) */
         background: rgb(37, 99, 235); /* bg-blue-600 explicit color */
-        border-radius: calc(0.5rem - 3px);
+        border-radius: calc(0.5rem - 4px); /* Changed from calc(0.5rem - 3px) to calc(0.5rem - 4px) */
       }
       
       .dark .buy-ticket-active-animation::after {
@@ -568,7 +573,8 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   
   // Use signals for dynamic values to prevent change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
-  vibrationTrigger = signal<number>(0);
+  private _vibrationTrigger = signal<number>(0);
+  vibrationTrigger = computed(() => this._vibrationTrigger() > 0);
   currentTime = signal<number>(Date.now()); // Signal for countdown updates
   
   // Computed signal to check if this house is favorited
@@ -1116,10 +1122,10 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.vibrationInterval = window.setInterval(() => {
       if (this.house().status === 'active') {
         // Trigger animation by updating signal
-        this.vibrationTrigger.set(Date.now());
+        this._vibrationTrigger.set(Date.now());
         // Remove animation class after animation completes (600ms - 2 iterations × 0.3s)
         setTimeout(() => {
-          this.vibrationTrigger.set(0);
+          this._vibrationTrigger.set(0);
         }, 600);
       }
     }, 5000);
@@ -1127,9 +1133,9 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
     // Trigger initial animation if active
     if (this.house().status === 'active') {
       setTimeout(() => {
-        this.vibrationTrigger.set(Date.now());
+        this._vibrationTrigger.set(Date.now());
         setTimeout(() => {
-          this.vibrationTrigger.set(0);
+          this._vibrationTrigger.set(0);
         }, 600);
       }, 1000);
     }

@@ -134,7 +134,7 @@ import { environment } from '../../environments/environment';
                     <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
                       <span 
                         [class]="getStatusClasses(house.status)"
-                        [class.animate-seesaw]="house.status === 'active' && vibrationTrigger() > 0"
+                        [class.animate-seesaw]="house.status === 'active' && vibrationTrigger()"
                         class="text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
                         {{ getStatusText(house) }}
                       </span>
@@ -717,9 +717,14 @@ import { environment } from '../../environments/environment';
       background-repeat: no-repeat;
       background-position: 0 0;
       background-image: conic-gradient(
-        transparent,
-        rgba(251, 146, 60, 1),
-        transparent 30%
+        from 0deg,
+        transparent 0deg,
+        transparent 240deg,
+        rgba(251, 146, 60, 0.6) 250deg,
+        rgba(251, 146, 60, 1) 270deg,
+        rgba(251, 146, 60, 0.6) 290deg,
+        transparent 300deg,
+        transparent 360deg
       );
       animation: buy-ticket-border-rotate 4s linear infinite;
     }
@@ -728,12 +733,12 @@ import { environment } from '../../environments/environment';
       content: '';
       position: absolute;
       z-index: -1;
-      left: 3px;
-      top: 3px;
-      width: calc(100% - 6px);
-      height: calc(100% - 6px);
+      left: 4px;  /* Changed from 3px to 4px */
+      top: 4px;   /* Changed from 3px to 4px */
+      width: calc(100% - 8px);  /* Changed from calc(100% - 6px) to calc(100% - 8px) */
+      height: calc(100% - 8px); /* Changed from calc(100% - 6px) to calc(100% - 8px) */
       background: rgb(37, 99, 235); /* bg-blue-600 explicit color */
-      border-radius: calc(0.5rem - 3px);
+      border-radius: calc(0.5rem - 4px); /* Changed from calc(0.5rem - 3px) to calc(0.5rem - 4px) */
     }
     
     .dark .buy-ticket-active-animation::after {
@@ -830,7 +835,8 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private countdownInterval?: any;
   private intersectionObserver: IntersectionObserver | null = null;
   loadedImages = new Set<string>();
-  vibrationTrigger = signal<number>(0);
+  private _vibrationTrigger = signal<number>(0);
+  vibrationTrigger = computed(() => this._vibrationTrigger() > 0);
   
   // Use signals for values that change over time to avoid change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
@@ -852,14 +858,14 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     setTimeout(() => this.loadCurrentSlideImages(), 100);
     
     // Start seesaw animation for active status badges (every 5 seconds)
-    this.vibrationInterval = setInterval(() => {
+    this.vibrationInterval = window.setInterval(() => {
       const currentHouse = this.getCurrentHouse();
       if (currentHouse && currentHouse.status === 'active') {
         // Trigger animation by updating signal
-        this.vibrationTrigger.set(Date.now());
+        this._vibrationTrigger.set(Date.now());
         // Remove animation class after animation completes (600ms - 2 iterations × 0.3s)
         setTimeout(() => {
-          this.vibrationTrigger.set(0);
+          this._vibrationTrigger.set(0);
         }, 600);
       }
     }, 5000);
@@ -868,9 +874,9 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     const currentHouse = this.getCurrentHouse();
     if (currentHouse && currentHouse.status === 'active') {
       setTimeout(() => {
-        this.vibrationTrigger.set(Date.now());
+        this._vibrationTrigger.set(Date.now());
         setTimeout(() => {
-          this.vibrationTrigger.set(0);
+          this._vibrationTrigger.set(0);
         }, 600);
       }, 1000);
     }
