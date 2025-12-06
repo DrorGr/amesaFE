@@ -616,7 +616,6 @@ import { environment } from '../../environments/environment';
       }
     }
     
-    span.animate-seesaw,
     .animate-seesaw {
       animation-name: seesaw !important;
       animation-duration: 0.3s !important;
@@ -829,6 +828,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private togglingFavorites = signal<Set<string>>(new Set());
   private quickEntering = signal<Set<string>>(new Set());
   private purchasing = signal<Set<string>>(new Set());
+  private buyTicketClickInProgress = signal<Set<string>>(new Set()); // Guard against duplicate clicks
   showPaymentModal = signal(false);
   currentProductId = signal<string | null>(null);
   currentHouseId = signal<string | null>(null);
@@ -1550,10 +1550,12 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         hasUser: !!this.currentUser()?.isAuthenticated,
         userId: this.currentUser()?.id,
         isPurchasing: this.isPurchasing(house.id),
+        clickInProgress: this.buyTicketClickInProgress().has(house.id),
         houseId: house.id,
         houseStatus: house.status,
         houseStatusLower: house.status?.toLowerCase(),
-        buttonDisabled: (event.target as HTMLButtonElement)?.disabled
+        buttonDisabled: (event.target as HTMLButtonElement)?.disabled,
+        timestamp: Date.now()
       },
       'A'
     );
@@ -1562,13 +1564,33 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     event.preventDefault();
     event.stopPropagation();
 
+    // Guard against duplicate clicks
+    if (this.buyTicketClickInProgress().has(house.id)) {
+      // #region agent log
+      this.debugLog(
+        'house-carousel.component.ts:onBuyTicketClick',
+        'Duplicate click detected - ignoring',
+        {
+          houseId: house.id,
+          clickInProgress: true
+        },
+        'E'
+      );
+      // #endregion
+      return;
+    }
+
+    // Mark as in progress
+    this.buyTicketClickInProgress.update(set => new Set(set).add(house.id));
+
     // #region agent log
     this.debugLog(
       'house-carousel.component.ts:onBuyTicketClick',
       'After event preventDefault - checking user',
       {
         currentUser: this.currentUser(),
-        currentUserIsAuthenticated: this.currentUser()?.isAuthenticated
+        currentUserIsAuthenticated: this.currentUser()?.isAuthenticated,
+        clickInProgressSet: Array.from(this.buyTicketClickInProgress())
       },
       'B'
     );
@@ -1583,11 +1605,34 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         'B'
       );
       // #endregion
+      this.buyTicketClickInProgress.update(set => {
+        const newSet = new Set(set);
+        newSet.delete(house.id);
+        return newSet;
+      });
       this.toastService.error('Please sign in to purchase tickets', 3000);
       return;
     }
 
-    this.purchaseTicket(house);
+    this.purchaseTicket(house).finally(() => {
+      // Clear the in-progress flag when done
+      this.buyTicketClickInProgress.update(set => {
+        const newSet = new Set(set);
+        newSet.delete(house.id);
+        return newSet;
+      });
+      // #region agent log
+      this.debugLog(
+        'house-carousel.component.ts:onBuyTicketClick',
+        'Click handler completed - flag cleared',
+        {
+          houseId: house.id,
+          clickInProgressSet: Array.from(this.buyTicketClickInProgress())
+        },
+        'E'
+      );
+      // #endregion
+    });
   }
 
   async purchaseTicket(house: any) {
@@ -1887,8 +1932,36 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.currentHouseId.set(house.id);
     this.currentTicketPrice.set(house.ticketPrice);
 
+    // #region agent log
+    this.debugLog(
+      'house-carousel.component.ts:purchaseTicket',
+      'About to show payment modal',
+      {
+        productId: productId,
+        houseId: house.id,
+        showPaymentModalBefore: this.showPaymentModal(),
+        currentProductIdBefore: this.currentProductId()
+      },
+      'A'
+    );
+    // #endregion
+
     // Show payment modal
     this.showPaymentModal.set(true);
+
+    // #region agent log
+    this.debugLog(
+      'house-carousel.component.ts:purchaseTicket',
+      'Payment modal shown',
+      {
+        productId: productId,
+        houseId: house.id,
+        showPaymentModalAfter: this.showPaymentModal(),
+        currentProductIdAfter: this.currentProductId()
+      },
+      'A'
+    );
+    // #endregion
   }
 
   closePaymentModal() {

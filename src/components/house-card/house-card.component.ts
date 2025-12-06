@@ -64,10 +64,8 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         <!-- Status Badge - Color based on status (Centered, Same Height as Icons) -->
         <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
           <span 
+            [class]="getStatusClasses(house().status)"
             [class.animate-seesaw]="house().status === 'active' && vibrationTrigger()"
-            [class.bg-emerald-500]="house().status === 'active'"
-            [class.bg-yellow-500]="house().status === 'upcoming'"
-            [class.bg-gray-500]="house().status === 'ended'"
             class="text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
             {{ getStatusText() }}
           </span>
@@ -366,7 +364,6 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         }
       }
       
-      span.animate-seesaw,
       .animate-seesaw {
         animation-name: seesaw !important;
         animation-duration: 0.3s !important;
@@ -641,6 +638,19 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
       case 'ended': return this.translate('house.ended');
       case 'upcoming': return this.translate('house.upcoming');
       default: return 'Unknown';
+    }
+  }
+
+  getStatusClasses(status: string): string {
+    switch (status) {
+      case 'active':
+        return 'bg-emerald-500';
+      case 'ended':
+        return 'bg-gray-500';
+      case 'upcoming':
+        return 'bg-yellow-500';
+      default:
+        return 'bg-gray-500';
     }
   }
 
