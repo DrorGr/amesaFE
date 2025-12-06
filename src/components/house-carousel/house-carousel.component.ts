@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, computed, signal, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, computed, signal, effect, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -20,6 +20,7 @@ import { environment } from '../../environments/environment';
   selector: 'app-house-carousel',
   standalone: true,
   imports: [CommonModule, VerificationGateComponent, PaymentModalComponent],
+  encapsulation: ViewEncapsulation.None,
   template: `
     <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 md:py-4 transition-colors duration-300 relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -133,7 +134,9 @@ import { environment } from '../../environments/environment';
                     <!-- Status Badge - Top Middle, pill shape, matching image -->
                     <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
                       <span 
-                        [class]="getStatusClasses(house.status)"
+                        [class.bg-emerald-500]="house.status === 'active'"
+                        [class.bg-yellow-500]="house.status === 'upcoming'"
+                        [class.bg-gray-500]="house.status === 'ended'"
                         [class.animate-seesaw]="house.status === 'active' && vibrationTrigger()"
                         class="text-white px-6 py-3 rounded-[20px] text-base font-semibold shadow-lg whitespace-nowrap flex items-center h-12">
                         {{ getStatusText(house) }}
@@ -893,53 +896,10 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         // Trigger animation by updating signal
         const triggerValue = Date.now();
         this._vibrationTrigger.set(triggerValue);
-        const computedValue = this.vibrationTrigger();
-        // #region agent log
-        if (typeof fetch !== 'undefined') {
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'house-carousel.component.ts:vibrationInterval',
-              message: 'Vibration signal triggered',
-              data: {
-                triggerValue,
-                computedValue,
-                houseStatus: currentHouse?.status,
-                signalValue: this._vibrationTrigger()
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'F'
-            })
-          }).catch(() => {});
-        }
-        // #endregion
         // Remove animation class after animation completes (700ms - 2 iterations × 0.3s = 600ms + 100ms buffer)
         setTimeout(() => {
           this._vibrationTrigger.set(0);
-          const clearedComputed = this.vibrationTrigger();
-          // #region agent log
-          if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                location: 'house-carousel.component.ts:vibrationInterval:clear',
-                message: 'Vibration signal cleared',
-                data: {
-                  clearedComputed,
-                  signalValue: this._vibrationTrigger()
-                },
-                timestamp: Date.now(),
-                sessionId: 'debug-session',
-                runId: 'run1',
-                hypothesisId: 'F'
-              })
-            }).catch(() => {});
-          }
-          // #endregion
+        }, 700);
         }, 700);
       }
     }, 5000);
@@ -950,49 +910,9 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         const triggerValue = Date.now();
         this._vibrationTrigger.set(triggerValue);
-        const computedValue = this.vibrationTrigger();
-        // #region agent log
-        if (typeof fetch !== 'undefined') {
-          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'house-carousel.component.ts:initialVibration',
-              message: 'Initial vibration signal triggered',
-              data: {
-                triggerValue,
-                computedValue,
-                houseStatus: currentHouse?.status
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'F'
-            })
-          }).catch(() => {});
-        }
-        // #endregion
         setTimeout(() => {
           this._vibrationTrigger.set(0);
-          // #region agent log
-          if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                location: 'house-carousel.component.ts:initialVibration:clear',
-                message: 'Initial vibration signal cleared',
-                data: {
-                  signalValue: this._vibrationTrigger()
-                },
-                timestamp: Date.now(),
-                sessionId: 'debug-session',
-                runId: 'run1',
-                hypothesisId: 'F'
-              })
-            }).catch(() => {});
-          }
-          // #endregion
+        }, 700);
         }, 700);
       }, 1000);
     }
@@ -1000,40 +920,6 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     // Update countdown every second
     this.countdownInterval = setInterval(() => {
       this.currentTime.set(Date.now());
-      
-      // #region agent log
-      // Check badge animation state every 100ms during countdown updates
-      setTimeout(() => {
-        const currentHouse = this.getCurrentHouse();
-        if (currentHouse && currentHouse.status === 'active') {
-          const badgeElement = document.querySelector('.animate-seesaw') as HTMLElement;
-          if (badgeElement) {
-            const badgeComputedStyle = window.getComputedStyle(badgeElement);
-            if (typeof fetch !== 'undefined') {
-              fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  location: 'house-carousel.component.ts:countdownInterval:badgeCheck',
-                  message: 'Badge element state check',
-                  data: {
-                    hasAnimateSeesaw: badgeElement.classList.contains('animate-seesaw'),
-                    badgeClasses: badgeElement.className,
-                    badgeAnimation: badgeComputedStyle.animation,
-                    vibrationTriggerValue: this.vibrationTrigger(),
-                    houseStatus: currentHouse?.status
-                  },
-                  timestamp: Date.now(),
-                  sessionId: 'debug-session',
-                  runId: 'run1',
-                  hypothesisId: 'F,G'
-                })
-              }).catch(() => {});
-            }
-          }
-        }
-      }, 100);
-      // #endregion
     }, 1000);
   }
 
@@ -1518,27 +1404,6 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   }
 
   // Debug logging helper - works in both dev and production
-  private debugLog(location: string, message: string, data: any, hypothesisId: string) {
-    const logData = {
-      location,
-      message,
-      data,
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId
-    };
-    // Always log to console.error (kept in production)
-    console.error('[DEBUG]', logData);
-    // Also try to send to debug endpoint (works in local dev)
-    if (typeof fetch !== 'undefined') {
-      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(logData)
-      }).catch(() => {});
-    }
-  }
 
   onBuyTicketClick(house: any, event: Event) {
     // #region agent log
