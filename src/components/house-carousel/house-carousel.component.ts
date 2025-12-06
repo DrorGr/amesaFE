@@ -154,7 +154,8 @@ import { environment } from '../../environments/environment';
                       [class.favorite-button-ended]="house.status === 'ended'"
                       [class.bg-gray-400]="house.status === 'ended'"
                       [class.cursor-not-allowed]="house.status === 'ended'"
-                      class="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-20 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+                      class="absolute top-4 right-4 bg-purple-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-20 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      [class.hover:bg-purple-700]="house.status !== 'ended'">
                       <svg class="w-6 h-6 transition-all duration-300 favorite-heart-icon"
                            [class.text-red-500]="isFavorite(house.id)"
                            [class.text-white]="!isFavorite(house.id)"
@@ -300,7 +301,7 @@ import { environment } from '../../environments/environment';
                             {{ translate('house.ended') || 'Ended' }}
                           </button>
                         } @else if (house.status === 'upcoming') {
-                          <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button">
+                          <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button relative overflow-visible">
                             {{ translate('house.reserveTicket') || 'Reserve Ticket' }}
                           </button>
                         } @else {
@@ -700,6 +701,7 @@ import { environment } from '../../environments/environment';
     .buy-ticket-active-animation {
       position: relative;
       overflow: visible;
+      border: 3px solid transparent;
     }
     
     .buy-ticket-active-animation::before {
@@ -712,12 +714,15 @@ import { environment } from '../../environments/environment';
       border-radius: 0.5rem;
       background: conic-gradient(
         from 0deg,
-        rgba(251, 146, 60, 0) 0deg,
-        rgba(251, 146, 60, 0) 270deg,
-        rgba(251, 146, 60, 1) 300deg,
-        rgba(251, 146, 60, 1) 330deg,
-        rgba(251, 146, 60, 0.8) 360deg,
-        rgba(251, 146, 60, 0) 360deg
+        transparent 0deg,
+        transparent 250deg,
+        rgba(251, 146, 60, 0.3) 260deg,
+        rgba(251, 146, 60, 0.8) 270deg,
+        rgba(251, 146, 60, 1) 280deg,
+        rgba(251, 146, 60, 0.8) 290deg,
+        rgba(251, 146, 60, 0.3) 300deg,
+        transparent 310deg,
+        transparent 360deg
       );
       animation: buy-ticket-border-rotate 2s linear infinite;
       -webkit-mask: 
@@ -728,7 +733,6 @@ import { environment } from '../../environments/environment';
       padding: 3px;
       pointer-events: none;
       z-index: 0;
-      filter: blur(1px);
     }
     
     @keyframes buy-ticket-border-rotate {
@@ -750,12 +754,30 @@ import { environment } from '../../environments/environment';
       opacity: 0.6 !important;
       cursor: not-allowed !important;
       background-color: #9ca3af !important;
+      pointer-events: none !important;
+    }
+    
+    .buy-ticket-ended:hover {
+      background-color: #9ca3af !important;
+      opacity: 0.6 !important;
+    }
+    
+    .buy-ticket-ended:disabled {
+      background-color: #9ca3af !important;
+      opacity: 0.6 !important;
+      cursor: not-allowed !important;
     }
     
     .favorite-button-ended {
       opacity: 0.5 !important;
       cursor: not-allowed !important;
       background-color: #9ca3af !important;
+      pointer-events: none !important;
+    }
+    
+    .favorite-button-ended:hover {
+      background-color: #9ca3af !important;
+      opacity: 0.5 !important;
     }
   `]
 })

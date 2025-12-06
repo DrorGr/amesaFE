@@ -84,7 +84,8 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
           [class.favorite-button-red-hover]="!isFavorite() && house().status !== 'ended'"
           [class.favorite-button-red-filled]="isFavorite() && house().status !== 'ended'"
           [class.favorite-button-ended]="house().status === 'ended'"
-          class="absolute top-4 right-4 z-20 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          class="absolute top-4 right-4 z-20 bg-purple-600 text-white p-3 rounded-full shadow-lg transition-colors duration-200 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          [class.hover:bg-purple-700]="house().status !== 'ended'"
           [class.bg-gray-400]="house().status === 'ended'"
           [class.cursor-not-allowed]="house().status === 'ended'"
           [attr.aria-label]="isFavorite() ? 'Remove from favorites' : 'Add to favorites'"
@@ -167,7 +168,7 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
           </div>
         </div>
 
-        <div class="mt-auto flex-shrink-0 space-y-2">
+        <div class="mt-auto flex-shrink-0 space-y-2 overflow-visible">
           <ng-container *ngIf="currentUser(); else signInBlock">
             <app-verification-gate [isVerificationRequired]="true">
               <!-- Enter Now Button: Show when favorited (purple style, with lightning icon) -->
@@ -194,13 +195,16 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
                 (click)="onBuyTicketClick($event)"
                 (keydown.enter)="onBuyTicketClick($event)"
                 (keydown.space)="onBuyTicketClick($event); $event.preventDefault()"
-                [disabled]="isPurchasing || house().status !== 'active'"
+                [disabled]="isPurchasing || house().status === 'ended'"
                 [class.buy-ticket-active-animation]="house().status === 'active' && !isPurchasing"
                 [class.buy-ticket-ended]="house().status === 'ended'"
-                class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none relative overflow-hidden"
-                [class.bg-gray-400]="isPurchasing || house().status !== 'active'"
-                [class.cursor-not-allowed]="isPurchasing || house().status !== 'active'"
-                [attr.aria-disabled]="(isPurchasing || house().status !== 'active') ? 'true' : 'false'"
+                class="w-full bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none relative overflow-visible"
+                [class.hover:bg-blue-700]="house().status !== 'ended' && !isPurchasing"
+                [class.dark:hover:bg-blue-600]="house().status !== 'ended' && !isPurchasing"
+                [class.dark:bg-blue-700]="house().status !== 'ended' && !isPurchasing"
+                [class.bg-gray-400]="house().status === 'ended' || isPurchasing"
+                [class.cursor-not-allowed]="house().status === 'ended' || isPurchasing"
+                [attr.aria-disabled]="(isPurchasing || house().status === 'ended') ? 'true' : 'false'"
                 #buyTicketButton>
                 <ng-container *ngIf="isPurchasing; else buyTicketBlock">
                   {{ translate('house.processing') }}
@@ -416,6 +420,7 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
       .buy-ticket-active-animation {
         position: relative;
         overflow: visible;
+        border: 3px solid transparent;
       }
       
       .buy-ticket-active-animation::before {
@@ -428,12 +433,15 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         border-radius: 0.5rem;
         background: conic-gradient(
           from 0deg,
-          rgba(251, 146, 60, 0) 0deg,
-          rgba(251, 146, 60, 0) 270deg,
-          rgba(251, 146, 60, 1) 300deg,
-          rgba(251, 146, 60, 1) 330deg,
-          rgba(251, 146, 60, 0.8) 360deg,
-          rgba(251, 146, 60, 0) 360deg
+          transparent 0deg,
+          transparent 250deg,
+          rgba(251, 146, 60, 0.3) 260deg,
+          rgba(251, 146, 60, 0.8) 270deg,
+          rgba(251, 146, 60, 1) 280deg,
+          rgba(251, 146, 60, 0.8) 290deg,
+          rgba(251, 146, 60, 0.3) 300deg,
+          transparent 310deg,
+          transparent 360deg
         );
         animation: buy-ticket-border-rotate 2s linear infinite;
         -webkit-mask: 
@@ -444,7 +452,6 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         padding: 3px;
         pointer-events: none;
         z-index: 0;
-        filter: blur(1px);
       }
       
       @keyframes buy-ticket-border-rotate {
@@ -466,12 +473,30 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         opacity: 0.6 !important;
         cursor: not-allowed !important;
         background-color: #9ca3af !important;
+        pointer-events: none !important;
+      }
+      
+      .buy-ticket-ended:hover {
+        background-color: #9ca3af !important;
+        opacity: 0.6 !important;
+      }
+      
+      .buy-ticket-ended:disabled {
+        background-color: #9ca3af !important;
+        opacity: 0.6 !important;
+        cursor: not-allowed !important;
       }
       
       .favorite-button-ended {
         opacity: 0.5 !important;
         cursor: not-allowed !important;
         background-color: #9ca3af !important;
+        pointer-events: none !important;
+      }
+      
+      .favorite-button-ended:hover {
+        background-color: #9ca3af !important;
+        opacity: 0.5 !important;
       }
     }
   `]
