@@ -147,10 +147,13 @@ import { environment } from '../../environments/environment';
                       (keydown.space)="toggleFavorite(house.id, $event); $event.preventDefault()"
                       [attr.aria-label]="isFavorite(house.id) ? 'Remove from favorites' : 'Add to favorites'"
                       [title]="isFavorite(house.id) ? (translate(LOTTERY_TRANSLATION_KEYS.favorites.removeFromFavorites) || 'Remove from favorites') : (translate(LOTTERY_TRANSLATION_KEYS.favorites.addToFavorites) || 'Add to favorites')"
-                      [disabled]="isTogglingFavorite(house.id)"
+                      [disabled]="isTogglingFavorite(house.id) || house.status === 'ended'"
                       [class.animate-pulse]="isTogglingFavorite(house.id)"
-                      [class.favorite-button-red-hover]="!isFavorite(house.id)"
-                      [class.favorite-button-red-filled]="isFavorite(house.id)"
+                      [class.favorite-button-red-hover]="!isFavorite(house.id) && house.status !== 'ended'"
+                      [class.favorite-button-red-filled]="isFavorite(house.id) && house.status !== 'ended'"
+                      [class.favorite-button-ended]="house.status === 'ended'"
+                      [class.bg-gray-400]="house.status === 'ended'"
+                      [class.cursor-not-allowed]="house.status === 'ended'"
                       class="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-20 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
                       <svg class="w-6 h-6 transition-all duration-300 favorite-heart-icon"
                            [class.text-red-500]="isFavorite(house.id)"
@@ -293,7 +296,7 @@ import { environment } from '../../environments/environment';
                         @if (house.status === 'ended') {
                           <button 
                             disabled
-                            class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button cursor-not-allowed opacity-60">
+                            class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button cursor-not-allowed opacity-60 buy-ticket-ended">
                             {{ translate('house.ended') || 'Ended' }}
                           </button>
                         } @else if (house.status === 'upcoming') {
@@ -307,12 +310,14 @@ import { environment } from '../../environments/environment';
                             (keydown.space)="onBuyTicketClick(house, $event); $event.preventDefault()"
                             [disabled]="isPurchasing(house.id)"
                             [class.buy-ticket-active-animation]="house.status === 'active' && !isPurchasing(house.id)"
-                            class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button disabled:bg-gray-400 disabled:cursor-not-allowed">
-                            @if (isPurchasing(house.id)) {
-                              {{ translate('house.processing') }}
-                            } @else {
-                              {{ translate('house.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
-                            }
+                            class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button disabled:bg-gray-400 disabled:cursor-not-allowed relative overflow-visible">
+                            <span class="relative z-10">
+                              @if (isPurchasing(house.id)) {
+                                {{ translate('house.processing') }}
+                              } @else {
+                                {{ translate('house.buyTicket') }} - {{ formatPrice(house.ticketPrice) }}
+                              }
+                            </span>
                           </button>
                         }
                       </app-verification-gate>
@@ -690,50 +695,67 @@ import { environment } from '../../environments/environment';
       filter: grayscale(0.8) brightness(0.7);
     }
     
-    /* Active buy ticket button trailing animation (matching promotions color) */
-    @keyframes buy-ticket-trail {
-      0% {
-        box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.7);
-      }
-      50% {
-        box-shadow: 0 0 20px 4px rgba(251, 146, 60, 0.5), 0 0 40px 8px rgba(251, 146, 60, 0.3);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(251, 146, 60, 0);
-      }
-    }
-    
-    @keyframes buy-ticket-shimmer {
-      0% {
-        left: -100%;
-      }
-      100% {
-        left: 100%;
-      }
-    }
-    
+    /* Active buy ticket button border glow animation (continuous loop around border) */
+    /* Creates a moving glow effect that travels around the button perimeter like a chasing tail */
     .buy-ticket-active-animation {
       position: relative;
-      animation: buy-ticket-trail 2s ease-in-out infinite;
-      overflow: hidden;
+      overflow: visible;
     }
     
     .buy-ticket-active-animation::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(251, 146, 60, 0.3),
-        transparent
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      border-radius: 0.5rem;
+      background: conic-gradient(
+        from 0deg,
+        rgba(251, 146, 60, 0) 0deg,
+        rgba(251, 146, 60, 0) 270deg,
+        rgba(251, 146, 60, 1) 300deg,
+        rgba(251, 146, 60, 1) 330deg,
+        rgba(251, 146, 60, 0.8) 360deg,
+        rgba(251, 146, 60, 0) 360deg
       );
-      animation: buy-ticket-shimmer 2.5s ease-in-out infinite;
+      animation: buy-ticket-border-rotate 2s linear infinite;
+      -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      padding: 3px;
       pointer-events: none;
+      z-index: 0;
+      filter: blur(1px);
+    }
+    
+    @keyframes buy-ticket-border-rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    /* Ensure button content is above the animation */
+    .buy-ticket-active-animation > * {
+      position: relative;
       z-index: 1;
+    }
+    
+    .buy-ticket-ended {
+      opacity: 0.6 !important;
+      cursor: not-allowed !important;
+      background-color: #9ca3af !important;
+    }
+    
+    .favorite-button-ended {
+      opacity: 0.5 !important;
+      cursor: not-allowed !important;
+      background-color: #9ca3af !important;
     }
   `]
 })
@@ -809,6 +831,17 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         }, 600);
       }
     }, 5000);
+    
+    // Trigger initial animation if current house is active
+    const currentHouse = this.getCurrentHouse();
+    if (currentHouse && currentHouse.status === 'active') {
+      setTimeout(() => {
+        this.vibrationTrigger.set(Date.now());
+        setTimeout(() => {
+          this.vibrationTrigger.set(0);
+        }, 600);
+      }, 1000);
+    }
 
     // Update countdown every second
     this.countdownInterval = setInterval(() => {
