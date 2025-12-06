@@ -84,7 +84,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
               <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                 {{ translate('payment.stripe.paymentDetails') }}
               </h3>
-              <div id="stripe-payment-element" class="mb-4" [attr.aria-label]="translate('payment.stripe.paymentForm')" #paymentElementContainer></div>
+              <div [id]="paymentElementId" class="mb-4" [attr.aria-label]="translate('payment.stripe.paymentForm')" #paymentElementContainer></div>
               
               @if (requiresAction()) {
                 <div 
@@ -185,6 +185,7 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
   totalAmount = signal(0);
   currency = signal('USD');
   paymentElement: StripePaymentElement | null = null;
+  paymentElementId = `stripe-payment-element-${Math.random().toString(36).substr(2, 9)}`;
 
   @ViewChild('modalContainer') modalContainer!: ElementRef;
   @ViewChild('paymentElementContainer') paymentElementContainer!: ElementRef;
@@ -279,13 +280,13 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
       await new Promise(resolve => setTimeout(resolve, 0));
       
       // Wait for the DOM element to be rendered and ensure it's empty
-      await this.waitForElement('stripe-payment-element');
+      await this.waitForElement(this.paymentElementId);
       
       // Additional wait to ensure Angular's rendering is complete
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Clear any existing content in the container (prevents "contains child nodes" warning)
-      const container = document.getElementById('stripe-payment-element');
+      const container = document.getElementById(this.paymentElementId);
       if (container) {
         container.innerHTML = '';
       }
@@ -293,7 +294,7 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
       // Wait a bit more to ensure the container is empty
       await new Promise(resolve => setTimeout(resolve, 50));
       
-      this.paymentElement = await this.stripeService.createPaymentElement('stripe-payment-element', paymentIntent.clientSecret);
+      this.paymentElement = await this.stripeService.createPaymentElement(this.paymentElementId, paymentIntent.clientSecret);
       
       if (!this.paymentElement) {
         throw new Error('Failed to create payment element');
@@ -336,7 +337,7 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
     }
 
     // Verify the element is still mounted
-    const element = document.getElementById('stripe-payment-element');
+    const element = document.getElementById(this.paymentElementId);
     if (!element || element.children.length === 0) {
       this.error.set('Payment element is not mounted. Please refresh the page and try again.');
       this.toastService.error('Payment form error. Please refresh and try again.', 5000);

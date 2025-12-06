@@ -56,7 +56,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
           <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
             {{ translate('payment.stripe.paymentDetails') }}
           </h2>
-          <div id="stripe-payment-element" class="mb-4" [attr.aria-label]="translate('payment.stripe.paymentForm')"></div>
+          <div [id]="paymentElementId" class="mb-4" [attr.aria-label]="translate('payment.stripe.paymentForm')"></div>
           
           @if (requiresAction()) {
             <div 
@@ -129,6 +129,7 @@ export class StripePaymentComponent implements OnInit, OnDestroy {
   totalAmount = signal(0);
   currency = signal('USD');
   paymentElement: StripePaymentElement | null = null;
+  paymentElementId = `stripe-payment-element-${Math.random().toString(36).substr(2, 9)}`;
 
   constructor(
     private stripeService: StripeService,
@@ -194,7 +195,19 @@ export class StripePaymentComponent implements OnInit, OnDestroy {
       if (!paymentIntent.clientSecret) {
         throw new Error('Payment intent missing client secret');
       }
-      this.paymentElement = await this.stripeService.createPaymentElement('stripe-payment-element', paymentIntent.clientSecret);
+      // Wait for the DOM element to be rendered
+      await this.waitForElement(this.paymentElementId);
+      
+      // Clear any existing content in the container
+      const container = document.getElementById(this.paymentElementId);
+      if (container) {
+        container.innerHTML = '';
+      }
+      
+      // Wait a bit to ensure the container is empty
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      this.paymentElement = await this.stripeService.createPaymentElement(this.paymentElementId, paymentIntent.clientSecret);
       
       this.loading.set(false);
     } catch (err: any) {
@@ -229,6 +242,25 @@ export class StripePaymentComponent implements OnInit, OnDestroy {
       this.processing.set(false);
       console.error(err);
     }
+  }
+
+  /**
+   * Wait for a DOM element to exist before proceeding
+   * Uses polling with exponential backoff
+   */
+  private async waitForElement(elementId: string, maxAttempts: number = 20, initialDelay: number = 50): Promise<void> {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        return; // Element found
+      }
+      
+      // Exponential backoff: 50ms, 100ms, 200ms, 400ms, etc. (capped at 500ms)
+      const delay = Math.min(initialDelay * Math.pow(2, attempt), 500);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    
+    throw new Error(`Element #${elementId} not found after ${maxAttempts} attempts`);
   }
 }
 
