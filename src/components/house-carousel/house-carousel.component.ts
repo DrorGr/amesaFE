@@ -1389,7 +1389,12 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
             'house-carousel.component.ts:purchaseTicket',
             'User not verified - blocking purchase',
             {
-              verificationStatus: verificationStatus?.verificationStatus
+              identityVerificationStatus: verificationStatus?.verificationStatus,
+              userVerificationStatus: userVerificationStatus,
+              identityVerified: identityVerified,
+              userFullyVerified: userFullyVerified,
+              isVerified: isVerified,
+              currentUserDtoExists: !!this.authService.getCurrentUserDto()()
             },
             'D'
           );
@@ -1411,10 +1416,46 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
           'D'
         );
         // #endregion
-        if (error?.error?.verificationStatus === 'not_verified' || error?.error?.verificationStatus === 'pending') {
+        
+        // If verification check fails, check user profile verification status as fallback
+        const userVerificationStatusFallback = this.authService.getCurrentUserDto()()?.verificationStatus;
+        const userFullyVerifiedFallback = userVerificationStatusFallback === 'IdentityVerified' || userVerificationStatusFallback === 'FullyVerified';
+        
+        // #region agent log
+        this.debugLog(
+          'house-carousel.component.ts:purchaseTicket',
+          'Verification check error - checking user profile as fallback',
+          {
+            error: error?.message,
+            errorStatus: error?.status,
+            errorVerificationStatus: error?.error?.verificationStatus,
+            userVerificationStatusFallback: userVerificationStatusFallback,
+            userFullyVerifiedFallback: userFullyVerifiedFallback
+          },
+          'D'
+        );
+        // #endregion
+        
+        // Only block if we get a clear "not verified" response AND user profile is not verified
+        if ((error?.error?.verificationStatus === 'not_verified' || error?.error?.verificationStatus === 'pending') && !userFullyVerifiedFallback) {
           this.toastService.error(this.translate('auth.verificationRequired'), 4000);
           this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
           return;
+        }
+        
+        // If user profile shows verified, allow purchase even if identity endpoint failed
+        if (userFullyVerifiedFallback) {
+          // #region agent log
+          this.debugLog(
+            'house-carousel.component.ts:purchaseTicket',
+            'Identity endpoint failed but user profile shows verified - allowing purchase',
+            {
+              userVerificationStatusFallback: userVerificationStatusFallback
+            },
+            'D'
+          );
+          // #endregion
+          // Continue with purchase - user is verified according to profile
         }
       }
     }

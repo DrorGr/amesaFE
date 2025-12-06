@@ -715,23 +715,20 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
         
         if (!isVerified) {
           // #region agent log
-          if (typeof fetch !== 'undefined') {
-            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                location: 'house-card.component.ts:purchaseTicket',
-                message: 'User not verified - blocking purchase',
-                data: {
-                  verificationStatus: verificationStatus?.verificationStatus
-                },
-                timestamp: Date.now(),
-                sessionId: 'debug-session',
-                runId: 'run1',
-                hypothesisId: 'D'
-              })
-            }).catch(() => {});
-          }
+          this.debugLog(
+            'house-card.component.ts:purchaseTicket',
+            'User not verified - blocking purchase',
+            {
+              identityVerificationStatus: verificationStatus?.verificationStatus,
+              userVerificationStatus: userVerificationStatus,
+              identityVerified: identityVerified,
+              userFullyVerified: userFullyVerified,
+              isVerified: isVerified,
+              currentUserDtoExists: !!this.currentUserDto(),
+              currentUserDto: this.currentUserDto()
+            },
+            'D'
+          );
           // #endregion
           this.toastService.error(this.translationService.translate('auth.verificationRequired'), 4000);
           this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
@@ -759,14 +756,47 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
           }).catch(() => {});
         }
         // #endregion
-        // If verification check fails, allow purchase (fail-open for better UX)
-        // Only block if we get a clear "not verified" response
-        if (error?.error?.verificationStatus === 'not_verified' || error?.error?.verificationStatus === 'pending') {
+        
+        // If verification check fails, check user profile verification status as fallback
+        const userVerificationStatusFallback = this.currentUserDto()?.verificationStatus;
+        const userFullyVerifiedFallback = userVerificationStatusFallback === 'IdentityVerified' || userVerificationStatusFallback === 'FullyVerified';
+        
+        // #region agent log
+        this.debugLog(
+          'house-card.component.ts:purchaseTicket',
+          'Verification check error - checking user profile as fallback',
+          {
+            error: error?.message,
+            errorStatus: error?.status,
+            errorVerificationStatus: error?.error?.verificationStatus,
+            userVerificationStatusFallback: userVerificationStatusFallback,
+            userFullyVerifiedFallback: userFullyVerifiedFallback
+          },
+          'D'
+        );
+        // #endregion
+        
+        // Only block if we get a clear "not verified" response AND user profile is not verified
+        if ((error?.error?.verificationStatus === 'not_verified' || error?.error?.verificationStatus === 'pending') && !userFullyVerifiedFallback) {
           this.toastService.error(this.translationService.translate('auth.verificationRequired'), 4000);
           this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
           return;
         }
-        // Otherwise, continue (verification service might be unavailable)
+        
+        // If user profile shows verified, allow purchase even if identity endpoint failed
+        if (userFullyVerifiedFallback) {
+          // #region agent log
+          this.debugLog(
+            'house-card.component.ts:purchaseTicket',
+            'Identity endpoint failed but user profile shows verified - allowing purchase',
+            {
+              userVerificationStatusFallback: userVerificationStatusFallback
+            },
+            'D'
+          );
+          // #endregion
+          // Continue with purchase - user is verified according to profile
+        }
       }
     }
 
