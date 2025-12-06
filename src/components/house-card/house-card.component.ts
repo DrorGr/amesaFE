@@ -725,12 +725,22 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
               userFullyVerified: userFullyVerified,
               isVerified: isVerified,
               currentUserDtoExists: !!this.currentUserDto(),
-              currentUserDto: this.currentUserDto()
+              currentUserDto: this.currentUserDto(),
+              requiresIdentityVerification: userVerificationStatus === 'EmailVerified' || userVerificationStatus === 'Unverified'
             },
             'D'
           );
           // #endregion
-          this.toastService.error(this.translationService.translate('auth.verificationRequired'), 4000);
+          
+          // Provide more specific error message based on verification status
+          let errorMessage = this.translationService.translate('auth.verificationRequired');
+          if (userVerificationStatus === 'EmailVerified') {
+            // User has verified email but needs identity verification
+            errorMessage = this.translationService.translate('auth.identityVerificationRequired') || 
+                         'Identity verification required to purchase tickets. Please complete identity verification in your account settings.';
+          }
+          
+          this.toastService.error(errorMessage, 5000);
           this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
           return;
         }
