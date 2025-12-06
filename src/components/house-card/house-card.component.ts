@@ -403,6 +403,8 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   showPaymentModal = signal(false);
   currentProductId = signal<string | null>(null); // Store productId for payment modal
   
+  @ViewChild('buyTicketButton', { static: false }) buyTicketButton?: ElementRef<HTMLButtonElement>;
+  
   currentUser = this.authService.getCurrentUser();
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
   
