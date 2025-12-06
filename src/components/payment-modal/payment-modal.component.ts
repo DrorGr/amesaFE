@@ -84,7 +84,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
               <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                 {{ translate('payment.stripe.paymentDetails') }}
               </h3>
-              <div id="stripe-payment-element" class="mb-4" [attr.aria-label]="translate('payment.stripe.paymentForm')"></div>
+              <div id="stripe-payment-element" class="mb-4" [attr.aria-label]="translate('payment.stripe.paymentForm')" #paymentElementContainer></div>
               
               @if (requiresAction()) {
                 <div 
@@ -187,6 +187,7 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
   paymentElement: StripePaymentElement | null = null;
 
   @ViewChild('modalContainer') modalContainer!: ElementRef;
+  @ViewChild('paymentElementContainer') paymentElementContainer!: ElementRef;
 
   constructor(
     private stripeService: StripeService,
@@ -277,11 +278,20 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
       // Use setTimeout to let Angular's change detection cycle complete
       await new Promise(resolve => setTimeout(resolve, 0));
       
-      // Wait for the DOM element to be rendered before mounting
+      // Wait for the DOM element to be rendered and ensure it's empty
       await this.waitForElement('stripe-payment-element');
       
       // Additional wait to ensure Angular's rendering is complete
       await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Clear any existing content in the container (prevents "contains child nodes" warning)
+      const container = document.getElementById('stripe-payment-element');
+      if (container) {
+        container.innerHTML = '';
+      }
+      
+      // Wait a bit more to ensure the container is empty
+      await new Promise(resolve => setTimeout(resolve, 50));
       
       this.paymentElement = await this.stripeService.createPaymentElement('stripe-payment-element', paymentIntent.clientSecret);
       

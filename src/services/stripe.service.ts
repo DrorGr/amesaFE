@@ -89,13 +89,25 @@ export class StripeService {
       throw new Error(`Payment element container #${containerId} not found`);
     }
 
+    // Clear any existing content in the container
+    // This prevents the "contains child nodes" warning and ensures clean mounting
+    container.innerHTML = '';
+    
+    // Small delay to ensure DOM is ready
+    await new Promise(resolve => setTimeout(resolve, 50));
+
     // Mount the payment element
-    paymentElement.mount(`#${containerId}`);
-    
-    // Wait a bit to ensure the element is fully mounted
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    return paymentElement;
+    try {
+      paymentElement.mount(`#${containerId}`);
+      
+      // Wait a bit to ensure the element is fully mounted and initialized
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      return paymentElement;
+    } catch (error: any) {
+      console.error('Error mounting Stripe Payment Element:', error);
+      throw new Error(`Failed to mount payment element: ${error.message || 'Unknown error'}`);
+    }
   }
 
   createPaymentIntent(request: CreatePaymentIntentRequest): Observable<PaymentIntentResponse> {
