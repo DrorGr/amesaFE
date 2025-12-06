@@ -1365,17 +1365,25 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       try {
         const verificationStatus = await firstValueFrom(this.verificationService.getVerificationStatus());
         // #region agent log
+        const userVerificationStatus = this.authService.getCurrentUserDto()()?.verificationStatus;
+        const identityVerified = verificationStatus?.verificationStatus === 'verified';
+        const userFullyVerified = userVerificationStatus === 'IdentityVerified' || userVerificationStatus === 'FullyVerified';
+        const isVerified = identityVerified || userFullyVerified;
+        
         this.debugLog(
           'house-carousel.component.ts:purchaseTicket',
           'Verification status received',
           {
             verificationStatus: verificationStatus?.verificationStatus,
-            isVerified: verificationStatus?.verificationStatus === 'verified'
+            identityVerificationStatus: verificationStatus?.verificationStatus,
+            userVerificationStatus: userVerificationStatus,
+            isVerified: isVerified
           },
           'D'
         );
         // #endregion
-        if (verificationStatus?.verificationStatus !== 'verified') {
+        
+        if (!isVerified) {
           // #region agent log
           this.debugLog(
             'house-carousel.component.ts:purchaseTicket',
