@@ -269,14 +269,18 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
         throw new Error('Payment intent missing client secret');
       }
       
-      // Wait for the DOM element to be rendered before mounting
+      // Set loading to false so the element can be rendered
       // The element is conditionally rendered with @if (!loading() && !error() && clientSecret())
-      // We need to wait for Angular's change detection to render it
+      this.loading.set(false);
+      
+      // Wait for Angular's change detection to render the element
+      // Use setTimeout to let Angular's change detection cycle complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+      
+      // Wait for the DOM element to be rendered before mounting
       await this.waitForElement('stripe-payment-element');
       
       this.paymentElement = await this.stripeService.createPaymentElement('stripe-payment-element', paymentIntent.clientSecret);
-      
-      this.loading.set(false);
     } catch (err: any) {
       this.error.set(err.message || 'Failed to initialize payment');
       this.loading.set(false);
