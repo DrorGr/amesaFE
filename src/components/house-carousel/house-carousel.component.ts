@@ -72,8 +72,7 @@ import { environment } from '../../environments/environment';
                               fetchpriority="high"
                               (error)="onImageError($event)"
                               class="w-full h-64 md:h-96 object-cover object-center opacity-100 transition-opacity duration-300 mobile-carousel-image"
-                              (load)="onImageLoad($event)"
-                              onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+'">
+                              (load)="onImageLoad($event)">
                           </picture>
                         } @else {
                           <!-- Fallback to regular img for Unsplash URLs (during migration) -->
@@ -790,7 +789,24 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
 
   onImageError(event: Event) {
     const img = event.target as HTMLImageElement;
-    // Set fallback placeholder image
+    const currentSrc = img.src;
+    
+    // If this is an S3/CloudFront URL that failed, try falling back to detail.webp
+    if (currentSrc.includes('/houses/') && !currentSrc.includes('/detail.webp') && !currentSrc.includes('/detail.jpg')) {
+      // Extract base path and try detail.webp
+      const urlMatch = currentSrc.match(/^(.+\/houses\/[^\/]+\/[^\/]+)\/[^\/]+\.(webp|jpg|jpeg|png)$/i);
+      if (urlMatch) {
+        const fallbackUrl = `${urlMatch[1]}/detail.webp`;
+        // Only retry once (prevent infinite loop)
+        if (!img.dataset['retried']) {
+          img.dataset['retried'] = 'true';
+          img.src = fallbackUrl;
+          return;
+        }
+      }
+    }
+    
+    // If fallback failed or not an S3 URL, show placeholder
     img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
     img.classList.add('opacity-100');
     // Don't log warnings for missing images - they're handled gracefully
@@ -1069,17 +1085,49 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
    * @returns Optimized image URL
    */
   getImageUrl(imageUrl: string, size: 'thumbnail' | 'mobile' | 'carousel' | 'detail' | 'full' = 'carousel', houseId?: string, imageId?: string): string {
-    // If S3 URL (contains /houses/), construct size-specific URL
-    if (imageUrl.includes('/houses/') && houseId && imageId) {
-      // Extract base URL (CloudFront or S3)
-      const urlParts = imageUrl.split('/houses/');
-      const baseUrl = urlParts[0];
+    // If S3/CloudFront URL (contains /houses/), construct size-specific URL
+    // Database URLs are in format: https://dpqbvdgnenckf.cloudfront.net/houses/{houseId}/{imageId}/detail.webp
+    if (imageUrl.includes('/houses/')) {
+      // Extract the base path (everything before the size/file extension)
+      // URL format: https://cloudfront.net/houses/{houseId}/{imageId}/detail.webp
+      // We want: https://cloudfront.net/houses/{houseId}/{imageId}/{size}.webp
       
-      // Construct new URL with size parameter
-      return `${baseUrl}/houses/${houseId}/${imageId}/${size}.webp`;
+      // Match pattern: /houses/{houseId}/{imageId}/{size}.webp or /houses/{houseId}/{imageId}/{size}.jpg
+      const urlMatch = imageUrl.match(/^(.+\/houses\/[^\/]+\/[^\/]+)\/[^\/]+\.(webp|jpg|jpeg|png)$/i);
+      
+      if (urlMatch) {
+        // Extract base path (everything up to and including /houses/{houseId}/{imageId})
+        const basePath = urlMatch[1];
+        
+        // If requesting detail, return as-is (already correct)
+        if (size === 'detail') {
+          return imageUrl; // Already has /detail.webp
+        }
+        
+        // Try requested size first
+        // If the size-specific image doesn't exist in S3, it will 404
+        // The browser's onerror handler will fallback to detail.webp
+        return `${basePath}/${size}.webp`;
+      }
     }
     
-    // Fallback to original URL (for Unsplash during migration)
+    // Fallback to original URL (for Unsplash or other formats)
+    return imageUrl;
+  }
+
+  /**
+   * Get fallback image URL (detail.webp) for S3 images when size-specific image fails
+   * @param imageUrl Original image URL from database
+   * @returns Fallback URL (detail.webp) or original URL
+   */
+  getFallbackImageUrl(imageUrl: string): string {
+    if (imageUrl.includes('/houses/')) {
+      // Extract base path and return detail.webp
+      const urlMatch = imageUrl.match(/^(.+\/houses\/[^\/]+\/[^\/]+)\/[^\/]+\.(webp|jpg|jpeg|png)$/i);
+      if (urlMatch) {
+        return `${urlMatch[1]}/detail.webp`;
+      }
+    }
     return imageUrl;
   }
 
