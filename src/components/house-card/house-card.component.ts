@@ -367,8 +367,11 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
       }
       
       .animate-seesaw {
-        animation: seesaw 0.3s ease-in-out;
-        animation-iteration-count: 2;
+        animation-name: seesaw !important;
+        animation-duration: 0.3s !important;
+        animation-timing-function: ease-in-out !important;
+        animation-iteration-count: 2 !important;
+        animation-fill-mode: none !important;
         transform-origin: center center;
       }
       
@@ -421,6 +424,23 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         position: relative;
         overflow: hidden;
         border-radius: 0.5rem;
+        background: transparent !important; /* Override Tailwind bg-blue-600 */
+      }
+
+      /* Override all hover and dark mode background states */
+      .buy-ticket-active-animation:hover {
+        background: transparent !important; /* Override hover:bg-blue-700 */
+      }
+
+      /* Override Tailwind dark mode utilities - use attribute selector for higher specificity */
+      :host-context(.dark) .buy-ticket-active-animation,
+      .buy-ticket-active-animation[class*="dark:bg-blue"] {
+        background: transparent !important; /* Override dark:bg-blue-700 */
+      }
+
+      :host-context(.dark) .buy-ticket-active-animation:hover,
+      .buy-ticket-active-animation[class*="dark:hover:bg-blue"]:hover {
+        background: transparent !important; /* Override dark:hover:bg-blue-600 */
       }
 
       .buy-ticket-active-animation::before {
@@ -571,8 +591,18 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   // Use signals for dynamic values to prevent change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
   private _vibrationTrigger = signal<number>(0);
-  vibrationTrigger = computed(() => this._vibrationTrigger() > 0);
+  vibrationTrigger = computed(() => {
+    // Explicitly read the signal value to ensure tracking
+    const value = this._vibrationTrigger();
+    return value > 0;
+  });
   currentTime = signal<number>(Date.now()); // Signal for countdown updates
+
+  // Force signal tracking with effect - ensures computed is always tracked
+  private vibrationEffect = effect(() => {
+    // Reading the computed signal here ensures it's tracked
+    const _ = this.vibrationTrigger();
+  });
   
   // Computed signal to check if this house is favorited
   isFavorite = computed(() => {
@@ -1067,24 +1097,41 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit() {
     // #region agent log
-    if (typeof fetch !== 'undefined' && this.buyTicketButton) {
+    if (typeof fetch !== 'undefined' && this.buyTicketButton?.nativeElement) {
+      const button = this.buyTicketButton.nativeElement;
+      const computedStyle = window.getComputedStyle(button);
+      const beforeStyle = window.getComputedStyle(button, '::before');
+      const afterStyle = window.getComputedStyle(button, '::after');
+      
       fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           location: 'house-card.component.ts:ngAfterViewInit',
-          message: 'Button element state after view init',
+          message: 'Button element state and computed styles',
           data: {
-            buttonExists: !!this.buyTicketButton,
-            buttonDisabled: this.buyTicketButton?.nativeElement?.disabled,
-            buttonAriaDisabled: this.buyTicketButton?.nativeElement?.getAttribute('aria-disabled'),
+            buttonExists: !!button,
+            buttonClasses: button.className,
+            hasAnimationClass: button.classList.contains('buy-ticket-active-animation'),
             houseStatus: this.house()?.status,
-            isPurchasing: this.isPurchasing
+            isPurchasing: this.isPurchasing,
+            computedBackground: computedStyle.backgroundColor,
+            computedBackgroundColor: computedStyle.backgroundColor,
+            beforeContent: beforeStyle.content,
+            beforeBackground: beforeStyle.background,
+            beforeAnimation: beforeStyle.animation,
+            beforeZIndex: beforeStyle.zIndex,
+            afterContent: afterStyle.content,
+            afterBackground: afterStyle.background,
+            afterZIndex: afterStyle.zIndex,
+            buttonZIndex: computedStyle.zIndex,
+            buttonPosition: computedStyle.position,
+            buttonOverflow: computedStyle.overflow
           },
           timestamp: Date.now(),
           sessionId: 'debug-session',
           runId: 'run1',
-          hypothesisId: 'A,E'
+          hypothesisId: 'A,B,C,D,E'
         })
       }).catch(() => {});
     }
@@ -1119,10 +1166,55 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.vibrationInterval = window.setInterval(() => {
       if (this.house().status === 'active') {
         // Trigger animation by updating signal
-        this._vibrationTrigger.set(Date.now());
+        const triggerValue = Date.now();
+        this._vibrationTrigger.set(triggerValue);
+        const computedValue = this.vibrationTrigger();
+        // #region agent log
+        if (typeof fetch !== 'undefined') {
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'house-card.component.ts:vibrationInterval',
+              message: 'Vibration signal triggered',
+              data: {
+                triggerValue,
+                computedValue,
+                houseStatus: this.house()?.status,
+                signalValue: this._vibrationTrigger()
+              },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run1',
+              hypothesisId: 'F'
+            })
+          }).catch(() => {});
+        }
+        // #endregion
         // Remove animation class after animation completes (600ms - 2 iterations × 0.3s)
         setTimeout(() => {
           this._vibrationTrigger.set(0);
+          const clearedComputed = this.vibrationTrigger();
+          // #region agent log
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                location: 'house-card.component.ts:vibrationInterval:clear',
+                message: 'Vibration signal cleared',
+                data: {
+                  clearedComputed,
+                  signalValue: this._vibrationTrigger()
+                },
+                timestamp: Date.now(),
+                sessionId: 'debug-session',
+                runId: 'run1',
+                hypothesisId: 'F'
+              })
+            }).catch(() => {});
+          }
+          // #endregion
         }, 600);
       }
     }, 5000);
@@ -1130,7 +1222,30 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
     // Trigger initial animation if active
     if (this.house().status === 'active') {
       setTimeout(() => {
-        this._vibrationTrigger.set(Date.now());
+        const triggerValue = Date.now();
+        this._vibrationTrigger.set(triggerValue);
+        const computedValue = this.vibrationTrigger();
+        // #region agent log
+        if (typeof fetch !== 'undefined') {
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'house-card.component.ts:initialVibration',
+              message: 'Initial vibration signal triggered',
+              data: {
+                triggerValue,
+                computedValue,
+                houseStatus: this.house()?.status
+              },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run1',
+              hypothesisId: 'F'
+            })
+          }).catch(() => {});
+        }
+        // #endregion
         setTimeout(() => {
           this._vibrationTrigger.set(0);
         }, 600);
@@ -1140,6 +1255,35 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
     // Update countdown every second
     this.countdownInterval = window.setInterval(() => {
       this.currentTime.set(Date.now());
+      // #region agent log - Check badge state periodically
+      if (typeof fetch !== 'undefined' && this.house().status === 'active') {
+        setTimeout(() => {
+          const badgeElement = document.querySelector(`span[class*="bg-emerald-500"]`) as HTMLElement;
+          if (badgeElement) {
+            const badgeComputedStyle = window.getComputedStyle(badgeElement);
+            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                location: 'house-card.component.ts:countdownInterval:badgeCheck',
+                message: 'Badge element state check',
+                data: {
+                  hasAnimateSeesaw: badgeElement.classList.contains('animate-seesaw'),
+                  badgeClasses: badgeElement.className,
+                  badgeAnimation: badgeComputedStyle.animation,
+                  vibrationTriggerValue: this.vibrationTrigger(),
+                  houseStatus: this.house()?.status
+                },
+                timestamp: Date.now(),
+                sessionId: 'debug-session',
+                runId: 'run1',
+                hypothesisId: 'F,G'
+              })
+            }).catch(() => {});
+          }
+        }, 100);
+      }
+      // #endregion
     }, 1000);
   }
 

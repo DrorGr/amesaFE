@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, computed, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -617,8 +617,11 @@ import { environment } from '../../environments/environment';
     }
     
     .animate-seesaw {
-      animation: seesaw 0.3s ease-in-out;
-      animation-iteration-count: 2;
+      animation-name: seesaw !important;
+      animation-duration: 0.3s !important;
+      animation-timing-function: ease-in-out !important;
+      animation-iteration-count: 2 !important;
+      animation-fill-mode: none !important;
       transform-origin: center center;
     }
     
@@ -702,6 +705,23 @@ import { environment } from '../../environments/environment';
       position: relative;
       overflow: hidden;
       border-radius: 0.5rem;
+      background: transparent !important; /* Override Tailwind bg-blue-600 */
+    }
+
+    /* Override all hover and dark mode background states */
+    .buy-ticket-active-animation:hover {
+      background: transparent !important; /* Override hover:bg-blue-700 */
+    }
+
+    /* Override Tailwind dark mode utilities - use attribute selector for higher specificity */
+    :host-context(.dark) .buy-ticket-active-animation,
+    .buy-ticket-active-animation[class*="dark:bg-blue"] {
+      background: transparent !important; /* Override dark:bg-blue-700 */
+    }
+
+    :host-context(.dark) .buy-ticket-active-animation:hover,
+    .buy-ticket-active-animation[class*="dark:hover:bg-blue"]:hover {
+      background: transparent !important; /* Override dark:hover:bg-blue-600 */
     }
 
     .buy-ticket-active-animation::before {
@@ -833,7 +853,17 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private intersectionObserver: IntersectionObserver | null = null;
   loadedImages = new Set<string>();
   private _vibrationTrigger = signal<number>(0);
-  vibrationTrigger = computed(() => this._vibrationTrigger() > 0);
+  vibrationTrigger = computed(() => {
+    // Explicitly read the signal value to ensure tracking
+    const value = this._vibrationTrigger();
+    return value > 0;
+  });
+  
+  // Force signal tracking with effect - ensures computed is always tracked
+  private vibrationEffect = effect(() => {
+    // Reading the computed signal here ensures it's tracked
+    const _ = this.vibrationTrigger();
+  });
   
   // Use signals for values that change over time to avoid change detection errors
   currentViewers = signal<number>(Math.floor(Math.random() * 46) + 5);
@@ -859,10 +889,13 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       const currentHouse = this.getCurrentHouse();
       if (currentHouse && currentHouse.status === 'active') {
         // Trigger animation by updating signal
-        this._vibrationTrigger.set(Date.now());
+        const triggerValue = Date.now();
+        this._vibrationTrigger.set(triggerValue);
+        console.log('🔴 [HouseCarousel] Vibration triggered:', triggerValue, 'Computed:', this.vibrationTrigger());
         // Remove animation class after animation completes (600ms - 2 iterations × 0.3s)
         setTimeout(() => {
           this._vibrationTrigger.set(0);
+          console.log('🟢 [HouseCarousel] Vibration cleared, computed:', this.vibrationTrigger());
         }, 600);
       }
     }, 5000);
@@ -871,9 +904,12 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     const currentHouse = this.getCurrentHouse();
     if (currentHouse && currentHouse.status === 'active') {
       setTimeout(() => {
-        this._vibrationTrigger.set(Date.now());
+        const triggerValue = Date.now();
+        this._vibrationTrigger.set(triggerValue);
+        console.log('🔴 [HouseCarousel] Initial vibration triggered:', triggerValue, 'Computed:', this.vibrationTrigger());
         setTimeout(() => {
           this._vibrationTrigger.set(0);
+          console.log('🟢 [HouseCarousel] Initial vibration cleared, computed:', this.vibrationTrigger());
         }, 600);
       }, 1000);
     }
