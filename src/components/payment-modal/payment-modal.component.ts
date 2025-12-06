@@ -264,8 +264,11 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
       this.currency.set(paymentIntent.currency);
       this.requiresAction.set(paymentIntent.requiresAction);
 
-      // Create and mount payment element
-      this.paymentElement = await this.stripeService.createPaymentElement('stripe-payment-element');
+      // Create and mount payment element (must pass clientSecret)
+      if (!paymentIntent.clientSecret) {
+        throw new Error('Payment intent missing client secret');
+      }
+      this.paymentElement = await this.stripeService.createPaymentElement('stripe-payment-element', paymentIntent.clientSecret);
       
       this.loading.set(false);
     } catch (err: any) {

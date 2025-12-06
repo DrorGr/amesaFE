@@ -38,13 +38,18 @@ export class StripeService {
     this.stripe = loadStripe(this.publishableKey);
   }
 
-  async createPaymentElement(containerId: string): Promise<StripePaymentElement | null> {
+  async createPaymentElement(containerId: string, clientSecret: string): Promise<StripePaymentElement | null> {
     const stripe = await this.stripe;
     if (!stripe) {
       throw new Error('Stripe failed to load');
     }
 
+    if (!clientSecret) {
+      throw new Error('Client secret is required to create payment element');
+    }
+
     this.elements = stripe.elements({
+      clientSecret: clientSecret,
       appearance: {
         theme: 'stripe'
       }
@@ -54,12 +59,7 @@ export class StripeService {
     // The 'payment' element type is valid but not in the type definitions
     const createElement = this.elements.create as any;
     const paymentElement = createElement('payment', {
-      layout: 'tabs',
-      paymentMethodTypes: ['card', 'link'],
-      wallets: {
-        applePay: 'auto',
-        googlePay: 'auto'
-      }
+      layout: 'tabs'
     }) as StripePaymentElement;
 
     paymentElement.mount(`#${containerId}`);
