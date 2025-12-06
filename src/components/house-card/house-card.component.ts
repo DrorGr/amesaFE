@@ -828,8 +828,9 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
       } catch (error: any) {
         console.error('Error fetching product for house:', error);
         this.toastService.error('Product not available for this house. Please try again later.', 5000);
-        // Fallback to direct purchase if product fetch fails
-        await this.purchaseTicketDirect();
+        // Don't use fallback - payment modal is the correct flow
+        // If product fetch fails, user should refresh and try again
+        this.isPurchasing = false;
         return;
       } finally {
         this.isPurchasing = false;

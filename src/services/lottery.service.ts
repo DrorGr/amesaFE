@@ -721,7 +721,16 @@ export class LotteryService {
     totalCost: number;
     ticketNumbers: string[];
   }> {
-    return this.apiService.post(`houses/${purchaseRequest.houseId}/tickets/purchase`, purchaseRequest).pipe(
+    // Backend expects only Quantity and PaymentMethodId (Guid) in the request body
+    // houseId is in the URL path, not the body
+    const requestBody = {
+      quantity: purchaseRequest.quantity,
+      paymentMethodId: purchaseRequest.paymentMethodId && purchaseRequest.paymentMethodId !== 'default' 
+        ? purchaseRequest.paymentMethodId 
+        : '00000000-0000-0000-0000-000000000000' // Use empty Guid if "default" or invalid
+    };
+    
+    return this.apiService.post(`houses/${purchaseRequest.houseId}/tickets/purchase`, requestBody).pipe(
       map(response => {
         if (response.success && response.data) {
           const data = response.data as any;
