@@ -471,15 +471,6 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   onBuyTicketClick(event: Event) {
-    console.log('onBuyTicketClick() called', { 
-      event,
-      hasUser: !!this.currentUser(), 
-      isPurchasing: this.isPurchasing,
-      house: this.house()?.id,
-      houseStatus: this.house()?.status,
-      isDisabled: this.isPurchasing || this.house()?.status !== 'active'
-    });
-    
     // Prevent default and stop propagation
     event.preventDefault();
     event.stopPropagation();
@@ -488,7 +479,6 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     // Note: Verification gate wraps the button but doesn't intercept clicks
     // We need to manually check verification status here
     if (!this.currentUser()) {
-      console.log('No user - should not reach here (button should be hidden)');
       this.toastService.error('Please sign in to purchase tickets', 3000);
       return;
     }
@@ -498,35 +488,24 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   async purchaseTicket() {
-    console.log('purchaseTicket() called', { 
-      hasUser: !!this.currentUser(), 
-      isPurchasing: this.isPurchasing,
-      house: this.house()?.id,
-      houseStatus: this.house()?.status 
-    });
-
     if (!this.currentUser()) {
-      console.log('No current user, redirecting to login');
       this.toastService.error('Please sign in to purchase tickets', 3000);
       return;
     }
 
     if (this.isPurchasing) {
-      console.log('Already purchasing, ignoring click');
       return;
     }
 
     const house = this.house();
     if (!house) {
-      console.error('No house data available');
+      this.toastService.error('House data not available', 3000);
       return;
     }
 
     // Check house status (case-insensitive)
     const houseStatus = house.status?.toLowerCase();
-    console.log('House status check:', { original: house.status, lowercased: houseStatus });
     if (houseStatus !== 'active') {
-      console.log('House is not active, status:', house.status);
       this.toastService.error('This lottery is not currently active', 3000);
       return;
     }
@@ -534,27 +513,21 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     // Check verification status (verification gate check)
     if (this.verificationService) {
       try {
-        console.log('Checking verification status...');
         const verificationStatus = await firstValueFrom(this.verificationService.getVerificationStatus());
-        console.log('Verification status:', verificationStatus);
         if (verificationStatus?.verificationStatus !== 'verified') {
-          console.log('User not verified, blocking purchase');
           this.toastService.error(this.translationService.translate('auth.verificationRequired'), 4000);
           this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
           return;
         }
       } catch (error: any) {
-        console.error('Error checking verification status:', error);
         // If verification check fails, allow purchase (fail-open for better UX)
         // Only block if we get a clear "not verified" response
         if (error?.error?.verificationStatus === 'not_verified' || error?.error?.verificationStatus === 'pending') {
-          console.log('User verification check failed, blocking purchase');
           this.toastService.error(this.translationService.translate('auth.verificationRequired'), 4000);
           this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
           return;
         }
         // Otherwise, continue (verification service might be unavailable)
-        console.log('Verification check failed but continuing (fail-open)');
       }
     }
 
@@ -591,7 +564,6 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('Opening payment modal with product ID:', productId);
     // Store productId for payment modal
     this.currentProductId.set(productId);
     
