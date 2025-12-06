@@ -451,8 +451,17 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         top: 3px;
         width: calc(100% - 6px);
         height: calc(100% - 6px);
-        background: inherit;
+        background: rgb(37, 99, 235); /* bg-blue-600 explicit color */
         border-radius: calc(0.5rem - 3px);
+      }
+      
+      .dark .buy-ticket-active-animation::after {
+        background: rgb(29, 78, 216); /* dark:bg-blue-700 */
+      }
+      
+      /* Handle disabled/purchasing state - ensure background matches */
+      .buy-ticket-active-animation.bg-gray-400::after {
+        background: rgb(156, 163, 175); /* bg-gray-400 */
       }
       
       @keyframes buy-ticket-border-rotate {
@@ -464,10 +473,10 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         }
       }
       
-      /* Ensure button content is above the animation */
+      /* Button content already has z-10 class (Tailwind), no need to override */
       .buy-ticket-active-animation > * {
         position: relative;
-        z-index: 1;
+        /* z-index handled by Tailwind z-10 class on content */
       }
       
       .buy-ticket-ended {
