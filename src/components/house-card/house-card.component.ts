@@ -1,4 +1,4 @@
-import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
+import { Component, inject, input, ViewEncapsulation, OnInit, OnDestroy, AfterViewInit, signal, computed, effect, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -179,7 +179,8 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
                 class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none"
                 [class.bg-gray-400]="isPurchasing || house().status !== 'active'"
                 [class.cursor-not-allowed]="isPurchasing || house().status !== 'active'"
-                [attr.aria-disabled]="(isPurchasing || house().status !== 'active') ? 'true' : 'false'">
+                [attr.aria-disabled]="(isPurchasing || house().status !== 'active') ? 'true' : 'false'"
+                #buyTicketButton>
                 <ng-container *ngIf="isPurchasing; else buyTicketBlock">
                   {{ translate('house.processing') }}
                 </ng-container>
@@ -378,7 +379,7 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
     }
   `]
 })
-export class HouseCardComponent implements OnInit, OnDestroy {
+export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   private authService = inject(AuthService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
@@ -471,14 +472,80 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   onBuyTicketClick(event: Event) {
+    // #region agent log
+    if (typeof fetch !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'house-card.component.ts:onBuyTicketClick',
+          message: 'Button click handler called',
+          data: {
+            eventType: event.type,
+            hasUser: !!this.currentUser(),
+            userId: this.currentUser()?.id,
+            isPurchasing: this.isPurchasing,
+            houseId: this.house()?.id,
+            houseStatus: this.house()?.status,
+            houseStatusLower: this.house()?.status?.toLowerCase(),
+            isFavorite: this.isFavorite(),
+            buttonDisabled: (event.target as HTMLButtonElement)?.disabled
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'A'
+        })
+      }).catch(() => {});
+    }
+    // #endregion
+    
     // Prevent default and stop propagation
     event.preventDefault();
     event.stopPropagation();
+    
+    // #region agent log
+    if (typeof fetch !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'house-card.component.ts:onBuyTicketClick',
+          message: 'After event preventDefault - checking user',
+          data: {
+            currentUser: this.currentUser(),
+            currentUserIsAuthenticated: this.currentUser()?.isAuthenticated
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'B'
+        })
+      }).catch(() => {});
+    }
+    // #endregion
     
     // Check if user is verified (verification gate check)
     // Note: Verification gate wraps the button but doesn't intercept clicks
     // We need to manually check verification status here
     if (!this.currentUser()) {
+      // #region agent log
+      if (typeof fetch !== 'undefined') {
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'house-card.component.ts:onBuyTicketClick',
+            message: 'No user - returning early',
+            data: {},
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'B'
+          })
+        }).catch(() => {});
+      }
+      // #endregion
       this.toastService.error('Please sign in to purchase tickets', 3000);
       return;
     }
@@ -488,38 +555,234 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   }
 
   async purchaseTicket() {
+    // #region agent log
+    if (typeof fetch !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'house-card.component.ts:purchaseTicket',
+          message: 'purchaseTicket method entry',
+          data: {
+            hasUser: !!this.currentUser(),
+            isPurchasing: this.isPurchasing,
+            houseId: this.house()?.id,
+            houseStatus: this.house()?.status
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'A,B,C'
+        })
+      }).catch(() => {});
+    }
+    // #endregion
+
     if (!this.currentUser()) {
+      // #region agent log
+      if (typeof fetch !== 'undefined') {
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'house-card.component.ts:purchaseTicket',
+            message: 'No user - returning early',
+            data: {},
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'B'
+          })
+        }).catch(() => {});
+      }
+      // #endregion
       this.toastService.error('Please sign in to purchase tickets', 3000);
       return;
     }
 
     if (this.isPurchasing) {
+      // #region agent log
+      if (typeof fetch !== 'undefined') {
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'house-card.component.ts:purchaseTicket',
+            message: 'Already purchasing - returning early',
+            data: {},
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'E'
+          })
+        }).catch(() => {});
+      }
+      // #endregion
       return;
     }
 
     const house = this.house();
     if (!house) {
+      // #region agent log
+      if (typeof fetch !== 'undefined') {
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'house-card.component.ts:purchaseTicket',
+            message: 'No house data - returning early',
+            data: {},
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'C'
+          })
+        }).catch(() => {});
+      }
+      // #endregion
       this.toastService.error('House data not available', 3000);
       return;
     }
 
     // Check house status (case-insensitive)
     const houseStatus = house.status?.toLowerCase();
+    // #region agent log
+    if (typeof fetch !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'house-card.component.ts:purchaseTicket',
+          message: 'House status check',
+          data: {
+            originalStatus: house.status,
+            lowercasedStatus: houseStatus,
+            statusMatch: houseStatus === 'active',
+            statusType: typeof house.status,
+            statusLength: house.status?.length
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'C'
+        })
+      }).catch(() => {});
+    }
+    // #endregion
     if (houseStatus !== 'active') {
+      // #region agent log
+      if (typeof fetch !== 'undefined') {
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'house-card.component.ts:purchaseTicket',
+            message: 'House status not active - returning early',
+            data: {
+              originalStatus: house.status,
+              lowercasedStatus: houseStatus
+            },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'C'
+          })
+        }).catch(() => {});
+      }
+      // #endregion
       this.toastService.error('This lottery is not currently active', 3000);
       return;
     }
 
     // Check verification status (verification gate check)
     if (this.verificationService) {
+      // #region agent log
+      if (typeof fetch !== 'undefined') {
+        fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location: 'house-card.component.ts:purchaseTicket',
+            message: 'Starting verification check',
+            data: {
+              verificationServiceExists: !!this.verificationService
+            },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'D'
+          })
+        }).catch(() => {});
+      }
+      // #endregion
       try {
         const verificationStatus = await firstValueFrom(this.verificationService.getVerificationStatus());
+        // #region agent log
+        if (typeof fetch !== 'undefined') {
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'house-card.component.ts:purchaseTicket',
+              message: 'Verification status received',
+              data: {
+                verificationStatus: verificationStatus?.verificationStatus,
+                isVerified: verificationStatus?.verificationStatus === 'verified'
+              },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run1',
+              hypothesisId: 'D'
+            })
+          }).catch(() => {});
+        }
+        // #endregion
         if (verificationStatus?.verificationStatus !== 'verified') {
+          // #region agent log
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                location: 'house-card.component.ts:purchaseTicket',
+                message: 'User not verified - blocking purchase',
+                data: {
+                  verificationStatus: verificationStatus?.verificationStatus
+                },
+                timestamp: Date.now(),
+                sessionId: 'debug-session',
+                runId: 'run1',
+                hypothesisId: 'D'
+              })
+            }).catch(() => {});
+          }
+          // #endregion
           this.toastService.error(this.translationService.translate('auth.verificationRequired'), 4000);
           this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
           return;
         }
       } catch (error: any) {
+        // #region agent log
+        if (typeof fetch !== 'undefined') {
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'house-card.component.ts:purchaseTicket',
+              message: 'Verification check error',
+              data: {
+                error: error?.message,
+                errorStatus: error?.status,
+                errorVerificationStatus: error?.error?.verificationStatus
+              },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run1',
+              hypothesisId: 'D'
+            })
+          }).catch(() => {});
+        }
+        // #endregion
         // If verification check fails, allow purchase (fail-open for better UX)
         // Only block if we get a clear "not verified" response
         if (error?.error?.verificationStatus === 'not_verified' || error?.error?.verificationStatus === 'pending') {
@@ -650,7 +913,56 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     return this.houseCardService.getTicketsAvailableText(this.house());
   }
 
+  ngAfterViewInit() {
+    // #region agent log
+    if (typeof fetch !== 'undefined' && this.buyTicketButton) {
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'house-card.component.ts:ngAfterViewInit',
+          message: 'Button element state after view init',
+          data: {
+            buttonExists: !!this.buyTicketButton,
+            buttonDisabled: this.buyTicketButton?.nativeElement?.disabled,
+            buttonAriaDisabled: this.buyTicketButton?.nativeElement?.getAttribute('aria-disabled'),
+            houseStatus: this.house()?.status,
+            isPurchasing: this.isPurchasing
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'A,E'
+        })
+      }).catch(() => {});
+    }
+    // #endregion
+  }
+
   ngOnInit() {
+    // #region agent log
+    if (typeof fetch !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'house-card.component.ts:ngOnInit',
+          message: 'Component initialized - button state check',
+          data: {
+            houseId: this.house()?.id,
+            houseStatus: this.house()?.status,
+            isFavorite: this.isFavorite(),
+            hasUser: !!this.currentUser(),
+            isPurchasing: this.isPurchasing
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'run1',
+          hypothesisId: 'A,B,C,D,E'
+        })
+      }).catch(() => {});
+    }
+    // #endregion
     // Start seesaw animation for active status badges (every 5 seconds)
     this.vibrationInterval = window.setInterval(() => {
       if (this.house().status === 'active') {
