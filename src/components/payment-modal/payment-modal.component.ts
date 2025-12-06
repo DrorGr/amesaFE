@@ -268,6 +268,12 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
       if (!paymentIntent.clientSecret) {
         throw new Error('Payment intent missing client secret');
       }
+      
+      // Wait for the DOM element to be rendered before mounting
+      // The element is conditionally rendered with @if (!loading() && !error() && clientSecret())
+      // We need to wait for Angular's change detection to render it
+      await this.waitForElement('stripe-payment-element');
+      
       this.paymentElement = await this.stripeService.createPaymentElement('stripe-payment-element', paymentIntent.clientSecret);
       
       this.loading.set(false);
@@ -277,6 +283,25 @@ export class PaymentModalComponent implements AfterViewInit, OnDestroy {
       console.error(err);
       this.toastService.error(this.error() || 'Failed to initialize payment', 5000);
     }
+  }
+
+  /**
+   * Wait for a DOM element to exist before proceeding
+   * Uses polling with exponential backoff
+   */
+  private async waitForElement(elementId: string, maxAttempts: number = 20, initialDelay: number = 50): Promise<void> {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        return; // Element found
+      }
+      
+      // Exponential backoff: 50ms, 100ms, 200ms, 400ms, etc. (capped at 500ms)
+      const delay = Math.min(initialDelay * Math.pow(2, attempt), 500);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    
+    throw new Error(`Element #${elementId} not found after ${maxAttempts} attempts`);
   }
 
   async confirmPayment() {

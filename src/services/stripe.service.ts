@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { loadStripe, Stripe, StripeElements, StripePaymentElement } from '@stripe/stripe-js';
-import { Observable, from, throwError } from 'rxjs';
+import { Observable, from, throwError, firstValueFrom } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 
@@ -30,12 +30,32 @@ export interface PaymentIntentResponse {
 })
 export class StripeService {
   private stripe: Promise<Stripe | null>;
-  private publishableKey = 'pk_test_YOUR_KEY'; // Load from environment
+  private publishableKey: string | null = null;
+  private publishableKeyPromise: Promise<string> | null = null;
   private elements: StripeElements | null = null;
 
   constructor(private apiService: ApiService) {
-    // Load Stripe.js
-    this.stripe = loadStripe(this.publishableKey);
+    // Load publishable key from backend
+    this.publishableKeyPromise = this.loadPublishableKey();
+    this.stripe = this.publishableKeyPromise.then(key => loadStripe(key));
+  }
+
+  private async loadPublishableKey(): Promise<string> {
+    if (this.publishableKey) {
+      return this.publishableKey;
+    }
+
+    try {
+      const response = await firstValueFrom(this.apiService.get<{ publishableKey: string }>('payments/stripe/publishable-key'));
+      if (response?.success && response.data?.publishableKey) {
+        this.publishableKey = response.data.publishableKey;
+        return this.publishableKey;
+      }
+      throw new Error('Failed to load Stripe publishable key from backend');
+    } catch (error) {
+      console.error('Error loading Stripe publishable key:', error);
+      throw new Error('Failed to initialize Stripe: publishable key not available');
+    }
   }
 
   async createPaymentElement(containerId: string, clientSecret: string): Promise<StripePaymentElement | null> {
