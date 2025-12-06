@@ -10,6 +10,7 @@ import { HouseCardService } from '../../services/house-card.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
 import { ToastService } from '../../services/toast.service';
 import { ProductService } from '../../services/product.service';
+import { IdentityVerificationService } from '../../services/identity-verification.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 import { PaymentModalComponent } from '../payment-modal/payment-modal.component';
@@ -171,13 +172,14 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
               <!-- Regular Purchase Button: Show only when NOT favorited -->
               <button
                 *ngIf="!isFavorite()"
-                (click)="purchaseTicket()"
-                (keydown.enter)="purchaseTicket()"
-                (keydown.space)="purchaseTicket(); $event.preventDefault()"
-                [disabled]="isPurchasing || house().status !== 'active'"
+                (click)="onBuyTicketClick($event)"
+                (keydown.enter)="onBuyTicketClick($event)"
+                (keydown.space)="onBuyTicketClick($event); $event.preventDefault()"
+                [disabled]="isPurchasing"
                 class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none"
-                [class.bg-gray-400]="(isPurchasing || house().status !== 'active')"
-                [class.cursor-not-allowed]="(isPurchasing || house().status !== 'active')">
+                [class.bg-gray-400]="isPurchasing || house().status !== 'active'"
+                [class.cursor-not-allowed]="isPurchasing || house().status !== 'active'"
+                [attr.aria-disabled]="(isPurchasing || house().status !== 'active') ? 'true' : 'false'">
                 <ng-container *ngIf="isPurchasing; else buyTicketBlock">
                   {{ translate('house.processing') }}
                 </ng-container>
@@ -385,6 +387,7 @@ export class HouseCardComponent implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private productService = inject(ProductService);
   private router = inject(Router);
+  private verificationService = inject(IdentityVerificationService, { optional: true });
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -467,6 +470,33 @@ export class HouseCardComponent implements OnInit, OnDestroy {
     }
   }
 
+  onBuyTicketClick(event: Event) {
+    console.log('onBuyTicketClick() called', { 
+      event,
+      hasUser: !!this.currentUser(), 
+      isPurchasing: this.isPurchasing,
+      house: this.house()?.id,
+      houseStatus: this.house()?.status,
+      isDisabled: this.isPurchasing || this.house()?.status !== 'active'
+    });
+    
+    // Prevent default and stop propagation
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Check if user is verified (verification gate check)
+    // Note: Verification gate wraps the button but doesn't intercept clicks
+    // We need to manually check verification status here
+    if (!this.currentUser()) {
+      console.log('No user - should not reach here (button should be hidden)');
+      this.toastService.error('Please sign in to purchase tickets', 3000);
+      return;
+    }
+    
+    // Always call purchaseTicket, let it handle validation
+    this.purchaseTicket();
+  }
+
   async purchaseTicket() {
     console.log('purchaseTicket() called', { 
       hasUser: !!this.currentUser(), 
@@ -492,10 +522,40 @@ export class HouseCardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (house.status !== 'active') {
+    // Check house status (case-insensitive)
+    const houseStatus = house.status?.toLowerCase();
+    console.log('House status check:', { original: house.status, lowercased: houseStatus });
+    if (houseStatus !== 'active') {
       console.log('House is not active, status:', house.status);
       this.toastService.error('This lottery is not currently active', 3000);
       return;
+    }
+
+    // Check verification status (verification gate check)
+    if (this.verificationService) {
+      try {
+        console.log('Checking verification status...');
+        const verificationStatus = await firstValueFrom(this.verificationService.getVerificationStatus());
+        console.log('Verification status:', verificationStatus);
+        if (verificationStatus?.verificationStatus !== 'verified') {
+          console.log('User not verified, blocking purchase');
+          this.toastService.error(this.translationService.translate('auth.verificationRequired'), 4000);
+          this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
+          return;
+        }
+      } catch (error: any) {
+        console.error('Error checking verification status:', error);
+        // If verification check fails, allow purchase (fail-open for better UX)
+        // Only block if we get a clear "not verified" response
+        if (error?.error?.verificationStatus === 'not_verified' || error?.error?.verificationStatus === 'pending') {
+          console.log('User verification check failed, blocking purchase');
+          this.toastService.error(this.translationService.translate('auth.verificationRequired'), 4000);
+          this.router.navigate(['/member-settings'], { queryParams: { tab: 'verification' } });
+          return;
+        }
+        // Otherwise, continue (verification service might be unavailable)
+        console.log('Verification check failed but continuing (fail-open)');
+      }
     }
 
     // Fetch product ID if not available (on-demand for performance)
