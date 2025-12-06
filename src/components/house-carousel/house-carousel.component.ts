@@ -616,12 +616,14 @@ import { environment } from '../../environments/environment';
       }
     }
     
+    span.animate-seesaw,
     .animate-seesaw {
       animation-name: seesaw !important;
       animation-duration: 0.3s !important;
       animation-timing-function: ease-in-out !important;
       animation-iteration-count: 2 !important;
       animation-fill-mode: none !important;
+      animation-play-state: running !important;
       transform-origin: center center;
     }
     
@@ -891,11 +893,53 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         // Trigger animation by updating signal
         const triggerValue = Date.now();
         this._vibrationTrigger.set(triggerValue);
-        console.log('🔴 [HouseCarousel] Vibration triggered:', triggerValue, 'Computed:', this.vibrationTrigger());
+        const computedValue = this.vibrationTrigger();
+        // #region agent log
+        if (typeof fetch !== 'undefined') {
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'house-carousel.component.ts:vibrationInterval',
+              message: 'Vibration signal triggered',
+              data: {
+                triggerValue,
+                computedValue,
+                houseStatus: currentHouse?.status,
+                signalValue: this._vibrationTrigger()
+              },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run1',
+              hypothesisId: 'F'
+            })
+          }).catch(() => {});
+        }
+        // #endregion
         // Remove animation class after animation completes (700ms - 2 iterations × 0.3s = 600ms + 100ms buffer)
         setTimeout(() => {
           this._vibrationTrigger.set(0);
-          console.log('🟢 [HouseCarousel] Vibration cleared, computed:', this.vibrationTrigger());
+          const clearedComputed = this.vibrationTrigger();
+          // #region agent log
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                location: 'house-carousel.component.ts:vibrationInterval:clear',
+                message: 'Vibration signal cleared',
+                data: {
+                  clearedComputed,
+                  signalValue: this._vibrationTrigger()
+                },
+                timestamp: Date.now(),
+                sessionId: 'debug-session',
+                runId: 'run1',
+                hypothesisId: 'F'
+              })
+            }).catch(() => {});
+          }
+          // #endregion
         }, 700);
       }
     }, 5000);
@@ -906,10 +950,49 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         const triggerValue = Date.now();
         this._vibrationTrigger.set(triggerValue);
-        console.log('🔴 [HouseCarousel] Initial vibration triggered:', triggerValue, 'Computed:', this.vibrationTrigger());
+        const computedValue = this.vibrationTrigger();
+        // #region agent log
+        if (typeof fetch !== 'undefined') {
+          fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              location: 'house-carousel.component.ts:initialVibration',
+              message: 'Initial vibration signal triggered',
+              data: {
+                triggerValue,
+                computedValue,
+                houseStatus: currentHouse?.status
+              },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run1',
+              hypothesisId: 'F'
+            })
+          }).catch(() => {});
+        }
+        // #endregion
         setTimeout(() => {
           this._vibrationTrigger.set(0);
-          console.log('🟢 [HouseCarousel] Initial vibration cleared, computed:', this.vibrationTrigger());
+          // #region agent log
+          if (typeof fetch !== 'undefined') {
+            fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                location: 'house-carousel.component.ts:initialVibration:clear',
+                message: 'Initial vibration signal cleared',
+                data: {
+                  signalValue: this._vibrationTrigger()
+                },
+                timestamp: Date.now(),
+                sessionId: 'debug-session',
+                runId: 'run1',
+                hypothesisId: 'F'
+              })
+            }).catch(() => {});
+          }
+          // #endregion
         }, 700);
       }, 1000);
     }
@@ -917,6 +1000,40 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     // Update countdown every second
     this.countdownInterval = setInterval(() => {
       this.currentTime.set(Date.now());
+      
+      // #region agent log
+      // Check badge animation state every 100ms during countdown updates
+      setTimeout(() => {
+        const currentHouse = this.getCurrentHouse();
+        if (currentHouse && currentHouse.status === 'active') {
+          const badgeElement = document.querySelector('.animate-seesaw') as HTMLElement;
+          if (badgeElement) {
+            const badgeComputedStyle = window.getComputedStyle(badgeElement);
+            if (typeof fetch !== 'undefined') {
+              fetch('http://127.0.0.1:7242/ingest/e31aa3d2-de06-43fa-bc0f-d7e32a4257c3', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  location: 'house-carousel.component.ts:countdownInterval:badgeCheck',
+                  message: 'Badge element state check',
+                  data: {
+                    hasAnimateSeesaw: badgeElement.classList.contains('animate-seesaw'),
+                    badgeClasses: badgeElement.className,
+                    badgeAnimation: badgeComputedStyle.animation,
+                    vibrationTriggerValue: this.vibrationTrigger(),
+                    houseStatus: currentHouse?.status
+                  },
+                  timestamp: Date.now(),
+                  sessionId: 'debug-session',
+                  runId: 'run1',
+                  hypothesisId: 'F,G'
+                })
+              }).catch(() => {});
+            }
+          }
+        }
+      }, 100);
+      // #endregion
     }, 1000);
   }
 
