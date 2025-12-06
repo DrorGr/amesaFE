@@ -118,23 +118,56 @@ export class MemberSettingsService {
   // Load user profile
   async loadUserProfile(): Promise<void> {
     try {
-      const currentUser = this.authService.getCurrentUser()();
-      if (currentUser) {
-        // Load user data from service
-        const userData = await this.userService.getUserProfile().toPromise();
-        if (userData) {
-          this._userProfile.set({
+      // Use authService.getCurrentUserProfile() which handles response format correctly
+      // and works even if getCurrentUser() hasn't been called yet
+      const userData = await this.authService.getCurrentUserProfile().toPromise();
+      if (userData) {
+        // Helper function to safely parse date
+        const formatDate = (date: Date | string | undefined): string => {
+          if (!date) return '';
+          try {
+            const dateObj = typeof date === 'string' ? new Date(date) : date;
+            if (isNaN(dateObj.getTime())) return '';
+            return dateObj.toISOString().split('T')[0];
+          } catch {
+            return '';
+          }
+        };
+
+        // Helper function to normalize gender (backend returns "Male", "Female", etc.)
+        const normalizeGender = (gender: string | undefined): 'male' | 'female' | 'other' => {
+          if (!gender) return 'male';
+          const lowerGender = gender.toLowerCase();
+          if (lowerGender === 'male' || lowerGender === 'female' || lowerGender === 'other') {
+            return lowerGender as 'male' | 'female' | 'other';
+          }
+          return 'male'; // Default fallback
+        };
+
+        const normalizedGender = normalizeGender(userData.gender);
+
+        this._userProfile.set({
+          firstName: userData.firstName || '',
+          lastName: userData.lastName || '',
+          gender: normalizedGender,
+          dateOfBirth: formatDate(userData.dateOfBirth),
+          idNumber: userData.idNumber || '',
+          email: userData.email || '',
+          phoneNumbers: userData.phone ? [userData.phone] : [],
+          isVerified: userData.emailVerified || false,
+          accountType: 'basic' as 'basic' | 'gold' | 'premium', // Default to basic, can be enhanced later
+          joinDate: formatDate(userData.createdAt),
+          lastLogin: formatDate(userData.lastLoginAt)
+        });
+        
+        // Only update the form if not currently editing (to avoid overwriting user's edits)
+        if (!this._isEditingProfile()) {
+          this.profileForm.patchValue({
             firstName: userData.firstName || '',
             lastName: userData.lastName || '',
-            gender: (userData.gender as 'male' | 'female' | 'other') || 'male',
-            dateOfBirth: userData.dateOfBirth ? new Date(userData.dateOfBirth).toISOString().split('T')[0] : '',
-            idNumber: userData.idNumber || '',
-            email: userData.email || '',
-            phoneNumbers: userData.phone ? [userData.phone] : [],
-            isVerified: userData.emailVerified || false,
-            accountType: 'basic' as 'basic' | 'gold' | 'premium', // Default to basic, can be enhanced later
-            joinDate: userData.createdAt ? new Date(userData.createdAt).toISOString() : '',
-            lastLogin: userData.lastLoginAt ? new Date(userData.lastLoginAt).toISOString() : ''
+            gender: normalizedGender,
+            dateOfBirth: formatDate(userData.dateOfBirth),
+            idNumber: userData.idNumber || ''
           });
         }
       }
