@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { StripeService, PaymentIntentResponse } from '../../services/stripe.service';
 import { PaymentService } from '../../services/payment.service';
 import { ProductService } from '../../services/product.service';
@@ -129,7 +130,7 @@ export class StripePaymentComponent implements OnInit, OnDestroy {
   totalAmount = signal(0);
   currency = signal('USD');
   paymentElement: StripePaymentElement | null = null;
-  paymentElementId = `stripe-payment-element-${Math.random().toString(36).substr(2, 9)}`;
+  paymentElementId = `stripe-payment-element-${Math.random().toString(36).substring(2, 11)}`;
 
   constructor(
     private stripeService: StripeService,
@@ -166,7 +167,7 @@ export class StripePaymentComponent implements OnInit, OnDestroy {
 
     try {
       // Get product price (server-side)
-      const price = await this.productService.getProductPrice(productId, quantity).toPromise();
+      const price = await firstValueFrom(this.productService.getProductPrice(productId, quantity));
       if (!price) {
         throw new Error('Failed to get product price');
       }
@@ -175,13 +176,13 @@ export class StripePaymentComponent implements OnInit, OnDestroy {
       
       // Create payment intent
       const idempotencyKey = this.paymentService.generateIdempotencyKey();
-      const paymentIntent = await this.stripeService.createPaymentIntent({
+      const paymentIntent = await firstValueFrom(this.stripeService.createPaymentIntent({
         amount: price,
         currency: 'USD',
         productId,
         quantity,
         idempotencyKey
-      }).toPromise();
+      }));
 
       if (!paymentIntent) {
         throw new Error('Failed to create payment intent');

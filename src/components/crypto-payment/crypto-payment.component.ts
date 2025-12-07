@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { firstValueFrom, Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { CryptoPaymentService, CoinbaseChargeResponse, SupportedCrypto } from '../../services/crypto-payment.service';
 import { PaymentService } from '../../services/payment.service';
@@ -156,7 +158,8 @@ export class CryptoPaymentComponent implements OnInit, OnDestroy {
   totalAmount = signal(0);
   currency = signal('USD');
   expiresAt = signal<string>('');
-  private pollingSubscription: any;
+  private pollingSubscription?: Subscription;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private cryptoService: CryptoPaymentService,
@@ -182,8 +185,11 @@ export class CryptoPaymentComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.pollingSubscription) {
       this.pollingSubscription.unsubscribe();
+      this.pollingSubscription = undefined;
     }
   }
 
@@ -193,7 +199,7 @@ export class CryptoPaymentComponent implements OnInit, OnDestroy {
 
     try {
       // Get product price (server-side)
-      const price = await this.productService.getProductPrice(productId, quantity).toPromise();
+      const price = await firstValueFrom(this.productService.getProductPrice(productId, quantity));
       if (!price) {
         throw new Error('Failed to get product price');
       }
@@ -202,11 +208,11 @@ export class CryptoPaymentComponent implements OnInit, OnDestroy {
 
       // Create charge
       const idempotencyKey = this.paymentService.generateIdempotencyKey();
-      const charge = await this.cryptoService.createCharge({
+      const charge = await firstValueFrom(this.cryptoService.createCharge({
         productId,
         quantity,
         idempotencyKey
-      }).toPromise();
+      }));
 
       if (!charge) {
         throw new Error('Failed to create charge');
@@ -237,17 +243,30 @@ export class CryptoPaymentComponent implements OnInit, OnDestroy {
   }
 
   startPolling(chargeId: string) {
-    this.pollingSubscription = this.cryptoService.pollChargeStatus(chargeId).subscribe({
+    // Clean up existing subscription if any
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+    }
+    
+    this.pollingSubscription = this.cryptoService.pollChargeStatus(chargeId).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (charge) => {
         this.charge.set(charge);
         
         if (charge.status === 'COMPLETED') {
-          this.pollingSubscription.unsubscribe();
+          if (this.pollingSubscription) {
+            this.pollingSubscription.unsubscribe();
+            this.pollingSubscription = undefined;
+          }
           setTimeout(() => {
             this.router.navigate(['/payment/success']);
           }, 2000);
         } else if (charge.status === 'FAILED' || charge.status === 'EXPIRED') {
-          this.pollingSubscription.unsubscribe();
+          if (this.pollingSubscription) {
+            this.pollingSubscription.unsubscribe();
+            this.pollingSubscription = undefined;
+          }
         }
       },
       error: (err) => {

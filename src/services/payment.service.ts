@@ -224,7 +224,14 @@ export class PaymentService {
 
   // Idempotency key generation
   generateIdempotencyKey(): string {
-    return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    // Use crypto.randomUUID if available for better uniqueness, otherwise fallback
+    const uuid = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : `${timestamp}-${random}-${Math.random().toString(36).substring(2, 9)}`;
+    // Ensure max length of 255 characters (common backend limit)
+    return uuid.substring(0, 255);
   }
 
   // Product payment processing

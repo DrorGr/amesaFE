@@ -147,8 +147,16 @@ export class StripeService {
     }
 
     try {
-      // Verify the elements instance is valid and has a mounted payment element
-      // Stripe will throw an error if the payment element isn't properly mounted
+      // CRITICAL: Submit elements first to validate and collect payment method
+      // This must be called before confirmPayment() according to Stripe's API
+      const { error: submitError } = await this.elements.submit();
+      
+      if (submitError) {
+        console.error('Stripe elements.submit() error:', submitError);
+        return { success: false, error: submitError.message || 'Please check your payment details' };
+      }
+
+      // Now confirm the payment after successful submission
       const { error } = await stripe.confirmPayment({
         elements: this.elements,
         clientSecret,

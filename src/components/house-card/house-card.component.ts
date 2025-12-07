@@ -13,12 +13,12 @@ import { ProductService } from '../../services/product.service';
 import { IdentityVerificationService } from '../../services/identity-verification.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
-import { PaymentModalComponent } from '../payment-modal/payment-modal.component';
+import { ResponsivePaymentPanelComponent } from '../responsive-payment-panel/responsive-payment-panel.component';
 
 @Component({
   selector: 'app-house-card',
   standalone: true,
-  imports: [CommonModule, VerificationGateComponent, PaymentModalComponent],
+  imports: [CommonModule, VerificationGateComponent, ResponsivePaymentPanelComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="relative bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-visible flex flex-col w-full h-full transform hover:scale-105">
@@ -224,15 +224,16 @@ import { PaymentModalComponent } from '../payment-modal/payment-modal.component'
         </div>
       </div>
 
-      <!-- Payment Modal -->
-      @if (showPaymentModal()) {
-        <app-payment-modal
+      <!-- Responsive Payment Panel -->
+      @if (showPaymentPanel()) {
+        <app-responsive-payment-panel
           [productId]="currentProductId() || house().productId || ''"
-          [quantity]="1"
+          [houseId]="house().id"
           [houseTitle]="house().title"
-          (close)="closePaymentModal()"
+          [triggerButton]="buyButtonRef()"
+          (close)="closePaymentPanel()"
           (paymentSuccess)="onPaymentSuccess($event)">
-        </app-payment-modal>
+        </app-responsive-payment-panel>
       }
     </div>
   `,
@@ -555,9 +556,10 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   isPurchasing = false;
   isTogglingFavorite = false;
   isQuickEntering = false;
-  showPaymentModal = signal(false);
-  currentProductId = signal<string | null>(null); // Store productId for payment modal
-  
+  showPaymentPanel = signal(false);
+  currentProductId = signal<string | null>(null); // Store productId for payment panel
+  buyButtonRef = signal<HTMLElement | undefined>(undefined);
+
   @ViewChild('buyTicketButton', { static: false }) buyTicketButton?: ElementRef<HTMLButtonElement>;
   
   // Get current user DTO for verification status
@@ -773,20 +775,28 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    // Store productId for payment modal
+    // Store productId for payment panel
     this.currentProductId.set(productId);
-    
-    // Show payment modal with product ID
-    this.showPaymentModal.set(true);
+
+    // Store button reference for desktop animation
+    const button = (event?.target as HTMLElement)?.closest('button') || this.buyTicketButton?.nativeElement;
+    if (button) {
+      this.buyButtonRef.set(button);
+    }
+
+    // Show payment panel with product ID
+    this.showPaymentPanel.set(true);
   }
 
-  closePaymentModal() {
-    this.showPaymentModal.set(false);
-    this.currentProductId.set(null); // Clear productId when modal closes
+  closePaymentPanel() {
+    this.showPaymentPanel.set(false);
+    this.buyButtonRef.set(undefined);
+    this.currentProductId.set(null); // Clear productId when panel closes
   }
 
-  async onPaymentSuccess(event: { paymentIntentId: string; transactionId?: string }) {
-    this.showPaymentModal.set(false);
+  async onPaymentSuccess(event: { paymentIntentId?: string; chargeId?: string; transactionId?: string }) {
+    this.showPaymentPanel.set(false);
+    this.buyButtonRef.set(undefined);
     
     // Payment was successful - webhook will create tickets
     // Show success message
