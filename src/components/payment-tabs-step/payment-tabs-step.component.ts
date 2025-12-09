@@ -284,6 +284,9 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   async ngAfterViewInit() {
+    // Wait for next change detection cycle to ensure @if blocks are rendered
+    await new Promise(resolve => setTimeout(resolve, 0));
+    
     if (this.selectedMethod() === PaymentMethod.Stripe && this.stripeClientSecret()) {
       await this.mountStripeElement();
     }
@@ -334,6 +337,8 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
     if (this.stripeClientSecret()) {
       // Already initialized
       if (!this.stripePaymentElement) {
+        // Wait for Angular to render the @if block before mounting
+        await new Promise(resolve => setTimeout(resolve, 0));
         await this.mountStripeElement();
       }
       return;
@@ -362,6 +367,8 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
       this.stripeClientSecret.set(response.clientSecret);
       this.paymentIntentCreated.emit(response);
 
+      // Wait for Angular to render the @if block before mounting
+      await new Promise(resolve => setTimeout(resolve, 0));
       await this.mountStripeElement();
     } catch (err: any) {
       // Handle rate limiting (429)
@@ -396,15 +403,19 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
   /**
    * Wait for a DOM element to exist before proceeding
    * Uses polling with exponential backoff
+   * Increased maxAttempts and initial delay for slower rendering scenarios
    */
-  private async waitForElement(elementId: string, maxAttempts: number = 20, initialDelay: number = 50): Promise<void> {
+  private async waitForElement(elementId: string, maxAttempts: number = 30, initialDelay: number = 100): Promise<void> {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const element = document.getElementById(elementId);
       if (element) {
-        return; // Element found
+        // Double-check element is actually visible/rendered (not just in DOM)
+        if (element.offsetParent !== null || element.getBoundingClientRect().width > 0) {
+          return; // Element found and visible
+        }
       }
       
-      // Exponential backoff: 50ms, 100ms, 200ms, 400ms, etc. (capped at 500ms)
+      // Exponential backoff: 100ms, 200ms, 400ms, etc. (capped at 500ms)
       const delay = Math.min(initialDelay * Math.pow(2, attempt), 500);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
