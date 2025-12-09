@@ -684,7 +684,7 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
     const isCurrentlyFavorite = this.isFavorite();
     
     // Get source button for animation
-    const sourceButton = event?.target ? (event.target as HTMLElement).closest('button') : null;
+    const sourceButton = this.getClosestElement(event?.target, 'button');
     
     this.lotteryService.toggleFavorite(h.id).subscribe({
       next: (result) => {
@@ -890,6 +890,34 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
     
     // Open in a new tab
     window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
+  }
+
+  /**
+   * Safely gets the closest element matching a selector from an event target.
+   * Handles cases where event.target might be a Text node or other non-Element node.
+   */
+  private getClosestElement(target: EventTarget | null | undefined, selector: string): HTMLElement | null {
+    if (!target) {
+      return null;
+    }
+
+    // If target is already an Element, use closest() directly
+    if (target instanceof Element) {
+      return target.closest(selector) as HTMLElement | null;
+    }
+
+    // If target is a Node (like Text), traverse up to find the parent Element
+    if (target instanceof Node) {
+      let current: Node | null = target;
+      while (current && current.nodeType !== Node.ELEMENT_NODE) {
+        current = current.parentNode;
+      }
+      if (current instanceof Element) {
+        return current.closest(selector) as HTMLElement | null;
+      }
+    }
+
+    return null;
   }
 }
 

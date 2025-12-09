@@ -1429,7 +1429,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     }
 
     // Store button reference before purchase
-    const button = (event.target as HTMLElement).closest('button');
+    const button = this.getClosestElement(event?.target, 'button');
     if (button) {
       this.buyButtonRef.set(button);
     }
@@ -1549,7 +1549,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.currentTicketPrice.set(house.ticketPrice);
 
     // Store button reference for desktop animation
-    const button = (event?.target as HTMLElement)?.closest('button');
+    const button = this.getClosestElement(event?.target, 'button');
     if (button) {
       this.buyButtonRef.set(button);
     }
@@ -1592,7 +1592,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.togglingFavorites.update(set => new Set(set).add(houseId));
 
     // Get the source button for animation
-    const sourceButton = (event.target as HTMLElement).closest('button') as HTMLElement;
+    const sourceButton = this.getClosestElement(event?.target, 'button');
 
     try {
       const result = await this.lotteryService.toggleFavorite(houseId).toPromise();
@@ -1706,5 +1706,33 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
         return newSet;
       });
     }
+  }
+
+  /**
+   * Safely gets the closest element matching a selector from an event target.
+   * Handles cases where event.target might be a Text node or other non-Element node.
+   */
+  private getClosestElement(target: EventTarget | null | undefined, selector: string): HTMLElement | null {
+    if (!target) {
+      return null;
+    }
+
+    // If target is already an Element, use closest() directly
+    if (target instanceof Element) {
+      return target.closest(selector) as HTMLElement | null;
+    }
+
+    // If target is a Node (like Text), traverse up to find the parent Element
+    if (target instanceof Node) {
+      let current: Node | null = target;
+      while (current && current.nodeType !== Node.ELEMENT_NODE) {
+        current = current.parentNode;
+      }
+      if (current instanceof Element) {
+        return current.closest(selector) as HTMLElement | null;
+      }
+    }
+
+    return null;
   }
 }
