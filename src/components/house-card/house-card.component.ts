@@ -13,12 +13,12 @@ import { ProductService } from '../../services/product.service';
 import { IdentityVerificationService } from '../../services/identity-verification.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
-import { ResponsivePaymentPanelComponent } from '../responsive-payment-panel/responsive-payment-panel.component';
+import { PaymentPanelService } from '../../services/payment-panel.service';
 
 @Component({
   selector: 'app-house-card',
   standalone: true,
-  imports: [CommonModule, VerificationGateComponent, ResponsivePaymentPanelComponent],
+  imports: [CommonModule, VerificationGateComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="relative bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-visible flex flex-col w-full h-full transform hover:scale-105">
@@ -224,17 +224,6 @@ import { ResponsivePaymentPanelComponent } from '../responsive-payment-panel/res
         </div>
       </div>
 
-      <!-- Responsive Payment Panel -->
-      @if (showPaymentPanel()) {
-        <app-responsive-payment-panel
-          [productId]="currentProductId() || house().productId || ''"
-          [houseId]="house().id"
-          [houseTitle]="house().title"
-          [triggerButton]="buyButtonRef()"
-          (close)="closePaymentPanel()"
-          (paymentSuccess)="onPaymentSuccess($event)">
-        </app-responsive-payment-panel>
-      }
     </div>
   `,
   styles: [`
@@ -540,6 +529,7 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private houseCardService = inject(HouseCardService);
+  private paymentPanelService = inject(PaymentPanelService);
   private heartAnimationService = inject(HeartAnimationService);
   private toastService = inject(ToastService);
   private productService = inject(ProductService);
@@ -556,9 +546,6 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   isPurchasing = false;
   isTogglingFavorite = false;
   isQuickEntering = false;
-  showPaymentPanel = signal(false);
-  currentProductId = signal<string | null>(null); // Store productId for payment panel
-  buyButtonRef = signal<HTMLElement | undefined>(undefined);
 
   @ViewChild('buyTicketButton', { static: false }) buyTicketButton?: ElementRef<HTMLButtonElement>;
   
@@ -775,35 +762,13 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    // Store productId for payment panel
-    this.currentProductId.set(productId);
-
-    // Store button reference for desktop animation (use ViewChild reference)
-    if (this.buyTicketButton?.nativeElement) {
-      this.buyButtonRef.set(this.buyTicketButton.nativeElement);
-    }
-
-    // Show payment panel with product ID
-    this.showPaymentPanel.set(true);
-  }
-
-  closePaymentPanel() {
-    this.showPaymentPanel.set(false);
-    this.buyButtonRef.set(undefined);
-    this.currentProductId.set(null); // Clear productId when panel closes
-  }
-
-  async onPaymentSuccess(event: { paymentIntentId?: string; chargeId?: string; transactionId?: string }) {
-    this.showPaymentPanel.set(false);
-    this.buyButtonRef.set(undefined);
-    
-    // Payment was successful - webhook will create tickets
-    // Show success message
-    this.toastService.success('Payment successful! Your tickets will be created shortly.', 5000);
-    
-    // Refresh house data to show updated ticket counts
-    // The webhook will create tickets and publish TicketPurchasedEvent
-    // SignalR will update the UI automatically
+    // Open payment panel via service (rendered at app level)
+    this.paymentPanelService.open({
+      productId: productId,
+      houseId: house.id,
+      houseTitle: house.title,
+      triggerButton: this.buyTicketButton?.nativeElement
+    });
   }
 
   // Fallback method for direct purchase (if product ID not available)

@@ -12,9 +12,11 @@ import { AuthModalService } from './services/auth-modal.service';
 import { ToastComponent } from './components/toast/toast.component';
 import { CookieConsentComponent } from './components/cookie-consent/cookie-consent.component';
 import { SkipLinksComponent } from './components/skip-links/skip-links.component';
+import { ResponsivePaymentPanelComponent } from './components/responsive-payment-panel/responsive-payment-panel.component';
 import { TranslationService } from './services/translation.service';
 import { ToastService } from './services/toast.service';
 import { CookieConsentService } from './services/cookie-consent.service';
+import { PaymentPanelService } from './services/payment-panel.service';
 // Services are available for dependency injection but not used directly in this component
 
 @Component({
@@ -29,7 +31,8 @@ import { CookieConsentService } from './services/cookie-consent.service';
     AuthModalComponent,
     ToastComponent,
     CookieConsentComponent,
-    SkipLinksComponent
+    SkipLinksComponent,
+    ResponsivePaymentPanelComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500 ease-in-out">
@@ -196,6 +199,18 @@ import { CookieConsentService } from './services/cookie-consent.service';
       <!-- Cookie Consent Banner -->
       <app-cookie-consent></app-cookie-consent>
       
+      <!-- Global Payment Panel -->
+      @if (paymentPanelService.isOpen()) {
+        <app-responsive-payment-panel
+          [productId]="paymentPanelService.panelData()?.productId || ''"
+          [houseId]="paymentPanelService.panelData()?.houseId"
+          [houseTitle]="paymentPanelService.panelData()?.houseTitle"
+          [triggerButton]="paymentPanelService.panelData()?.triggerButton"
+          (close)="paymentPanelService.close()"
+          (paymentSuccess)="onPaymentSuccess($event)">
+        </app-responsive-payment-panel>
+      }
+      
     </div>
   `,
   styles: []
@@ -206,6 +221,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private cookieConsentService = inject(CookieConsentService);
   public authModalService = inject(AuthModalService);
+  public paymentPanelService = inject(PaymentPanelService);
   private routerSubscription?: Subscription;
   
   // Services are injected but not used directly in this component
@@ -312,6 +328,12 @@ export class AppComponent implements OnInit, OnDestroy {
     
     // Note: Route loading state management removed since we no longer show loading component
     // Route navigation will happen automatically without blocking UI
+  }
+
+  onPaymentSuccess(event: { paymentIntentId?: string; chargeId?: string; transactionId?: string }): void {
+    // Payment panel will handle its own success flow
+    // This is just a placeholder for any app-level handling if needed
+    console.log('Payment successful:', event);
   }
 
   translate(key: string): string {
