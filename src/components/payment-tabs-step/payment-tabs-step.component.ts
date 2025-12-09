@@ -3,7 +3,7 @@
  * Step 3: Payment method selection (Stripe/Crypto) with payment forms
  */
 
-import { Component, inject, input, output, signal, computed, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, input, output, signal, computed, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, effect, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -274,6 +274,46 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
   // Expose enum to template
   PaymentMethod = PaymentMethod;
 
+  private stripeMountTimeout?: ReturnType<typeof setTimeout>;
+  private destroyRef = inject(DestroyRef);
+
+  constructor() {
+    // Register cleanup on component destroy
+    this.destroyRef.onDestroy(() => {
+      if (this.stripeMountTimeout) {
+        clearTimeout(this.stripeMountTimeout);
+        this.stripeMountTimeout = undefined;
+      }
+    });
+
+    // Reactive effect to mount Stripe element when conditions are met
+    // This ensures the element is mounted as soon as it's rendered in the DOM
+    effect(() => {
+      // Clear any pending timeout
+      if (this.stripeMountTimeout) {
+        clearTimeout(this.stripeMountTimeout);
+        this.stripeMountTimeout = undefined;
+      }
+
+      const hasSecret = this.stripeClientSecret();
+      const isStripe = this.selectedMethod() === PaymentMethod.Stripe;
+      const notLoading = !this.stripeLoading();
+      const notMounted = !this.stripePaymentElement;
+      
+      // Mount element when: Stripe selected, secret exists, not loading, not already mounted
+      if (hasSecret && isStripe && notLoading && notMounted) {
+        // Wait for next change detection cycle to ensure @if block is rendered
+        this.stripeMountTimeout = setTimeout(() => {
+          this.stripeMountTimeout = undefined;
+          this.mountStripeElement().catch(err => {
+            console.error('Failed to mount Stripe element:', err);
+            // Error is already handled in mountStripeElement
+          });
+        }, 0);
+      }
+    });
+  }
+
   async ngOnInit() {
     this.selectedMethod.set(this.flowState().paymentMethod || PaymentMethod.Stripe);
     
@@ -284,11 +324,12 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   async ngAfterViewInit() {
-    // Wait for next change detection cycle to ensure @if blocks are rendered
-    await new Promise(resolve => setTimeout(resolve, 0));
-    
-    if (this.selectedMethod() === PaymentMethod.Stripe && this.stripeClientSecret()) {
-      await this.mountStripeElement();
+    // Effect handles mounting, but we keep this as fallback
+    if (this.selectedMethod() === PaymentMethod.Stripe && this.stripeClientSecret() && !this.stripePaymentElement) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await this.mountStripeElement().catch(() => {
+        // Effect will retry if needed
+      });
     }
   }
 
@@ -335,12 +376,7 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
 
   private async initializeStripe() {
     if (this.stripeClientSecret()) {
-      // Already initialized
-      if (!this.stripePaymentElement) {
-        // Wait for Angular to render the @if block before mounting
-        await new Promise(resolve => setTimeout(resolve, 0));
-        await this.mountStripeElement();
-      }
+      // Already initialized - effect will handle mounting
       return;
     }
 
@@ -367,9 +403,7 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
       this.stripeClientSecret.set(response.clientSecret);
       this.paymentIntentCreated.emit(response);
 
-      // Wait for Angular to render the @if block before mounting
-      await new Promise(resolve => setTimeout(resolve, 0));
-      await this.mountStripeElement();
+      // Effect will automatically mount the element when stripeClientSecret is set
     } catch (err: any) {
       // Handle rate limiting (429)
       if (err?.status === 429 || err?.error?.code === 'RATE_LIMIT_EXCEEDED') {

@@ -12,14 +12,14 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
 import { ProductService } from '../../services/product.service';
 import { IdentityVerificationService } from '../../services/identity-verification.service';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
-import { ResponsivePaymentPanelComponent } from '../responsive-payment-panel/responsive-payment-panel.component';
+import { PaymentPanelService } from '../../services/payment-panel.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-house-carousel',
   standalone: true,
-  imports: [CommonModule, VerificationGateComponent, ResponsivePaymentPanelComponent],
+  imports: [CommonModule, VerificationGateComponent],
   encapsulation: ViewEncapsulation.None,
   template: `
     <section class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 py-4 md:py-4 transition-colors duration-300 relative">
@@ -325,18 +325,6 @@ import { environment } from '../../environments/environment';
                           </button>
                         }
                       </app-verification-gate>
-                      
-                      <!-- Responsive Payment Panel -->
-                      @if (showPaymentPanel() && currentProductId()) {
-                        <app-responsive-payment-panel
-                          [productId]="currentProductId()!"
-                          [houseId]="currentHouseId() || undefined"
-                          [houseTitle]="currentHouseTitle()"
-                          [triggerButton]="buyButtonRef()"
-                          (close)="closePaymentPanel()"
-                          (paymentSuccess)="onPaymentSuccess($event)">
-                        </app-responsive-payment-panel>
-                      }
                     } @else {
                       <!-- Sign In Prompt -->
                       <div class="text-center mt-6 md:mt-4">
@@ -830,16 +818,11 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private router = inject(Router);
   private verificationService = inject(IdentityVerificationService, { optional: true });
+  private paymentPanelService = inject(PaymentPanelService);
   private togglingFavorites = signal<Set<string>>(new Set());
   private quickEntering = signal<Set<string>>(new Set());
   private purchasing = signal<Set<string>>(new Set());
   private buyTicketClickInProgress = signal<Set<string>>(new Set()); // Guard against duplicate clicks
-  showPaymentPanel = signal(false);
-  buyButtonRef = signal<HTMLElement | undefined>(undefined);
-  currentProductId = signal<string | null>(null);
-  currentHouseId = signal<string | null>(null);
-  currentHouseTitle = signal<string | undefined>(undefined);
-  currentTicketPrice = signal<number | null>(null);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -1428,12 +1411,6 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Store button reference before purchase
-    const button = this.getClosestElement(event?.target, 'button');
-    if (button) {
-      this.buyButtonRef.set(button);
-    }
-    
     this.purchaseTicket(house, event).finally(() => {
       // Clear the in-progress flag when done
       this.buyTicketClickInProgress.update(set => {
@@ -1542,35 +1519,16 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Store data for payment panel
-    this.currentProductId.set(productId);
-    this.currentHouseId.set(house.id);
-    this.currentHouseTitle.set(house.title);
-    this.currentTicketPrice.set(house.ticketPrice);
-
     // Store button reference for desktop animation
     const button = this.getClosestElement(event?.target, 'button');
-    if (button) {
-      this.buyButtonRef.set(button);
-    }
 
-    // Show payment panel
-    this.showPaymentPanel.set(true);
-  }
-
-  closePaymentPanel() {
-    this.showPaymentPanel.set(false);
-    this.buyButtonRef.set(undefined);
-    this.currentProductId.set(null);
-    this.currentHouseId.set(null);
-    this.currentHouseTitle.set(undefined);
-    this.currentTicketPrice.set(null);
-  }
-
-  async onPaymentSuccess(event: { paymentIntentId?: string; chargeId?: string; transactionId?: string }) {
-    this.showPaymentPanel.set(false);
-    this.buyButtonRef.set(undefined);
-    this.toastService.success('Payment successful! Your tickets will be created shortly.', 5000);
+    // Open payment panel via service (rendered at app level - global)
+    this.paymentPanelService.open({
+      productId: productId,
+      houseId: house.id,
+      houseTitle: house.title,
+      triggerButton: button || undefined
+    });
   }
 
   async toggleFavorite(houseId: string, event: Event): Promise<void> {
@@ -1595,7 +1553,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     const sourceButton = this.getClosestElement(event?.target, 'button');
 
     try {
-      const result = await this.lotteryService.toggleFavorite(houseId).toPromise();
+      const result = await firstValueFrom(this.lotteryService.toggleFavorite(houseId));
       if (result) {
         // State is automatically updated by LotteryService
         const message = result.message || (result.added 
