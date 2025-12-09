@@ -778,10 +778,9 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
     // Store productId for payment panel
     this.currentProductId.set(productId);
 
-    // Store button reference for desktop animation
-    const button = this.getClosestElement(event?.target, 'button') || this.buyTicketButton?.nativeElement;
-    if (button) {
-      this.buyButtonRef.set(button);
+    // Store button reference for desktop animation (use ViewChild reference)
+    if (this.buyTicketButton?.nativeElement) {
+      this.buyButtonRef.set(this.buyTicketButton.nativeElement);
     }
 
     // Show payment panel with product ID

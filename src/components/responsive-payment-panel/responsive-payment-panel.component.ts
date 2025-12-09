@@ -500,6 +500,10 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
 
     // Setup browser back button handling
     this.setupBrowserBackButton();
+    
+    // AUTO-OPEN: Open panel when component is created (parent sets showPaymentPanel to true)
+    // Use triggerButton input if available, otherwise use undefined (will center on screen)
+    this.open(this.triggerButton());
   }
 
   ngAfterViewInit() {
