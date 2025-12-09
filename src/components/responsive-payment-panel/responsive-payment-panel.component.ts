@@ -37,7 +37,6 @@ import { PaymentConfirmationStepComponent } from '../payment-confirmation-step/p
 import { PaymentIntentResponse } from '../../services/stripe.service';
 import { CoinbaseChargeResponse } from '../../services/crypto-payment.service';
 import { LotteryService } from '../../services/lottery.service';
-import { ReservationService } from '../../services/reservation.service';
 import { ToastService } from '../../services/toast.service';
 import { RealtimeService } from '../../services/realtime.service';
 import { PurchaseTicketRequest } from '../../models/house.model';
@@ -298,7 +297,6 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
   private productService = inject(ProductService);
   private location = inject(Location);
   private lotteryService = inject(LotteryService);
-  private reservationService = inject(ReservationService);
   private toastService = inject(ToastService);
   private realtimeService = inject(RealtimeService);
 
@@ -644,9 +642,6 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
   }
 
   close() {
-    // CRITICAL-3: Cancel reservation if panel is closed before payment
-    this.cancelReservationIfNeeded();
-
     // Release focus trap
     this.focusTrapService.releaseFocus();
 
@@ -664,25 +659,6 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
 
     // Emit close event
     this.closeEvent.emit();
-  }
-  
-  private async cancelReservationIfNeeded() {
-    const reservationId = this.flowState().reservationId;
-    const isProcessing = this.flowState().isProcessing;
-    
-    // Only cancel if reservation exists and payment hasn't completed
-    if (reservationId && !isProcessing) {
-      try {
-        await firstValueFrom(this.reservationService.cancelReservation(reservationId));
-        this.flowState.update(state => ({
-          ...state,
-          reservationId: undefined
-        }));
-      } catch (err) {
-        console.error('Failed to cancel reservation:', err);
-        // Don't block panel close on reservation cancellation failure
-      }
-    }
   }
 
   onBackdropClick(event: MouseEvent) {
@@ -709,28 +685,8 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
       totalAmount: event.calculatedPrice
     }));
     
-    // CRITICAL-3: Create reservation before proceeding to review
-    if (this.flowState().houseId) {
-      try {
-        this.flowState.update(s => ({ ...s, isLoading: true }));
-        const reservation = await firstValueFrom(
-          this.reservationService.createReservation(this.flowState().houseId!, {
-            quantity: event.quantity
-          })
-        );
-        this.flowState.update(state => ({
-          ...state,
-          reservationId: reservation.id,
-          isLoading: false
-        }));
-      } catch (err: any) {
-        console.error('Failed to create reservation:', err);
-        this.flowState.update(s => ({ ...s, isLoading: false }));
-        // Continue without reservation - backend should handle gracefully
-        this.handleError(err?.message || this.translate('payment.reservation.failed'));
-      }
-    }
-    
+    // Skip reservations for modal flow (faster, simpler UX)
+    // Product validation ensures availability at payment time
     this.goToStep(PaymentStep.Review);
   }
 
@@ -756,6 +712,29 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
   }
 
   async onStripePaymentConfirmed(event: { paymentIntentId: string }) {
+    // Validate product availability before processing payment
+    const state = this.flowState();
+    if (state.productId && state.quantity) {
+      try {
+        const validation = await firstValueFrom(
+          this.productService.validateProduct({
+            productId: state.productId,
+            quantity: state.quantity
+          })
+        );
+        
+        if (validation.errors && validation.errors.length > 0) {
+          // Product no longer available or quantity insufficient
+          this.handleError(validation.errors.join(', '));
+          this.goToStep(PaymentStep.Quantity);
+          return;
+        }
+      } catch (err: any) {
+        // Validation failed - proceed anyway (backend will handle)
+        console.warn('Product validation failed, proceeding with payment:', err);
+      }
+    }
+    
     this.flowState.update(state => ({
       ...state,
       paymentIntentId: event.paymentIntentId,
@@ -780,6 +759,29 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
   }
 
   async onCryptoPaymentConfirmed(event: { chargeId: string }) {
+    // Validate product availability before processing payment
+    const state = this.flowState();
+    if (state.productId && state.quantity) {
+      try {
+        const validation = await firstValueFrom(
+          this.productService.validateProduct({
+            productId: state.productId,
+            quantity: state.quantity
+          })
+        );
+        
+        if (validation.errors && validation.errors.length > 0) {
+          // Product no longer available or quantity insufficient
+          this.handleError(validation.errors.join(', '));
+          this.goToStep(PaymentStep.Quantity);
+          return;
+        }
+      } catch (err: any) {
+        // Validation failed - proceed anyway (backend will handle)
+        console.warn('Product validation failed, proceeding with payment:', err);
+      }
+    }
+    
     this.flowState.update(state => ({
       ...state,
       chargeId: event.chargeId,
