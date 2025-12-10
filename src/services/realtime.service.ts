@@ -832,6 +832,20 @@ export class RealtimeService {
 
   // Cleanup
   ngOnDestroy(): void {
+    // Clean up all subscriptions
+    this.lotteryUpdateSubject.complete();
+    this.notificationSubject.complete();
+    this.userStatusSubject.complete();
+    this.generalEventSubject.complete();
+    this.favoriteUpdateSubject.complete();
+    this.entryStatusChangeSubject.complete();
+    this.drawReminderSubject.complete();
+    this.recommendationSubject.complete();
+    this.inventoryUpdateSubject.complete();
+    this.countdownUpdateSubject.complete();
+    this.reservationStatusUpdateSubject.complete();
+    
+    // Stop connection
     this.stopConnection();
   }
 }

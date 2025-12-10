@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
 import { catchError, switchMap, retryWhen, delay, take, concatMap } from 'rxjs/operators';
 import { environment } from '../environments/environment';
+import { OfflineService } from './offline.service';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -36,6 +37,7 @@ export class ApiService {
   private tokenRefreshCallback: (() => Observable<unknown>) | null = null;
   private isRefreshing = false;
   private refreshSubject = new BehaviorSubject<boolean>(false);
+  private offlineService = inject(OfflineService);
 
   constructor(private http: HttpClient) {
     // Check if we're in a test environment
@@ -135,16 +137,31 @@ export class ApiService {
       });
     }
 
-    return this.http.get<ApiResponse<T>>(this.buildUrl(endpoint), {
-      headers: this.getHeaders(),
+    const url = this.buildUrl(endpoint);
+    const headers = this.getHeaders();
+
+    return this.http.get<ApiResponse<T>>(url, {
+      headers: headers,
       params: httpParams
     }).pipe(
-      catchError((error: HttpErrorResponse) => this.handleErrorWithRetry(error, () => 
-        this.http.get<ApiResponse<T>>(this.buildUrl(endpoint), {
-          headers: this.getHeaders(),
-          params: httpParams
-        })
-      ))
+      catchError((error: HttpErrorResponse) => {
+        // If offline or network error, queue the request
+        if (!this.offlineService.isOnline() || error.status === 0 || error.error instanceof ProgressEvent) {
+          const requestId = this.offlineService.queueRequest({
+            method: 'GET',
+            url: url,
+            headers: this.headersToRecord(headers),
+            data: params
+          });
+          console.log(`[ApiService] Request queued (offline): ${requestId}`);
+        }
+        return this.handleErrorWithRetry(error, () => 
+          this.http.get<ApiResponse<T>>(url, {
+            headers: headers,
+            params: httpParams
+          })
+        );
+      })
     );
   }
 
@@ -166,23 +183,50 @@ export class ApiService {
     return this.http.post<ApiResponse<T>>(url, body, {
       headers: headers
     }).pipe(
-      catchError((error: HttpErrorResponse) => this.handleErrorWithRetry(error, () => 
-        this.http.post<ApiResponse<T>>(url, body, {
-          headers: this.getHeaders()
-        })
-      ))
+      catchError((error: HttpErrorResponse) => {
+        // If offline or network error, queue the request
+        if (!this.offlineService.isOnline() || error.status === 0 || error.error instanceof ProgressEvent) {
+          const requestId = this.offlineService.queueRequest({
+            method: 'POST',
+            url: url,
+            headers: this.headersToRecord(headers),
+            data: body
+          });
+          console.log(`[ApiService] Request queued (offline): ${requestId}`);
+        }
+        return this.handleErrorWithRetry(error, () => 
+          this.http.post<ApiResponse<T>>(url, body, {
+            headers: this.getHeaders()
+          })
+        );
+      })
     );
   }
 
   put<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
-    return this.http.put<ApiResponse<T>>(this.buildUrl(endpoint), data, {
-      headers: this.getHeaders()
+    const url = this.buildUrl(endpoint);
+    const headers = this.getHeaders();
+
+    return this.http.put<ApiResponse<T>>(url, data, {
+      headers: headers
     }).pipe(
-      catchError((error: HttpErrorResponse) => this.handleErrorWithRetry(error, () => 
-        this.http.put<ApiResponse<T>>(this.buildUrl(endpoint), data, {
-          headers: this.getHeaders()
-        })
-      ))
+      catchError((error: HttpErrorResponse) => {
+        // If offline or network error, queue the request
+        if (!this.offlineService.isOnline() || error.status === 0 || error.error instanceof ProgressEvent) {
+          const requestId = this.offlineService.queueRequest({
+            method: 'PUT',
+            url: url,
+            headers: this.headersToRecord(headers),
+            data: data
+          });
+          console.log(`[ApiService] Request queued (offline): ${requestId}`);
+        }
+        return this.handleErrorWithRetry(error, () => 
+          this.http.put<ApiResponse<T>>(url, data, {
+            headers: headers
+          })
+        );
+      })
     );
   }
 
@@ -193,11 +237,22 @@ export class ApiService {
     return this.http.delete<ApiResponse<T>>(url, {
       headers: headers
     }).pipe(
-      catchError((error: HttpErrorResponse) => this.handleErrorWithRetry(error, () => 
-        this.http.delete<ApiResponse<T>>(url, {
-          headers: this.getHeaders()
-        })
-      ))
+      catchError((error: HttpErrorResponse) => {
+        // If offline or network error, queue the request
+        if (!this.offlineService.isOnline() || error.status === 0 || error.error instanceof ProgressEvent) {
+          const requestId = this.offlineService.queueRequest({
+            method: 'DELETE',
+            url: url,
+            headers: this.headersToRecord(headers)
+          });
+          console.log(`[ApiService] Request queued (offline): ${requestId}`);
+        }
+        return this.handleErrorWithRetry(error, () => 
+          this.http.delete<ApiResponse<T>>(url, {
+            headers: this.getHeaders()
+          })
+        );
+      })
     );
   }
 
@@ -351,4 +406,18 @@ export class ApiService {
     // Legacy error handler for backward compatibility
     return this.handleErrorWithRetry(error, () => throwError(() => error));
   };
+
+  /**
+   * Convert HttpHeaders to Record<string, string> for OfflineService
+   */
+  private headersToRecord(headers: HttpHeaders): Record<string, string> {
+    const record: Record<string, string> = {};
+    headers.keys().forEach(key => {
+      const value = headers.get(key);
+      if (value) {
+        record[key] = value;
+      }
+    });
+    return record;
+  }
 }

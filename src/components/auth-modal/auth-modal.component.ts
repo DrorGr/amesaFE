@@ -8,6 +8,7 @@ import { MobileDetectionService } from '../../services/mobile-detection.service'
 import { ToastService } from '../../services/toast.service';
 import { PasswordResetModalComponent } from '../password-reset-modal/password-reset-modal.component';
 import { FocusTrapService } from '../../services/focus-trap.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-auth-modal',
@@ -124,6 +125,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
                   id="name"
                   [(ngModel)]="name"
                   name="name"
+                  autocomplete="name"
                   required
                   (input)="onInputChange()"
                   class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white mobile-auth-input">
@@ -137,6 +139,7 @@ import { FocusTrapService } from '../../services/focus-trap.service';
                 id="email"
                 [(ngModel)]="email"
                 name="email"
+                [autocomplete]="mode() === 'login' ? 'email' : 'email'"
                 required
                 (input)="onInputChange()"
                 class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white">
@@ -144,18 +147,48 @@ import { FocusTrapService } from '../../services/focus-trap.service';
 
             <div>
               <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 mobile-auth-label">{{ translate('auth.password') }}</label>
-              <input
-                type="password"
-                id="password"
-                [(ngModel)]="password"
-                name="password"
-                required
-                (input)="onInputChange()"
-                class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+              <div class="relative">
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  [(ngModel)]="password"
+                  name="password"
+                  [autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'"
+                  required
+                  (input)="onInputChange()"
+                  class="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-12">
+                <button
+                  type="button"
+                  (click)="showPassword = !showPassword"
+                  (keydown.enter)="showPassword = !showPassword; $event.preventDefault()"
+                  (keydown.space)="showPassword = !showPassword; $event.preventDefault()"
+                  [attr.aria-label]="showPassword ? translate('auth.hidePassword') : translate('auth.showPassword')"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none p-1">
+                  @if (showPassword) {
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                    </svg>
+                  } @else {
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                  }
+                </button>
+              </div>
             </div>
 
             @if (mode() === 'login') {
-              <div class="text-right">
+              <div class="flex items-center justify-between">
+                <label class="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    name="rememberMe"
+                    [(ngModel)]="rememberMe"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ translate('auth.rememberMe') }}</span>
+                </label>
                 <button
                   type="button"
                   (click)="showPasswordReset()"
@@ -295,6 +328,8 @@ export class AuthModalComponent implements AfterViewInit, OnDestroy {
   name = '';
   email = '';
   password = '';
+  rememberMe = false;
+  showPassword = false;
   isLoading = false;
   showPasswordResetModal = false;
   errorMessage = '';
@@ -307,7 +342,7 @@ export class AuthModalComponent implements AfterViewInit, OnDestroy {
       let result: boolean;
       
       if (this.mode() === 'login') {
-        result = await this.authService.login(this.email, this.password).toPromise() || false;
+        result = await firstValueFrom(this.authService.login(this.email, this.password, this.rememberMe)) || false;
       } else {
         const registerData = { 
           username: this.name, 
@@ -317,7 +352,7 @@ export class AuthModalComponent implements AfterViewInit, OnDestroy {
           lastName: this.name.split(' ').slice(1).join(' ') || '',
           authProvider: 'local'
         };
-        const registerResult = await this.authService.register(registerData).toPromise();
+        const registerResult = await firstValueFrom(this.authService.register(registerData));
         
         if (registerResult?.success) {
           if (registerResult.requiresEmailVerification) {
@@ -338,7 +373,7 @@ export class AuthModalComponent implements AfterViewInit, OnDestroy {
       if (result) {
         // Fetch user profile to update auth state
         try {
-          await this.authService.getCurrentUserProfile().toPromise();
+          await firstValueFrom(this.authService.getCurrentUserProfile());
         } catch (err) {
           console.error('Error fetching user profile after login:', err);
         }

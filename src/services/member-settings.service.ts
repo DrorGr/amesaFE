@@ -5,6 +5,7 @@ import { UserService } from './user.service';
 import { ThemeService } from './theme.service';
 import { TranslationService } from './translation.service';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 export interface UserProfile {
   firstName: string;
@@ -120,7 +121,7 @@ export class MemberSettingsService {
     try {
       // Use authService.getCurrentUserProfile() which handles response format correctly
       // and works even if getCurrentUser() hasn't been called yet
-      const userData = await this.authService.getCurrentUserProfile().toPromise();
+      const userData = await firstValueFrom(this.authService.getCurrentUserProfile());
       if (userData) {
         // Helper function to safely parse date
         const formatDate = (date: Date | string | undefined): string => {
@@ -192,7 +193,7 @@ export class MemberSettingsService {
         };
         
         // Update user profile (returns Observable)
-        const updatedUser = await this.userService.updateUserProfile(updateRequest).toPromise();
+        const updatedUser = await firstValueFrom(this.userService.updateUserProfile(updateRequest));
 
         if (updatedUser) {
           // Reload user profile to get updated data

@@ -195,8 +195,16 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     <input
                       type="text"
                       formControlName="firstName"
+                      autocomplete="given-name"
+                      [class.border-red-500]="shouldShowError('firstName', personalDetailsForm)"
+                      [class.dark:border-red-500]="shouldShowError('firstName', personalDetailsForm)"
                       class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                       [placeholder]="translate('register.firstNamePlaceholder')">
+                    @if (shouldShowError('firstName', personalDetailsForm)) {
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                        {{ getErrorMessage('firstName', personalDetailsForm) }}
+                      </p>
+                    }
                   </div>
                   <div>
                     <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
@@ -205,8 +213,16 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     <input
                       type="text"
                       formControlName="lastName"
+                      autocomplete="family-name"
+                      [class.border-red-500]="shouldShowError('lastName', personalDetailsForm)"
+                      [class.dark:border-red-500]="shouldShowError('lastName', personalDetailsForm)"
                       class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                       [placeholder]="translate('register.lastNamePlaceholder')">
+                    @if (shouldShowError('lastName', personalDetailsForm)) {
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                        {{ getErrorMessage('lastName', personalDetailsForm) }}
+                      </p>
+                    }
                   </div>
                 </div>
 
@@ -218,6 +234,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <input
                     type="text"
                     formControlName="idNumber"
+                    autocomplete="off"
                     class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.idNumberPlaceholder')">
                 </div>
@@ -228,7 +245,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       {{ translate('register.gender') }} <span class="text-red-500">*</span>
                     </label>
-                    <select formControlName="gender" class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200">
+                    <select formControlName="gender" autocomplete="sex" class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200">
                       <option value="">{{ translate('register.selectGender') }}</option>
                       <option value="male">{{ translate('register.male') }}</option>
                       <option value="female">{{ translate('register.female') }}</option>
@@ -242,7 +259,15 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                     <input
                       type="date"
                       formControlName="dateOfBirth"
+                      autocomplete="bday"
+                      [class.border-red-500]="shouldShowError('dateOfBirth', personalDetailsForm)"
+                      [class.dark:border-red-500]="shouldShowError('dateOfBirth', personalDetailsForm)"
                       class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200">
+                    @if (shouldShowError('dateOfBirth', personalDetailsForm)) {
+                      <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                        {{ getErrorMessage('dateOfBirth', personalDetailsForm) }}
+                      </p>
+                    }
                   </div>
                 </div>
 
@@ -259,6 +284,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="text"
                         formControlName="country"
+                        autocomplete="country-name"
                         class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.countryPlaceholder')">
                     </div>
@@ -269,6 +295,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="text"
                         formControlName="city"
+                        autocomplete="address-level2"
                         class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.cityPlaceholder')">
                     </div>
@@ -279,6 +306,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="text"
                         formControlName="street"
+                        autocomplete="street-address"
                         class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.streetPlaceholder')">
                     </div>
@@ -289,6 +317,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="text"
                         formControlName="houseNumber"
+                        autocomplete="address-line1"
                         class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.houseNumberPlaceholder')">
                     </div>
@@ -299,6 +328,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="text"
                         formControlName="zipCode"
+                        autocomplete="postal-code"
                         class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                         [placeholder]="translate('register.zipCodePlaceholder')">
                     </div>
@@ -337,8 +367,16 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                   <input
                     type="email"
                     formControlName="email"
+                    autocomplete="email"
+                    [class.border-red-500]="shouldShowError('email', communicationForm)"
+                    [class.dark:border-red-500]="shouldShowError('email', communicationForm)"
                     class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
                     [placeholder]="translate('register.emailPlaceholder')">
+                  @if (shouldShowError('email', communicationForm)) {
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {{ getErrorMessage('email', communicationForm) }}
+                    </p>
+                  }
                   @if (emailVerified()) {
                     <p class="mt-2 text-sm text-green-600 dark:text-green-400 flex items-center">
                       <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -359,6 +397,7 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <input
                         type="tel"
                         [(ngModel)]="phoneNumbers()[$index]"
+                        autocomplete="tel"
                         class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200 flex-1"
                         [placeholder]="translate('register.phonePlaceholder')">
                       @if (phoneNumbers().length > 1) {
@@ -418,11 +457,34 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.password') }} <span class="text-red-500">*</span>
                   </label>
-                  <input
-                    type="password"
-                    formControlName="password"
-                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
-                    [placeholder]="translate('register.passwordPlaceholder')">
+                  <div class="relative">
+                    <input
+                      [type]="showPassword() ? 'text' : 'password'"
+                      formControlName="password"
+                      autocomplete="new-password"
+                      [class.border-red-500]="shouldShowError('password', passwordForm)"
+                      [class.dark:border-red-500]="shouldShowError('password', passwordForm)"
+                      class="w-full px-4 py-3 md:px-3 md:py-2 pr-12 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                      [placeholder]="translate('register.passwordPlaceholder')">
+                    <button
+                      type="button"
+                      (click)="showPassword.set(!showPassword())"
+                      (keydown.enter)="showPassword.set(!showPassword()); $event.preventDefault()"
+                      (keydown.space)="showPassword.set(!showPassword()); $event.preventDefault()"
+                      [attr.aria-label]="showPassword() ? translate('auth.hidePassword') : translate('auth.showPassword')"
+                      class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none p-1">
+                      @if (showPassword()) {
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                        </svg>
+                      } @else {
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                      }
+                    </button>
+                  </div>
                   <!-- Password Strength Indicator -->
                   <div class="mt-2">
                     <div class="flex space-x-1">
@@ -444,14 +506,37 @@ import { RegistrationFormService } from '../../services/registration-form.servic
                       <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {{ translate('register.confirmPassword') }} <span class="text-red-500">*</span>
                   </label>
-                  <input
-                    type="password"
-                    formControlName="confirmPassword"
-                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
-                    [placeholder]="translate('register.confirmPasswordPlaceholder')">
-                  @if (passwordForm.get('confirmPassword')?.touched && passwordForm.get('confirmPassword')?.errors?.['mismatch']) {
-                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">
-                      {{ translate('register.passwordsDoNotMatch') }}
+                  <div class="relative">
+                    <input
+                      [type]="showConfirmPassword() ? 'text' : 'password'"
+                      formControlName="confirmPassword"
+                      autocomplete="new-password"
+                      [class.border-red-500]="shouldShowError('confirmPassword', passwordForm)"
+                      [class.dark:border-red-500]="shouldShowError('confirmPassword', passwordForm)"
+                      class="w-full px-4 py-3 md:px-3 md:py-2 pr-12 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                      [placeholder]="translate('register.confirmPasswordPlaceholder')">
+                    <button
+                      type="button"
+                      (click)="showConfirmPassword.set(!showConfirmPassword())"
+                      (keydown.enter)="showConfirmPassword.set(!showConfirmPassword()); $event.preventDefault()"
+                      (keydown.space)="showConfirmPassword.set(!showConfirmPassword()); $event.preventDefault()"
+                      [attr.aria-label]="showConfirmPassword() ? translate('auth.hidePassword') : translate('auth.showPassword')"
+                      class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none p-1">
+                      @if (showConfirmPassword()) {
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                        </svg>
+                      } @else {
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                      }
+                    </button>
+                  </div>
+                  @if (shouldShowError('confirmPassword', passwordForm)) {
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {{ getErrorMessage('confirmPassword', passwordForm) }}
                     </p>
                   }
                 </div>
@@ -475,143 +560,6 @@ import { RegistrationFormService } from '../../services/registration-form.servic
             </div>
           }
 
-          <!-- Step 4: Identity Validation (Premium) -->
-          @if (currentStep() === 4) {
-            <div>
-              <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                {{ translate('register.identityValidation') }}
-              </h2>
-              <p class="text-gray-600 dark:text-gray-400 mb-8">
-                {{ translate('register.identityValidationDesc') }}
-              </p>
-
-              <!-- Privacy Notice -->
-              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-8">
-                <div class="flex items-start">
-                  <svg class="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <div>
-                    <h3 class="text-2xl font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                      {{ translate('register.privacyNotice') }}
-                    </h3>
-                    <p class="text-blue-700 dark:text-blue-300">
-                      {{ translate('register.privacyNoticeDesc') }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <form [formGroup]="identityForm" (ngSubmit)="onIdentitySubmit()" class="space-y-6">
-                <!-- Passport/ID Number -->
-                <div>
-                      <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                    {{ translate('register.passportIdNumber') }} <span class="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    formControlName="passportIdNumber"
-                    class="w-full px-4 py-3 md:px-3 md:py-2 text-base md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
-                    [placeholder]="translate('register.passportIdNumberPlaceholder')">
-                </div>
-
-                <!-- Document Upload -->
-                <div class="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                      {{ translate('register.passportFront') }} <span class="text-red-500">*</span>
-                    </label>
-                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        (change)="onFileSelected($event, 'front')"
-                        class="hidden"
-                        #frontFileInput>
-                      <button
-                        type="button"
-                        (click)="frontFileInput.click()"
-                        class="text-blue-600 hover:text-blue-800 font-medium">
-                        {{ translate('register.uploadImage') }}
-                      </button>
-                      @if (passportFrontImage()) {
-                        <p class="mt-2 text-sm text-green-600 dark:text-green-400">
-                          {{ translate('register.imageUploaded') }}
-                        </p>
-                      }
-                    </div>
-                  </div>
-                  <div>
-                    <label class="block text-base md:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                      {{ translate('register.passportBack') }} <span class="text-red-500">*</span>
-                    </label>
-                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        (change)="onFileSelected($event, 'back')"
-                        class="hidden"
-                        #backFileInput>
-                      <button
-                        type="button"
-                        (click)="backFileInput.click()"
-                        class="text-blue-600 hover:text-blue-800 font-medium">
-                        {{ translate('register.uploadImage') }}
-                      </button>
-                      @if (passportBackImage()) {
-                        <p class="mt-2 text-sm text-green-600 dark:text-green-400">
-                          {{ translate('register.imageUploaded') }}
-                        </p>
-                      }
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Validate Details Button -->
-                @if (canValidateDetails()) {
-                  <div class="text-center">
-                    <button
-                      type="button"
-                      (click)="validateDetails()"
-                      class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
-                      {{ translate('register.validateDetails') }}
-                    </button>
-                  </div>
-                }
-
-                <!-- Face Capture -->
-                @if (showFaceCapture()) {
-                  <div class="text-center">
-                    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
-                      {{ translate('register.faceCapture') }}
-                    </h3>
-                    <button
-                      type="button"
-                      (click)="captureFace()"
-                      class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
-                      {{ translate('register.captureFace') }}
-                    </button>
-                  </div>
-                }
-
-                <!-- Navigation Buttons -->
-                <div class="flex justify-between pt-6">
-                  <button
-                    type="button"
-                    (click)="goToPreviousStep()"
-                    class="px-12 py-6 text-2xl font-bold text-blue-600 bg-transparent border-2 border-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 min-h-[80px]">
-                    {{ translate('register.previousStep') }}
-                  </button>
-                  <button
-                    type="submit"
-                    [disabled]="!isIdentityValidated()"
-                    class="px-12 py-6 text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px]">
-                    {{ translate('register.completeRegistration') }}
-                  </button>
-                </div>
-              </form>
-            </div>
-          }
         </div>
       </main>
     </div>
@@ -630,25 +578,58 @@ export class RegistrationPageComponent {
   emailVerified = this.registrationFormService.emailVerified;
   phoneNumbers = this.registrationFormService.phoneNumbers;
   passwordStrength = this.registrationFormService.passwordStrength;
-  passportFrontImage = this.registrationFormService.passportFrontImage;
-  passportBackImage = this.registrationFormService.passportBackImage;
-  isIdentityValidated = this.registrationFormService.isIdentityValidated;
-  showFaceCapture = this.registrationFormService.showFaceCapture;
   isLoading = this.registrationFormService.isLoading;
+  
+  // Password visibility toggles
+  showPassword = signal(false);
+  showConfirmPassword = signal(false);
+  
+  // Helper method to check if field should show error (touched or dirty)
+  shouldShowError(controlName: string, formGroup: FormGroup): boolean {
+    const control = formGroup.get(controlName);
+    return !!(control && (control.touched || control.dirty) && control.invalid);
+  }
+  
+  // Helper method to get error message for a field
+  getErrorMessage(controlName: string, formGroup: FormGroup): string {
+    const control = formGroup.get(controlName);
+    if (!control || !control.errors) return '';
+    
+    if (control.errors['required']) {
+      return this.translate('register.fieldRequired');
+    }
+    if (control.errors['email']) {
+      return this.translate('register.invalidEmail');
+    }
+    if (control.errors['minlength']) {
+      const requiredLength = control.errors['minlength'].requiredLength;
+      return this.translate('register.minLength').replace('{0}', requiredLength.toString());
+    }
+    if (control.errors['maxlength']) {
+      const requiredLength = control.errors['maxlength'].requiredLength;
+      return this.translate('register.maxLength').replace('{0}', requiredLength.toString());
+    }
+    if (control.errors['mismatch']) {
+      return this.translate('register.passwordsDoNotMatch');
+    }
+    
+    return this.translate('register.invalidField');
+  }
+  
+  translate(key: string): string {
+    return this.registrationFormService.translate(key);
+  }
 
   steps = [
     { id: 1, title: 'register.personalDetails' },
     { id: 2, title: 'register.communication' },
-    { id: 3, title: 'register.password' },
-    { id: 4, title: 'register.identityValidation' }
+    { id: 3, title: 'register.password' }
   ];
 
   // Forms from service
   personalDetailsForm = this.registrationFormService.personalDetailsForm;
   communicationForm = this.registrationFormService.communicationForm;
   passwordForm = this.registrationFormService.passwordForm;
-  identityForm = this.registrationFormService.identityForm;
-
   // Social Registration Methods - delegate to service
   async registerWithGoogle() {
     await this.registrationFormService.registerWithGoogle();
@@ -660,10 +641,6 @@ export class RegistrationPageComponent {
 
   async registerWithApple() {
     await this.registrationFormService.registerWithApple();
-  }
-
-  translate(key: string): string {
-    return this.registrationFormService.translate(key);
   }
 
   // Form submission - delegate to service
@@ -683,32 +660,12 @@ export class RegistrationPageComponent {
     await this.registrationFormService.onPasswordSubmit();
   }
 
-  onIdentitySubmit() {
-    this.registrationFormService.onIdentitySubmit();
-  }
-
   addPhoneNumber() {
     this.registrationFormService.addPhoneNumber();
   }
 
   removePhoneNumber(index: number) {
     this.registrationFormService.removePhoneNumber(index);
-  }
-
-  onFileSelected(event: any, type: 'front' | 'back') {
-    this.registrationFormService.onFileSelected(event, type);
-  }
-
-  canValidateDetails(): boolean {
-    return this.registrationFormService.canValidateDetails();
-  }
-
-  validateDetails() {
-    this.registrationFormService.validateDetails();
-  }
-
-  captureFace() {
-    this.registrationFormService.captureFace();
   }
 
   goToPreviousStep() {

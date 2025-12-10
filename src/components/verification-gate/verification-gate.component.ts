@@ -5,6 +5,7 @@ import { IdentityVerificationService } from '../../services/identity-verificatio
 import { TranslationService } from '../../services/translation.service';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-verification-gate',
@@ -53,7 +54,7 @@ export class VerificationGateComponent implements OnInit {
     }
 
     try {
-      const status = await this.verificationService.getVerificationStatus().toPromise();
+      const status = await firstValueFrom(this.verificationService.getVerificationStatus());
       this.isVerified.set(status?.verificationStatus === 'verified');
     } catch (error: any) {
       // Only log non-500 errors (500 errors are backend issues, not frontend bugs)

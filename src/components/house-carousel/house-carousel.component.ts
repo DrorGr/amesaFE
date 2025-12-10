@@ -1636,11 +1636,11 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.quickEntering.update(set => new Set(set).add(houseId));
 
     try {
-      const result = await this.lotteryService.quickEntryFromFavorite({
+      const result = await firstValueFrom(this.lotteryService.quickEntryFromFavorite({
         houseId: houseId,
         quantity: 1,
         paymentMethodId: 'default'
-      }).toPromise();
+      }));
       
       if (result && result.ticketsPurchased > 0) {
         this.toastService.success(

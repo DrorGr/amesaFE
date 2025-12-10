@@ -2,6 +2,7 @@ import { Component, inject, OnInit, OnDestroy, signal, computed, effect } from '
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
@@ -120,7 +121,7 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
     }
 
     try {
-      const houses = await this.lotteryService.getFavoriteHouses().toPromise();
+      const houses = await firstValueFrom(this.lotteryService.getFavoriteHouses());
       
       if (houses) {
         this.favoriteHouses.set(houses);

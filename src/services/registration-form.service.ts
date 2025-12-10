@@ -1,15 +1,17 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from './auth.service';
 import { CaptchaService } from './captcha.service';
 import { ToastService } from './toast.service';
 import { TranslationService } from './translation.service';
 import { Router } from '@angular/router';
+import { Subject, debounceTime, distinctUntilChanged, switchMap, takeUntil, catchError } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class RegistrationFormService {
+export class RegistrationFormService implements OnDestroy {
   private authService: AuthService;
   private captchaService: CaptchaService;
   private toastService: ToastService;
@@ -20,15 +22,24 @@ export class RegistrationFormService {
   // Form state
   private _currentStep = signal<number>(1);
   private _isLoading = signal<boolean>(false);
+  private _isCheckingUsername = signal<boolean>(false);
   private _passwordStrength = signal<boolean[]>([false, false, false, false, false]);
   private _usernameError = signal<boolean>(false);
   private _usernameSuggestions = signal<string[]>([]);
   private _emailVerified = signal<boolean>(false);
+  
+  // Debouncing for username checks
+  private usernameCheckSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
   private _phoneNumbers = signal<string[]>(['']);
   private _passportFrontImage = signal<File | null>(null);
   private _passportBackImage = signal<File | null>(null);
   private _showFaceCapture = signal<boolean>(false);
   private _isIdentityValidated = signal<boolean>(false);
+  
+  // Form progress saving
+  private readonly STORAGE_KEY = 'amesa_registration_progress';
+  private readonly STORAGE_EXPIRY_HOURS = 24; // Save progress for 24 hours
 
   // Forms
   personalDetailsForm: FormGroup;
@@ -39,6 +50,7 @@ export class RegistrationFormService {
   // Readonly signals
   currentStep = this._currentStep.asReadonly();
   isLoading = this._isLoading.asReadonly();
+  isCheckingUsername = this._isCheckingUsername.asReadonly();
   passwordStrength = this._passwordStrength.asReadonly();
   usernameError = this._usernameError.asReadonly();
   usernameSuggestions = this._usernameSuggestions.asReadonly();
@@ -84,7 +96,7 @@ export class RegistrationFormService {
     });
 
     this.passwordForm = this.fb.group({
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(128)]],
       confirmPassword: ['', Validators.required]
     }, { validators: this.passwordMatchValidator });
 
@@ -96,11 +108,132 @@ export class RegistrationFormService {
     this.passwordForm.get('password')?.valueChanges.subscribe(password => {
       this.updatePasswordStrength(password);
     });
+
+    // Setup debounced username availability check
+    this.usernameCheckSubject.pipe(
+      debounceTime(500), // 500ms debounce
+      distinctUntilChanged(),
+      switchMap(username => {
+        this._isCheckingUsername.set(true);
+        return this.authService.checkUsernameAvailability(username).pipe(
+          catchError(error => {
+            console.error('Username availability check failed:', error);
+            this._isCheckingUsername.set(false);
+            return [{ available: false, suggestions: [] }];
+          })
+        );
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (result) => {
+        this._isCheckingUsername.set(false);
+        if (result.available) {
+          this._usernameError.set(false);
+          this._usernameSuggestions.set([]);
+        } else {
+          this._usernameError.set(true);
+          this._usernameSuggestions.set(result.suggestions || []);
+        }
+      },
+      error: (error) => {
+        console.error('Username availability check error:', error);
+        this._isCheckingUsername.set(false);
+        this._usernameError.set(true);
+      }
+    });
+
+    // Load saved progress on initialization
+    this.loadProgress();
+    
+    // Save progress when forms change
+    this.personalDetailsForm.valueChanges.subscribe(() => this.saveProgress());
+    this.communicationForm.valueChanges.subscribe(() => this.saveProgress());
+    this.passwordForm.valueChanges.subscribe(() => this.saveProgress());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    // Save progress when component is destroyed (user navigates away)
+    this.saveProgress();
+  }
+  
+  // Form progress saving methods
+  private saveProgress(): void {
+    try {
+      const progress = {
+        currentStep: this._currentStep(),
+        personalDetails: this.personalDetailsForm.value,
+        communication: this.communicationForm.value,
+        // Note: We don't save passwords for security reasons
+        phoneNumbers: this._phoneNumbers(),
+        savedAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(progress));
+    } catch (error) {
+      console.error('Failed to save registration progress:', error);
+      // Fail silently - progress saving is not critical
+    }
+  }
+  
+  private loadProgress(): void {
+    try {
+      const saved = localStorage.getItem(this.STORAGE_KEY);
+      if (!saved) {
+        return; // No saved progress
+      }
+      
+      const progress = JSON.parse(saved);
+      
+      // Check if progress is expired (24 hours)
+      const savedAt = new Date(progress.savedAt);
+      const now = new Date();
+      const hoursDiff = (now.getTime() - savedAt.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursDiff > this.STORAGE_EXPIRY_HOURS) {
+        // Progress expired, clear it
+        this.clearProgress();
+        return;
+      }
+      
+      // Restore current step
+      if (progress.currentStep && progress.currentStep >= 1 && progress.currentStep <= 3) {
+        this._currentStep.set(progress.currentStep);
+      }
+      
+      // Restore form values
+      if (progress.personalDetails) {
+        this.personalDetailsForm.patchValue(progress.personalDetails, { emitEvent: false });
+      }
+      
+      if (progress.communication) {
+        this.communicationForm.patchValue(progress.communication, { emitEvent: false });
+      }
+      
+      // Restore phone numbers
+      if (progress.phoneNumbers && Array.isArray(progress.phoneNumbers)) {
+        this._phoneNumbers.set(progress.phoneNumbers);
+      }
+    } catch (error) {
+      console.error('Failed to load registration progress:', error);
+      // Clear corrupted data
+      this.clearProgress();
+    }
+  }
+  
+  clearProgress(): void {
+    try {
+      localStorage.removeItem(this.STORAGE_KEY);
+    } catch (error) {
+      console.error('Failed to clear registration progress:', error);
+    }
   }
 
   // Step navigation
   goToNextStep(): void {
     this._currentStep.set(this._currentStep() + 1);
+    this.saveProgress(); // Save progress when moving to next step
   }
 
   goToPreviousStep(): void {
@@ -127,34 +260,59 @@ export class RegistrationFormService {
   }
 
   updatePasswordStrength(password: string): void {
+    // Align with backend validation: 8-128 characters, uppercase, lowercase, digit, special character
     const strength = [
-      password.length >= 8,
-      /[A-Z]/.test(password),
-      /[a-z]/.test(password),
-      /\d/.test(password),
-      /[!@#$%^&*(),.?":{}|<>]/.test(password)
+      password.length >= 8 && password.length <= 128, // Length: 8-128 characters
+      /[A-Z]/.test(password), // Uppercase letter
+      /[a-z]/.test(password), // Lowercase letter
+      /\d/.test(password), // Digit
+      /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password) // Special character (matches backend regex)
     ];
     this._passwordStrength.set(strength);
   }
 
-  // Username validation
-  async checkUsernameAvailability(): Promise<void> {
+  // Username validation - triggers debounced API call
+  checkUsernameAvailability(): void {
     const username = this.personalDetailsForm.get('username')?.value;
-    if (!username) return;
+    if (!username || username.length < 3) {
+      this._usernameError.set(false);
+      this._usernameSuggestions.set([]);
+      return;
+    }
 
-    // Simulate API call
-    setTimeout(() => {
-      // Mock: assume some usernames are taken
-      const takenUsernames = ['john', 'jane', 'admin', 'user', 'test'];
-      if (takenUsernames.includes(username.toLowerCase())) {
-        this._usernameError.set(true);
-        this.generateUsernameSuggestions(username);
-      } else {
+    // Trigger debounced check via subject
+    this.usernameCheckSubject.next(username.trim().toLowerCase());
+  }
+
+  // Manual check (for form submission)
+  async checkUsernameAvailabilitySync(): Promise<boolean> {
+    const username = this.personalDetailsForm.get('username')?.value;
+    if (!username || username.length < 3) {
+      return false;
+    }
+
+    try {
+      this._isCheckingUsername.set(true);
+      const result = await firstValueFrom(
+        this.authService.checkUsernameAvailability(username.trim())
+      );
+      this._isCheckingUsername.set(false);
+      
+      if (result.available) {
         this._usernameError.set(false);
         this._usernameSuggestions.set([]);
-        this.goToNextStep();
+        return true;
+      } else {
+        this._usernameError.set(true);
+        this._usernameSuggestions.set(result.suggestions || []);
+        return false;
       }
-    }, 500);
+    } catch (error) {
+      console.error('Error checking username availability:', error);
+      this._isCheckingUsername.set(false);
+      this._usernameError.set(true);
+      return false;
+    }
   }
 
   generateUsernameSuggestions(username: string): void {
@@ -220,9 +378,21 @@ export class RegistrationFormService {
   }
 
   // Form submission
-  onPersonalDetailsSubmit(): void {
+  async onPersonalDetailsSubmit(): Promise<void> {
     if (this.personalDetailsForm.valid) {
-      this.checkUsernameAvailability();
+      const isAvailable = await this.checkUsernameAvailabilitySync();
+      if (isAvailable) {
+        this.goToNextStep();
+      } else {
+        // Username error and suggestions already set by checkUsernameAvailabilitySync
+        // Show error message
+        const username = this.personalDetailsForm.get('username')?.value;
+        if (this.translationService && this.toastService) {
+          const message = this.translationService.translate('auth.usernameTaken') || 
+                         `Username "${username}" is already taken. Please choose another.`;
+          this.toastService.error(message);
+        }
+      }
     }
   }
 
@@ -324,9 +494,12 @@ export class RegistrationFormService {
         captchaToken: captchaToken || undefined
       };
 
-      const result = await this.authService.register(registerData).toPromise();
+      const result = await firstValueFrom(this.authService.register(registerData));
 
       if (result?.success) {
+        // Clear saved progress after successful registration
+        this.clearProgress();
+        
         if (result.requiresEmailVerification) {
           // Redirect to email verification page
           this.toastService.success(this.translationService.translate('register.verificationEmailSent'), 5000);

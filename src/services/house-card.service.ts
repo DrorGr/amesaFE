@@ -6,6 +6,7 @@ import { TranslationService } from './translation.service';
 import { ToastService } from './toast.service';
 import { LocaleService } from './locale.service';
 import { UserPreferencesService } from './user-preferences.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -183,11 +184,11 @@ export class HouseCardService {
     }
     
     try {
-      const result = await this.lotteryService.purchaseTicket({
+      const result = await firstValueFrom(this.lotteryService.purchaseTicket({
         houseId: house.id,
         quantity: 1,
         paymentMethodId: 'default' // You'll need to implement payment method selection
-      }).toPromise();
+      }));
       
       if (result && result.ticketsPurchased > 0) {
         this.toastService.success(`Successfully purchased ${result.ticketsPurchased} ticket(s)!`, 3000);
@@ -235,11 +236,11 @@ export class HouseCardService {
     }
     
     try {
-      const result = await this.lotteryService.quickEntryFromFavorite({
+      const result = await firstValueFrom(this.lotteryService.quickEntryFromFavorite({
         houseId: house.id,
         quantity: 1,
         paymentMethodId: 'default'
-      }).toPromise();
+      }));
       
       if (result && result.ticketsPurchased > 0) {
         this.toastService.success(`Successfully entered with ${result.ticketsPurchased} ticket(s)!`, 3000);

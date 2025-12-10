@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { LotteryService } from './lottery.service';
 import { AuthService } from './auth.service';
 import { LocaleService } from './locale.service';
+import { firstValueFrom } from 'rxjs';
 
 export interface CarouselState {
   currentSlide: number;
@@ -204,9 +205,9 @@ export class HouseCarouselService {
     try {
       const isCurrentlyFavorite = this.isFavorite(houseId);
       if (isCurrentlyFavorite) {
-        await this.lotteryService.removeHouseFromFavorites(houseId).toPromise();
+        await firstValueFrom(this.lotteryService.removeHouseFromFavorites(houseId));
       } else {
-        await this.lotteryService.addHouseToFavorites(houseId).toPromise();
+        await firstValueFrom(this.lotteryService.addHouseToFavorites(houseId));
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);

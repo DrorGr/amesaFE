@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
 import { ToastService } from '../../services/toast.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-verify-email',
@@ -195,7 +196,7 @@ export class VerifyEmailComponent implements OnInit {
     this.errorMessage.set('');
 
     try {
-      const success = await this.authService.verifyEmail(this.verificationToken).toPromise();
+      const success = await firstValueFrom(this.authService.verifyEmail(this.verificationToken));
       if (success) {
         this.verificationStatus.set('success');
         this.toastService.success(this.translate('auth.emailVerifiedSuccess'), 3000);
@@ -230,7 +231,7 @@ export class VerifyEmailComponent implements OnInit {
     this.resendCooldown.set(60); // 60 second cooldown
 
     try {
-      const success = await this.authService.resendVerificationEmail(email).toPromise();
+      const success = await firstValueFrom(this.authService.resendVerificationEmail(email));
       if (success) {
         this.toastService.success(this.translate('auth.verificationEmailSent'), 3000);
       }

@@ -177,8 +177,8 @@ export class AuthService {
     }
   }
 
-  login(email: string, password: string): Observable<boolean> {
-    const loginRequest: LoginRequest = { email, password };
+  login(email: string, password: string, rememberMe: boolean = false): Observable<boolean> {
+    const loginRequest: LoginRequest = { email, password, rememberMe };
     
     return this.apiService.post<AuthResponse>('auth/login', loginRequest).pipe(
       tap(response => {
@@ -195,11 +195,32 @@ export class AuthService {
               localStorage.setItem('refresh_token', response.data.refreshToken);
             }
             if (response.data.expiresAt) {
-              // Store as ISO string for reliable parsing
-              const expiresAt = response.data.expiresAt instanceof Date 
-                ? response.data.expiresAt.toISOString() 
-                : new Date(response.data.expiresAt).toISOString();
-              localStorage.setItem('token_expires_at', expiresAt);
+              // Store as ISO string for reliable parsing with error handling
+              try {
+                let expiresAt: string;
+                if (response.data.expiresAt instanceof Date) {
+                  expiresAt = response.data.expiresAt.toISOString();
+                } else if (typeof response.data.expiresAt === 'string') {
+                  // Validate date format before parsing
+                  const parsedDate = new Date(response.data.expiresAt);
+                  if (isNaN(parsedDate.getTime())) {
+                    console.error('Invalid date format for expiresAt:', response.data.expiresAt);
+                    // Don't store invalid date, but continue with authentication
+                    // Token refresh will handle expiration check
+                  } else {
+                    expiresAt = parsedDate.toISOString();
+                    localStorage.setItem('token_expires_at', expiresAt);
+                  }
+                } else {
+                  console.error('Unexpected expiresAt type:', typeof response.data.expiresAt);
+                  // Don't store invalid date
+                }
+              } catch (error) {
+                console.error('Error parsing token expiration date:', error);
+                // Clear any existing invalid expiration date
+                localStorage.removeItem('token_expires_at');
+                // Continue with authentication - token refresh will handle expiration
+              }
             }
             this.setUser(response.data.user);
             this.isAuthenticatedSubject.next(true);
@@ -257,6 +278,19 @@ export class AuthService {
     );
   }
 
+  checkUsernameAvailability(username: string): Observable<{ available: boolean; suggestions?: string[] }> {
+    return this.apiService.get<{ available: boolean; suggestions?: string[] }>(
+      `/api/v1/auth/username-availability?username=${encodeURIComponent(username)}`
+    ).pipe(
+      map(response => response.data || { available: false }),
+      catchError(error => {
+        console.error('Error checking username availability:', error);
+        // Return unavailable on error to be safe
+        return throwError(() => error);
+      })
+    );
+  }
+
   register(registerData: RegisterRequest): Observable<{ success: boolean; requiresEmailVerification?: boolean }> {
     return this.apiService.post<AuthResponse>('auth/register', registerData).pipe(
       tap(response => {
@@ -268,11 +302,32 @@ export class AuthService {
               localStorage.setItem('refresh_token', response.data.refreshToken);
             }
             if (response.data.expiresAt) {
-              // Store as ISO string for reliable parsing
-              const expiresAt = response.data.expiresAt instanceof Date 
-                ? response.data.expiresAt.toISOString() 
-                : new Date(response.data.expiresAt).toISOString();
-              localStorage.setItem('token_expires_at', expiresAt);
+              // Store as ISO string for reliable parsing with error handling
+              try {
+                let expiresAt: string;
+                if (response.data.expiresAt instanceof Date) {
+                  expiresAt = response.data.expiresAt.toISOString();
+                } else if (typeof response.data.expiresAt === 'string') {
+                  // Validate date format before parsing
+                  const parsedDate = new Date(response.data.expiresAt);
+                  if (isNaN(parsedDate.getTime())) {
+                    console.error('Invalid date format for expiresAt:', response.data.expiresAt);
+                    // Don't store invalid date, but continue with authentication
+                    // Token refresh will handle expiration check
+                  } else {
+                    expiresAt = parsedDate.toISOString();
+                    localStorage.setItem('token_expires_at', expiresAt);
+                  }
+                } else {
+                  console.error('Unexpected expiresAt type:', typeof response.data.expiresAt);
+                  // Don't store invalid date
+                }
+              } catch (error) {
+                console.error('Error parsing token expiration date:', error);
+                // Clear any existing invalid expiration date
+                localStorage.removeItem('token_expires_at');
+                // Continue with authentication - token refresh will handle expiration
+              }
             }
             this.setUser(response.data.user);
             this.isAuthenticatedSubject.next(true);
@@ -704,6 +759,16 @@ export class AuthService {
 
     try {
       const expiresAt = new Date(expiresAtStr);
+      
+      // Validate parsed date
+      if (isNaN(expiresAt.getTime())) {
+        console.error('Invalid token expiration date format:', expiresAtStr);
+        // Clear invalid date and logout user for security
+        localStorage.removeItem('token_expires_at');
+        this.handleTokenError('Invalid token expiration date. Please log in again.');
+        return;
+      }
+      
       const now = new Date();
       const timeUntilExpiry = expiresAt.getTime() - now.getTime();
 
@@ -727,7 +792,34 @@ export class AuthService {
       }
     } catch (error) {
       console.error('Error checking token expiration:', error);
+      // Clear invalid date and logout user for security
+      localStorage.removeItem('token_expires_at');
+      this.handleTokenError('Error checking token expiration. Please log in again.');
     }
+  }
+
+  /**
+   * Handle token errors by notifying user and logging out
+   */
+  private handleTokenError(message: string): void {
+    console.error('Token error:', message);
+    
+    // Notify user if translation service is available
+    if (this.translationService) {
+      const userMessage = this.translationService.translate('auth.tokenError') || message;
+      // Try to show toast notification if available
+      // Note: ToastService would need to be injected if we want to use it here
+      // For now, we'll log and logout
+      console.warn('Token error - user will be logged out:', userMessage);
+    }
+    
+    // Logout user for security
+    // Use setTimeout to avoid calling logout during error handling
+    setTimeout(() => {
+      if (!this.isLoggingOut) {
+        this.logout();
+      }
+    }, 100);
   }
 
   /**

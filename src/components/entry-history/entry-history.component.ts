@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { EntryFilters, PagedEntryHistoryResponse } from '../../interfaces/lottery.interface';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { LocaleService } from '../../services/locale.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-entry-history',
@@ -227,7 +228,7 @@ export class EntryHistoryComponent implements OnInit {
     }
 
     try {
-      const data = await this.lotteryService.getUserEntryHistory(this.filters).toPromise();
+      const data = await firstValueFrom(this.lotteryService.getUserEntryHistory(this.filters));
       if (data) {
         this.historyData.set(data);
       }

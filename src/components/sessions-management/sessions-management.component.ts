@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
 import { ToastService } from '../../services/toast.service';
 import { LocaleService } from '../../services/locale.service';
+import { firstValueFrom } from 'rxjs';
 
 interface UserSession {
   id: string;
@@ -140,7 +141,7 @@ export class SessionsManagementComponent implements OnInit {
   async loadSessions() {
     this.isLoading.set(true);
     try {
-      const sessions = await this.authService.getActiveSessions().toPromise() || [];
+      const sessions = await firstValueFrom(this.authService.getActiveSessions()) || [];
       // Mark current session
       const currentSessionToken = localStorage.getItem('refresh_token');
       const sessionsWithCurrent = sessions.map((s: any) => ({
@@ -172,7 +173,7 @@ export class SessionsManagementComponent implements OnInit {
         throw new Error('Session not found');
       }
 
-      const success = await this.authService.logoutFromDevice(session.sessionToken).toPromise();
+      const success = await firstValueFrom(this.authService.logoutFromDevice(session.sessionToken));
       if (success) {
         this.toastService.success(this.translate('auth.loggedOutFromDevice'), 3000);
         await this.loadSessions();
@@ -192,7 +193,7 @@ export class SessionsManagementComponent implements OnInit {
 
     this.isLoggingOut.set(true);
     try {
-      const success = await this.authService.logoutAllDevices().toPromise();
+      const success = await firstValueFrom(this.authService.logoutAllDevices());
       if (success) {
         this.toastService.success(this.translate('auth.loggedOutAllDevices'), 3000);
         // Redirect to login after logging out all devices

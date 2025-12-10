@@ -65,8 +65,19 @@ export class OAuthCallbackComponent implements OnInit {
       );
 
       const code = params['code'];
-      const error = params['error'];
+      const error = params['error']; // Legacy error parameter
+      const errorCode = params['error_code']; // New error code parameter
+      const provider = params['provider']; // OAuth provider (Google, Meta)
+      const detailsBase64 = params['details']; // Base64-encoded error details
 
+      // Handle new error code format (preferred)
+      if (errorCode) {
+        this.error = this.getErrorMessage(errorCode, provider, detailsBase64);
+        this.isLoading = false;
+        return;
+      }
+
+      // Handle legacy error format (fallback)
       if (error) {
         this.error = decodeURIComponent(error);
         this.isLoading = false;
@@ -119,7 +130,7 @@ export class OAuthCallbackComponent implements OnInit {
 
             // Update auth state - fetch user profile (this will automatically update auth state via tap in getCurrentUserProfile)
             try {
-              await this.authService.getCurrentUserProfile().toPromise();
+              await firstValueFrom(this.authService.getCurrentUserProfile());
             } catch (err) {
               console.error('Error fetching user profile:', err);
             }
@@ -154,6 +165,49 @@ export class OAuthCallbackComponent implements OnInit {
       this.error = this.translate('auth.oauthError');
       this.isLoading = false;
     }
+  }
+
+  /**
+   * Maps OAuth error codes to user-friendly messages
+   */
+  private getErrorMessage(errorCode: string, provider?: string, detailsBase64?: string): string {
+    // Decode details if provided
+    let details: any = null;
+    if (detailsBase64) {
+      try {
+        // Base64Url decode: replace URL-safe characters back to standard Base64
+        const base64 = detailsBase64.replace(/-/g, '+').replace(/_/g, '/');
+        // Add padding if needed
+        const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+        const decoded = atob(padded);
+        details = JSON.parse(decoded);
+      } catch (e) {
+        console.warn('Failed to decode error details:', e);
+      }
+    }
+
+    const providerName = provider || 'OAuth';
+    
+    // Map error codes to user-friendly messages
+    const errorMessages: { [key: string]: string } = {
+      'OAUTH_NOT_CONFIGURED': this.translate('auth.oauthNotConfigured') || `${providerName} authentication is not configured.`,
+      'OAUTH_INIT_FAILED': this.translate('auth.oauthInitFailed') || `Failed to initiate ${providerName} login. Please try again.`,
+      'OAUTH_RATE_LIMIT_EXCEEDED': this.translate('auth.oauthRateLimitExceeded') || `Too many authentication attempts. Please try again later.`,
+      'OAUTH_AUTHENTICATION_FAILED': this.translate('auth.oauthAuthenticationFailed') || `${providerName} authentication failed. Please try again.`,
+      'OAUTH_MISSING_DATA': this.translate('auth.oauthMissingData') || `${providerName} authentication data is incomplete. Please try again.`,
+      'OAUTH_PROCESSING_ERROR': this.translate('auth.oauthProcessingError') || `Error processing ${providerName} authentication. Please try again.`,
+      'OAUTH_TOKEN_EXPIRED': this.translate('auth.oauthTokenExpired') || `Authentication token expired. Please try logging in again.`,
+    };
+
+    // Get message for error code, or use generic message
+    let message = errorMessages[errorCode] || this.translate('auth.oauthError') || `Authentication error occurred. Please try again.`;
+
+    // Add retry information if available
+    if (details?.retry_after_minutes) {
+      message += ` You can try again in ${details.retry_after_minutes} minutes.`;
+    }
+
+    return message;
   }
 
   goHome(): void {

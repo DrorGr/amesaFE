@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { LotteryTicketDto } from '../../models/house.model';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { LocaleService } from '../../services/locale.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-active-entries',
@@ -190,7 +191,7 @@ export class ActiveEntriesComponent implements OnInit {
     }
 
     try {
-      const entries = await this.lotteryService.getUserActiveEntries().toPromise();
+      const entries = await firstValueFrom(this.lotteryService.getUserActiveEntries());
       if (entries) {
         this.allEntries.set(entries);
       }
