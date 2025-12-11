@@ -869,9 +869,16 @@ export class LotteryService {
         if (cached) {
           const cacheData = JSON.parse(cached);
           if (cacheData.timestamp && (now - cacheData.timestamp) < this.FAVORITES_LOCALSTORAGE_TTL) {
-            // Use cached data - update signals
+            // Use cached data - update signals only if changed
             const favoriteIds = cacheData.favoriteIds || cacheData.data?.map((h: HouseDto) => h.id) || [];
-            this.favoriteHouseIds.set(favoriteIds);
+            const currentIds = this.favoriteHouseIds();
+            
+            // Only update signal if IDs actually changed (prevents infinite loops)
+            const currentIdsStr = currentIds.sort().join(',');
+            const newIdsStr = favoriteIds.sort().join(',');
+            if (currentIdsStr !== newIdsStr) {
+              this.favoriteHouseIds.set(favoriteIds);
+            }
             return of(cacheData.data || []);
           }
         }
@@ -884,9 +891,16 @@ export class LotteryService {
     return this.apiService.get<HouseDto[]>('houses/favorites').pipe(
       map(response => {
         if (response.success && response.data) {
-          // Update favorite IDs signal
+          // Update favorite IDs signal only if they actually changed
           const favoriteIds = response.data.map(house => house.id);
-          this.favoriteHouseIds.set(favoriteIds);
+          const currentIds = this.favoriteHouseIds();
+          
+          // Only update signal if IDs actually changed (prevents infinite loops)
+          const currentIdsStr = currentIds.sort().join(',');
+          const newIdsStr = favoriteIds.sort().join(',');
+          if (currentIdsStr !== newIdsStr) {
+            this.favoriteHouseIds.set(favoriteIds);
+          }
           
           // Save to localStorage
           if (typeof localStorage !== 'undefined') {

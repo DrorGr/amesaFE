@@ -73,6 +73,7 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private favoriteIdsSubscription?: Subscription;
+  private isLoadingFavorites = false;
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -80,14 +81,20 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
   currentUser = this.authService.getCurrentUser();
   favoriteHouses = signal<HouseDto[]>([]);
   
-  // Watch favorite IDs changes to auto-refresh
+  // Watch favorite IDs changes to auto-refresh (but prevent infinite loops)
   favoriteHouseIds = this.lotteryService.getFavoriteHouseIds();
 
   constructor() {
     // Auto-refresh favorites when favorite IDs change (user adds/removes from other pages)
+    // Use setTimeout to break synchronous effect chain and prevent infinite loops
     effect(() => {
       const favoriteIds = this.favoriteHouseIds();
       const currentUser = this.currentUser();
+      
+      // Prevent infinite loop: don't react if we're already loading
+      if (this.isLoadingFavorites) {
+        return;
+      }
       
       // Only refresh if user is logged in and we have favorite IDs
       if (currentUser && favoriteIds.length > 0) {
@@ -96,7 +103,12 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
         const newHouseIds = favoriteIds.sort().join(',');
         
         if (currentHouseIds !== newHouseIds) {
-          this.loadFavorites();
+          // Use setTimeout to break the synchronous effect chain and prevent infinite loops
+          setTimeout(() => {
+            if (!this.isLoadingFavorites) {
+              this.loadFavorites();
+            }
+          }, 0);
         }
       } else if (currentUser && favoriteIds.length === 0 && this.favoriteHouses().length > 0) {
         // If favorites were removed, clear the list
@@ -120,6 +132,12 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Prevent concurrent calls
+    if (this.isLoadingFavorites) {
+      return;
+    }
+
+    this.isLoadingFavorites = true;
     try {
       const houses = await firstValueFrom(this.lotteryService.getFavoriteHouses());
       
@@ -130,6 +148,9 @@ export class LotteryFavoritesComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       console.error('Error loading favorites:', error);
+      this.favoriteHouses.set([]);
+    } finally {
+      this.isLoadingFavorites = false;
     }
   }
 

@@ -5,3 +5,12 @@ node_modules
 
 # PowerShell scripts
 *.ps1
+
+# Documentation files
+*.md
+
+# SQL scripts
+*.sql
+
+# MetaData folder
+MetaData/
