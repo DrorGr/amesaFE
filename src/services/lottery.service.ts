@@ -719,16 +719,25 @@ export class LotteryService {
   purchaseTicket(purchaseRequest: PurchaseTicketRequest): Observable<{
     ticketsPurchased: number;
     totalCost: number;
+    originalCost: number;
+    discountAmount: number;
+    promotionCode?: string;
     ticketNumbers: string[];
+    transactionId: string;
   }> {
-    // Backend expects only Quantity and PaymentMethodId (Guid) in the request body
+    // Backend expects Quantity, PaymentMethodId, and optional PromotionCode in the request body
     // houseId is in the URL path, not the body
-    const requestBody = {
+    const requestBody: any = {
       quantity: purchaseRequest.quantity,
       paymentMethodId: purchaseRequest.paymentMethodId && purchaseRequest.paymentMethodId !== 'default' 
         ? purchaseRequest.paymentMethodId 
         : '00000000-0000-0000-0000-000000000000' // Use empty Guid if "default" or invalid
     };
+    
+    // Add promotion code if provided
+    if (purchaseRequest.promotionCode && purchaseRequest.promotionCode.trim()) {
+      requestBody.promotionCode = purchaseRequest.promotionCode.trim();
+    }
     
     return this.apiService.post(`houses/${purchaseRequest.houseId}/tickets/purchase`, requestBody).pipe(
       map(response => {
@@ -743,8 +752,12 @@ export class LotteryService {
           
           return {
             ticketsPurchased: data.ticketsPurchased,
-            totalCost: data.totalCost,
-            ticketNumbers: data.ticketNumbers
+            totalCost: data.totalCost || data.totalCost, // Final cost after discount
+            originalCost: data.originalCost || data.totalCost, // Cost before discount (fallback to totalCost if not provided)
+            discountAmount: data.discountAmount || 0, // Discount applied
+            promotionCode: data.promotionCode, // Promotion code used (if any)
+            ticketNumbers: data.ticketNumbers || [],
+            transactionId: data.transactionId || ''
           };
         }
         throw new Error('Failed to purchase tickets');

@@ -3,7 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 import { LocaleService } from '../../services/locale.service';
+import { PromotionService, PromotionDto } from '../../services/promotion.service';
+import { AuthService } from '../../services/auth.service';
 
+// Use PromotionDto from service instead of local interface
+// Promotion interface kept for backward compatibility with existing code
 interface Promotion {
   id: string;
   title: string;
@@ -131,6 +135,8 @@ export class PromotionsSlidingMenuComponent implements OnInit, OnDestroy {
   
   private translationService = inject(TranslationService);
   private router = inject(Router);
+  private promotionService = inject(PromotionService);
+  private authService = inject(AuthService);
   
   promotions = signal<Promotion[]>([]);
   isLoading = signal(false);
@@ -166,34 +172,39 @@ export class PromotionsSlidingMenuComponent implements OnInit, OnDestroy {
   async loadPromotions(): Promise<void> {
     this.isLoading.set(true);
     try {
-      // TODO: Replace with actual API call when promotions endpoint is available
-      // For now, use mock data or fetch from promotions page component
-      const mockPromotions: Promotion[] = [
-        {
-          id: '1',
-          title: 'Welcome Bonus',
-          description: 'Get 10% off your first lottery ticket purchase!',
-          startDate: new Date().toISOString(),
-          isActive: true,
-          link: '/promotions'
+      const currentUser = this.authService.getCurrentUser()();
+      if (!currentUser || !currentUser.isAuthenticated) {
+        // User not authenticated - show empty or public promotions
+        this.promotions.set([]);
+        this.isLoading.set(false);
+        return;
+      }
+
+      // Load available promotions for the current user
+      this.promotionService.getAvailablePromotionsForUser(currentUser.id).subscribe({
+        next: (promotionDtos: PromotionDto[]) => {
+          // Map PromotionDto to Promotion interface for display
+          const mappedPromotions: Promotion[] = promotionDtos.map(dto => ({
+            id: dto.id,
+            title: dto.name, // Map 'name' to 'title'
+            description: dto.description || '',
+            startDate: dto.startDate instanceof Date ? dto.startDate.toISOString() : new Date(dto.startDate).toISOString(),
+            endDate: dto.endDate instanceof Date ? dto.endDate.toISOString() : new Date(dto.endDate).toISOString(),
+            isActive: dto.isActive,
+            link: '/promotions' // Default link to promotions page
+          }));
+          this.promotions.set(mappedPromotions);
+          this.isLoading.set(false);
         },
-        {
-          id: '2',
-          title: 'Referral Program',
-          description: 'Refer a friend and both get bonus tickets!',
-          startDate: new Date().toISOString(),
-          isActive: true,
-          link: '/promotions'
+        error: (error) => {
+          console.error('Error loading promotions:', error);
+          this.promotions.set([]);
+          this.isLoading.set(false);
         }
-      ];
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 300));
-      this.promotions.set(mockPromotions);
+      });
     } catch (error) {
       console.error('Error loading promotions:', error);
       this.promotions.set([]);
-    } finally {
       this.isLoading.set(false);
     }
   }

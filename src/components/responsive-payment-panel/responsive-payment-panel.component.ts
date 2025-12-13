@@ -832,11 +832,12 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
         );
         
         if (result && result.ticketsPurchased > 0) {
-          this.toastService.success(
-            this.translate('payment.success.ticketsCreated') || 
-            `Successfully created ${result.ticketsPurchased} ticket(s)!`,
-            5000
-          );
+          let message = this.translate('payment.success.ticketsCreated') || 
+            `Successfully created ${result.ticketsPurchased} ticket(s)!`;
+          if (result.discountAmount && result.discountAmount > 0) {
+            message += ` Saved $${result.discountAmount.toFixed(2)}${result.promotionCode ? ` with code ${result.promotionCode}` : ''}.`;
+          }
+          this.toastService.success(message, 5000);
         }
       } catch (err: any) {
         console.error('Ticket creation failed:', err);

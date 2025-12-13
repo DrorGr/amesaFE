@@ -97,6 +97,7 @@ export interface QuickEntryRequest {
   houseId: string;
   quantity: number; // API contract specifies "quantity", backend has [JsonPropertyName("quantity")]
   paymentMethodId: string;
+  promotionCode?: string; // Optional promotion code for discount
 }
 
 /**
@@ -105,7 +106,10 @@ export interface QuickEntryRequest {
  */
 export interface QuickEntryResponse {
   ticketsPurchased: number;
-  totalCost: number;
+  totalCost: number; // Final cost after discount
+  originalCost?: number; // Cost before discount
+  discountAmount?: number; // Discount applied
+  promotionCode?: string; // Promotion code used (if any)
   ticketNumbers: string[];
   transactionId: string;
 }

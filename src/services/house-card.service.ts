@@ -191,7 +191,11 @@ export class HouseCardService {
       }));
       
       if (result && result.ticketsPurchased > 0) {
-        this.toastService.success(`Successfully purchased ${result.ticketsPurchased} ticket(s)!`, 3000);
+        let message = `Successfully purchased ${result.ticketsPurchased} ticket(s)!`;
+        if (result.discountAmount && result.discountAmount > 0) {
+          message += ` Saved $${result.discountAmount.toFixed(2)}${result.promotionCode ? ` with code ${result.promotionCode}` : ''}.`;
+        }
+        this.toastService.success(message, 3000);
         return { success: true };
       } else {
         this.toastService.error('Failed to purchase ticket. Please try again.', 4000);

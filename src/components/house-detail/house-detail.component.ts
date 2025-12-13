@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HouseDto } from '../../models/house.model';
 import { AuthService } from '../../services/auth.service';
 import { LotteryService } from '../../services/lottery.service';
+import { PromotionService, PromotionValidationResponse } from '../../services/promotion.service';
 import { TranslationService } from '../../services/translation.service';
 import { ErrorMessageService } from '../../services/error-message.service';
 import { ToastService } from '../../services/toast.service';
@@ -13,6 +14,8 @@ import { ParticipantStatsComponent } from '../participant-stats/participant-stat
 import { LiveInventoryComponent } from '../live-inventory/live-inventory.component';
 import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
 import { QuickEntryRequest } from '../../interfaces/lottery.interface';
+import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
 
 @Component({
   selector: 'app-house-detail',
@@ -503,11 +506,79 @@ import { QuickEntryRequest } from '../../interfaces/lottery.interface';
                   </div>
                 </div>
 
+                <!-- Promotion Code Input -->
+                <div class="space-y-2">
+                  <label for="promotionCode" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {{ translate('promotions.promotionCode') || 'Promotion Code' }}
+                    <span class="text-gray-500 dark:text-gray-400 text-xs ml-1">({{ translate('common.optional') || 'Optional' }})</span>
+                  </label>
+                  <div class="flex gap-2">
+                    <input
+                      id="promotionCode"
+                      type="text"
+                      [value]="promotionCode()"
+                      (input)="onPromotionCodeInput($event)"
+                      (blur)="validatePromotionCode()"
+                      [disabled]="enteringLottery() || validatingPromotion()"
+                      placeholder="{{ translate('promotions.enterCode') || 'Enter promotion code' }}"
+                      class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      [class.border-green-500]="promotionValidation()?.isValid === true"
+                      [class.border-red-500]="promotionValidation()?.isValid === false"
+                      [class.border-gray-300]="!promotionValidation() || promotionValidation()?.isValid === undefined"
+                      [attr.aria-invalid]="promotionValidation()?.isValid === false"
+                      [attr.aria-describedby]="promotionValidation() ? 'promotionCodeFeedback' : null">
+                    <button
+                      *ngIf="promotionCode() && promotionCode().trim()"
+                      (click)="clearPromotionCode()"
+                      type="button"
+                      [disabled]="enteringLottery() || validatingPromotion()"
+                      class="px-3 py-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
+                      [attr.aria-label]="translate('common.clear') || 'Clear'">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  <!-- Validation Feedback -->
+                  <div id="promotionCodeFeedback" class="text-sm" *ngIf="promotionValidation()">
+                    <div *ngIf="promotionValidation()!.isValid === true" class="text-green-600 dark:text-green-400 flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                      </svg>
+                      <span>{{ translate('promotions.codeValid') || 'Valid promotion code!' }}</span>
+                    </div>
+                    <div *ngIf="promotionValidation()!.isValid === false" class="text-red-600 dark:text-red-400 flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                      </svg>
+                      <span>{{ promotionValidation()!.message || translate('promotions.codeInvalid') || 'Invalid promotion code' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Discount Preview -->
+                  <div *ngIf="promotionValidation()?.isValid === true && promotionValidation()!.discountAmount > 0" 
+                       class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium text-green-800 dark:text-green-200">
+                        {{ translate('promotions.discountApplied') || 'Discount Applied' }}
+                      </span>
+                      <span class="text-lg font-bold text-green-600 dark:text-green-400">
+                        -{{ localeService.formatCurrency(promotionValidation()!.discountAmount) }}
+                      </span>
+                    </div>
+                    <div *ngIf="house()" class="mt-2 text-xs text-green-700 dark:text-green-300">
+                      {{ translate('promotions.originalPrice') || 'Original' }}: {{ localeService.formatCurrency(house()!.ticketPrice) }}
+                      → {{ translate('promotions.finalPrice') || 'Final' }}: {{ localeService.formatCurrency(house()!.ticketPrice - promotionValidation()!.discountAmount) }}
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Entry Button -->
                 <button
                   (click)="enterLottery()"
                   (keydown)="handleEntryKeyDown($event)"
-                  [disabled]="enteringLottery() || (house()!.isParticipantCapReached && !canEnterResponse()?.isExistingParticipant)"
+                  [disabled]="enteringLottery() || (house()!.isParticipantCapReached && !canEnterResponse()?.isExistingParticipant) || (validatingPromotion() && promotionCode() && promotionCode().trim())"
                   [attr.aria-busy]="enteringLottery()"
                   [attr.aria-label]="enteringLottery() ? translate('common.loading') : translate('entry.enterLottery')"
                   class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 flex items-center justify-center focus:outline-none">
@@ -531,6 +602,7 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private lotteryService = inject(LotteryService);
   private authService = inject(AuthService);
+  private promotionService = inject(PromotionService);
   private translationService = inject(TranslationService);
   private errorMessageService = inject(ErrorMessageService);
   private toastService = inject(ToastService);
@@ -544,6 +616,13 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
   checkingCanEnter = signal<boolean>(false);
   enteringLottery = signal<boolean>(false);
   vibrationTrigger = signal<number>(0);
+  
+  // Promotion code state
+  promotionCode = signal<string>('');
+  promotionValidation = signal<PromotionValidationResponse | null>(null);
+  validatingPromotion = signal<boolean>(false);
+  private promotionCodeSubject = new Subject<string>();
+  private promotionCodeSubscription?: any;
   
   // Image gallery state
   currentImageIndex = signal<number>(0);
@@ -603,12 +682,34 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
         }, 600);
       }
     }, 5000);
+    
+    // Setup promotion code validation with debounce
+    this.promotionCodeSubscription = this.promotionCodeSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap(code => {
+        if (!code || !code.trim()) {
+          this.promotionValidation.set(null);
+          return of(null);
+        }
+        return this.validatePromotionCodeInternal(code.trim());
+      }),
+      catchError(error => {
+        console.error('Error validating promotion code:', error);
+        this.validatingPromotion.set(false);
+        return of(null);
+      })
+    ).subscribe();
   }
   
   ngOnDestroy(): void {
     if (this.vibrationInterval) {
       clearInterval(this.vibrationInterval);
     }
+    if (this.promotionCodeSubscription) {
+      this.promotionCodeSubscription.unsubscribe();
+    }
+    this.promotionCodeSubject.complete();
   }
 
   loadHouse(houseId: string): void {
@@ -771,7 +872,8 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
     const quickEntryRequest: QuickEntryRequest = {
       houseId: h.id,
       quantity: 1, // Default to 1 ticket
-      paymentMethodId: '' // TODO: Get from user preferences or payment setup
+      paymentMethodId: '', // TODO: Get from user preferences or payment setup
+      promotionCode: this.promotionCode().trim() || undefined // Include promotion code if provided
     };
 
     // Show loading state
@@ -780,8 +882,12 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
     this.lotteryService.quickEntryFromFavorite(quickEntryRequest).subscribe({
       next: (response) => {
         this.enteringLottery.set(false);
-        // Show success message
-        const successMessage = `Successfully entered lottery! Purchased ${response.ticketsPurchased} ticket(s). Transaction ID: ${response.transactionId}`;
+        // Build success message with discount information if applicable
+        let successMessage = `Successfully entered lottery! Purchased ${response.ticketsPurchased} ticket(s).`;
+        if (response.discountAmount && response.discountAmount > 0) {
+          successMessage += ` Saved $${response.discountAmount.toFixed(2)} with promotion code ${response.promotionCode || ''}.`;
+        }
+        successMessage += ` Transaction ID: ${response.transactionId}`;
         this.toastService.success(successMessage);
         // Refresh house data to update participant stats
         this.loadHouse(h.id);
@@ -843,6 +949,76 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
       });
     }
     return translation;
+  }
+
+  // Promotion code methods
+  onPromotionCodeInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const code = target.value;
+    this.promotionCode.set(code);
+    this.onPromotionCodeChange();
+  }
+
+  onPromotionCodeChange(): void {
+    const code = this.promotionCode();
+    if (!code || !code.trim()) {
+      this.promotionValidation.set(null);
+      return;
+    }
+    // Trigger validation with debounce via subject
+    this.promotionCodeSubject.next(code);
+  }
+
+  validatePromotionCode(): void {
+    const code = this.promotionCode();
+    if (!code || !code.trim()) {
+      this.promotionValidation.set(null);
+      return;
+    }
+    // Immediate validation on blur
+    this.validatePromotionCodeInternal(code.trim()).subscribe();
+  }
+
+  private validatePromotionCodeInternal(code: string) {
+    const h = this.house();
+    const currentUser = this.currentUser();
+    
+    if (!h || !currentUser || !currentUser.isAuthenticated) {
+      return of(null);
+    }
+
+    this.validatingPromotion.set(true);
+    
+    return this.promotionService.validatePromotion({
+      code: code,
+      userId: currentUser.id,
+      houseId: h.id,
+      amount: h.ticketPrice // Validate for 1 ticket
+    }).pipe(
+      catchError(error => {
+        console.error('Promotion validation error:', error);
+        this.promotionValidation.set({
+          isValid: false,
+          discountAmount: 0,
+          message: error?.error?.message || this.translate('promotions.codeInvalid') || 'Invalid promotion code'
+        });
+        this.validatingPromotion.set(false);
+        return of(null);
+      })
+    ).pipe(
+      switchMap(validation => {
+        this.validatingPromotion.set(false);
+        if (validation) {
+          this.promotionValidation.set(validation);
+        }
+        return of(validation);
+      })
+    );
+  }
+
+  clearPromotionCode(): void {
+    this.promotionCode.set('');
+    this.promotionValidation.set(null);
   }
 
 

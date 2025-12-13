@@ -18,7 +18,6 @@ export interface PromotionDto {
   startDate: Date;
   endDate: Date;
   applicableHouses?: string[];
-  applicableUsers?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,7 +43,6 @@ export interface CreatePromotionRequest {
   startDate: Date;
   endDate: Date;
   applicableHouses?: string[];
-  applicableUsers?: string[];
 }
 
 export interface UpdatePromotionRequest {
@@ -59,7 +57,6 @@ export interface UpdatePromotionRequest {
   startDate?: Date;
   endDate?: Date;
   applicableHouses?: string[];
-  applicableUsers?: string[];
 }
 
 export interface ValidatePromotionRequest {
@@ -83,6 +80,7 @@ export interface ApplyPromotionRequest {
   houseId?: string;
   amount: number;
   transactionId: string;
+  discountAmount: number; // Required: Discount amount to validate
 }
 
 export interface PromotionSearchParams {
@@ -204,8 +202,8 @@ export class PromotionService {
     );
   }
 
-  applyPromotion(applicationData: ApplyPromotionRequest): Observable<PromotionValidationResponse> {
-    return this.apiService.post<PromotionValidationResponse>('promotions/apply', applicationData).pipe(
+  applyPromotion(applicationData: ApplyPromotionRequest): Observable<PromotionUsageDto> {
+    return this.apiService.post<PromotionUsageDto>('promotions/apply', applicationData).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -237,7 +235,8 @@ export class PromotionService {
 
   // Available Promotions for User
   getAvailablePromotionsForUser(userId: string, houseId?: string): Observable<PromotionDto[]> {
-    const params: any = { userId };
+    // Note: userId is not sent as query param - backend gets it from JWT token
+    const params: any = {};
     if (houseId) params.houseId = houseId;
 
     return this.apiService.get<PromotionDto[]>('promotions/available', params).pipe(
@@ -326,19 +325,27 @@ export class PromotionService {
       return 0;
     }
 
-    switch (promotion.type) {
+    // Match backend calculation logic - use valueType if available, fallback to type
+    const valueType = (promotion as any).valueType || promotion.type;
+    
+    switch (valueType?.toLowerCase()) {
       case 'percentage':
         discount = (amount * promotion.value) / 100;
         if (promotion.maxDiscount && discount > promotion.maxDiscount) {
           discount = promotion.maxDiscount;
         }
         break;
+      case 'fixed_amount':
       case 'fixed':
         discount = promotion.value;
         break;
-      case 'free_shipping':
-        // This would be handled differently based on business logic
+      case 'free_tickets':
+        // Special handling - add tickets instead of discount
         discount = 0;
+        break;
+      default:
+        // Default to fixed amount if value type not specified
+        discount = promotion.value || 0;
         break;
     }
 
@@ -356,9 +363,6 @@ export class PromotionService {
     
     // Check usage limit
     if (promotion.usageLimit && promotion.usageCount >= promotion.usageLimit) return false;
-    
-    // Check if user is applicable
-    if (promotion.applicableUsers && !promotion.applicableUsers.includes(userId)) return false;
     
     // Check if house is applicable
     if (houseId && promotion.applicableHouses && !promotion.applicableHouses.includes(houseId)) return false;

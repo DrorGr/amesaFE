@@ -12,6 +12,8 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 
 ## Repository Structure
 - **AmesaFE** (Current): Angular 20.2.1 frontend → AWS S3 + CloudFront
+  - **Project Name**: `demo` (Angular project name in angular.json)
+  - **Build Output**: `dist/demo/browser/` (CloudFront configured for `/browser` path)
 - **AmesaBE**: .NET 8.0 backend → Docker + ECS
 - **AmesaDevOps**: Infrastructure as Code
 
@@ -23,13 +25,40 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **Version Control**: Git with GitHub repositories
 - **Package Management**: npm (frontend), NuGet (backend)
 
-## Current Status (2025-12-05)
+## Frontend Project Configuration
+- **Angular Project Name**: `demo` (as defined in angular.json)
+- **Build Output Path**: `dist/demo/browser/`
+- **Build Configurations**: 
+  - `development` - Local development with source maps
+  - `production` - Optimized build (used for both staging and production)
+- **Environment Files**: 
+  - `environment.ts` - Base configuration
+  - `environment.dev.ts` - Development environment
+  - `environment.stage.ts` - Staging environment
+  - `environment.prod.ts` - Production environment
+
+## External Service Integrations
+- **Stripe**: `@stripe/stripe-js` v8.5.3 - Payment processing
+- **SignalR**: `@microsoft/signalr` v9.0.6 - Real-time communication
+- **QR Codes**: 
+  - `angularx-qrcode` v20.0.0 - QR code generation
+  - `html5-qrcode` v2.3.8 - QR code scanning
+- **OAuth Providers**: Google, Meta (Facebook) - Authentication
+- **AWS Services** (via backend):
+  - AWS Rekognition - ID verification
+  - AWS SES - Email delivery
+  - AWS SNS - SMS/notifications
+  - Google reCAPTCHA Enterprise - Bot protection
+  - Telegram Bot API - Notification channel
+  - WebPush API - Browser push notifications
+
+## Current Status (2025-01-25)
 - **Production environment fully operational** ✅
 - **Backend Admin Panel**: ✅ Deployed and working on production
 - **CloudFront configurations**: API routing configured
 - **Backend connectivity**: Database authentication resolved + Admin panel accessible
 - **API endpoints**: All working correctly through CloudFront
-- **Complete System Enhancement Plan**: ✅ **100% COMPLETE** - All phases complete, all gaps fixed (2025-12-02)
+- **Complete System Enhancement Plan**: ✅ **100% COMPLETE** - All phases complete, all gaps fixed
 - **Locale Formatting**: ✅ **100% coverage** - All 10 components and 3 services use LocaleService
 - **Accessibility**: ✅ **100% coverage** - All components have ARIA labels and keyboard navigation
 - **Dark Mode**: ✅ **100% coverage** - All 57 components have dark mode styles
@@ -86,6 +115,63 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - **Aurora PostgreSQL**: Serverless v2 production cluster
 - **API Routing**: CloudFront `/api/*` routes proxy to backend ALB
 
+### Code Patterns and Conventions
+- **Component Naming**: PascalCase for class names, kebab-case for selectors (e.g., `HouseCarouselComponent` → `<app-house-carousel>`)
+- **Service Naming**: PascalCase with "Service" suffix (e.g., `AuthService`, `PaymentService`)
+- **File Naming**: Match class name (e.g., `house-carousel.component.ts` for `HouseCarouselComponent`)
+- **Directory Structure**: Organize by feature (e.g., `src/components/payment/`, `src/services/payment/`)
+- **Imports**: Group imports (Angular, third-party, local) with blank lines between groups
+- **RxJS**: Always unsubscribe in `ngOnDestroy` or use `takeUntil` pattern
+- **Error Handling**: Use try-catch blocks, proper error logging, user-friendly error messages
+- **Type Safety**: Use TypeScript strict mode, avoid `any`, use proper interfaces/types
+- **Accessibility**: All interactive elements must have ARIA labels and keyboard navigation
+- **Responsive Design**: Mobile-first approach with Tailwind CSS breakpoints
+- **Dark Mode**: All components must support dark mode via Tailwind dark: classes
+
+## Key Configuration Files
+- **`angular.json`** - Angular project configuration
+  - Project name: `demo`
+  - Build output: `dist/demo/browser/`
+  - Build configurations: `development`, `stage`, `production`
+  - Test configuration: Karma with ChromeHeadless
+- **`package.json`** - Dependencies and npm scripts
+  - Angular 20.2.1, TypeScript 5.9.2, Tailwind CSS 3.4.3
+  - Scripts: `ng serve`, `ng build`, `ng test`, `test:ci`, `e2e`, `e2e:ci`
+- **`tsconfig.json`** - TypeScript compiler configuration
+  - Strict mode enabled
+  - ES2022 target
+  - Angular-specific compiler options
+- **`tailwind.config.js`** - Tailwind CSS configuration
+  - Custom color palette
+  - Dark mode support
+  - Custom spacing and typography
+- **`playwright.config.ts`** - E2E testing configuration
+  - 5 browser projects (chromium, firefox, webkit, Chrome, Edge)
+  - Retry strategy: 2 retries on failure
+  - Traces, screenshots, and video on failure
+  - Base URL: http://localhost:4200
+- **`karma.conf.js`** - Unit testing configuration
+  - Framework: Jasmine with Angular testing utilities
+  - Browser: ChromeHeadless (CI), Chrome (local)
+  - Coverage: Disabled in CI (`--code-coverage=false`)
+  - Watch mode: Disabled in CI (`--watch=false`)
+- **`eslint.config.js`** - ESLint configuration
+  - TypeScript ESLint rules
+  - Angular ESLint rules (component/directive selectors)
+  - Template linting for HTML files
+  - Accessibility rules
+- **`proxy.conf.json`** - Development proxy configuration
+  - Proxies `/api/v1/*` to production ALB for local development
+  - Proxies `/ws/*` (SignalR WebSocket) to production ALB
+  - CORS headers configured
+  - WebSocket support enabled for SignalR
+- **`src/environments/`** - Environment-specific configurations
+  - `environment.ts` - Base configuration (default)
+  - `environment.dev.ts` - Development environment
+  - `environment.stage.ts` - Staging environment
+  - `environment.prod.ts` - Production environment
+  - Each contains: `apiUrl`, `frontendUrl`, `production` flag, and service-specific URLs
+
 ## File Structure Guidelines
 - Keep context files updated with current status
 - Maintain comprehensive documentation
@@ -99,18 +185,22 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - Keep deployment status current
 
 ## Important Notes
-- **Angular builds deploy to `browser/` subdirectory** - CloudFront configured without origin path (files at root)
+- **Angular Project Name**: `demo` (as defined in angular.json)
+- **Build Output**: `dist/demo/browser/` - CloudFront configured for `/browser` origin path
 - **Environment files are in `src/environments/`** - Local development and production configurations
+  - `environment.ts` - Base configuration
+  - `environment.dev.ts` - Development (http://localhost:5000)
+  - `environment.stage.ts` - Staging environment
+  - `environment.prod.ts` - Production (CloudFront URL)
 - **Local development** - Uses localhost backend (http://localhost:5000)
-- **Production** - Uses dedicated production ALB
+- **Production** - Uses dedicated production ALB via CloudFront
 - **CloudFront API routing** - `/api/*` paths automatically proxy to backend ALB
+- **Proxy Configuration**: `proxy.conf.json` used for local development
 
 ## Context Files to Maintain
 
 ### In This Repository (FE/):
-- `CONTEXT_QUICK_REFERENCE.md` - Frontend quick reference
-- `CURRENT_WORK.md` - Frontend current tasks and status
-- `CURRENT_STATUS_SUMMARY.md` - Frontend latest status overview
+- Note: Repository-specific context files are optional. Current status is maintained in `.cursorrules`.
 
 ### In Monorepo MetaData/ (Cross-cutting):
 - `../MetaData/Documentation/Infrastructure/DEPLOYMENT_GUIDE.md` - Deployment guide (includes status)
@@ -129,6 +219,188 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 - Maintain environment consistency for local development and production
 - Document any infrastructure or configuration changes
 - **CRITICAL**: If any changes relate to project structure, environment configuration, infrastructure, or deployment processes, update the appropriate context files and this .cursorrules file
+
+## Frontend Application Structure
+
+### Routes (20+ Routes)
+All routes use lazy loading with `loadComponent()`:
+- `/` - Home page
+- `/about` - About page
+- `/sponsorship` - Sponsorship page
+- `/faq` - FAQ page
+- `/help` - Help center
+- `/register` - User registration
+- `/member-settings` - Member settings (AuthGuard protected)
+- `/partners` - Partners page
+- `/promotions` - Promotions page
+- `/responsible-gambling` - Responsible gambling info
+- `/how-it-works` - How it works page
+- `/lottery-results` - Lottery results listing
+- `/lottery-result/:id` - Lottery result detail
+- `/lottery/dashboard` - Lottery dashboard
+- `/lottery/favorites` - Lottery favorites (AuthGuard protected)
+- `/lottery/entries/active` - Active entries (AuthGuard protected)
+- `/lottery/entries/history` - Entry history (AuthGuard protected)
+- `/house/:id` - House detail page
+- `/houses/:id` - Alternative house detail route
+- `/search` - Search page
+- `/auth/callback` - OAuth callback handler
+- `/verify-email` - Email verification
+- `/settings/sessions` - Session management (AuthGuard protected)
+- `/products` - Product selector
+- `/payment/checkout` - Payment checkout (AuthGuard protected)
+- `/payment/stripe` - Stripe payment (AuthGuard protected)
+- `/payment/crypto` - Crypto payment (AuthGuard protected)
+- `/payment/methods` - Payment methods (AuthGuard protected)
+
+### Services (50+ Services)
+Key services organized by category:
+
+**Core Services**:
+- `api.service.ts` - Base API service with token management
+- `auth.service.ts` - Authentication and user management
+- `translation.service.ts` - Internationalization
+- `locale.service.ts` - Locale formatting (dates, numbers, currency)
+- `theme.service.ts` - Dark/light mode management
+
+**Feature Services**:
+- `lottery.service.ts` - Lottery operations with SignalR integration
+- `lottery-results.service.ts` - Lottery results
+- `payment.service.ts` - Payment processing
+- `stripe.service.ts` - Stripe integration
+- `crypto-payment.service.ts` - Cryptocurrency payments
+- `reservation.service.ts` - Ticket reservations
+- `product.service.ts` - Product management
+- `notification.service.ts` - User notifications
+- `realtime.service.ts` - SignalR real-time updates
+- `web-push.service.ts` - Web push notifications
+- `telegram-link.service.ts` - Telegram integration
+
+**User Services**:
+- `user.service.ts` - User profile management
+- `user-preferences.service.ts` - User preferences
+- `user-preferences-form.service.ts` - Preferences form logic
+- `identity-verification.service.ts` - ID verification
+- `member-settings.service.ts` - Member settings
+
+**UI Services**:
+- `auth-modal.service.ts` - Authentication modal management
+- `cookie-consent.service.ts` - Cookie consent management
+- `toast.service.ts` - Toast notifications
+- `payment-panel.service.ts` - Payment panel state
+- `accessibility.service.ts` - Accessibility features
+- `mobile-detection.service.ts` - Mobile device detection
+- `navigation.service.ts` - Navigation management
+
+**Utility Services**:
+- `error-handling.service.ts` - Error handling
+- `error-mapping.service.ts` - Error code mapping
+- `error-message.service.ts` - User-friendly error messages
+- `retry.service.ts` - Retry logic with exponential backoff
+- `validation.service.ts` - Form validation
+- `logging.service.ts` - Application logging
+- `performance.service.ts` - Performance monitoring
+- `memory-monitor.service.ts` - Memory monitoring
+- `offline.service.ts` - Offline detection
+- `security.service.ts` - Security utilities
+- `security-audit.service.ts` - Security auditing
+- `file.service.ts` - File operations
+- `content.service.ts` - Content management
+- `promotion.service.ts` - Promotions
+- `promotions-menu.service.ts` - Promotions menu state
+- `captcha.service.ts` - reCAPTCHA integration
+- `analytics.service.ts` - Analytics tracking
+
+**Component-Specific Services**:
+- `house-card.service.ts` - House card logic
+- `house-carousel.service.ts` - House carousel state
+- `registration-form.service.ts` - Registration form logic
+- `route-loading.service.ts` - Route loading states
+- `route-performance.service.ts` - Route performance tracking
+- `focus-trap.service.ts` - Focus management
+- `heart-animation.service.ts` - Animation utilities
+
+### Components (50+ Components)
+Key components organized by category:
+
+**Page Components**:
+- `home.component.ts` - Home page
+- `about-page.component.ts` - About page
+- `sponsorship-page.component.ts` - Sponsorship
+- `faq-page.component.ts` - FAQ
+- `help-center-page.component.ts` - Help center
+- `partners-page.component.ts` - Partners
+- `promotions-page.component.ts` - Promotions
+- `responsible-gambling-page.component.ts` - Responsible gambling
+- `how-it-works-page.component.ts` - How it works
+- `search-page.component.ts` - Search
+
+**Lottery Components**:
+- `lottery-dashboard.component.ts` - Lottery dashboard
+- `lottery-dashboard-accordion.component.ts` - Dashboard accordion
+- `lottery-favorites.component.ts` - Lottery favorites
+- `lottery-results-page.component.ts` - Results listing
+- `lottery-result-detail.component.ts` - Result detail
+- `active-entries.component.ts` - Active entries
+- `entry-history.component.ts` - Entry history
+- `house-card.component.ts` - House card
+- `house-carousel.component.ts` - House carousel
+- `house-detail.component.ts` - House detail
+- `house-grid.component.ts` - House grid
+- `participant-stats.component.ts` - Participant statistics
+- `watchlist.component.ts` - Watchlist (if exists)
+
+**Payment Components**:
+- `payment-checkout.component.ts` - Payment checkout
+- `payment-modal.component.ts` - Payment modal
+- `responsive-payment-panel.component.ts` - Responsive payment panel
+- `stripe-payment.component.ts` - Stripe payment
+- `crypto-payment.component.ts` - Crypto payment
+- `payment-methods.component.ts` - Payment methods
+- `payment-quantity-step.component.ts` - Quantity selection
+- `payment-review-step.component.ts` - Review step
+- `payment-tabs-step.component.ts` - Payment method tabs
+- `payment-processing-step.component.ts` - Processing step
+- `payment-confirmation-step.component.ts` - Confirmation step
+- `product-selector.component.ts` - Product selector
+
+**User Components**:
+- `registration-page.component.ts` - Registration
+- `member-settings-page.component.ts` - Member settings
+- `user-menu.component.ts` - User menu
+- `user-preferences.component.ts` - User preferences
+- `sessions-management.component.ts` - Session management
+- `verify-email.component.ts` - Email verification
+- `oauth-callback.component.ts` - OAuth callback
+- `verification-gate.component.ts` - ID verification gate
+
+**UI Components**:
+- `topbar.component.ts` - Top navigation bar
+- `hero-section.component.ts` - Hero section
+- `toast.component.ts` - Toast notifications
+- `auth-modal.component.ts` - Authentication modal
+- `cookie-consent.component.ts` - Cookie consent banner
+- `language-switcher.component.ts` - Language switcher
+- `theme-toggle.component.ts` - Theme toggle
+- `accessibility-menu.component.ts` - Accessibility menu
+- `translation-loader.component.ts` - Translation loader
+- `skip-links.component.ts` - Skip links (accessibility)
+- `chatbot.component.ts` - Chatbot
+- `stats-section.component.ts` - Statistics section
+- `countdown-timer.component.ts` - Countdown timer
+- `live-inventory.component.ts` - Live inventory display
+- `reservation-countdown.component.ts` - Reservation countdown
+- `reservation-status.component.ts` - Reservation status
+
+**Notification Components**:
+- `notification-sidebar.component.ts` - Notification sidebar
+- `notification-preferences.component.ts` - Notification preferences
+- `web-push-permission.component.ts` - Web push permission
+- `telegram-link.component.ts` - Telegram linking
+
+**Utility Components**:
+- `password-reset-modal.component.ts` - Password reset
+- `promotions-sliding-menu.component.ts` - Promotions menu
 
 ## Architecture Overview
 
@@ -151,12 +423,323 @@ AmesaBase is a lottery management system with Angular frontend, .NET backend, an
 1. **Production**: Push to main branch → Auto-deploy to S3/CloudFront
 2. **Local Development**: Run `ng serve` for local testing
 
+### SignalR Hub Details
+- **LotteryHub** (`/ws/lottery`):
+  - **Service**: `amesa-lottery-service`
+  - **Events Broadcasted**:
+    - `OnLotteryUpdate` - House status, ticket sales, participation updates
+    - `OnFavoriteUpdate` - Watchlist changes (added/removed)
+    - `OnEntryStatusChange` - Ticket entry status changes
+    - `OnDrawReminder` - Lottery draw countdown reminders
+    - `OnRecommendation` - House recommendations
+    - `InventoryUpdated` - Real-time ticket inventory updates
+    - `TicketPurchased` - Ticket purchase notifications
+    - `CountdownUpdated` - Lottery countdown updates
+    - `LotteryDrawStarted` - Draw start notifications
+    - `LotteryDrawCompleted` - Draw completion notifications
+  - **User Groups**: Automatically managed in `OnConnectedAsync()` (no manual join/leave needed)
+  - **Authorization**: JWT Bearer token required
+  
+- **NotificationHub** (`/ws/notifications`):
+  - **Service**: `amesa-notification-service`
+  - **Events Broadcasted**:
+    - `OnNotification` - User notifications (email, SMS, WebPush, Telegram)
+    - `OnUserStatusUpdate` - User online/offline status
+  - **User Groups**: Automatically managed in `OnConnectedAsync()` (no manual join/leave needed)
+  - **Authorization**: JWT Bearer token required
+
+## Cross-Cutting Concerns
+
+### HTTP Request/Response Patterns
+- **No HTTP Interceptors**: All HTTP logic centralized in `ApiService`
+- **Token Management**: Automatic token refresh via `ApiService.token$` observable
+- **Request Retry**: Automatic retry with exponential backoff for network errors
+- **Error Handling**: Centralized error handling via `ErrorHandlingService`
+- **Offline Support**: `OfflineService` queues requests when offline, retries when back online
+- **Request Format**: All requests use `ApiResponse<T>` wrapper format
+- **Base URL**: Environment-specific (`/api/v1` for local, CloudFront URL for production)
+
+### SignalR Real-Time Communication
+- **Hubs**: 
+  - `/ws/lottery` - Lottery updates (LotteryHub)
+  - `/ws/notifications` - Notifications (NotificationHub)
+- **Transport**: LongPolling (required for CloudFront compatibility, WebSocket not supported)
+- **Connection Pattern**:
+  - Automatic reconnection with exponential backoff (max 5 retries)
+  - Connection state tracked with signals (`isConnected`, `connectionState`)
+  - Token-based authentication (JWT sent in connection headers)
+- **Event Subscriptions**:
+  - `LotteryUpdateEvent` - House status, ticket sales, participation updates
+  - `NotificationEvent` - User notifications (email, SMS, WebPush, Telegram)
+  - `UserStatusEvent` - User online/offline status
+  - `FavoriteUpdateEvent` - Watchlist changes (added/removed)
+  - `EntryStatusChangeEvent` - Ticket entry status changes
+  - `DrawReminderEvent` - Lottery draw countdown reminders
+  - `RecommendationEvent` - House recommendations
+  - `InventoryUpdateEvent` - Real-time ticket inventory updates
+  - `CountdownUpdateEvent` - Lottery countdown updates
+  - `ReservationStatusUpdateEvent` - Ticket reservation status
+- **Reconnection Strategy**:
+  - Exponential backoff: 1s, 2s, 4s, 8s, 16s
+  - Max retries: 5
+  - Automatic reconnection on connection loss
+  - User group management handled automatically by backend in `OnConnectedAsync()`
+- **Service**: `RealtimeService` manages all SignalR connections and event subscriptions
+
+### Error Handling Patterns
+- **Error Handling Service**: `ErrorHandlingService` centralizes all error handling
+- **Error Severity Levels**: `low`, `medium`, `high`, `critical`
+- **Error Response Format**:
+  ```typescript
+  {
+    success: false,
+    error: {
+      code: "ERROR_CODE",
+      message: "Human-readable message",
+      details?: any
+    }
+  }
+  ```
+- **Error Code Mapping**: Frontend maps backend error codes to user-friendly messages
+- **Toast Notifications**: Critical/high/medium errors show toast notifications
+- **Error Logging**: All errors logged with context (userId, request details)
+- **401 Handling**: Automatic token refresh attempt on 401 errors
+- **Network Errors**: Automatic retry with exponential backoff
+
+### Caching Strategies
+- **In-Memory Cache**: Service-level caching (5 min TTL for houses list)
+- **localStorage Cache**: Persistent cache for houses, favorites, active entries, user stats
+  - Houses list: 30 min TTL
+  - Individual houses: 1 hour TTL
+  - User favorites: 15 min TTL
+  - Active entries: 15 min TTL
+  - User stats: 15 min TTL
+- **sessionStorage Cache**: Temporary cache for dashboard data (5 min TTL)
+- **Cache Invalidation**:
+  - Time-based: TTL expiration
+  - Event-based: SignalR events invalidate relevant caches
+  - User action-based: Add/remove favorite, purchase ticket
+  - Authentication-based: Login/logout clears user-specific caches
+- **Cache Keys**:
+  - Houses list: `houses_list`
+  - Individual house: `house:{houseId}`
+  - User favorites: `user_favorites:{userId}`
+  - Active entries: `user_active_entries:{userId}`
+  - User stats: `user_stats:{userId}`
+- **Real-Time Data Protection**: Methods like `getAvailableTickets()` are never cached (always fetch fresh)
+
+### Offline Handling
+- **Offline Detection**: `OfflineService` monitors network status
+- **Request Queuing**: Failed requests queued when offline
+- **Queue Persistence**: Queued requests stored in memory (cleared on page refresh)
+- **Automatic Retry**: Queued requests automatically retried when network restored
+- **Queue Size**: No explicit limit (monitor memory usage)
+- **Integration**: `ApiService` uses `OfflineService` for queuing failed requests
+
+### Performance Monitoring
+- **Performance Service**: `PerformanceService` tracks application performance metrics
+- **Route Performance**: `RoutePerformanceService` tracks route load times
+- **Memory Monitoring**: `MemoryMonitorService` tracks memory usage
+- **Metrics Collected**:
+  - Route load times
+  - API call durations
+  - Memory usage
+  - Component render times
+
+### State Management Patterns
+- **Angular Signals** (Primary State Management):
+  - **Signal Creation**: `signal<T>(initialValue)` for reactive state
+  - **Computed Signals**: `computed(() => derivedValue)` for derived state
+  - **Effects**: `effect(() => { sideEffects })` for side effects based on signal changes
+  - **Usage Examples**:
+    - `showPassword = signal(false)` - UI state (e.g., password visibility)
+    - `isVerified = signal(false)` - Verification status
+    - `isLoading = signal(true)` - Loading states
+    - `effect(() => { /* react to signal changes */ })` - Side effects (e.g., favorites updates)
+  - **Location**: Used throughout components and services (e.g., `registration-page.component.ts`, `verification-gate.component.ts`, `lottery-favorites.component.ts`)
+- **RxJS Observables** (Async Operations & Streams):
+  - **Observable**: For async operations (HTTP calls, timers, event streams)
+  - **Subject**: For multicasting values to multiple subscribers
+  - **BehaviorSubject**: For state that needs initial value and current value tracking
+  - **Operators**: `map`, `filter`, `switchMap`, `catchError`, `retry`, `takeUntil`, etc.
+  - **Usage Examples**:
+    - HTTP calls return `Observable<T>` (e.g., `getHouseById(id): Observable<HouseDto>`)
+    - `Subject<void>` for cleanup/unsubscribe patterns (e.g., `cleanup$ = new Subject<void>()`)
+    - `firstValueFrom()` for converting Observable to Promise (e.g., in SignalR service)
+  - **Location**: Used in services (e.g., `lottery.service.ts`, `realtime.service.ts`, `api.service.ts`)
+- **State Storage**:
+  - **localStorage**: Persistent state (user preferences, theme, language)
+  - **sessionStorage**: Session-scoped state (temporary data)
+  - **In-Memory**: Component/service-level state (signals, observables)
+- **State Synchronization**:
+  - **Real-time Updates**: SignalR events update local state (e.g., lottery updates, notifications)
+  - **Cache Invalidation**: State updates trigger cache invalidation
+  - **Cross-Component Communication**: Services with signals/observables shared across components
+
+### Routing Patterns
+- **Lazy Loading**:
+  - **Method**: `loadComponent()` for route-based code splitting
+  - **Benefits**: Reduces initial bundle size, improves load time
+  - **Configuration**: Routes configured with `loadComponent` in route definitions
+- **Route Guards**:
+  - **AuthGuard**: `canActivate()` checks authentication and email verification
+    - Checks: `user.isAuthenticated` and `userDto.emailVerified`
+    - Redirects: `/` if not authenticated, `/verify-email` if email not verified
+    - Toast Notifications: Shows warning/error messages
+    - Location: `FE/src/guards/auth.guard.ts`
+- **Custom Preloading Strategy**:
+  - **Class**: `CustomPreloadingStrategy` implements `PreloadingStrategy`
+  - **Priority-Based Delays**:
+    - **High Priority** (0ms delay): `about`, `faq`, `help`
+    - **Medium Priority** (2s delay): `sponsorship`, `partners`, `how-it-works`
+    - **Low Priority** (5s delay): `register`, `member-settings`, `promotions`, `responsible-gambling`
+    - **Default** (3s delay): Unknown routes
+  - **Purpose**: Preload routes after initial load without blocking critical resources
+  - **Location**: `FE/src/app.preloading-strategy.ts`
+  - **Registration**: Configured in `main.ts` via `withPreloading(CustomPreloadingStrategy)`
+- **Route Configuration**:
+  - **Wildcard Routes**: `**` for catch-all (e.g., 404 page)
+  - **Route Parameters**: `:id` for dynamic segments (e.g., `/house/:id`)
+  - **Query Parameters**: Accessible via `ActivatedRoute.queryParams`
+  - **Route Data**: Static data passed via `data` property in route config
+
+## Testing Infrastructure
+- **E2E Testing**: Playwright configured with 5 browser projects
+  - Chromium (Desktop Chrome)
+  - Firefox (Desktop Firefox)
+  - WebKit (Desktop Safari)
+  - Mobile Chrome (Pixel 5)
+  - Mobile Safari (iPhone 12)
+- **Unit Testing**: Karma/Jasmine with ChromeHeadless
+- **Test Configuration**: 
+  - CI test script: `ng test demo --browsers=ChromeHeadless --watch=false --code-coverage=false`
+  - Playwright base URL: `http://localhost:4200` (configurable via `BASE_URL` env var)
+  - Retry strategy: 2 retries on CI, 0 locally
+  - Trace collection: On first retry
+  - Screenshots: Only on failure
+  - Video: Retain on failure
+
+### Testing Patterns
+- **Unit Testing** (Jasmine/Karma):
+  - **Framework**: Jasmine for test syntax, Karma for test runner
+  - **Test Location**: `*.spec.ts` files alongside source files
+  - **Mocking**: 
+    - Angular testing utilities (`TestBed`, `ComponentFixture`)
+    - Service mocks using `jasmine.createSpy()` or `jasmine.createSpyObj()`
+    - HTTP client mocking via `HttpClientTestingModule`
+  - **Test Structure**: `describe()` blocks for test suites, `it()` for test cases
+  - **Angular Testing Utilities**:
+    - `TestBed.configureTestingModule()` for test module setup
+    - `ComponentFixture` for component testing
+    - `DebugElement` for DOM querying
+  - **Coverage**: Target 80%+ code coverage for services and components
+- **E2E Testing** (Playwright):
+  - **Framework**: Playwright with TypeScript
+  - **Page Object Model**: Reusable page objects for test maintainability
+  - **Test Data**: 
+    - Test fixtures for consistent test data
+    - Isolated test data per test to avoid dependencies
+  - **Browser Projects**: 5 projects (Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari)
+  - **Test Configuration**:
+    - Base URL: `http://localhost:4200` (configurable via `BASE_URL` env var)
+    - Retry strategy: 2 retries on CI, 0 locally
+    - Trace collection: On first retry
+    - Screenshots: Only on failure
+    - Video: Retain on failure
+  - **Test Organization**: Tests organized by feature/page in `e2e/` directory
+  - **Best Practices**:
+    - Use data-testid attributes for reliable element selection
+    - Wait for network requests to complete
+    - Clean up test data after tests
+
+### Application Initialization Patterns
+- **Bootstrap Method**: `bootstrapApplication()` from `@angular/platform-browser`
+- **Entry Point**: `FE/src/main.ts`
+- **Provider Configuration**:
+  - **Services**: All core services registered as providers (TranslationService, ThemeService, AuthService, etc.)
+  - **Error Handler**: Custom `ErrorHandlingService` via `{ provide: ErrorHandler, useClass: ErrorHandlingService }`
+  - **HTTP Client**: `provideHttpClient()` for HTTP requests
+  - **Router**: `provideRouter()` with routes, preloading strategy, and in-memory scrolling
+  - **Animations**: `provideAnimations()` for Angular animations
+- **APP_INITIALIZER Pattern** (Non-blocking startup):
+  - **Purpose**: Initialize services before app starts without blocking bootstrap
+  - **Translation Initialization** (`initializeTranslations`):
+    - Priority: localStorage → browser language → default ('en')
+    - Non-blocking: Loads translations in background, app starts immediately
+    - Location: `FE/src/main.ts`
+  - **Service Initialization** (`initializeServices`):
+    - Sets up cross-service dependencies (e.g., `userPreferencesService.setThemeService()`)
+    - Loads theme and preferences from localStorage (synchronous, no network)
+    - Applies accessibility settings from preferences
+    - Non-blocking: All operations synchronous, resolves immediately
+  - **Multi-provider**: `multi: true` allows multiple `APP_INITIALIZER` functions
+- **Router Configuration**:
+  - **Preloading**: `CustomPreloadingStrategy` with priority-based delays
+  - **Scrolling**: `withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' })`
+  - **Routes**: Lazy-loaded routes with `loadComponent()`
+- **Console Override**: `./console-override` removes console logs in production
+- **Best Practices**:
+  - Keep initialization non-blocking (no network requests in APP_INITIALIZER)
+  - Use localStorage for fast initial state
+  - Network requests happen via service subscriptions after bootstrap
+  - Resolve APP_INITIALIZER promises immediately for synchronous operations
+
+### Build & Packaging Patterns
+- **Build Configuration**: `angular.json` (project name: "demo")
+- **Build Builder**: `@angular/build:application`
+- **Build Configurations**:
+  - **Development**:
+    - Source maps enabled
+    - Named chunks for debugging
+    - No optimization
+    - No license extraction
+  - **Production**:
+    - AOT compilation enabled
+    - Full optimization
+    - Output hashing: "all" (cache busting)
+    - Source maps disabled
+    - License extraction enabled
+    - File replacements: `environment.ts` → `environment.prod.ts`
+- **Output Path**: `dist/demo/browser/`
+- **Assets**:
+  - Static assets: `src/assets/`
+  - Service worker: `sw.js` from `src/` to root output
+- **Styles**: `src/styles.css`, `src/global_styles.css`
+- **Polyfills**: `zone.js` for Angular change detection
+- **TypeScript Config**: `tsconfig.app.json` for application build
+- **Build Process**:
+  1. TypeScript compilation
+  2. Template compilation (AOT in production)
+  3. Style processing (CSS, Tailwind)
+  4. Asset copying
+  5. Bundle optimization (production)
+  6. Output hashing (production)
+- **Environment File Replacement**: Production build replaces `environment.ts` with `environment.prod.ts`
+- **Bundle Strategy**:
+  - Code splitting via lazy loading
+  - Vendor chunks for third-party libraries
+  - Common chunks for shared code
+- **Deployment**:
+  - Build output: `dist/demo/browser/`
+  - Deploy to: AWS S3 bucket
+  - CDN: CloudFront distribution
+  - Cache invalidation: Required after deployment
+
 ## Common Commands
 ```bash
 # Frontend development
 npm install
-ng serve
+ng serve                    # Start dev server (http://localhost:4200)
+ng build                    # Build for production
 ng build --configuration=production
+ng test                     # Run unit tests
+ng test demo --browsers=ChromeHeadless --watch=false --code-coverage=false  # CI tests
+npm run test:ci             # Run CI test script
+npx playwright test        # Run E2E tests
+
+# Build output
+# Production build outputs to: dist/demo/browser/
+# CloudFront origin path configured for: /browser
 
 # AWS operations
 aws cloudfront list-distributions
@@ -165,7 +748,7 @@ aws cloudfront create-invalidation --distribution-id E3GU3QXUR43ZOH --paths "/*"
 
 # ECS operations
 aws ecs list-services --cluster Amesa
-aws ecs describe-services --cluster Amesa --services amesa-backend-service
+aws ecs describe-services --cluster Amesa --services amesa-auth-service
 
 # Database operations
 aws rds describe-db-clusters --db-cluster-identifier amesadbmain
@@ -184,7 +767,7 @@ git checkout main
 - **Theme Support**: Dark/light mode switching
 - **Real-time Features**: SignalR integration for live updates
 
-## Cursor Cost Optimization - Frontend Component Refactoring Status (2025-12-01)
+## Cursor Cost Optimization - Frontend Component Refactoring Status
 
 **Phase 4 Progress**: ~60% Complete (6/10+ large components refactored)
 
@@ -209,7 +792,7 @@ git checkout main
 
 ---
 
-## Recent Changes (2025-12-05) - NOTIFICATION BELL IMPLEMENTATION
+## Recent Changes - NOTIFICATION BELL IMPLEMENTATION
 1. ✅ **Notification Bell with Sidebar - FULLY IMPLEMENTED** - Complete notification UI system
    - **Status**: ✅ **DEPLOYED AND OPERATIONAL** - Frontend complete, ALB routing configured
    - **Frontend Implementation**:
@@ -241,7 +824,7 @@ git checkout main
    - **Commit**: `e2e9a20` - "feat: Add notification bell with sidebar"
    - **Status**: ✅ **COMPLETE** - Notification bell fully operational, ALB routing configured
 
-## Recent Changes (2025-12-01) - TRANSLATION PERFORMANCE & IMAGE GALLERY FIXES
+## Recent Changes - TRANSLATION PERFORMANCE & IMAGE GALLERY FIXES
 - ✅ **Translation Loading Performance Optimization** - Fixed app startup hang and slow first load
   - Removed 500ms blocking delay that was preventing APP_INITIALIZER from resolving
   - Fixed BehaviorSubject race condition that caused premature promise resolution
@@ -264,7 +847,7 @@ git checkout main
   - Do not modify notification system files without checking plan first
   - Plan file: `multi-channel-notification-system.plan.md`
 
-## Recent Changes (2025-12-02) - COMPLETE SYSTEM ENHANCEMENT PLAN - FINAL FIXES
+## Recent Changes - COMPLETE SYSTEM ENHANCEMENT PLAN - FINAL FIXES
 1. ✅ **Complete System Enhancement Plan - 100% COMPLETE** - All gaps fixed and verified
    - **Final Audit**: Comprehensive deep audit completed, 0 remaining gaps
    - **Locale Formatting Fixes**:
@@ -281,7 +864,7 @@ git checkout main
    - **Verification**: Final deep audit - 0 remaining gaps, 100% compliance
    - **Status**: ✅ All fixes complete, verified, and ready for production
 
-## Previous Changes (2025-11-21) - USER PREFERENCES & TRANSLATION FIXES
+## Previous Changes - USER PREFERENCES & TRANSLATION FIXES
 - ✅ **User Preferences System** - Complete implementation with 8 preference categories
 - ✅ **Polish Language Support** - 6th language added with full translation coverage
 - ✅ **Translation System Fixed** - Removed fallback dependencies, API-only approach
@@ -296,14 +879,14 @@ git checkout main
 - **OAuth Integration Plan** - Comprehensive plan document created
 
 ## 📚 **Session Documentation**
-**Latest Session**: [Database Seeding & Translation System Fix](../MetaData/Documentation/2025-11-21-Database-Seeding-And-Translations/README.md)
+**Latest Session**: [Database Seeding & Translation System Fix](../MetaData/Documentation/README.md)
 - User Preferences System handoff
 - Translation system architecture
 - Polish language implementation
 - Performance optimizations
 
 ---
-## Recent Changes (2025-12-06) - RESPONSIVE PAYMENT UI - A+ QUALITY ACHIEVED
+## Recent Changes - RESPONSIVE PAYMENT UI - A+ QUALITY ACHIEVED
 1. ✅ **Responsive Payment UI - A+ QUALITY ACHIEVED** - Complete payment panel system with comprehensive fixes
    - **Status**: ✅ **PRODUCTION READY** - All critical, high, medium, and low priority issues resolved
    - **Final Grade**: A+ (99/100)
@@ -336,5 +919,6 @@ git checkout main
      - `MetaData/Documentation/Development/RESPONSIVE_PAYMENT_UI_CODE_REVIEW_DEEP_AUDIT.md` - Complete audit report updated to A+ status
    - **Status**: ✅ **COMPLETE** - Payment UI system at A+ quality, production-ready
 
-**Last Updated**: 2025-12-06
+**Last Updated**: 2025-01-25
+**Context Version**: 2.4.0 (Application initialization patterns and build & packaging patterns documented)
 **Note**: This file should be updated whenever project structure, environment configuration, infrastructure, or deployment processes change.
