@@ -1,16 +1,176 @@
-.angular
-dist
-node_modules
-.env
+# ============================================
+# ANGULAR BUILD OUTPUTS
+# ============================================
+.angular/
+dist/
+tmp/
+out-tsc/
+.angular/cache
 
+# ============================================
+# NODE DEPENDENCIES
+# ============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
+
+# ============================================
+# ENVIRONMENT AND SECRETS
+# ============================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+*secret*.txt
+*SECRET*.txt
+GITHUB_SECRETS*.txt
+secrets.json
+*.key
+*.pem
+
+# ============================================
+# IDE AND EDITOR FILES
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================
+# TEST COVERAGE AND REPORTS
+# ============================================
+coverage/
+.nyc_output/
+*.lcov
+junit.xml
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ============================================
+# LOGS
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ============================================
+# TEMPORARY AND DIFF FILES
+# ============================================
+# Diff and comparison files
+*-diff.txt
+*-full-diff.txt
+*-stat.txt
+compare-*.txt
+commit-*.txt
+full-diff-*.txt
+key-differences.txt
+
+# ============================================
+# AWS/INFRASTRUCTURE TEMPORARY FILES
+# ============================================
+# CloudFront configs (should be in MetaData/Configs)
+*-cloudfront*.json
+*-cloudfront*.txt
+cloudfront-*.json
+dev-cloudfront*.txt
+prod-cloudfront*.txt
+stage-cloudfront*.txt
+distribution-config*.json
+updated-distribution*.json
+updated-cloudfront*.json
+update-cloudfront*.json
+current-cloudfront*.json
+fix-*.json
+
+# Task definitions (should be in MetaData/Configs)
+*-task-definition*.json
+prod-task-definition*.json
+staging-task-definition*.json
+
+# Bucket policies (should be in MetaData/Configs)
+bucket-policy*.json
+
+# ============================================
+# TEMPORARY CONFIG FILES
+# ============================================
+# Keep proxy.conf.json (needed for dev), but ignore temp configs
+*-temp.json
+*-current.json
+*-complete.json
+*-updated.json
+*-final.json
+*-clean.json
+*-correct.json
+*-proper.json
+*-fixed.json
+*-check.json
+
+# ============================================
+# DATA AND REFERENCE FILES
+# ============================================
+# CSV files (should be in MetaData/Reference)
+*.csv
+ENVIRONMENT_URLS_GRID.csv
+
+# Google Apps Script files
+*.gs
+AmesaEnvironmentGrid.gs
+
+# Translation keys (might be generated)
+translation-keys.json
+
+# ============================================
+# DOCUMENTATION (Root level only)
+# ============================================
+# Ignore markdown files in root (keep README.md if needed)
+*.md
+!README.md
+
+# ============================================
+# SCRIPTS
+# ============================================
 # PowerShell scripts
 *.ps1
+*.bat
+*.sh
 
-# Documentation files
-*.md
-
-# SQL scripts
+# ============================================
+# SQL SCRIPTS
+# ============================================
 *.sql
 
-# MetaData folder
+# ============================================
+# MISC TEMPORARY FILES
+# ============================================
+# MetaData folder (should be in monorepo root)
 MetaData/
+
+# Backend folder (shouldn't be in FE repo)
+backend/
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+*.temp
+*.orig
+
+# ============================================
+# ELASTIC BEANSTALK (if used)
+# ============================================
+.elasticbeanstalk/
+.ebextensions/
