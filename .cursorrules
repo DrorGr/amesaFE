@@ -366,6 +366,44 @@ Pieces MCP provides access to Long-Term Memory (LTM-2.7) engine, allowing agents
    - Consider making follow-up queries based on initial results
    - Use time ranges and source hints to improve query accuracy
 
+#### Using `create_pieces_memory` Tool
+
+**Purpose**: Create persistent memories in Pieces LTM for important frontend decisions, patterns, and context that future agent sessions should know.
+
+**When to Use `create_pieces_memory`**:
+- ✅ **After Completing Significant Frontend Work** - Document important component implementations, decisions, or solutions
+- ✅ **After Solving Complex Frontend Problems** - Save troubleshooting approaches and solutions
+- ✅ **After Making Frontend Architectural Decisions** - Document why decisions were made (e.g., component structure, state management, routing)
+- ✅ **After Discovering Frontend Patterns** - Save proven Angular patterns, TypeScript patterns, and best practices
+- ✅ **After Code Reviews or Feedback** - Document important frontend feedback and changes
+- ✅ **After Major Frontend Refactoring** - Document structural changes and rationale
+- ✅ **After UI/UX Improvements** - Document design decisions and user experience changes
+- ✅ **After Performance Optimizations** - Document optimization approaches and results
+
+**What to Include in Frontend Memories**:
+- **Summary**: Concise title describing the frontend work (1-2 sentences)
+- **Detailed Narrative**: Complete story with background, thought process, what worked/didn't work, decisions made
+- **Files**: List all relevant frontend files involved (absolute paths, e.g., `FE/src/components/payment/payment-consolidated-step.component.ts`)
+- **External Links**: GitHub URLs, Angular documentation, TypeScript documentation, articles consulted
+- **Project Path**: Absolute path to project root (`C:\Users\dror0\Curser-Repos\AmesaBase-Monorepo`)
+- **Context**: Why this memory is important for future frontend sessions
+
+**Frontend-Specific Memory Examples**:
+- After implementing a new component: Document the component structure, state management, and integration approach
+- After fixing a critical frontend bug: Document the root cause, fix, and prevention strategies
+- After routing changes: Document the routing structure and navigation flow
+- After state management changes: Document the state management approach and rationale
+- After performance optimizations: Document the optimization approach and results
+- After accessibility improvements: Document the accessibility enhancements and impact
+
+**Best Practices**:
+- Create memories for frontend work that future agents will benefit from understanding
+- Include enough context that someone reading it later understands the full picture
+- Link to relevant frontend files and external resources
+- Use clear, descriptive summaries
+- Document both successes and lessons learned
+- Include component names, service names, and routing paths when relevant
+
 **Additional Triggers:**
 - ✅ **Starting a new frontend task or feature** - Query for related previous work
 - ✅ **Encountering a frontend error or issue** - Query for similar problems and solutions
@@ -447,9 +485,30 @@ Pieces MCP provides access to Long-Term Memory (LTM-2.7) engine, allowing agents
    - "What lessons were learned from [previous frontend implementation]?"
    - "What architectural decisions were made for [frontend component]?"
 
-**After Completing Frontend Work**:
-- Document important frontend decisions and patterns (if applicable)
-- This helps future agent sessions understand frontend context
+**After Completing Frontend Work** (MANDATORY):
+**CRITICAL**: After completing significant frontend work, use `create_pieces_memory` to document important context.
+
+1. **Evaluate if Memory is Needed**:
+   - Was this a significant frontend implementation or decision?
+   - Will future agents benefit from understanding this frontend work?
+   - Does this solve a frontend problem that might recur?
+   - Is this a frontend pattern or approach worth preserving?
+
+2. **Create Memory if Appropriate**:
+   - Use `create_pieces_memory` tool to document:
+     - What frontend work was implemented/fixed/decided
+     - Why frontend decisions were made
+     - What worked and what didn't
+     - Relevant frontend files and resources
+     - Lessons learned
+   - This helps future agent sessions understand frontend context without needing to query
+
+3. **Memory Content Guidelines**:
+   - **Summary**: Clear, concise title (1-2 sentences)
+   - **Detailed Narrative**: Complete story with full frontend context
+   - **Files**: All relevant frontend files (absolute paths, e.g., `FE/src/components/payment/payment-consolidated-step.component.ts`)
+   - **External Links**: Documentation, GitHub URLs, Angular docs, TypeScript docs, articles
+   - **Project Path**: Absolute path to project root (`C:\Users\dror0\Curser-Repos\AmesaBase-Monorepo`)
 
 #### Optimized Frontend Query Templates
 
