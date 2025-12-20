@@ -5,7 +5,8 @@
 
 import { Component, inject, input, output, signal, computed, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, effect, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { firstValueFrom, Subject } from 'rxjs';
+import { Router } from '@angular/router';
+import { firstValueFrom, Subject, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { StripeService, PaymentIntentResponse } from '../../services/stripe.service';
@@ -101,23 +102,106 @@ import { PAYMENT_PANEL_CONFIG } from '../../config/payment-panel.config';
 
             @if (stripeClientSecret() && !stripeLoading()) {
               <div class="space-y-4">
+                <!-- Expiry Countdown -->
+                @if (stripeTimeRemaining() !== null && stripeTimeRemaining()! > 0) {
+                  <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm text-yellow-800 dark:text-yellow-200">
+                        {{ translate('payment.stripe.intent.expiresIn') || 'Payment session expires in' }}:
+                      </span>
+                      <span class="text-sm font-bold text-yellow-900 dark:text-yellow-100">
+                        {{ formatTimeRemaining(stripeTimeRemaining()!) }}
+                      </span>
+                    </div>
+                  </div>
+                }
+
+                <!-- Expired Warning -->
+                @if (stripeTimeRemaining() === 0) {
+                  <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                    <div class="flex items-start">
+                      <svg class="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <div class="ml-3">
+                        <p class="text-sm font-medium text-red-800 dark:text-red-200">
+                          {{ translate('payment.stripe.intent.expired') || 'Payment session has expired' }}
+                        </p>
+                        <p class="mt-1 text-sm text-red-700 dark:text-red-300">
+                          {{ translate('payment.stripe.intent.expiredMessage') || 'Please start a new payment session.' }}
+                        </p>
+                        <button
+                          type="button"
+                          (click)="onRetryPayment()"
+                          class="mt-3 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 
+                                 transition-colors duration-200 text-sm">
+                          {{ translate('payment.stripe.retry.button') || 'Start New Payment' }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <!-- 3DS Redirect Notice -->
+                @if (stripeRequires3DS()) {
+                  <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                    <div class="flex items-start">
+                      <svg class="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <div class="ml-3">
+                        <p class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                          {{ translate('payment.stripe.3ds.required') || 'Additional verification required' }}
+                        </p>
+                        <p class="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                          {{ translate('payment.stripe.3ds.redirecting') || 'Redirecting to complete payment verification...' }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                }
+
                 <div 
                   [id]="stripePaymentElementId"
                   [attr.aria-label]="translate('payment.stripe.paymentForm')"
                   #stripeContainer>
                 </div>
                 
-                <button
-                  type="button"
-                  (click)="onStripePay()"
-                  [disabled]="stripeProcessing() || !stripeClientSecret()"
-                  class="w-full bg-blue-600 dark:bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  @if (stripeProcessing()) {
-                    {{ translate('payment.stripe.processing') }}
-                  } @else {
-                    {{ translate('payment.stripe.pay') }}
-                  }
-                </button>
+                <div class="flex space-x-3">
+                  <button
+                    type="button"
+                    (click)="onCancelPayment()"
+                    class="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 
+                           rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 
+                           transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    {{ translate('payment.stripe.cancel') || 'Cancel' }}
+                  </button>
+                  
+                  <button
+                    type="button"
+                    (click)="onStripePay()"
+                    [disabled]="stripeProcessing() || !stripeClientSecret() || stripeTimeRemaining() === 0"
+                    class="flex-1 bg-blue-600 dark:bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg 
+                           hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed 
+                           transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @if (stripeProcessing()) {
+                      {{ translate('payment.stripe.processing') }}
+                    } @else {
+                      {{ translate('payment.stripe.pay') }}
+                    }
+                  </button>
+                </div>
+
+                <!-- Retry Button (shown on error) -->
+                @if (stripeError() && !stripeProcessing()) {
+                  <button
+                    type="button"
+                    (click)="onRetryPayment()"
+                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+                           transition-colors duration-200 text-sm">
+                    {{ translate('payment.stripe.retry.button') || 'Retry Payment' }}
+                  </button>
+                }
               </div>
             }
           </div>
@@ -241,6 +325,7 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
   private cryptoService = inject(CryptoPaymentService);
   private translationService = inject(TranslationService);
   localeService = inject(LocaleService);
+  private router = inject(Router);
 
   // Inputs
   flowState = input.required<PaymentFlowState>();
@@ -264,6 +349,11 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
   stripePaymentElementId = `stripe-payment-element-${Math.random().toString(36).substring(2, 11)}`;
   stripeProcessing = signal<boolean>(false);
   stripePaymentElement: StripePaymentElement | null = null;
+  stripePaymentIntentExpiresAt = signal<Date | null>(null);
+  stripeTimeRemaining = signal<number | null>(null);
+  stripeRequires3DS = signal<boolean>(false);
+  stripe3DSRedirectUrl = signal<string | null>(null);
+  private stripeCountdownInterval?: ReturnType<typeof setInterval>;
 
   cryptoLoading = signal<boolean>(false);
   cryptoError = signal<string | null>(null);
@@ -338,6 +428,9 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
     this.destroy$.next();
     this.destroy$.complete();
     
+    // Stop expiry countdown
+    this.stopExpiryCountdown();
+    
     // Cleanup crypto polling
     if (this.cryptoPollingInterval) {
       clearInterval(this.cryptoPollingInterval);
@@ -401,6 +494,13 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
       );
 
       this.stripeClientSecret.set(response.clientSecret);
+      
+      // Store expiry time if provided
+      if (response.expiresAt) {
+        this.stripePaymentIntentExpiresAt.set(new Date(response.expiresAt));
+        this.startExpiryCountdown();
+      }
+      
       this.paymentIntentCreated.emit(response);
 
       // Effect will automatically mount the element when stripeClientSecret is set
@@ -460,24 +560,55 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
   async onStripePay() {
     if (!this.stripeClientSecret() || this.stripeProcessing()) return;
 
+    // Check if payment intent is expired
+    if (this.stripeService.isPaymentIntentExpired(this.stripePaymentIntentExpiresAt() || undefined)) {
+      this.stripeError.set(this.translate('payment.stripe.intent.expired') || 'Payment session has expired. Please start over.');
+      this.stripeClientSecret.set(null);
+      this.stripePaymentIntentExpiresAt.set(null);
+      return;
+    }
+
     this.stripeProcessing.set(true);
     this.stripeError.set(null);
+    this.stripeRequires3DS.set(false);
 
     try {
       const result = await this.stripeService.confirmPayment(this.stripeClientSecret()!);
       
       if (result.success) {
-        // Extract payment intent ID from client secret (format: pi_xxx_secret_yyy)
-        const paymentIntentId = this.extractPaymentIntentId(this.stripeClientSecret()!);
+        // Check if 3DS is required
+        if (result.requiresAction && result.nextAction?.redirectToUrl) {
+          this.stripeRequires3DS.set(true);
+          this.stripe3DSRedirectUrl.set(result.nextAction.redirectToUrl);
+          
+          // Redirect to 3DS page
+          window.location.href = result.nextAction.redirectToUrl;
+          return;
+        }
+
+        // Payment succeeded without 3DS
+        const paymentIntentId = result.paymentIntentId || this.extractPaymentIntentId(this.stripeClientSecret()!);
         if (!paymentIntentId) {
           this.stripeError.set('Invalid payment intent ID. Please try again.');
           this.stripeProcessing.set(false);
           return;
         }
+        
+        // Stop countdown
+        this.stopExpiryCountdown();
+        
         this.stripePaymentConfirmed.emit({ paymentIntentId });
       } else {
         // Handle specific error types
-        const errorMsg = result.error || this.translate('payment.stripe.paymentFailed');
+        let errorMsg = result.error || this.translate('payment.stripe.paymentFailed');
+        
+        // Map specific error codes
+        if (result.error?.includes('insufficient') || result.error?.includes('funds')) {
+          errorMsg = this.translate('payment.stripe.errors.insufficientFunds') || 'Insufficient funds. Please use a different payment method.';
+        } else if (result.error?.includes('cancel')) {
+          errorMsg = this.translate('payment.stripe.errors.cancelled') || 'Payment was cancelled.';
+        }
+        
         this.stripeError.set(errorMsg);
       }
     } catch (err: any) {
@@ -490,6 +621,89 @@ export class PaymentTabsStepComponent implements OnInit, AfterViewInit, OnDestro
     } finally {
       this.stripeProcessing.set(false);
     }
+  }
+
+  startExpiryCountdown(): void {
+    this.stopExpiryCountdown();
+    
+    this.stripeCountdownInterval = setInterval(() => {
+      const expiresAt = this.stripePaymentIntentExpiresAt();
+      if (!expiresAt) {
+        this.stripeTimeRemaining.set(null);
+        this.stopExpiryCountdown();
+        return;
+      }
+
+      const remaining = this.stripeService.getTimeUntilExpiry(expiresAt);
+      this.stripeTimeRemaining.set(remaining);
+
+      if (remaining === null || remaining <= 0) {
+        this.stripeTimeRemaining.set(0);
+        this.stripeError.set(this.translate('payment.stripe.intent.expired') || 'Payment session has expired. Please start over.');
+        this.stopExpiryCountdown();
+      }
+    }, 1000);
+  }
+
+  stopExpiryCountdown(): void {
+    if (this.stripeCountdownInterval) {
+      clearInterval(this.stripeCountdownInterval);
+      this.stripeCountdownInterval = undefined;
+    }
+  }
+
+  formatTimeRemaining(ms: number | null): string {
+    if (ms === null || ms <= 0) {
+      return this.translate('payment.stripe.intent.expired') || 'Expired';
+    }
+
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  onCancelPayment(): void {
+    if (confirm(this.translate('payment.stripe.cancel.confirm') || 'Are you sure you want to cancel this payment?')) {
+      this.stripeClientSecret.set(null);
+      this.stripePaymentIntentExpiresAt.set(null);
+      this.stripeTimeRemaining.set(null);
+      this.stripeError.set(null);
+      this.stripeRequires3DS.set(false);
+      this.stripe3DSRedirectUrl.set(null);
+      this.stopExpiryCountdown();
+      
+      // Clean up payment element
+      if (this.stripePaymentElement && this.stripeContainer) {
+        const container = document.getElementById(this.stripePaymentElementId);
+        if (container) {
+          container.innerHTML = '';
+        }
+        this.stripePaymentElement = null;
+      }
+      
+      // Emit cancel event or navigate back
+      this.back.emit();
+    }
+  }
+
+  onRetryPayment(): void {
+    this.stripeError.set(null);
+    this.stripeClientSecret.set(null);
+    this.stripePaymentIntentExpiresAt.set(null);
+    this.stripeTimeRemaining.set(null);
+    this.stopExpiryCountdown();
+    
+    // Clean up payment element
+    if (this.stripePaymentElement && this.stripeContainer) {
+      const container = document.getElementById(this.stripePaymentElementId);
+      if (container) {
+        container.innerHTML = '';
+      }
+      this.stripePaymentElement = null;
+    }
+    
+    // Reinitialize Stripe
+    this.initializeStripe();
   }
 
   /**

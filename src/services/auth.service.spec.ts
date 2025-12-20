@@ -169,4 +169,149 @@ describe('AuthService', () => {
     const req = httpMock.expectOne('/api/v1/auth/login');
     req.error(new ErrorEvent('Network error'));
   });
+
+  // 2FA Tests
+  it('should setup two factor authentication', () => {
+    const mockResponse = {
+      success: true,
+      data: {
+        qrCodeUrl: 'data:image/png;base64,test',
+        manualEntryKey: 'ABCD1234EFGH5678',
+        backupCodes: ['123456', '234567']
+      }
+    };
+
+    service.setupTwoFactor().subscribe(response => {
+      expect(response.qrCodeUrl).toBeTruthy();
+      expect(response.manualEntryKey).toBeTruthy();
+    });
+
+    const req = httpMock.expectOne('/api/v1/auth/two-factor/setup');
+    expect(req.request.method).toBe('POST');
+    req.flush(mockResponse);
+  });
+
+  it('should verify two factor setup', () => {
+    const mockResponse = { success: true };
+
+    service.verifyTwoFactorSetup('123456').subscribe(response => {
+      expect(response.success).toBe(true);
+    });
+
+    const req = httpMock.expectOne('/api/v1/auth/two-factor/verify-setup');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ code: '123456' });
+    req.flush(mockResponse);
+  });
+
+  it('should get two factor status', () => {
+    const mockResponse = {
+      success: true,
+      data: { isEnabled: true, isVerified: true }
+    };
+
+    service.getTwoFactorStatus().subscribe(response => {
+      expect(response.isEnabled).toBe(true);
+    });
+
+    const req = httpMock.expectOne('/api/v1/auth/two-factor/status');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockResponse);
+  });
+
+  // Security Questions Tests
+  it('should get security questions', () => {
+    const mockResponse = {
+      success: true,
+      data: [
+        { id: 1, question: 'What is your mother\'s maiden name?' }
+      ]
+    };
+
+    service.getSecurityQuestions().subscribe(response => {
+      expect(response.length).toBeGreaterThan(0);
+    });
+
+    const req = httpMock.expectOne('/api/v1/auth/recovery/security-questions');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockResponse);
+  });
+
+  it('should setup security questions', () => {
+    const mockResponse = { success: true };
+    const questions = [
+      { questionId: 1, answer: 'Smith' },
+      { questionId: 2, answer: 'New York' }
+    ];
+
+    service.setupSecurityQuestions(questions).subscribe(response => {
+      expect(response.success).toBe(true);
+    });
+
+    const req = httpMock.expectOne('/api/v1/auth/recovery/security-questions');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ questions });
+    req.flush(mockResponse);
+  });
+
+  it('should verify security question', () => {
+    const mockResponse = {
+      success: true,
+      data: { nextQuestionId: 2 }
+    };
+
+    service.verifySecurityQuestion(1, 'Smith').subscribe(response => {
+      expect(response.nextQuestionId).toBe(2);
+    });
+
+    const req = httpMock.expectOne('/api/v1/auth/recovery/verify-question');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ questionId: 1, answer: 'Smith' });
+    req.flush(mockResponse);
+  });
+
+  // Account Deletion Tests
+  it('should request account deletion', () => {
+    const mockResponse = { success: true };
+
+    service.requestAccountDeletion('password123').subscribe(response => {
+      expect(response.success).toBe(true);
+    });
+
+    const req = httpMock.expectOne('/api/v1/auth/account/delete');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ password: 'password123' });
+    req.flush(mockResponse);
+  });
+
+  it('should cancel account deletion', () => {
+    const mockResponse = { success: true };
+
+    service.cancelAccountDeletion().subscribe(response => {
+      expect(response.success).toBe(true);
+    });
+
+    const req = httpMock.expectOne('/api/v1/auth/account/cancel-deletion');
+    expect(req.request.method).toBe('POST');
+    req.flush(mockResponse);
+  });
+
+  it('should get account deletion status', () => {
+    const mockResponse = {
+      success: true,
+      data: {
+        isPending: true,
+        requestedAt: new Date().toISOString(),
+        scheduledDeletionAt: new Date().toISOString()
+      }
+    };
+
+    service.getAccountDeletionStatus().subscribe(response => {
+      expect(response.isPending).toBe(true);
+    });
+
+    const req = httpMock.expectOne('/api/v1/auth/account/deletion-status');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockResponse);
+  });
 });

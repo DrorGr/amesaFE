@@ -29,14 +29,11 @@ import { FocusTrapService } from '../../services/focus-trap.service';
 import { TranslationService } from '../../services/translation.service';
 import { ProductService } from '../../services/product.service';
 import { PaymentStep, PaymentMethod, PaymentFlowState, QuantitySelectedEvent, PaymentMethodSelectedEvent, PaymentSuccessEvent } from '../../interfaces/payment-flow.interface';
-import { PaymentQuantityStepComponent } from '../payment-quantity-step/payment-quantity-step.component';
-import { PaymentReviewStepComponent } from '../payment-review-step/payment-review-step.component';
-import { PaymentTabsStepComponent } from '../payment-tabs-step/payment-tabs-step.component';
-import { PaymentProcessingStepComponent } from '../payment-processing-step/payment-processing-step.component';
-import { PaymentConfirmationStepComponent } from '../payment-confirmation-step/payment-confirmation-step.component';
+import { PaymentConsolidatedStepComponent } from '../payment-consolidated-step/payment-consolidated-step.component';
 import { PaymentIntentResponse } from '../../services/stripe.service';
 import { CoinbaseChargeResponse } from '../../services/crypto-payment.service';
 import { LotteryService } from '../../services/lottery.service';
+import { PaymentMethodPreferenceService } from '../../services/payment-method-preference.service';
 import { ToastService } from '../../services/toast.service';
 import { RealtimeService } from '../../services/realtime.service';
 import { PurchaseTicketRequest } from '../../models/house.model';
@@ -47,11 +44,7 @@ import { PAYMENT_PANEL_CONFIG } from '../../config/payment-panel.config';
   standalone: true,
   imports: [
     CommonModule,
-    PaymentQuantityStepComponent,
-    PaymentReviewStepComponent,
-    PaymentTabsStepComponent,
-    PaymentProcessingStepComponent,
-    PaymentConfirmationStepComponent
+    PaymentConsolidatedStepComponent
   ],
   template: `
     <!-- Screen reader announcement -->
@@ -113,44 +106,24 @@ import { PAYMENT_PANEL_CONFIG } from '../../config/payment-panel.config';
             
             <!-- Step Components -->
             @switch (currentStep()) {
-              @case (PaymentStep.Quantity) {
-                <app-payment-quantity-step
-                  [productId]="flowState().productId"
+              @case (PaymentStep.Consolidated) {
+                <app-payment-consolidated-step
+                  [flowState]="flowState()"
                   [initialQuantity]="flowState().quantity"
-                  (quantitySelected)="onQuantitySelected($event)"
-                  (errorOccurred)="handleError($event)">
-                </app-payment-quantity-step>
+                  (quantityChanged)="onQuantityChanged($event)"
+                  (errorOccurred)="handleError($event)"
+                  (paymentSuccess)="onConsolidatedPaymentSuccess($event)">
+                </app-payment-consolidated-step>
               }
-              @case (PaymentStep.Review) {
-                <app-payment-review-step
+              @default {
+                <!-- Fallback to consolidated step if unknown step -->
+                <app-payment-consolidated-step
                   [flowState]="flowState()"
-                  (back)="goToStep(PaymentStep.Quantity)"
-                  (continue)="goToStep(PaymentStep.Payment)">
-                </app-payment-review-step>
-              }
-              @case (PaymentStep.Payment) {
-                <app-payment-tabs-step
-                  [flowState]="flowState()"
-                  (paymentMethodSelected)="onPaymentMethodSelected($event)"
-                  (paymentIntentCreated)="onPaymentIntentCreated($event)"
-                  (cryptoChargeCreated)="onCryptoChargeCreated($event)"
-                  (cryptoPaymentConfirmed)="onCryptoPaymentConfirmed($event)"
-                  (stripePaymentConfirmed)="onStripePaymentConfirmed($event)"
-                  (back)="goToStep(PaymentStep.Review)">
-                </app-payment-tabs-step>
-              }
-              @case (PaymentStep.Processing) {
-                <app-payment-processing-step
-                  [paymentMethod]="flowState().paymentMethod"
-                  [customMessage]="flowState().error">
-                </app-payment-processing-step>
-              }
-              @case (PaymentStep.Confirmation) {
-                <app-payment-confirmation-step
-                  [successData]="successData()"
-                  [paymentMethod]="flowState().paymentMethod"
-                  (close)="handlePaymentSuccess()">
-                </app-payment-confirmation-step>
+                  [initialQuantity]="flowState().quantity"
+                  (quantityChanged)="onQuantityChanged($event)"
+                  (errorOccurred)="handleError($event)"
+                  (paymentSuccess)="onConsolidatedPaymentSuccess($event)">
+                </app-payment-consolidated-step>
               }
             }
           </div>
@@ -204,44 +177,24 @@ import { PAYMENT_PANEL_CONFIG } from '../../config/payment-panel.config';
             
             <!-- Step Components -->
             @switch (currentStep()) {
-              @case (PaymentStep.Quantity) {
-                <app-payment-quantity-step
-                  [productId]="flowState().productId"
+              @case (PaymentStep.Consolidated) {
+                <app-payment-consolidated-step
+                  [flowState]="flowState()"
                   [initialQuantity]="flowState().quantity"
-                  (quantitySelected)="onQuantitySelected($event)"
-                  (errorOccurred)="handleError($event)">
-                </app-payment-quantity-step>
+                  (quantityChanged)="onQuantityChanged($event)"
+                  (errorOccurred)="handleError($event)"
+                  (paymentSuccess)="onConsolidatedPaymentSuccess($event)">
+                </app-payment-consolidated-step>
               }
-              @case (PaymentStep.Review) {
-                <app-payment-review-step
+              @default {
+                <!-- Fallback to consolidated step if unknown step -->
+                <app-payment-consolidated-step
                   [flowState]="flowState()"
-                  (back)="goToStep(PaymentStep.Quantity)"
-                  (continue)="goToStep(PaymentStep.Payment)">
-                </app-payment-review-step>
-              }
-              @case (PaymentStep.Payment) {
-                <app-payment-tabs-step
-                  [flowState]="flowState()"
-                  (paymentMethodSelected)="onPaymentMethodSelected($event)"
-                  (paymentIntentCreated)="onPaymentIntentCreated($event)"
-                  (cryptoChargeCreated)="onCryptoChargeCreated($event)"
-                  (cryptoPaymentConfirmed)="onCryptoPaymentConfirmed($event)"
-                  (stripePaymentConfirmed)="onStripePaymentConfirmed($event)"
-                  (back)="goToStep(PaymentStep.Review)">
-                </app-payment-tabs-step>
-              }
-              @case (PaymentStep.Processing) {
-                <app-payment-processing-step
-                  [paymentMethod]="flowState().paymentMethod"
-                  [customMessage]="flowState().error">
-                </app-payment-processing-step>
-              }
-              @case (PaymentStep.Confirmation) {
-                <app-payment-confirmation-step
-                  [successData]="successData()"
-                  [paymentMethod]="flowState().paymentMethod"
-                  (close)="handlePaymentSuccess()">
-                </app-payment-confirmation-step>
+                  [initialQuantity]="flowState().quantity"
+                  (quantityChanged)="onQuantityChanged($event)"
+                  (errorOccurred)="handleError($event)"
+                  (paymentSuccess)="onConsolidatedPaymentSuccess($event)">
+                </app-payment-consolidated-step>
               }
             }
           </div>
@@ -297,6 +250,7 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
   private productService = inject(ProductService);
   private location = inject(Location);
   private lotteryService = inject(LotteryService);
+  private paymentMethodPreference = inject(PaymentMethodPreferenceService);
   private toastService = inject(ToastService);
   private realtimeService = inject(RealtimeService);
 
@@ -318,9 +272,9 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
 
   // State signals
   isOpen = signal(false);
-  currentStep = signal<PaymentStep>(PaymentStep.Quantity);
+  currentStep = signal<PaymentStep>(PaymentStep.Consolidated); // Use consolidated step by default
   flowState = signal<PaymentFlowState>({
-    step: PaymentStep.Quantity,
+    step: PaymentStep.Consolidated,
     quantity: 1,
     totalAmount: 0,
     calculatedPrice: 0,
@@ -589,10 +543,10 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
     }
 
     // Reset state
-    this.currentStep.set(PaymentStep.Quantity);
+    this.currentStep.set(PaymentStep.Consolidated);
     this.flowState.update(state => ({
       ...state,
-      step: PaymentStep.Quantity,
+      step: PaymentStep.Consolidated,
       quantity: 1,
       totalAmount: 0,
       calculatedPrice: 0,
@@ -677,6 +631,16 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
   }
 
   // Step Event Handlers
+  onQuantityChanged(event: QuantitySelectedEvent) {
+    // Handle quantity changes from consolidated component
+    this.flowState.update(state => ({
+      ...state,
+      quantity: event.quantity,
+      calculatedPrice: event.calculatedPrice,
+      totalAmount: event.calculatedPrice
+    }));
+  }
+
   async onQuantitySelected(event: QuantitySelectedEvent) {
     this.flowState.update(state => ({
       ...state,
@@ -815,6 +779,23 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
   }
 
 
+  async onConsolidatedPaymentSuccess(event: PaymentSuccessEvent) {
+    // Handle payment success from consolidated component
+    this.successData.set(event);
+    
+    // Update flow state
+    this.flowState.update(state => ({
+      ...state,
+      paymentIntentId: event.paymentIntentId,
+      chargeId: event.chargeId,
+      transactionId: event.transactionId,
+      isProcessing: false
+    }));
+    
+    // Note: Auto-close is handled by the consolidated component itself
+    // No need to duplicate the close logic here
+  }
+
   async handlePaymentSuccess() {
     const state = this.flowState();
     
@@ -823,11 +804,15 @@ export class ResponsivePaymentPanelComponent implements OnInit, AfterViewInit, O
       try {
         this.flowState.update(s => ({ ...s, isLoading: true }));
         
+        // Get default payment method or use fallback
+        const defaultMethod = await this.paymentMethodPreference.getDefaultPaymentMethod();
+        const paymentMethodId = defaultMethod?.id || '00000000-0000-0000-0000-000000000000';
+        
         const result = await firstValueFrom(
           this.lotteryService.purchaseTicket({
             houseId: state.houseId,
             quantity: state.quantity,
-            paymentMethodId: '00000000-0000-0000-0000-000000000000' // Default payment method (backend handles this)
+            paymentMethodId: paymentMethodId
           })
         );
         

@@ -13,6 +13,7 @@ import { ProductService } from '../../services/product.service';
 import { IdentityVerificationService } from '../../services/identity-verification.service';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 import { PaymentPanelService } from '../../services/payment-panel.service';
+import { PaymentMethodPreferenceService } from '../../services/payment-method-preference.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { environment } from '../../environments/environment';
 
@@ -819,6 +820,7 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private verificationService = inject(IdentityVerificationService, { optional: true });
   private paymentPanelService = inject(PaymentPanelService);
+  private paymentMethodPreference = inject(PaymentMethodPreferenceService);
   private togglingFavorites = signal<Set<string>>(new Set());
   private quickEntering = signal<Set<string>>(new Set());
   private purchasing = signal<Set<string>>(new Set());
@@ -1636,10 +1638,14 @@ export class HouseCarouselComponent implements OnInit, OnDestroy {
     this.quickEntering.update(set => new Set(set).add(houseId));
 
     try {
+      // Get default payment method or use fallback
+      const defaultMethod = await this.paymentMethodPreference.getDefaultPaymentMethod();
+      const paymentMethodId = defaultMethod?.id || '00000000-0000-0000-0000-000000000000';
+      
       const result = await firstValueFrom(this.lotteryService.quickEntryFromFavorite({
         houseId: houseId,
         quantity: 1,
-        paymentMethodId: 'default'
+        paymentMethodId: paymentMethodId
       }));
       
       if (result && result.ticketsPurchased > 0) {

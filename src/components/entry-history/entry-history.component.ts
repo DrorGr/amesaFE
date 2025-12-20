@@ -1,10 +1,11 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
+import { RealtimeService } from '../../services/realtime.service';
 import { EntryFilters, PagedEntryHistoryResponse } from '../../interfaces/lottery.interface';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { LocaleService } from '../../services/locale.service';
@@ -93,16 +94,16 @@ import { firstValueFrom } from 'rxjs';
             <div class="space-y-4 mb-6">
                 <div 
                 *ngFor="let entry of historyData()!.items" 
-                class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow cursor-pointer"
-                [routerLink]="['/houses', entry.houseId]"
-                (keydown.enter)="navigateToHouse(entry.houseId)"
-                (keydown.space)="navigateToHouse(entry.houseId); $event.preventDefault()"
-                [attr.aria-label]="translateWithParams('entries.viewEntryDetails', { house: entry.houseTitle })"
-                role="link"
-                tabindex="0"
-                class="focus:outline-none">
+                class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div class="flex-1">
+                  <div class="flex-1 cursor-pointer"
+                       [routerLink]="['/lottery/tickets', entry.id]"
+                       (keydown.enter)="navigateToTicket(entry.id)"
+                       (keydown.space)="navigateToTicket(entry.id); $event.preventDefault()"
+                       [attr.aria-label]="translateWithParams('entries.viewEntryDetails', { house: entry.houseTitle })"
+                       role="link"
+                       tabindex="0"
+                       class="focus:outline-none">
                     <div class="flex items-center gap-3 mb-2">
                       <h3 class="text-xl md:text-lg font-bold text-gray-900 dark:text-white">
                         {{ entry.houseTitle }}
@@ -197,11 +198,12 @@ import { firstValueFrom } from 'rxjs';
     }
   `]
 })
-export class EntryHistoryComponent implements OnInit {
+export class EntryHistoryComponent implements OnInit, OnDestroy {
   localeService = inject(LocaleService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
+  private realtimeService = inject(RealtimeService);
   private router = inject(Router);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
@@ -218,8 +220,70 @@ export class EntryHistoryComponent implements OnInit {
     endDate: undefined
   };
 
+  // Polling fallback
+  private pollingInterval: any = null;
+  private connectionCheckInterval: any = null;
+  private readonly POLLING_INTERVAL_MS = 60000; // 60 seconds
+  isPolling = signal(false);
+
   ngOnInit(): void {
     this.loadHistory();
+    this.setupPollingFallback();
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
+    if (this.connectionCheckInterval) {
+      clearInterval(this.connectionCheckInterval);
+    }
+  }
+
+  setupPollingFallback(): void {
+    // Check SignalR connection status
+    const isConnected = this.realtimeService.isConnectionReady();
+    
+    if (!isConnected) {
+      // SignalR not available, start polling
+      this.startPolling();
+    } else {
+      // SignalR is connected, listen for reconnection events
+      // If connection drops, start polling
+      this.connectionCheckInterval = setInterval(() => {
+        if (!this.realtimeService.isConnectionReady() && !this.pollingInterval) {
+          this.startPolling();
+        } else if (this.realtimeService.isConnectionReady() && this.pollingInterval) {
+          this.stopPolling();
+        }
+      }, 5000);
+    }
+  }
+
+  startPolling(): void {
+    if (this.pollingInterval) {
+      return; // Already polling
+    }
+    
+    this.isPolling.set(true);
+    this.pollingInterval = setInterval(() => {
+      this.loadHistory().catch(err => {
+        console.error('Polling error:', err);
+        // Stop polling on repeated errors
+        if (err.status === 401 || err.status === 403) {
+          this.stopPolling();
+        }
+      });
+    }, this.POLLING_INTERVAL_MS);
+    
+    console.log('Started polling fallback for entry history (60s interval)');
+  }
+
+  stopPolling(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+      this.isPolling.set(false);
+      console.log('Stopped polling fallback for entry history');
+    }
   }
 
   async loadHistory(): Promise<void> {
@@ -228,8 +292,28 @@ export class EntryHistoryComponent implements OnInit {
     }
 
     try {
-      const data = await firstValueFrom(this.lotteryService.getUserEntryHistory(this.filters));
-      if (data) {
+      // Convert filters to match getTicketHistory signature
+      const ticketFilters = {
+        status: this.filters.status,
+        houseId: this.filters.houseId,
+        fromDate: this.filters.startDate ? new Date(this.filters.startDate) : undefined,
+        toDate: this.filters.endDate ? new Date(this.filters.endDate) : undefined,
+        page: this.filters.page || 1,
+        limit: this.filters.limit || 20
+      };
+      
+      const response = await firstValueFrom(this.lotteryService.getTicketHistory(ticketFilters));
+      if (response) {
+        // Convert PagedResponse to PagedEntryHistoryResponse format
+        const data: PagedEntryHistoryResponse = {
+          items: response.items || [],
+          page: response.page || 1,
+          limit: response.limit || 20,
+          total: response.total || 0,
+          totalPages: response.totalPages || 1,
+          hasNext: (response.page || 1) < (response.totalPages || 1),
+          hasPrevious: (response.page || 1) > 1
+        };
         this.historyData.set(data);
       }
     } catch (error) {
@@ -298,8 +382,18 @@ export class EntryHistoryComponent implements OnInit {
     return this.translationService.translateWithParams(key, params);
   }
 
-  navigateToHouse(houseId: string): void {
+  navigateToHouse(event: Event, houseId: string): void {
+    event.stopPropagation();
     this.router.navigate(['/houses', houseId]);
+  }
+
+  navigateToTicket(ticketId: string): void {
+    this.router.navigate(['/lottery/tickets', ticketId]);
+  }
+
+  viewTicketDetails(event: Event, ticketId: string): void {
+    event.stopPropagation();
+    this.router.navigate(['/lottery/tickets', ticketId]);
   }
 }
 

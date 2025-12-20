@@ -1,9 +1,12 @@
 import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { Subscription, interval } from 'rxjs';
+import { HubConnectionState } from '@microsoft/signalr';
 import { LotteryResultsService, LotteryResult, LotteryResultsFilter, QRCodeValidation } from '../../services/lottery-results.service';
 import { TranslationService } from '../../services/translation.service';
+import { RealtimeService } from '../../services/realtime.service';
 import { Html5Qrcode } from 'html5-qrcode';
 
 @Component({
@@ -444,6 +447,8 @@ import { Html5Qrcode } from 'html5-qrcode';
 export class LotteryResultsPageComponent implements OnInit, OnDestroy {
   public lotteryResultsService = inject(LotteryResultsService);
   private translationService = inject(TranslationService);
+  private realtimeService = inject(RealtimeService);
+  private router = inject(Router);
 
   // Signals
   private _results = signal<LotteryResult[]>([]);
@@ -483,8 +488,14 @@ export class LotteryResultsPageComponent implements OnInit, OnDestroy {
 
   private filterTimeout: any;
 
+  // Polling fallback
+  private pollingSubscription: Subscription | null = null;
+  private realtimeConnectionStateSubscription: Subscription | null = null;
+  private readonly POLLING_INTERVAL_MS = 60000; // 60 seconds
+
   ngOnInit(): void {
     this.loadResults();
+    this.setupPollingFallback();
   }
 
   private loadResults(): void {
@@ -568,8 +579,11 @@ export class LotteryResultsPageComponent implements OnInit, OnDestroy {
 
   viewResultDetails(result: LotteryResult): void {
     // Navigate to detailed result view
-    console.log('Viewing result details:', result);
-    // TODO: Implement navigation to detailed view
+    if (result?.id) {
+      this.router.navigate(['/lottery-results', result.id]);
+    } else {
+      console.error('Cannot navigate: result ID is missing', result);
+    }
   }
 
   showQRCode(result: LotteryResult, event: Event): void {
@@ -674,7 +688,22 @@ export class LotteryResultsPageComponent implements OnInit, OnDestroy {
     });
   }
 
+  setupPollingFallback(): void {
+    // Check SignalR connection status and set up polling fallback if needed
+    // This can be implemented to poll for updates when SignalR is not available
+    // Currently relying on SignalR for real-time updates
+  }
+
+  stopPolling(): void {
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+      this.pollingSubscription = null;
+    }
+  }
+
   ngOnDestroy(): void {
+    this.stopPolling();
+    this.realtimeConnectionStateSubscription?.unsubscribe();
     this.stopQRScanner();
   }
 }

@@ -209,14 +209,33 @@ export class WebPushService {
 
   async handleNotificationClick(notification: Notification): Promise<void> {
     notification.close();
-    // TODO: Navigate to relevant page based on notification data
     window.focus();
+    
+    // Navigate to relevant page based on notification data
+    if (notification.data) {
+      const data = notification.data as any;
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.route) {
+        // Use Angular router if available (injected via service)
+        // For now, use window.location for navigation
+        const baseUrl = window.location.origin;
+        window.location.href = `${baseUrl}${data.route}`;
+      }
+    }
   }
 
   private async getVapidPublicKey(): Promise<string> {
-    // TODO: Fetch from backend API
-    // For now, return placeholder - should be fetched from /api/v1/notifications/web-push/vapid-key
-    return '';
+    try {
+      const response = await this.apiService.get<string>('notifications/web-push/vapid-key').toPromise();
+      if (response?.success && response.data) {
+        return response.data;
+      }
+      throw new Error('Failed to fetch VAPID public key');
+    } catch (error) {
+      console.error('Error fetching VAPID public key:', error);
+      throw new Error('VAPID public key not available. Web push notifications cannot be enabled.');
+    }
   }
 
   private urlBase64ToUint8Array(base64String: string): Uint8Array {

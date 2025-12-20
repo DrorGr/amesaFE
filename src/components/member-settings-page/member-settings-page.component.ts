@@ -8,6 +8,9 @@ import { MemberSettingsService } from '../../services/member-settings.service';
 import { NotificationPreferencesComponent } from '../notification-preferences/notification-preferences.component';
 import { TelegramLinkComponent } from '../telegram-link/telegram-link.component';
 import { WebPushPermissionComponent } from '../web-push-permission/web-push-permission.component';
+import { TwoFactorManageComponent } from '../two-factor-manage/two-factor-manage.component';
+import { SecurityQuestionsSetupComponent } from '../security-questions-setup/security-questions-setup.component';
+import { AccountDeletionComponent } from '../account-deletion/account-deletion.component';
 import { Subject, takeUntil } from 'rxjs';
 
 interface UserProfile {
@@ -52,7 +55,10 @@ interface StarReward {
     ReactiveFormsModule,
     NotificationPreferencesComponent,
     TelegramLinkComponent,
-    WebPushPermissionComponent
+    WebPushPermissionComponent,
+    TwoFactorManageComponent,
+    SecurityQuestionsSetupComponent,
+    AccountDeletionComponent
   ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
@@ -541,6 +547,35 @@ interface StarReward {
               </div>
             }
 
+            <!-- Security Tab -->
+            @if (activeTab() === 'security') {
+              <div class="space-y-6">
+                <!-- Two-Factor Authentication -->
+                <div>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    {{ translate('member.twoFactorAuthentication') }}
+                  </h4>
+                  <app-two-factor-manage></app-two-factor-manage>
+                </div>
+
+                <!-- Security Questions -->
+                <div>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    {{ translate('member.securityQuestions') }}
+                  </h4>
+                  <app-security-questions-setup></app-security-questions-setup>
+                </div>
+
+                <!-- Account Deletion -->
+                <div>
+                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    {{ translate('member.accountDeletion') }}
+                  </h4>
+                  <app-account-deletion></app-account-deletion>
+                </div>
+              </div>
+            }
+
             <!-- Notifications Tab -->
             @if (activeTab() === 'notifications') {
               <div class="space-y-6">
@@ -676,6 +711,7 @@ export class MemberSettingsPageComponent implements OnInit, OnDestroy {
     { id: 'general', title: 'member.generalInfo', icon: '👤' },
     { id: 'promotions', title: 'member.promotions', icon: '🎁' },
     { id: 'settings', title: 'member.settings', icon: '⚙️' },
+    { id: 'security', title: 'member.security', icon: '🔒' },
     { id: 'notifications', title: 'member.notificationsSettings', icon: '🔔' },
     { id: 'stars', title: 'member.stars', icon: '⭐' }
   ];

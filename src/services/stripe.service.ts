@@ -22,7 +22,33 @@ export interface PaymentIntentResponse {
   amount: number;
   currency: string;
   requiresAction: boolean;
-  nextAction?: string;
+  nextAction?: {
+    type: string;
+    redirectToUrl?: string;
+    useStripeSdk?: boolean;
+  };
+  expiresAt?: Date;
+}
+
+export interface PaymentIntentStatus {
+  id: string;
+  status: string;
+  clientSecret: string;
+  amount: number;
+  currency: string;
+  requiresAction: boolean;
+  nextAction?: {
+    type: string;
+    redirectToUrl?: string;
+    useStripeSdk?: boolean;
+  };
+  expiresAt?: Date;
+}
+
+export interface ConfirmPaymentIntentRequest {
+  paymentIntentId: string;
+  paymentMethodId?: string;
+  returnUrl?: string;
 }
 
 @Injectable({
@@ -48,8 +74,9 @@ export class StripeService {
     try {
       const response = await firstValueFrom(this.apiService.get<{ publishableKey: string }>('payments/stripe/publishable-key'));
       if (response?.success && response.data?.publishableKey) {
-        this.publishableKey = response.data.publishableKey;
-        return this.publishableKey;
+        const key = response.data.publishableKey;
+        this.publishableKey = key;
+        return key;
       }
       throw new Error('Failed to load Stripe publishable key from backend');
     } catch (error) {
@@ -136,7 +163,37 @@ export class StripeService {
     );
   }
 
-  async confirmPayment(clientSecret: string): Promise<{ success: boolean; error?: string }> {
+  confirmPaymentIntent(request: ConfirmPaymentIntentRequest): Observable<PaymentIntentResponse> {
+    return this.apiService.post<PaymentIntentResponse>('payments/stripe/confirm-payment-intent', request).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        if (response.error?.code === 'RATE_LIMIT_EXCEEDED') {
+          const err: any = new Error(response.error.message || 'Too many payment requests');
+          err.status = 429;
+          err.error = response.error;
+          throw err;
+        }
+        throw new Error(response.error?.message || 'Failed to confirm payment intent');
+      }),
+      catchError(error => {
+        if (error.status === 429 || error.error?.code === 'RATE_LIMIT_EXCEEDED') {
+          return throwError(() => error);
+        }
+        console.error('Error confirming payment intent:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  async confirmPayment(clientSecret: string): Promise<{ 
+    success: boolean; 
+    error?: string; 
+    requiresAction?: boolean;
+    nextAction?: { type: string; redirectToUrl?: string };
+    paymentIntentId?: string;
+  }> {
     const stripe = await this.stripe;
     if (!stripe) {
       return { success: false, error: 'Stripe failed to load' };
@@ -157,26 +214,88 @@ export class StripeService {
       }
 
       // Now confirm the payment after successful submission
-      const { error } = await stripe.confirmPayment({
+      // HIGH-5: Use current URL as return URL for 3DS redirects
+      const returnUrl = window.location.href.split('?')[0]; // Remove query params
+      const result = await stripe.confirmPayment({
         elements: this.elements,
         clientSecret,
         confirmParams: {
-          return_url: `${window.location.origin}/payment/success`
+          return_url: returnUrl
         },
         redirect: 'if_required' // Only redirect if 3D Secure or similar is required
       });
 
-      if (error) {
-        console.error('Stripe confirmPayment error:', error);
-        return { success: false, error: error.message || 'Payment failed' };
+      if (result.error) {
+        console.error('Stripe confirmPayment error:', result.error);
+        
+        // Handle specific error types
+        if (result.error.type === 'card_error' || result.error.type === 'validation_error') {
+          return { 
+            success: false, 
+            error: result.error.message || 'Payment failed. Please check your payment details.' 
+          };
+        }
+        
+        return { success: false, error: result.error.message || 'Payment failed' };
       }
 
-      return { success: true };
+      // Check if payment requires additional action (3DS)
+      if (result.paymentIntent?.status === 'requires_action') {
+        return {
+          success: true,
+          requiresAction: true,
+          nextAction: {
+            type: 'redirect',
+            redirectToUrl: result.paymentIntent.next_action?.redirect_to_url?.url || undefined
+          },
+          paymentIntentId: result.paymentIntent.id
+        };
+      }
+
+      // Payment succeeded
+      return { 
+        success: true,
+        paymentIntentId: result.paymentIntent?.id
+      };
     } catch (error: unknown) {
-      const err = error as { message?: string };
+      const err = error as { message?: string; type?: string };
       console.error('Error confirming payment:', error);
+      
+      // Handle specific error types
+      if (err.type === 'StripeCardError') {
+        return { success: false, error: err.message || 'Card payment failed. Please check your card details.' };
+      }
+      
       return { success: false, error: err.message || 'Payment failed. Please ensure the payment form is fully loaded.' };
     }
+  }
+
+  getPaymentIntentStatus(paymentIntentId: string): Observable<PaymentIntentStatus> {
+    return this.apiService.get<PaymentIntentStatus>(`payments/stripe/payment-intent/${paymentIntentId}`).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to get payment intent status');
+      }),
+      catchError(error => {
+        console.error('Error getting payment intent status:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  isPaymentIntentExpired(expiresAt?: Date): boolean {
+    if (!expiresAt) return false;
+    return new Date() > new Date(expiresAt);
+  }
+
+  getTimeUntilExpiry(expiresAt?: Date): number | null {
+    if (!expiresAt) return null;
+    const now = new Date().getTime();
+    const expiry = new Date(expiresAt).getTime();
+    const remaining = expiry - now;
+    return remaining > 0 ? remaining : 0;
   }
 
   async isGooglePayAvailable(): Promise<boolean> {

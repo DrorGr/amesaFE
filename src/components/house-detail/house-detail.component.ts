@@ -10,8 +10,10 @@ import { ErrorMessageService } from '../../services/error-message.service';
 import { ToastService } from '../../services/toast.service';
 import { HeartAnimationService } from '../../services/heart-animation.service';
 import { LocaleService } from '../../services/locale.service';
+import { PaymentService, PaymentMethodDto } from '../../services/payment.service';
 import { ParticipantStatsComponent } from '../participant-stats/participant-stats.component';
 import { LiveInventoryComponent } from '../live-inventory/live-inventory.component';
+import { PaymentMethodSelectionModalComponent, PaymentMethodOption } from '../payment-method-selection-modal/payment-method-selection-modal.component';
 import { CanEnterLotteryResponse } from '../../interfaces/watchlist.interface';
 import { QuickEntryRequest } from '../../interfaces/lottery.interface';
 import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
@@ -24,7 +26,8 @@ import { Subject, of } from 'rxjs';
     CommonModule,
     RouterModule,
     ParticipantStatsComponent,
-    LiveInventoryComponent
+    LiveInventoryComponent,
+    PaymentMethodSelectionModalComponent
   ],
   styles: [`
     /* Favorite Button Animations - Matching promotions glow */
@@ -594,6 +597,14 @@ import { Subject, of } from 'rxjs';
           </div>
         </div>
       </div>
+
+      <!-- Payment Method Selection Modal -->
+      <app-payment-method-selection-modal
+        *ngIf="showPaymentMethodModal()"
+        [paymentMethods]="paymentMethods()"
+        (methodSelected)="onPaymentMethodSelected($event)"
+        (closed)="closePaymentMethodModal()">
+      </app-payment-method-selection-modal>
     </div>
   `
 })
@@ -607,6 +618,7 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
   private errorMessageService = inject(ErrorMessageService);
   private toastService = inject(ToastService);
   private heartAnimationService = inject(HeartAnimationService);
+  private paymentService = inject(PaymentService);
 
   house = signal<HouseDto | null>(null);
   loading = signal<boolean>(true);
@@ -626,6 +638,12 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
   
   // Image gallery state
   currentImageIndex = signal<number>(0);
+  
+  // Payment method selection modal state
+  showPaymentMethodModal = signal<boolean>(false);
+  paymentMethods = signal<PaymentMethodOption[]>([]);
+  selectedPaymentMethodId = signal<string | null>(null);
+  loadingPaymentMethods = signal<boolean>(false);
   
   private vibrationInterval?: number;
   
@@ -867,17 +885,91 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // For now, use quick entry with default 1 ticket
-    // TODO: In the future, this should open a modal to select ticket count and payment method
+    // Open payment method selection modal
+    this.openPaymentMethodModal();
+  }
+
+  /**
+   * Opens the payment method selection modal
+   */
+  openPaymentMethodModal(): void {
+    this.loadingPaymentMethods.set(true);
+    this.showPaymentMethodModal.set(true);
+    
+    // Fetch available payment methods
+    this.paymentService.getPaymentMethods().subscribe({
+      next: (methods: PaymentMethodDto[]) => {
+        // Convert PaymentMethodDto[] to PaymentMethodOption[]
+        const options: PaymentMethodOption[] = methods.map(method => ({
+          id: method.id,
+          name: this.getPaymentMethodName(method),
+          description: this.getPaymentMethodDescription(method),
+          icon: this.getPaymentMethodIcon(method),
+          enabled: method.isActive
+        }));
+        
+        // If no payment methods, add default Stripe option
+        if (options.length === 0) {
+          options.push({
+            id: 'stripe-new',
+            name: this.translate('payment.methods.stripe') || 'Credit/Debit Card',
+            description: this.translate('payment.methods.stripeDescription') || 'Pay with credit or debit card via Stripe',
+            icon: '<svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.532-5.851-6.594-7.305h.003z"/></svg>',
+            enabled: true
+          });
+        }
+        
+        this.paymentMethods.set(options);
+        this.loadingPaymentMethods.set(false);
+      },
+      error: (error) => {
+        console.error('Error fetching payment methods:', error);
+        this.loadingPaymentMethods.set(false);
+        // Show default Stripe option on error
+        this.paymentMethods.set([{
+          id: 'stripe-new',
+          name: this.translate('payment.methods.stripe') || 'Credit/Debit Card',
+          description: this.translate('payment.methods.stripeDescription') || 'Pay with credit or debit card via Stripe',
+          icon: '<svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.532-5.851-6.594-7.305h.003z"/></svg>',
+          enabled: true
+        }]);
+      }
+    });
+  }
+
+  /**
+   * Closes the payment method selection modal
+   */
+  closePaymentMethodModal(): void {
+    this.showPaymentMethodModal.set(false);
+    this.selectedPaymentMethodId.set(null);
+  }
+
+  /**
+   * Handles payment method selection from modal
+   */
+  onPaymentMethodSelected(methodId: string): void {
+    this.selectedPaymentMethodId.set(methodId);
+    this.proceedWithLotteryEntry(methodId);
+  }
+
+  /**
+   * Proceeds with lottery entry using selected payment method
+   */
+  private proceedWithLotteryEntry(paymentMethodId: string): void {
+    const h = this.house();
+    if (!h) return;
+
     const quickEntryRequest: QuickEntryRequest = {
       houseId: h.id,
-      quantity: 1, // Default to 1 ticket
-      paymentMethodId: '', // TODO: Get from user preferences or payment setup
+      quantity: 1, // Default to 1 ticket (can be enhanced later to allow quantity selection)
+      paymentMethodId: paymentMethodId === 'stripe-new' ? '' : paymentMethodId, // Empty string for new Stripe payment
       promotionCode: this.promotionCode().trim() || undefined // Include promotion code if provided
     };
 
     // Show loading state
     this.enteringLottery.set(true);
+    this.closePaymentMethodModal();
 
     this.lotteryService.quickEntryFromFavorite(quickEntryRequest).subscribe({
       next: (response) => {
@@ -1044,6 +1136,45 @@ export class HouseDetailComponent implements OnInit, OnDestroy {
       event.stopPropagation();
       this.goBack();
     }
+  }
+
+  /**
+   * Helper method to get payment method name
+   */
+  private getPaymentMethodName(method: PaymentMethodDto): string {
+    if (method.cardBrand && method.cardLastFour) {
+      return `${method.cardBrand} •••• ${method.cardLastFour}`;
+    }
+    if (method.type === 'card') {
+      return this.translate('payment.methods.card') || 'Credit/Debit Card';
+    }
+    return method.type.charAt(0).toUpperCase() + method.type.slice(1);
+  }
+
+  /**
+   * Helper method to get payment method description
+   */
+  private getPaymentMethodDescription(method: PaymentMethodDto): string {
+    if (method.cardBrand && method.cardExpMonth && method.cardExpYear) {
+      const expDate = `${method.cardExpMonth.toString().padStart(2, '0')}/${method.cardExpYear}`;
+      return `${this.translate('payment.methods.expires') || 'Expires'}: ${expDate}`;
+    }
+    if (method.isDefault) {
+      return this.translate('payment.methods.default') || 'Default payment method';
+    }
+    return this.translate('payment.methods.stripeDescription') || 'Pay with credit or debit card via Stripe';
+  }
+
+  /**
+   * Helper method to get payment method icon
+   */
+  private getPaymentMethodIcon(method: PaymentMethodDto): string {
+    // Stripe icon for card payments
+    if (method.type === 'card' || method.provider === 'stripe') {
+      return '<svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.532-5.851-6.594-7.305h.003z"/></svg>';
+    }
+    // Default credit card icon
+    return '<svg class="w-8 h-8 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>';
   }
 
   onImageError(event: Event) {

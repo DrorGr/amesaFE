@@ -1,6 +1,8 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, throwError, Subscription, of, Subject } from 'rxjs';
 import { map, catchError, tap, switchMap, takeUntil, take, mergeMap, finalize, filter } from 'rxjs/operators';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { environment } from '../environments/environment';
 import { ApiService, PagedResponse } from './api.service';
 import { RetryService } from './retry.service';
 import { 
@@ -12,18 +14,24 @@ import {
 import {
   UserLotteryData,
   UserLotteryStats,
+  UserGamificationDto,
   HouseRecommendation,
   EntryFilters,
   PagedEntryHistoryResponse,
   QuickEntryRequest,
   QuickEntryResponse,
-  FavoriteHouseResponse
+  FavoriteHouseResponse,
+  BulkFavoritesRequest,
+  BulkFavoritesResponse,
+  FavoritesAnalyticsDto
 } from '../interfaces/lottery.interface';
 import {
   LotteryParticipantStats,
   CanEnterLotteryResponse
 } from '../interfaces/watchlist.interface';
 import { RealtimeService, FavoriteUpdateEvent, EntryStatusChangeEvent, DrawReminderEvent, RecommendationEvent, InventoryUpdateEvent, CountdownUpdateEvent } from './realtime.service';
+import { ToastService } from './toast.service';
+import { TranslationService } from './translation.service';
 
 @Injectable({
   providedIn: 'root'
@@ -37,6 +45,7 @@ export class LotteryService {
   private activeEntries = signal<LotteryTicketDto[]>([]);
   private userLotteryStats = signal<UserLotteryStats | null>(null);
   private recommendations = signal<HouseRecommendation[]>([]);
+  private gamificationData = signal<UserGamificationDto | null>(null);
   
   // Debouncing for favorites operations (prevent rapid clicks/exploits)
   // Uses pending request tracking to prevent duplicate requests for the same house
@@ -65,6 +74,8 @@ export class LotteryService {
   private readonly ACTIVE_ENTRIES_LOCALSTORAGE_TTL = 15 * 60 * 1000; // 15 minutes
   private readonly USER_STATS_LOCALSTORAGE_KEY = 'amesa_user_stats_cache';
   private readonly USER_STATS_LOCALSTORAGE_TTL = 15 * 60 * 1000; // 15 minutes
+  private readonly GAMIFICATION_LOCALSTORAGE_KEY = 'amesa_gamification_cache';
+  private readonly GAMIFICATION_LOCALSTORAGE_TTL = 15 * 60 * 1000; // 15 minutes
   
   // Guard to prevent duplicate house loading requests
   private isLoadingHouses = false;
@@ -72,9 +83,13 @@ export class LotteryService {
   private realtimeService = inject(RealtimeService, { optional: true });
   private subscriptions = new Subscription();
   private retryService = inject(RetryService);
+  private toastService = inject(ToastService);
+  private translationService = inject(TranslationService);
   
   // Cleanup subject for managing subscriptions in root service
   private cleanup$ = new Subject<void>();
+  
+  private http = inject(HttpClient);
   
   constructor(private apiService: ApiService) {
     // REMOVED: Houses loading from constructor
@@ -137,6 +152,10 @@ export class LotteryService {
         // Invalidate cache
         this.safeInvalidateCache('favorites');
         this.safeInvalidateCache(`house:${event.houseId}`);
+        // Invalidate gamification cache when favorite is added (points may have been awarded)
+        if (event.updateType === 'added') {
+          this.safeInvalidateCache('gamificationData');
+        }
       });
     this.subscriptions.add(favoriteSub);
     
@@ -155,6 +174,10 @@ export class LotteryService {
         // CRITICAL: Invalidate cache immediately (real-time data changed)
         this.safeInvalidateCache('activeEntries');
         this.safeInvalidateCache('userStats');
+        // Invalidate gamification cache when entry status changes (points may have been awarded on win)
+        if (event.newStatus === 'winner') {
+          this.safeInvalidateCache('gamificationData');
+        }
         
         // If entry won or refunded, also invalidate houses list
         if (event.newStatus === 'winner' || event.newStatus === 'refunded') {
@@ -167,8 +190,10 @@ export class LotteryService {
     const drawReminderSub = this.realtimeService.drawReminders$
       .pipe(takeUntil(this.cleanup$))
       .subscribe((event: DrawReminderEvent) => {
-        // TODO: Show notification/toast for draw reminder
         console.log('Draw reminder:', event);
+        const message = this.translationService.translate('lottery.drawReminder.message') || 
+          `Draw for ${event.houseTitle} is starting soon!`;
+        this.toastService.info(message, 5000);
       });
     this.subscriptions.add(drawReminderSub);
     
@@ -176,8 +201,10 @@ export class LotteryService {
     const recommendationSub = this.realtimeService.recommendations$
       .pipe(
         switchMap((event: RecommendationEvent) => {
-          // TODO: Show notification/toast for new recommendation
           console.log('New recommendation:', event);
+          const message = this.translationService.translate('lottery.recommendation.new') || 
+            `New recommendation: ${event.houseTitle}`;
+          this.toastService.info(message, 4000);
           // Refresh recommendations (switchMap automatically unsubscribes previous requests)
           return this.getRecommendations(10);
         }),
@@ -556,7 +583,7 @@ export class LotteryService {
   
   /**
    * Invalidate specific cache or all caches
-   * @param cacheKey - Cache key to invalidate ('favorites', 'activeEntries', 'userStats', 'housesList', 'house:{id}', or '*' for all)
+   * @param cacheKey - Cache key to invalidate ('favorites', 'activeEntries', 'userStats', 'gamificationData', 'housesList', 'house:{id}', or '*' for all)
    */
   private invalidateCache(cacheKey: string): void {
     // Handle wildcard - clear all caches
@@ -581,6 +608,10 @@ export class LotteryService {
         if (typeof localStorage !== 'undefined') {
           localStorage.removeItem(this.USER_STATS_LOCALSTORAGE_KEY);
         }
+        break;
+      case 'gamificationData':
+        // Clear gamification signal (no localStorage cache for gamification, only signal)
+        this.gamificationData.set(null);
         break;
       case 'housesList':
         this.clearHousesCache();
@@ -632,6 +663,7 @@ export class LotteryService {
       localStorage.removeItem(this.USER_STATS_LOCALSTORAGE_KEY);
     }
     // Signals are already cleared by clearLotteryData()
+    // Note: gamificationData is cleared in clearLotteryData()
   }
   
   /**
@@ -747,6 +779,7 @@ export class LotteryService {
           // Invalidate caches (critical data changed)
           this.safeInvalidateCache('activeEntries');
           this.safeInvalidateCache('userStats');
+          this.safeInvalidateCache('gamificationData'); // Points may have been awarded
           this.safeInvalidateCache('housesList');
           this.safeInvalidateCache(`house:${purchaseRequest.houseId}`);
           
@@ -773,21 +806,149 @@ export class LotteryService {
   }
 
   // Get user's tickets
-  // NOTE: Backend endpoint not yet available - tickets are accessed via houses/{id}/tickets
-  // This method is kept for future implementation when user tickets endpoint is added
+  // Endpoint: GET /api/v1/tickets
   getUserTicketsFromApi(): Observable<LotteryTicketDto[]> {
-    // TODO: Implement when backend provides /api/v1/tickets or /api/v1/users/me/tickets endpoint
-    console.warn('getUserTicketsFromApi: Endpoint not yet available in backend');
-    return throwError(() => new Error('User tickets endpoint not yet implemented in backend'));
+    return this.apiService.get<LotteryTicketDto[]>('tickets').pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to fetch user tickets');
+      }),
+      catchError(error => {
+        console.error('getUserTicketsFromApi error:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   // Get lottery draws
-  // NOTE: Backend endpoint not yet available
-  // This method is kept for future implementation when draws endpoint is added
-  getLotteryDraws(): Observable<any[]> {
-    // TODO: Implement when backend provides /api/v1/draws endpoint
-    console.warn('getLotteryDraws: Endpoint not yet available in backend');
-    return throwError(() => new Error('Lottery draws endpoint not yet implemented in backend'));
+  // Endpoints: GET /api/v1/draws, /api/v1/draws/{id}, /api/v1/draws/{id}/participants
+  getLotteryDraws(params?: any): Observable<any[]> {
+    return this.apiService.get<any[]>('draws', params).pipe(
+      map(response => response.data || []),
+      catchError(error => {
+        console.error('getLotteryDraws error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getTicketById(id: string): Observable<LotteryTicketDto> {
+    return this.apiService.get<LotteryTicketDto>(`tickets/${id}`).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch ticket');
+      }),
+      catchError(error => {
+        console.error('Error fetching ticket:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getActiveTickets(filters?: { status?: string; houseId?: string }): Observable<LotteryTicketDto[]> {
+    const params = filters || {};
+    return this.apiService.get<LotteryTicketDto[]>('tickets/active', params).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          this.userTickets.set(response.data);
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch active tickets');
+      }),
+      catchError(error => {
+        console.error('Error fetching active tickets:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getTicketHistory(filters?: { 
+    status?: string; 
+    houseId?: string; 
+    fromDate?: Date; 
+    toDate?: Date;
+    page?: number;
+    limit?: number;
+  }): Observable<PagedResponse<LotteryTicketDto>> {
+    const params: any = {};
+    if (filters?.status) params.status = filters.status;
+    if (filters?.houseId) params.houseId = filters.houseId;
+    if (filters?.fromDate) params.fromDate = filters.fromDate.toISOString();
+    if (filters?.toDate) params.toDate = filters.toDate.toISOString();
+    if (filters?.page) params.page = filters.page;
+    if (filters?.limit) params.limit = filters.limit;
+
+    return this.apiService.get<PagedResponse<LotteryTicketDto>>('tickets/history', params).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch ticket history');
+      }),
+      catchError(error => {
+        console.error('Error fetching ticket history:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getDrawById(id: string): Observable<any> {
+    return this.apiService.get<any>(`draws/${id}`).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch draw');
+      }),
+      catchError(error => {
+        console.error('Error fetching draw:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getDrawParticipants(id: string): Observable<any[]> {
+    return this.apiService.get<any[]>(`draws/${id}/participants`).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch draw participants');
+      }),
+      catchError(error => {
+        console.error('Error fetching draw participants:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getLotteryDrawById(drawId: string): Observable<any> {
+    return this.apiService.get<any>(`draws/${drawId}`).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to fetch draw details');
+      }),
+      catchError(error => {
+        console.error('getLotteryDrawById error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getLotteryDrawParticipants(drawId: string): Observable<any[]> {
+    return this.apiService.get<any[]>(`draws/${drawId}/participants`).pipe(
+      map(response => response.data || []),
+      catchError(error => {
+        console.error('getLotteryDrawParticipants error:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   // Legacy methods for backward compatibility
@@ -853,7 +1014,7 @@ export class LotteryService {
       take(1) // Auto-unsubscribe after first emission to prevent memory leaks
     ).subscribe({
       next: (pagedResponse) => {
-        const houses = pagedResponse.items.map(houseDto => this.convertHouseDtoToHouse(houseDto));
+        const houses = pagedResponse.items.map((houseDto: HouseDto) => this.convertHouseDtoToHouse(houseDto));
         this.houses.set(houses);
       },
       error: (error) => {
@@ -872,54 +1033,46 @@ export class LotteryService {
    * Get user's favorite houses
    * Endpoint: GET /api/v1/houses/favorites
    */
-  getFavoriteHouses(): Observable<HouseDto[]> {
-    const now = Date.now();
+  /**
+   * Get user's favorite houses with pagination and sorting
+   * @param options Pagination and sorting options
+   * @returns Observable of paginated favorite houses
+   */
+  getFavoriteHouses(options?: {
+    page?: number;
+    limit?: number;
+    sortBy?: 'dateadded' | 'price' | 'location' | 'title';
+    sortOrder?: 'asc' | 'desc';
+  }): Observable<PagedResponse<HouseDto>> {
+    const params: any = {};
+    if (options?.page) params.page = options.page;
+    if (options?.limit) params.limit = options.limit;
+    if (options?.sortBy) params.sortBy = options.sortBy;
+    if (options?.sortOrder) params.sortOrder = options.sortOrder;
     
-    // Check localStorage cache first
-    if (typeof localStorage !== 'undefined') {
-      try {
-        const cached = localStorage.getItem(this.FAVORITES_LOCALSTORAGE_KEY);
-        if (cached) {
-          const cacheData = JSON.parse(cached);
-          if (cacheData.timestamp && (now - cacheData.timestamp) < this.FAVORITES_LOCALSTORAGE_TTL) {
-            // Use cached data - update signals only if changed
-            const favoriteIds = cacheData.favoriteIds || cacheData.data?.map((h: HouseDto) => h.id) || [];
-            const currentIds = this.favoriteHouseIds();
-            
-            // Only update signal if IDs actually changed (prevents infinite loops)
-            const currentIdsStr = currentIds.sort().join(',');
-            const newIdsStr = favoriteIds.sort().join(',');
-            if (currentIdsStr !== newIdsStr) {
-              this.favoriteHouseIds.set(favoriteIds);
-            }
-            return of(cacheData.data || []);
-          }
-        }
-      } catch (e) {
-        console.warn('Failed to load favorites from localStorage cache:', e);
-      }
-    }
-    
-    // Load from API
-    return this.apiService.get<HouseDto[]>('houses/favorites').pipe(
+    // Load from API with pagination
+    return this.apiService.get<PagedResponse<HouseDto>>('houses/favorites', params).pipe(
       map(response => {
         if (response.success && response.data) {
-          // Update favorite IDs signal only if they actually changed
-          const favoriteIds = response.data.map(house => house.id);
+          // Update favorite IDs signal from all items (for backward compatibility)
+          const favoriteIds = response.data.items.map((house: HouseDto) => house.id);
           const currentIds = this.favoriteHouseIds();
           
           // Only update signal if IDs actually changed (prevents infinite loops)
           const currentIdsStr = currentIds.sort().join(',');
           const newIdsStr = favoriteIds.sort().join(',');
           if (currentIdsStr !== newIdsStr) {
-            this.favoriteHouseIds.set(favoriteIds);
+            // Only update if we're on first page or no pagination (backward compatibility)
+            if (!options?.page || options.page === 1) {
+              this.favoriteHouseIds.set(favoriteIds);
+            }
           }
           
-          // Save to localStorage
-          if (typeof localStorage !== 'undefined') {
+          // Save to localStorage (only for first page, backward compatibility)
+          if ((!options?.page || options.page === 1) && typeof localStorage !== 'undefined') {
             try {
               localStorage.setItem(this.FAVORITES_LOCALSTORAGE_KEY, JSON.stringify({
-                data: response.data,
+                data: response.data.items,
                 favoriteIds: favoriteIds,
                 timestamp: Date.now()
               }));
@@ -941,6 +1094,35 @@ export class LotteryService {
   }
   
   /**
+   * Get all favorite houses (backward compatibility - no pagination)
+   * @deprecated Use getFavoriteHouses() with pagination instead
+   */
+  getFavoriteHousesAll(): Observable<HouseDto[]> {
+    return this.getFavoriteHouses({ page: 1, limit: 1000 }).pipe(
+      map(pagedResponse => pagedResponse.items)
+    );
+  }
+  
+  /**
+   * Get count of user's favorite houses
+   * @returns Observable of favorite houses count
+   */
+  getFavoriteHousesCount(): Observable<number> {
+    return this.apiService.get<{ count: number }>('houses/favorites/count').pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data.count;
+        }
+        return 0;
+      }),
+      catchError(error => {
+        console.error('Error fetching favorites count:', error);
+        return of(0);
+      })
+    );
+  }
+  
+  /**
    * Debounced refresh of favorites from backend
    * Prevents multiple simultaneous refresh calls
    */
@@ -949,9 +1131,15 @@ export class LotteryService {
       clearTimeout(this.favoritesRefreshTimeout);
     }
     this.favoritesRefreshTimeout = setTimeout(() => {
-      this.getFavoriteHouses().pipe(
+      // Use backward compatibility method to get all favorites for refresh
+      this.getFavoriteHousesAll().pipe(
         take(1) // Auto-unsubscribe after first emission to prevent memory leaks
       ).subscribe({
+        next: (houses: HouseDto[]) => {
+          // Update favorite IDs signal
+          const favoriteIds = houses.map((house: HouseDto) => house.id);
+          this.favoriteHouseIds.set(favoriteIds);
+        },
         error: (error) => {
           console.error('Error refreshing favorites:', error);
         }
@@ -964,7 +1152,7 @@ export class LotteryService {
    * Toggle favorite status for a house
    * Adds if not favorited, removes if already favorited
    * Endpoint: POST /api/v1/houses/{id}/favorite or DELETE /api/v1/houses/{id}/favorite
-   * TODO: Implement when BE-1.4 is complete
+   * Note: Backend endpoint is implemented and working
    */
   toggleFavorite(houseId: string): Observable<FavoriteHouseResponse> {
     if (this.isFavorite(houseId)) {
@@ -975,9 +1163,50 @@ export class LotteryService {
   }
 
   /**
+   * Generate idempotency key for favorites operations
+   * Ensures duplicate requests are handled gracefully by the backend
+   */
+  private generateIdempotencyKey(): string {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    // Use crypto.randomUUID if available for better uniqueness, otherwise fallback
+    const uuid = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : `${timestamp}-${random}-${Math.random().toString(36).substring(2, 9)}`;
+    // Backend limit is 128 chars
+    return uuid.substring(0, 128);
+  }
+  
+  /**
+   * Parse rate limit headers from HTTP response
+   * @param headers HTTP headers from error response
+   * @returns Rate limit information or null if headers not present
+   */
+  private parseRateLimitHeaders(headers: HttpHeaders): { limit: number; remaining: number; reset: Date } | null {
+    const limit = headers.get('X-RateLimit-Limit');
+    const remaining = headers.get('X-RateLimit-Remaining');
+    const reset = headers.get('X-RateLimit-Reset');
+    
+    if (limit && remaining && reset) {
+      try {
+        return {
+          limit: parseInt(limit, 10),
+          remaining: parseInt(remaining, 10),
+          reset: new Date(reset)
+        };
+      } catch (e) {
+        console.warn('Failed to parse rate limit headers:', e);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Add house to favorites
    * Endpoint: POST /api/v1/houses/{id}/favorite
    * Debounced to prevent rapid clicks/exploits (500ms debounce)
+   * Supports idempotency via Idempotency-Key header
    */
   addHouseToFavorites(houseId: string): Observable<FavoriteHouseResponse> {
     // Debounce: Prevent rapid clicks/exploits - if request is already pending, return early
@@ -993,10 +1222,17 @@ export class LotteryService {
     // Mark as pending
     this.pendingFavoriteAdds.set(houseId, true);
     
+    // Generate idempotency key to prevent duplicate operations on network retries
+    const idempotencyKey = this.generateIdempotencyKey();
+    
     // Backend expects no body (null) for POST /api/v1/houses/{id}/favorite
     // Note: debounceTime is not used here because we debounce at the request level (pending request tracking)
     // debounceTime on the response would delay the response, not prevent duplicate requests
-    return this.apiService.post<FavoriteHouseResponse>(`houses/${houseId}/favorite`, null).pipe(
+    return this.apiService.post<FavoriteHouseResponse>(
+      `houses/${houseId}/favorite`, 
+      null,
+      { headers: { 'Idempotency-Key': idempotencyKey } }
+    ).pipe(
       map(response => {
         // Backend returns success: false with message for "already in favorites" case
         // Check the message to handle this gracefully
@@ -1024,6 +1260,10 @@ export class LotteryService {
               this.favoriteHouseIds.set([...currentFavorites, houseId]);
             }
             // No refresh needed - already in favorites, state is correct
+            
+            // Clear pending flag before returning
+            this.pendingFavoriteAdds.delete(houseId);
+            
             return {
               houseId: houseId,
               added: true, // Set to true so UI shows it as added
@@ -1078,12 +1318,32 @@ export class LotteryService {
   /**
    * Remove house from favorites
    * Endpoint: DELETE /api/v1/houses/{id}/favorite
+   * Supports idempotency via Idempotency-Key header
    */
   removeHouseFromFavorites(houseId: string): Observable<FavoriteHouseResponse> {
+    // Debounce: Prevent rapid clicks/exploits - if request is already pending, return early
+    if (this.pendingFavoriteRemoves.has(houseId)) {
+      // Return a cached/duplicate response to prevent UI flicker
+      return of({
+        houseId: houseId,
+        removed: !this.favoriteHouseIds().includes(houseId),
+        message: 'Request already in progress'
+      });
+    }
+    
     // CRITICAL FIX: Clear pendingFavoriteAdds for this houseId to allow re-adding after removal
     this.pendingFavoriteAdds.delete(houseId);
     
-    return this.apiService.delete<FavoriteHouseResponse>(`houses/${houseId}/favorite`).pipe(
+    // Mark as pending
+    this.pendingFavoriteRemoves.set(houseId, true);
+    
+    // Generate idempotency key to prevent duplicate operations on network retries
+    const idempotencyKey = this.generateIdempotencyKey();
+    
+    return this.apiService.delete<FavoriteHouseResponse>(
+      `houses/${houseId}/favorite`,
+      { headers: { 'Idempotency-Key': idempotencyKey } }
+    ).pipe(
       map(response => {
         // Backend returns success: false with message for "not in favorites" case
         if (response.success && response.data) {
@@ -1095,6 +1355,9 @@ export class LotteryService {
           this.safeInvalidateCache('favorites');
           this.safeInvalidateCache(`house:${houseId}`);
           
+          // Clear pending flag on success
+          this.pendingFavoriteRemoves.delete(houseId);
+          
           return response.data;
         } else if (!response.success && response.message) {
           // Backend returned success: false with a message
@@ -1103,6 +1366,10 @@ export class LotteryService {
             // Not in favorites - treat as success (already removed)
             const currentFavorites = this.favoriteHouseIds();
             this.favoriteHouseIds.set(currentFavorites.filter(id => id !== houseId));
+            
+            // Clear pending flag before returning
+            this.pendingFavoriteRemoves.delete(houseId);
+            
             return {
               houseId: houseId,
               removed: false,
@@ -1112,7 +1379,23 @@ export class LotteryService {
         }
         throw new Error(response.message || 'Failed to remove house from favorites');
       }),
-      catchError(error => {
+      catchError((error: HttpErrorResponse | any) => {
+        // Handle rate limit errors (429)
+        if (error.status === 429) {
+          const headers = error instanceof HttpErrorResponse ? error.headers : null;
+          const rateLimitInfo = headers ? this.parseRateLimitHeaders(headers) : null;
+          const resetTime = rateLimitInfo?.reset 
+            ? new Date(rateLimitInfo.reset).toLocaleTimeString()
+            : 'soon';
+          
+          this.toastService.error(
+            `Rate limit exceeded. Please try again after ${resetTime}`,
+            5000
+          );
+          this.pendingFavoriteRemoves.delete(houseId);
+          return throwError(() => error);
+        }
+        
         // Handle 400 errors gracefully - backend returns success: false with message
         // Angular HttpClient throws 400 as error, so error.error contains the response body
         if (error.status === 400 && (error.error !== null && error.error !== undefined)) {
@@ -1139,6 +1422,224 @@ export class LotteryService {
         } else if (error.status !== 401 && error.status !== 403) {
           console.error('Error removing house from favorites:', error.status, error.statusText, error.error);
         }
+        // Clear pending flag on error
+        this.pendingFavoriteRemoves.delete(houseId);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Bulk add houses to favorites
+   * Endpoint: POST /api/v1/houses/favorites/bulk
+   * @param houseIds Array of house IDs to add (max 50)
+   * @returns Observable of bulk operation result
+   */
+  bulkAddFavorites(houseIds: string[]): Observable<BulkFavoritesResponse> {
+    if (houseIds.length === 0) {
+      return throwError(() => new Error('House IDs list cannot be empty'));
+    }
+    if (houseIds.length > 50) {
+      return throwError(() => new Error('Maximum 50 house IDs allowed per request'));
+    }
+    
+    const request: BulkFavoritesRequest = { houseIds };
+    
+    return this.apiService.post<BulkFavoritesResponse>('houses/favorites/bulk', request).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          // Update favorite IDs signal with successfully added houses
+          const currentFavorites = this.favoriteHouseIds();
+          const newFavorites = [...currentFavorites];
+          response.data.successfulHouseIds.forEach(id => {
+            if (!newFavorites.includes(id)) {
+              newFavorites.push(id);
+            }
+          });
+          this.favoriteHouseIds.set(newFavorites);
+          
+          // Invalidate caches
+          this.safeInvalidateCache('favorites');
+          
+          // Refresh from backend in background to ensure sync (debounced)
+          this.debouncedRefreshFavorites();
+          
+          return response.data;
+        }
+        throw new Error(response.message || 'Failed to bulk add favorites');
+      }),
+      catchError((error: HttpErrorResponse | any) => {
+        // Handle rate limit errors (429)
+        if (error.status === 429) {
+          const headers = error instanceof HttpErrorResponse ? error.headers : null;
+          const rateLimitInfo = headers ? this.parseRateLimitHeaders(headers) : null;
+          const resetTime = rateLimitInfo?.reset 
+            ? new Date(rateLimitInfo.reset).toLocaleTimeString()
+            : 'soon';
+          
+          this.toastService.error(
+            `Rate limit exceeded. Please try again after ${resetTime}`,
+            5000
+          );
+          return throwError(() => error);
+        }
+        
+        console.error('Error bulk adding favorites:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Bulk remove houses from favorites
+   * Endpoint: DELETE /api/v1/houses/favorites/bulk
+   * @param houseIds Array of house IDs to remove (max 50)
+   * @returns Observable of bulk operation result
+   */
+  bulkRemoveFavorites(houseIds: string[]): Observable<BulkFavoritesResponse> {
+    if (houseIds.length === 0) {
+      return throwError(() => new Error('House IDs list cannot be empty'));
+    }
+    if (houseIds.length > 50) {
+      return throwError(() => new Error('Maximum 50 house IDs allowed per request'));
+    }
+    
+    const request: BulkFavoritesRequest = { houseIds };
+    
+    // Backend expects DELETE with body
+    return this.apiService.delete<BulkFavoritesResponse>('houses/favorites/bulk', { 
+      body: request,
+      headers: { 'Content-Type': 'application/json' }
+    }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          // Update favorite IDs signal by removing successfully removed houses
+          const currentFavorites = this.favoriteHouseIds();
+          const removedIds = new Set(response.data.successfulHouseIds);
+          this.favoriteHouseIds.set(currentFavorites.filter(id => !removedIds.has(id)));
+          
+          // Invalidate caches
+          this.safeInvalidateCache('favorites');
+          
+          return response.data;
+        }
+        throw new Error(response.message || 'Failed to bulk remove favorites');
+      }),
+      catchError((error: HttpErrorResponse | any) => {
+        // Handle rate limit errors (429)
+        if (error.status === 429) {
+          const headers = error instanceof HttpErrorResponse ? error.headers : null;
+          const rateLimitInfo = headers ? this.parseRateLimitHeaders(headers) : null;
+          const resetTime = rateLimitInfo?.reset 
+            ? new Date(rateLimitInfo.reset).toLocaleTimeString()
+            : 'soon';
+          
+          this.toastService.error(
+            `Rate limit exceeded. Please try again after ${resetTime}`,
+            5000
+          );
+          return throwError(() => error);
+        }
+        
+        console.error('Error bulk removing favorites:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Get favorites analytics
+   * Endpoint: GET /api/v1/houses/favorites/analytics
+   * @returns Observable of favorites analytics data
+   */
+  getFavoritesAnalytics(): Observable<FavoritesAnalyticsDto> {
+    return this.apiService.get<FavoritesAnalyticsDto>('houses/favorites/analytics').pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.message || 'Failed to fetch favorites analytics');
+      }),
+      catchError((error: HttpErrorResponse | any) => {
+        // Handle rate limit errors (429)
+        if (error.status === 429) {
+          const headers = error instanceof HttpErrorResponse ? error.headers : null;
+          const rateLimitInfo = headers ? this.parseRateLimitHeaders(headers) : null;
+          const resetTime = rateLimitInfo?.reset 
+            ? new Date(rateLimitInfo.reset).toLocaleTimeString()
+            : 'soon';
+          
+          this.toastService.error(
+            `Rate limit exceeded. Please try again after ${resetTime}`,
+            5000
+          );
+        }
+        console.error('Error fetching favorites analytics:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Export user's favorites as CSV or JSON
+   * Endpoint: GET /api/v1/houses/favorites/export?format=csv|json
+   * @param format Export format: 'csv' or 'json' (default: 'json')
+   * @returns Observable that triggers file download
+   */
+  exportFavorites(format: 'csv' | 'json' = 'json'): Observable<Blob> {
+    // Validate format
+    if (format !== 'csv' && format !== 'json') {
+      return throwError(() => new Error('Invalid export format. Only "csv" or "json" are supported.'));
+    }
+
+    const baseUrl = environment.backendUrl || '/api/v1';
+    const url = `${baseUrl}/houses/favorites/export?format=${format}`;
+    
+    // Get auth token for headers
+    const token = localStorage.getItem('access_token');
+    let httpHeaders = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token) {
+      httpHeaders = httpHeaders.set('Authorization', `Bearer ${token}`);
+    }
+    
+    return this.http.get(url, {
+      headers: httpHeaders,
+      responseType: 'blob'
+    }).pipe(
+      map(blob => {
+        // Trigger download
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        const timestamp = new Date().toISOString().split('T')[0];
+        link.download = `favorites_${timestamp}.${format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(downloadUrl);
+        return blob;
+      }),
+      catchError((error: HttpErrorResponse | any) => {
+        // Handle rate limit errors (429)
+        if (error.status === 429) {
+          const headers = error instanceof HttpErrorResponse ? error.headers : null;
+          const rateLimitInfo = headers ? this.parseRateLimitHeaders(headers) : null;
+          const resetTime = rateLimitInfo?.reset 
+            ? new Date(rateLimitInfo.reset).toLocaleTimeString()
+            : 'soon';
+          
+          this.toastService.error(
+            `Rate limit exceeded. Please try again after ${resetTime}`,
+            5000
+          );
+        } else if (error.status === 404) {
+          this.toastService.error('No favorites found to export.');
+        } else if (error.status === 400) {
+          this.toastService.error('Export limit exceeded. You have too many favorites to export at once.');
+        }
+        console.error('Error exporting favorites:', error);
         return throwError(() => error);
       })
     );
@@ -1294,6 +1795,42 @@ export class LotteryService {
   }
 
   /**
+   * Get gamification data for the current user
+   * Endpoint: GET /api/v1/gamification
+   */
+  getGamificationData(): Observable<UserGamificationDto> {
+    return this.apiService.get<UserGamificationDto>('gamification').pipe(
+      map(response => {
+        if (response.success && response.data) {
+          // Update gamification signal
+          this.gamificationData.set(response.data);
+          return response.data;
+        }
+        throw new Error('Failed to fetch gamification data');
+      }),
+      catchError(error => {
+        console.error('Error fetching gamification data:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Refresh dashboard data by clearing caches and reloading
+   * Clears activeEntries and userStats caches, then reloads data
+   */
+  refreshDashboardData(): void {
+    // Clear caches
+    this.safeInvalidateCache('activeEntries');
+    this.safeInvalidateCache('userStats');
+    this.safeInvalidateCache('gamificationData'); // Clear gamification cache on refresh
+    
+    // Reload data (will trigger fresh API calls)
+    this.getUserActiveEntries().pipe(take(1)).subscribe();
+    this.getLotteryAnalytics().pipe(take(1)).subscribe();
+  }
+
+  /**
    * Quick entry into lottery from favorites
    * Endpoint: POST /api/v1/tickets/quick-entry
    */
@@ -1306,6 +1843,7 @@ export class LotteryService {
           // Invalidate caches (critical data changed)
           this.safeInvalidateCache('activeEntries');
           this.safeInvalidateCache('userStats');
+          this.safeInvalidateCache('gamificationData'); // Points may have been awarded
           this.safeInvalidateCache('housesList');
           
           return response.data;
@@ -1348,6 +1886,7 @@ export class LotteryService {
     this.favoriteHouseIds.set([]);
     this.activeEntries.set([]);
     this.userLotteryStats.set(null);
+    this.gamificationData.set(null); // Clear gamification data on logout
     this.recommendations.set([]);
   }
 

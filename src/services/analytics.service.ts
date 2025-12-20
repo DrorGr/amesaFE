@@ -144,7 +144,11 @@ export class AnalyticsService {
     endDate?: Date;
     eventType?: string;
   }): Observable<AnalyticsSummaryDto> {
-    return this.apiService.get<AnalyticsSummaryDto>('analytics/summary', params).pipe(
+    const queryParams: any = {};
+    if (params?.eventType) queryParams.eventType = params.eventType;
+    if (params?.startDate !== undefined) queryParams.startDate = params.startDate.toISOString();
+    if (params?.endDate !== undefined) queryParams.endDate = params.endDate.toISOString();
+    return this.apiService.get<AnalyticsSummaryDto>('analytics/summary', queryParams).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -159,7 +163,19 @@ export class AnalyticsService {
   }
 
   getAnalyticsEvents(query?: AnalyticsQuery): Observable<{ events: AnalyticsDto[]; totalCount: number }> {
-    return this.apiService.get<{ events: AnalyticsDto[]; totalCount: number }>('analytics/events', query).pipe(
+    const queryParams: any = {};
+    if (query) {
+      if (query.eventType) queryParams.eventType = query.eventType;
+      if (query.eventName) queryParams.eventName = query.eventName;
+      if (query.userId) queryParams.userId = query.userId;
+      if (query.sessionId) queryParams.sessionId = query.sessionId;
+      if (query.page) queryParams.page = query.page;
+      if (query.limit) queryParams.limit = query.limit;
+      if (query.offset) queryParams.offset = query.offset;
+      if (query.startDate !== undefined) queryParams.startDate = query.startDate.toISOString();
+      if (query.endDate !== undefined) queryParams.endDate = query.endDate.toISOString();
+    }
+    return this.apiService.get<{ events: AnalyticsDto[]; totalCount: number }>('analytics/events', queryParams).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -192,7 +208,10 @@ export class AnalyticsService {
     startDate?: Date;
     endDate?: Date;
   }): Observable<ConversionFunnelDto[]> {
-    return this.apiService.get<ConversionFunnelDto[]>(`analytics/funnels/${funnelName}`, params).pipe(
+    const queryParams: any = {};
+    if (params?.startDate !== undefined) queryParams.startDate = params.startDate.toISOString();
+    if (params?.endDate !== undefined) queryParams.endDate = params.endDate.toISOString();
+    return this.apiService.get<ConversionFunnelDto[]>(`analytics/funnels/${funnelName}`, queryParams).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -237,15 +256,45 @@ export class AnalyticsService {
     format?: 'csv' | 'json' | 'xlsx';
     eventType?: string;
   }): Observable<Blob> {
-    return this.apiService.get<Blob>('analytics/export', params).pipe(
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        }
-        throw new Error('Failed to export analytics data');
-      }),
+    const queryParams: { responseType: 'blob' } & Record<string, any> = { responseType: 'blob' };
+    if (params?.format) queryParams['format'] = params.format;
+    if (params?.eventType) queryParams['eventType'] = params.eventType;
+    if (params?.startDate !== undefined) queryParams['startDate'] = params.startDate.toISOString();
+    if (params?.endDate !== undefined) queryParams['endDate'] = params.endDate.toISOString();
+    return this.apiService.get('analytics/export', queryParams).pipe(
       catchError(error => {
         console.error('Error exporting analytics data:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Sessions & activity (PII redacted server-side)
+  getSessions(params?: { page?: number; limit?: number }): Observable<any> {
+    return this.apiService.get<any>('analytics/sessions', params).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error fetching sessions:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getSessionById(sessionId: string): Observable<any> {
+    return this.apiService.get<any>(`analytics/sessions/${sessionId}`).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error fetching session detail:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getActivity(params?: { page?: number; limit?: number }): Observable<any> {
+    return this.apiService.get<any>('analytics/activity', params).pipe(
+      map(response => response.data),
+      catchError(error => {
+        console.error('Error fetching activity:', error);
         return throwError(() => error);
       })
     );

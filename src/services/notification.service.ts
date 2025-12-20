@@ -175,9 +175,9 @@ export class NotificationService implements OnDestroy {
           
           // Extract notification types from channels
           const allNotificationTypes = new Set<string>();
-          channels.forEach(c => {
+          channels.forEach((c: ChannelPreferencesDto) => {
             if (c.notificationTypes) {
-              c.notificationTypes.forEach(t => allNotificationTypes.add(t.toLowerCase()));
+              c.notificationTypes.forEach((t: string) => allNotificationTypes.add(t.toLowerCase()));
             }
           });
 

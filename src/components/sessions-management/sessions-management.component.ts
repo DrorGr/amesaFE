@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { AnalyticsService } from '../../services/analytics.service';
 import { TranslationService } from '../../services/translation.service';
 import { ToastService } from '../../services/toast.service';
 import { LocaleService } from '../../services/locale.service';
@@ -9,7 +10,7 @@ import { firstValueFrom } from 'rxjs';
 interface UserSession {
   id: string;
   deviceName: string;
-  ipAddress: string;
+  // Note: IP address and User-Agent are NOT included (PII redaction)
   lastActivity: Date | string;
   isCurrent: boolean;
   sessionToken?: string; // For logout operations
@@ -63,9 +64,7 @@ interface UserSession {
                         }
                       </div>
                       <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                        <p>
-                          <span class="font-medium">{{ translate('auth.ipAddress') }}:</span> {{ session.ipAddress }}
-                        </p>
+                        <!-- Note: IP address and User-Agent are NOT displayed (PII redaction) -->
                         <p>
                           <span class="font-medium">{{ translate('auth.lastActivity') }}:</span> 
                           {{ formatDate(session.lastActivity) }}
@@ -118,6 +117,7 @@ interface UserSession {
 export class SessionsManagementComponent implements OnInit {
   localeService = inject(LocaleService);
   private authService = inject(AuthService);
+  private analyticsService = inject(AnalyticsService);
   private translationService = inject(TranslationService);
   private toastService = inject(ToastService);
 
@@ -141,21 +141,33 @@ export class SessionsManagementComponent implements OnInit {
   async loadSessions() {
     this.isLoading.set(true);
     try {
-      const sessions = await firstValueFrom(this.authService.getActiveSessions()) || [];
+      // Use AnalyticsService which provides PII-redacted sessions
+      const response = await firstValueFrom(this.analyticsService.getSessions({ page: 1, limit: 100 }));
+      
+      // Handle different response structures
+      let sessionsData: any[] = [];
+      if (Array.isArray(response)) {
+        sessionsData = response;
+      } else if (response && response.items) {
+        sessionsData = response.items;
+      } else if (response && response.data) {
+        sessionsData = Array.isArray(response.data) ? response.data : [];
+      }
+      
       // Mark current session
       const currentSessionToken = localStorage.getItem('refresh_token');
-      const sessionsWithCurrent = sessions.map((s: any) => ({
-        id: s.id || s.sessionToken || '',
-        deviceName: s.deviceName || 'Unknown Device',
-        ipAddress: s.ipAddress || 'Unknown',
-        lastActivity: s.lastActivity || s.lastActivityAt || new Date(),
+      const sessionsWithCurrent = sessionsData.map((s: any) => ({
+        id: s.id || s.sessionId || s.sessionToken || '',
+        deviceName: s.deviceName || s.device || 'Unknown Device',
+        // Explicitly NOT including IP address or User-Agent (PII redaction)
+        lastActivity: s.lastActivity || s.lastActivityAt || s.createdAt || new Date(),
         sessionToken: s.sessionToken || s.id || '',
         isCurrent: (s.sessionToken || s.id) === currentSessionToken
       }));
       this.sessions.set(sessionsWithCurrent);
     } catch (error) {
       console.error('Error loading sessions:', error);
-      this.toastService.error(this.translate('auth.failedToLoadSessions'), 3000);
+      this.toastService.error(this.translate('auth.failedToLoadSessions') || 'Failed to load sessions', 3000);
     } finally {
       this.isLoading.set(false);
     }

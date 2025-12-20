@@ -1,10 +1,11 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
+import { RealtimeService } from '../../services/realtime.service';
 import { LotteryTicketDto } from '../../models/house.model';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { LocaleService } from '../../services/locale.service';
@@ -138,11 +139,12 @@ import { firstValueFrom } from 'rxjs';
     }
   `]
 })
-export class ActiveEntriesComponent implements OnInit {
+export class ActiveEntriesComponent implements OnInit, OnDestroy {
   localeService = inject(LocaleService);
   private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
+  private realtimeService = inject(RealtimeService);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -154,6 +156,11 @@ export class ActiveEntriesComponent implements OnInit {
   selectedStatus = signal<string>('');
   sortBy = signal<string>('date');
   allEntries = signal<LotteryTicketDto[]>([]);
+  
+  // Polling fallback
+  private pollingInterval: any = null;
+  private readonly POLLING_INTERVAL_MS = 30000; // 30 seconds
+  isPolling = signal(false);
   
   filteredEntries = computed(() => {
     let entries = [...this.allEntries()];
@@ -183,6 +190,62 @@ export class ActiveEntriesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadActiveEntries();
+    this.setupPollingFallback();
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
+  setupPollingFallback(): void {
+    // Check SignalR connection status
+    const isConnected = this.realtimeService.isConnectionReady();
+    
+    if (!isConnected) {
+      // SignalR not available, start polling
+      this.startPolling();
+    } else {
+      // SignalR is connected, listen for reconnection events
+      // If connection drops, start polling
+      const checkConnection = () => {
+        if (!this.realtimeService.isConnectionReady() && !this.pollingInterval) {
+          this.startPolling();
+        } else if (this.realtimeService.isConnectionReady() && this.pollingInterval) {
+          this.stopPolling();
+        }
+      };
+      
+      // Check connection status periodically
+      this.pollingInterval = setInterval(checkConnection, 5000);
+    }
+  }
+
+  startPolling(): void {
+    if (this.pollingInterval) {
+      return; // Already polling
+    }
+    
+    this.isPolling.set(true);
+    this.pollingInterval = setInterval(() => {
+      this.loadActiveEntries().catch(err => {
+        console.error('Polling error:', err);
+        // Stop polling on repeated errors
+        if (err.status === 401 || err.status === 403) {
+          this.stopPolling();
+        }
+      });
+    }, this.POLLING_INTERVAL_MS);
+    
+    console.log('Started polling fallback for active entries (30s interval)');
+  }
+
+  stopPolling(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+      this.isPolling.set(false);
+      console.log('Stopped polling fallback for active entries');
+    }
   }
 
   async loadActiveEntries(): Promise<void> {
@@ -191,7 +254,7 @@ export class ActiveEntriesComponent implements OnInit {
     }
 
     try {
-      const entries = await firstValueFrom(this.lotteryService.getUserActiveEntries());
+      const entries = await firstValueFrom(this.lotteryService.getActiveTickets());
       if (entries) {
         this.allEntries.set(entries);
       }
@@ -240,8 +303,7 @@ export class ActiveEntriesComponent implements OnInit {
 
   viewDetails(event: Event, entry: LotteryTicketDto): void {
     event.stopPropagation();
-    // Navigate to house detail page
-    // Router navigation is handled by the card click
+    this.router.navigate(['/lottery/tickets', entry.id]);
   }
 
   navigateToHouse(houseId: string): void {

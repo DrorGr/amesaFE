@@ -2,7 +2,7 @@ import { Injectable, signal, inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError, map, take, finalize } from 'rxjs/operators';
-import { ApiService } from './api.service';
+import { ApiService, ApiResponse } from './api.service';
 import { 
   User, 
   UserDto, 
@@ -11,10 +11,24 @@ import {
   LoginRequest,
   UpdateUserProfileRequest 
 } from '../models/house.model';
+
+// Two-Factor Authentication DTOs
+export interface TwoFactorStatusDto {
+  isEnabled: boolean;
+  isVerified: boolean;
+  setupDate?: Date;
+}
+
+export interface TwoFactorSetupDto {
+  qrCodeUrl: string;
+  manualEntryKey: string;
+  secret: string;
+}
 import { UserLotteryData } from '../interfaces/lottery.interface';
 import { LotteryService } from './lottery.service';
 import { RealtimeService } from './realtime.service';
 import { UserPreferencesService } from './user-preferences.service';
+import { PaymentMethodPreferenceService } from './payment-method-preference.service';
 import { ThemeService } from './theme.service';
 import { AccessibilityService } from './accessibility.service';
 import { TranslationService } from './translation.service';
@@ -239,7 +253,8 @@ export class AuthService {
               // Explicitly fetch favorites from backend
               // This ensures favorites are loaded even if backend doesn't include them in login response
               // Fixed: Use take(1) for auto-cleanup to prevent memory leaks
-              this.lotteryService.getFavoriteHouses().pipe(
+              // Use backward compatibility method to get all favorites
+              this.lotteryService.getFavoriteHousesAll().pipe(
                 take(1) // Auto-unsubscribe after first emission
               ).subscribe({
                 next: () => {
@@ -380,6 +395,16 @@ export class AuthService {
       this.lotteryService.clearLotteryData();
     }
     
+    // Clear payment method preference cache on logout
+    try {
+      const paymentMethodPreference = this.injector.get(PaymentMethodPreferenceService, null);
+      if (paymentMethodPreference) {
+        paymentMethodPreference.clearCache();
+      }
+    } catch (error) {
+      // Service might not be available, ignore
+    }
+    
     // Clear user preferences on logout (localStorage will be cleared below)
     // Note: UserPreferencesService uses localStorage, which is cleared in the loop below
     
@@ -472,7 +497,8 @@ export class AuthService {
             // If lotteryData not in response, explicitly fetch favorites from backend
             // This ensures favorites are loaded on page refresh or auth check
             // Fixed: Use take(1) for auto-cleanup to prevent memory leaks
-            this.lotteryService.getFavoriteHouses().pipe(
+            // Use backward compatibility method to get all favorites
+            this.lotteryService.getFavoriteHousesAll().pipe(
               take(1) // Auto-unsubscribe after first emission
             ).subscribe({
               next: () => {
@@ -569,6 +595,102 @@ export class AuthService {
     );
   }
 
+  // ----- Two-Factor Authentication -----
+  getTwoFactorStatus(): Observable<ApiResponse<TwoFactorStatusDto>> {
+    return this.apiService.get<TwoFactorStatusDto>('auth/two-factor/status').pipe(
+      catchError(error => {
+        console.error('Error getting 2FA status:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  setupTwoFactor(): Observable<ApiResponse<TwoFactorSetupDto>> {
+    return this.apiService.post<TwoFactorSetupDto>('auth/two-factor/setup', {}).pipe(
+      catchError(error => {
+        console.error('Error setting up 2FA:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  verifyTwoFactorSetup(code: string): Observable<ApiResponse<any>> {
+    return this.apiService.post<any>('auth/two-factor/verify-setup', { code }).pipe(
+      catchError(error => {
+        console.error('Error verifying 2FA setup:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  enableTwoFactor(code: string): Observable<ApiResponse<any>> {
+    return this.apiService.post<any>('auth/two-factor/enable', { code }).pipe(
+      catchError(error => {
+        console.error('Error enabling 2FA:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  disableTwoFactor(code: string): Observable<ApiResponse<any>> {
+    return this.apiService.post<any>('auth/two-factor/disable', { code }).pipe(
+      catchError(error => {
+        console.error('Error disabling 2FA:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  verifyTwoFactor(code: string): Observable<ApiResponse<any>> {
+    return this.apiService.post<any>('auth/two-factor/verify', { code }).pipe(
+      catchError(error => {
+        console.error('Error verifying 2FA code:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ----- Account Recovery (Security Questions) -----
+  getSecurityQuestions(): Observable<ApiResponse<any>> {
+    return this.apiService.get<any>('auth/recovery/security-questions');
+  }
+
+  setupSecurityQuestions(questions: Array<{ questionId: number; answer: string }>): Observable<ApiResponse<any>> {
+    return this.apiService.post<any>('auth/recovery/security-questions', { questions }).pipe(
+      catchError(error => {
+        console.error('Error setting up security questions:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  verifySecurityQuestion(answer: string): Observable<ApiResponse<any>> {
+    return this.apiService.post<any>('auth/recovery/verify-question', { answer });
+  }
+
+  // ----- Account Deletion -----
+  requestAccountDeletion(password: string): Observable<ApiResponse<any>> {
+    return this.apiService.post<any>('auth/account/delete', { password }).pipe(
+      catchError(error => {
+        console.error('Error requesting account deletion:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  cancelAccountDeletion(): Observable<ApiResponse<any>> {
+    return this.apiService.post<any>('auth/account/cancel-deletion', {});
+  }
+
+  getAccountDeletionStatus(): Observable<ApiResponse<any>> {
+    return this.apiService.get<any>('auth/account/deletion-status');
+  }
+
+  // ----- Identity Retry -----
+  retryIdentityVerification(): Observable<ApiResponse<any>> {
+    return this.apiService.post<any>('auth/identity/retry', {});
+  }
+
   // Session Management Methods
   getActiveSessions(): Observable<any[]> {
     return this.apiService.get<any[]>('auth/sessions').pipe(
@@ -630,15 +752,29 @@ export class AuthService {
   }
 
   async loginWithApple(): Promise<boolean> {
-    // TODO: Implement Apple OAuth integration
-    console.log('Apple login not yet implemented');
-    return Promise.resolve(false);
+    try {
+      // Get base URL which already includes /api/v1
+      const baseUrl = this.apiService.getBaseUrl();
+      // OAuth endpoints are at /api/v1/oauth/*, so baseUrl already has the correct path
+      window.location.href = `${baseUrl}/oauth/apple`;
+      return true;
+    } catch (error) {
+      console.error('Error initiating Apple login:', error);
+      return false;
+    }
   }
 
   async loginWithTwitter(): Promise<boolean> {
-    // TODO: Implement Twitter OAuth integration
-    console.log('Twitter login not yet implemented');
-    return Promise.resolve(false);
+    try {
+      // Get base URL which already includes /api/v1
+      const baseUrl = this.apiService.getBaseUrl();
+      // OAuth endpoints are at /api/v1/oauth/*, so baseUrl already has the correct path
+      window.location.href = `${baseUrl}/oauth/twitter`;
+      return true;
+    } catch (error) {
+      console.error('Error initiating Twitter login:', error);
+      return false;
+    }
   }
 
   private setUser(userDto: UserDto): void {

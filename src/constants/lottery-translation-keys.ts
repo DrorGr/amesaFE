@@ -46,7 +46,21 @@ export const LOTTERY_TRANSLATION_KEYS = {
     favoriteHouses: 'lottery.dashboard.favoriteHouses',
     statistics: 'lottery.dashboard.statistics',
     recentActivity: 'lottery.dashboard.recentActivity',
-    viewAll: 'lottery.dashboard.viewAll'
+    viewAll: 'lottery.dashboard.viewAll',
+    loginRequired: 'lottery.dashboard.loginRequired',
+    loadError: 'lottery.dashboard.loadError',
+    financialOverview: 'lottery.dashboard.financialOverview',
+    quickActions: 'lottery.dashboard.quickActions',
+    noActiveEntries: 'lottery.dashboard.noActiveEntries',
+    expanded: 'lottery.dashboard.expanded',
+    collapsed: 'lottery.dashboard.collapsed',
+    loaded: 'lottery.dashboard.loaded',
+    error: {
+      network: 'lottery.dashboard.error.network',
+      authentication: 'lottery.dashboard.error.authentication',
+      server: 'lottery.dashboard.error.server',
+      validation: 'lottery.dashboard.error.validation'
+    }
   },
 
   // Quick Entry
@@ -98,7 +112,24 @@ export const LOTTERY_TRANSLATION_KEYS = {
     averageSpending: 'lottery.statistics.averageSpending',
     favoriteHouse: 'lottery.statistics.favoriteHouse',
     mostActiveMonth: 'lottery.statistics.mostActiveMonth',
-    lastEntry: 'lottery.statistics.lastEntry'
+    lastEntry: 'lottery.statistics.lastEntry',
+    net: 'lottery.statistics.net'
+  },
+
+  // Gamification
+  gamification: {
+    level: 'lottery.gamification.level',
+    points: 'lottery.gamification.points',
+    streak: 'lottery.gamification.streak',
+    achievements: 'lottery.gamification.achievements',
+    recentAchievements: 'lottery.gamification.recentAchievements',
+    noAchievements: 'lottery.gamification.noAchievements',
+    tier: 'lottery.gamification.tier',
+    tierBronze: 'lottery.gamification.tier.bronze',
+    tierSilver: 'lottery.gamification.tier.silver',
+    tierGold: 'lottery.gamification.tier.gold',
+    tierPlatinum: 'lottery.gamification.tier.platinum',
+    tierDiamond: 'lottery.gamification.tier.diamond'
   },
 
   // Recommendations
@@ -116,6 +147,7 @@ export const LOTTERY_TRANSLATION_KEYS = {
     loading: 'lottery.common.loading',
     error: 'lottery.common.error',
     retry: 'lottery.common.retry',
+    retrying: 'common.retrying',
     close: 'lottery.common.close',
     save: 'lottery.common.save',
     cancel: 'lottery.common.cancel',
@@ -124,7 +156,8 @@ export const LOTTERY_TRANSLATION_KEYS = {
     view: 'lottery.common.view',
     back: 'lottery.common.back',
     next: 'lottery.common.next',
-    previous: 'lottery.common.previous'
+    previous: 'lottery.common.previous',
+    notAvailable: 'lottery.common.notAvailable'
   }
 } as const;
 

@@ -11,7 +11,8 @@ export enum PaymentStep {
   Review = 'review',
   Payment = 'payment',
   Processing = 'processing',
-  Confirmation = 'confirmation'
+  Confirmation = 'confirmation',
+  Consolidated = 'consolidated' // Single-step consolidated payment flow
 }
 
 /**
@@ -78,6 +79,7 @@ export interface PaymentSuccessEvent {
   transactionId?: string;
   method: PaymentMethod;
 }
+
 
 
 

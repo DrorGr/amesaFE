@@ -66,6 +66,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'lottery/favorites/analytics',
+    loadComponent: () => import('./components/favorites-analytics/favorites-analytics.component').then(m => m.FavoritesAnalyticsComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'lottery/entries/active',
     loadComponent: () => import('./components/active-entries/active-entries.component').then(m => m.ActiveEntriesComponent),
     canActivate: [AuthGuard]
@@ -73,6 +78,11 @@ export const routes: Routes = [
   {
     path: 'lottery/entries/history',
     loadComponent: () => import('./components/entry-history/entry-history.component').then(m => m.EntryHistoryComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'lottery/tickets/:id',
+    loadComponent: () => import('./components/ticket-detail/ticket-detail.component').then(m => m.TicketDetailComponent),
     canActivate: [AuthGuard]
   },
   {
@@ -122,6 +132,19 @@ export const routes: Routes = [
   {
     path: 'payment/methods',
     loadComponent: () => import('./components/payment-methods/payment-methods.component').then(m => m.PaymentMethodsComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'content',
+    loadComponent: () => import('./components/content-list/content-list.component').then(m => m.ContentListComponent)
+  },
+  {
+    path: 'content/:id',
+    loadComponent: () => import('./components/content-detail/content-detail.component').then(m => m.ContentDetailComponent)
+  },
+  {
+    path: 'analytics/activity',
+    loadComponent: () => import('./components/activity-log/activity-log.component').then(m => m.ActivityLogComponent),
     canActivate: [AuthGuard]
   },
   {

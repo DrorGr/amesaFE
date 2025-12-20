@@ -46,7 +46,25 @@
             "polyfills": ["zone.js"],
             "scripts": [],
             "styles": ["src/styles.css", "src/global_styles.css"],
-            "tsConfig": "tsconfig.app.json"
+            "tsConfig": "tsconfig.app.json",
+            "budgets": [
+              {
+                "type": "initial",
+                "maximumWarning": "2mb",
+                "maximumError": "5mb"
+              },
+              {
+                "type": "anyComponentStyle",
+                "maximumWarning": "6kb",
+                "maximumError": "10kb"
+              },
+              {
+                "type": "bundle",
+                "name": "dashboard-accordion",
+                "maximumWarning": "50kb",
+                "maximumError": "100kb"
+              }
+            ]
           }
         },
         "serve": {

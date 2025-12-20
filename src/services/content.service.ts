@@ -100,6 +100,7 @@ export class ContentService {
     status?: string;
     isFeatured?: boolean;
     search?: string;
+    language?: string;
   }): Observable<PagedResponse<ContentDto>> {
     return this.apiService.get<PagedResponse<ContentDto>>('content', params).pipe(
       map(response => {

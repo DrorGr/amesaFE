@@ -89,7 +89,7 @@ export class PaymentService {
 
   // Payment Method Management
   getPaymentMethods(): Observable<PaymentMethodDto[]> {
-    return this.apiService.get<PaymentMethodDto[]>('payments/methods').pipe(
+    return this.apiService.get<PaymentMethodDto[]>('payment/methods').pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -104,7 +104,7 @@ export class PaymentService {
   }
 
   addPaymentMethod(paymentMethodData: AddPaymentMethodRequest): Observable<PaymentMethodDto> {
-    return this.apiService.post<PaymentMethodDto>('payments/methods', paymentMethodData).pipe(
+    return this.apiService.post<PaymentMethodDto>('payment/methods', paymentMethodData).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -119,7 +119,7 @@ export class PaymentService {
   }
 
   updatePaymentMethod(paymentMethodId: string, updateData: UpdatePaymentMethodRequest): Observable<PaymentMethodDto> {
-    return this.apiService.put<PaymentMethodDto>(`payments/methods/${paymentMethodId}`, updateData).pipe(
+    return this.apiService.put<PaymentMethodDto>(`payment/methods/${paymentMethodId}`, updateData).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -134,7 +134,7 @@ export class PaymentService {
   }
 
   deletePaymentMethod(paymentMethodId: string): Observable<boolean> {
-    return this.apiService.delete(`payments/methods/${paymentMethodId}`).pipe(
+    return this.apiService.delete(`payment/methods/${paymentMethodId}`).pipe(
       map(response => response.success),
       catchError(error => {
         console.error('Error deleting payment method:', error);
@@ -145,7 +145,7 @@ export class PaymentService {
 
   // Transaction Management
   getTransactions(): Observable<TransactionDto[]> {
-    return this.apiService.get<TransactionDto[]>('payments/transactions').pipe(
+    return this.apiService.get<TransactionDto[]>('payment/transactions').pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -160,7 +160,7 @@ export class PaymentService {
   }
 
   getTransaction(transactionId: string): Observable<TransactionDto> {
-    return this.apiService.get<TransactionDto>(`payments/transactions/${transactionId}`).pipe(
+    return this.apiService.get<TransactionDto>(`payment/transactions/${transactionId}`).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -176,7 +176,7 @@ export class PaymentService {
 
   // Payment Processing
   processPayment(paymentData: ProcessPaymentRequest): Observable<PaymentResponse> {
-    return this.apiService.post<PaymentResponse>('payments/process', paymentData).pipe(
+    return this.apiService.post<PaymentResponse>('payment/process', paymentData).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -192,7 +192,7 @@ export class PaymentService {
 
   // Refunds
   requestRefund(refundData: RefundRequest): Observable<PaymentResponse> {
-    return this.apiService.post<PaymentResponse>('payments/refund', refundData).pipe(
+    return this.apiService.post<PaymentResponse>('payment/refund', refundData).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -208,7 +208,7 @@ export class PaymentService {
 
   // Withdrawals
   requestWithdrawal(withdrawalData: WithdrawalRequest): Observable<PaymentResponse> {
-    return this.apiService.post<PaymentResponse>('payments/withdraw', withdrawalData).pipe(
+    return this.apiService.post<PaymentResponse>('payment/withdraw', withdrawalData).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -258,6 +258,67 @@ export class PaymentService {
       }),
       catchError(error => {
         console.error('Error getting product price:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Payment Intent Management
+  /**
+   * Creates a payment intent for deferred payment processing
+   * POST /api/v1/payment/intent
+   */
+  createPaymentIntent(paymentData: ProcessPaymentRequest): Observable<PaymentResponse> {
+    return this.apiService.post<PaymentResponse>('payment/intent', paymentData).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to create payment intent');
+      }),
+      catchError(error => {
+        console.error('Error creating payment intent:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Confirms a payment intent
+   * POST /api/v1/payment/confirm
+   */
+  confirmPayment(intentId: string, paymentMethodId?: string): Observable<PaymentResponse> {
+    return this.apiService.post<PaymentResponse>('payment/confirm', { 
+      intentId, 
+      paymentMethodId 
+    }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to confirm payment');
+      }),
+      catchError(error => {
+        console.error('Error confirming payment:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Cancels a payment intent
+   * POST /api/v1/payment/cancel
+   */
+  cancelPayment(intentId: string): Observable<PaymentResponse> {
+    return this.apiService.post<PaymentResponse>('payment/cancel', { intentId }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error('Failed to cancel payment');
+      }),
+      catchError(error => {
+        console.error('Error canceling payment:', error);
         return throwError(() => error);
       })
     );

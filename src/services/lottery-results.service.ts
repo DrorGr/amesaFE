@@ -181,7 +181,7 @@ export class LotteryResultsService {
     params.sortBy = currentFilter.sortBy || 'resultDate';
     params.sortDirection = currentFilter.sortDirection || 'desc';
 
-    return this.apiService.get<any>('lotteryresults', params).pipe(
+    return this.apiService.get<any>('lottery-results', params).pipe(
       map(response => {
         if (response.success && response.data) {
           this._results.set(response.data.results || []);
@@ -203,7 +203,7 @@ export class LotteryResultsService {
    * Get specific lottery result by ID
    */
   getLotteryResult(id: string): Observable<LotteryResult> {
-    return this.apiService.get<LotteryResult>(`lotteryresults/${id}`).pipe(
+    return this.apiService.get<LotteryResult>(`lottery-results/${id}`).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -219,10 +219,34 @@ export class LotteryResultsService {
   }
 
   /**
+   * Get lottery results by draw ID
+   * Uses the filter endpoint with drawId parameter
+   */
+  getResultsByDraw(drawId: string): Observable<LotteryResult[]> {
+    const filter: Partial<LotteryResultsFilter> = {
+      // Note: drawId filter may need to be added to backend filter DTO
+      // For now, we'll fetch all results and filter client-side if needed
+      pageNumber: 1,
+      pageSize: 100 // Get all results for the draw
+    };
+    
+    return this.getLotteryResults(filter).pipe(
+      map(page => {
+        // Filter by drawId if available in results
+        return page.results.filter(result => result.drawId === drawId);
+      }),
+      catchError(error => {
+        this._error.set(error.message || 'Failed to fetch draw results');
+        throw error;
+      })
+    );
+  }
+
+  /**
    * Validate QR code
    */
   validateQRCode(qrCodeData: string): Observable<QRCodeValidation> {
-    return this.apiService.post<QRCodeValidation>('lotteryresults/validate-qr', { qrCodeData }).pipe(
+    return this.apiService.post<QRCodeValidation>('lottery-results/validate-qr', { qrCodeData }).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;
@@ -241,7 +265,7 @@ export class LotteryResultsService {
    * Claim a prize
    */
   claimPrize(resultId: string, claimNotes?: string): Observable<LotteryResult> {
-    return this.apiService.post<LotteryResult>('lotteryresults/claim', {
+    return this.apiService.post<LotteryResult>('lottery-results/claim', {
       resultId,
       claimNotes
     }).pipe(
@@ -271,7 +295,7 @@ export class LotteryResultsService {
    * Create prize delivery request
    */
   createPrizeDelivery(request: CreatePrizeDeliveryRequest): Observable<PrizeDelivery> {
-    return this.apiService.post<PrizeDelivery>('lotteryresults/delivery', request).pipe(
+    return this.apiService.post<PrizeDelivery>('lottery-results/delivery', request).pipe(
       map(response => {
         if (response.success && response.data) {
           return response.data;

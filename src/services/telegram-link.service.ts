@@ -33,6 +33,21 @@ export class TelegramLinkService {
     return computed(() => this.verificationCode());
   }
 
+  fetchStatus(): Observable<TelegramLink | null> {
+    return this.apiService.get<TelegramLink>('notifications/telegram/status').pipe(
+      tap(response => {
+        if (response.success) {
+          this.linkStatus.set(response.data ?? null);
+        }
+      }),
+      map(response => response.data ?? null),
+      catchError(error => {
+        console.error('Error fetching Telegram link status:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   requestLink(): Observable<TelegramLink> {
     return this.apiService.post<TelegramLink>('notifications/telegram/link', {}).pipe(
       tap(response => {

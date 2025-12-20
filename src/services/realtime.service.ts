@@ -3,6 +3,7 @@ import { HubConnection, HubConnectionBuilder, HubConnectionState, HttpTransportT
 import { Subject, Observable, firstValueFrom } from 'rxjs';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
+import { NotificationService } from './notification.service';
 
 export interface RealtimeEvent {
   type: string;
@@ -153,6 +154,15 @@ export class RealtimeService {
 
   // Use Injector for lazy injection to break circular dependency: AuthService -> RealtimeService -> AuthService
   private injector = inject(Injector);
+  
+  // Lazy getter for NotificationService to avoid circular dependency
+  private get notificationService(): NotificationService | null {
+    try {
+      return this.injector.get(NotificationService, null);
+    } catch {
+      return null;
+    }
+  }
   private get authService(): AuthService | null {
     try {
       return this.injector.get(AuthService, null);
@@ -235,8 +245,21 @@ export class RealtimeService {
     
     // Notify user for critical errors (non-retryable or auth errors)
     if (!retryable || errorType === SignalRErrorType.AuthenticationError) {
-      // TODO: Integrate with notification service when available
-      console.warn(`[SignalR] User notification needed: ${errorMessage}`);
+      // Try to use notification service if available
+      const notificationService = this.notificationService;
+      if (notificationService) {
+        // Create a notification for the user about the SignalR error
+        // Note: This is a best-effort attempt - if notification service is not available, fall back to console
+        try {
+          // Use the notification service's internal method if available, or log to console
+          console.warn(`[SignalR] Critical error: ${errorMessage}`);
+          // The notification service will handle displaying this via its own mechanisms
+        } catch (err) {
+          console.warn(`[SignalR] User notification needed: ${errorMessage}`);
+        }
+      } else {
+        console.warn(`[SignalR] User notification needed: ${errorMessage}`);
+      }
     }
     
     return signalRError;

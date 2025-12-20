@@ -94,7 +94,7 @@ import { LocaleService } from '../../services/locale.service';
         <!-- Last Entry Date -->
         <div *ngIf="stats()?.lastEntryDate" class="flex items-center justify-between text-sm">
           <span class="text-gray-500 dark:text-gray-400">{{ translate('participants.lastEntry') }}</span>
-          <span class="text-gray-600 dark:text-gray-300">{{ formatDate(stats()?.lastEntryDate) }}</span>
+          <span class="text-gray-600 dark:text-gray-300">{{ stats()?.lastEntryDate ? formatDate(stats()!.lastEntryDate) : '' }}</span>
         </div>
       </div>
     </div>

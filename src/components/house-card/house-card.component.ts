@@ -11,6 +11,7 @@ import { HeartAnimationService } from '../../services/heart-animation.service';
 import { ToastService } from '../../services/toast.service';
 import { ProductService } from '../../services/product.service';
 import { IdentityVerificationService } from '../../services/identity-verification.service';
+import { PaymentMethodPreferenceService } from '../../services/payment-method-preference.service';
 import { LOTTERY_TRANSLATION_KEYS } from '../../constants/lottery-translation-keys';
 import { VerificationGateComponent } from '../verification-gate/verification-gate.component';
 import { PaymentPanelService } from '../../services/payment-panel.service';
@@ -535,6 +536,7 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
   private productService = inject(ProductService);
   private router = inject(Router);
   private verificationService = inject(IdentityVerificationService, { optional: true });
+  private paymentMethodPreference = inject(PaymentMethodPreferenceService);
   
   // Make LOTTERY_TRANSLATION_KEYS available in template
   readonly LOTTERY_TRANSLATION_KEYS = LOTTERY_TRANSLATION_KEYS;
@@ -778,10 +780,15 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
     try {
       const house = this.house();
       if (!house) return;
+      
+      // Get default payment method or use fallback
+      const defaultMethod = await this.paymentMethodPreference.getDefaultPaymentMethod();
+      const paymentMethodId = defaultMethod?.id || '00000000-0000-0000-0000-000000000000';
+      
       const result = await firstValueFrom(this.lotteryService.purchaseTicket({
         houseId: house.id,
         quantity: 1,
-        paymentMethodId: 'default' // Fallback to direct purchase
+        paymentMethodId: paymentMethodId
       }));
       
       if (result && result.ticketsPurchased > 0) {
@@ -993,9 +1000,12 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
           this.triggerHeartAnimation(sourceButton);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling favorite:', error);
-      // TODO: Show error toast notification
+      const errorMessage = this.translationService.translate('lottery.favorites.toggleError') || 
+        error?.message || 
+        'Failed to update favorites. Please try again.';
+      this.toastService.error(errorMessage, 4000);
     } finally {
       this.isTogglingFavorite = false;
     }
@@ -1046,19 +1056,29 @@ export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {
     try {
       const house = this.house();
       if (!house) return;
+      
+      // Get default payment method or use fallback
+      const defaultMethod = await this.paymentMethodPreference.getDefaultPaymentMethod();
+      const paymentMethodId = defaultMethod?.id || '00000000-0000-0000-0000-000000000000';
+      
       const result = await firstValueFrom(this.lotteryService.quickEntryFromFavorite({
         houseId: house.id,
         quantity: 1, // API contract specifies "quantity", matches backend [JsonPropertyName("quantity")]
-        paymentMethodId: 'default' // TODO: Get from user preferences or payment service
+        paymentMethodId: paymentMethodId
       }));
       
       if (result && result.ticketsPurchased > 0) {
         console.log('Quick entry successful!', result);
-        // TODO: Show success toast notification
+        const message = this.translationService.translate('lottery.quickEntry.success') || 
+          `Successfully entered ${result.ticketsPurchased} ticket(s)!`;
+        this.toastService.success(message, 3000);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error with quick entry:', error);
-      // TODO: Show error toast notification
+      const errorMessage = this.translationService.translate('lottery.quickEntry.error') || 
+        error?.message || 
+        'Failed to enter lottery. Please try again.';
+      this.toastService.error(errorMessage, 4000);
     } finally {
       this.isQuickEntering = false;
     }

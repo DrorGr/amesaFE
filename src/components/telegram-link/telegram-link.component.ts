@@ -211,7 +211,6 @@ export class TelegramLinkComponent implements OnInit, OnDestroy {
     this.linkStatusEffect = effect(() => {
       const status = this.telegramLinkService.getLinkStatus()();
       this.linkStatus.set(status);
-      this.isLoading.set(false);
     });
 
     // Watch verification code changes
@@ -220,8 +219,20 @@ export class TelegramLinkComponent implements OnInit, OnDestroy {
       this.verificationCode.set(code);
     });
 
-    // Initial load
-    this.isLoading.set(false);
+    // Fetch initial status
+    this.isLoading.set(true);
+    const sub = this.telegramLinkService.fetchStatus().subscribe({
+      next: (status) => {
+        this.linkStatus.set(status);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error fetching Telegram link status:', error);
+        this.errorMessage.set(this.translate('notifications.telegram.error.loadFailed') || 'Failed to load Telegram link status');
+        this.isLoading.set(false);
+      }
+    });
+    this.subscriptions.add(sub);
   }
 
   ngOnDestroy(): void {

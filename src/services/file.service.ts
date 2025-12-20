@@ -185,13 +185,7 @@ export class FileService {
 
   // File Download
   downloadFile(id: string): Observable<Blob> {
-    return this.apiService.get<Blob>(`files/${id}/download`).pipe(
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        }
-        throw new Error('Failed to download file');
-      }),
+    return this.apiService.get(`files/${id}/download`, { responseType: 'blob' as const } as { responseType: 'blob' } & Record<string, any>).pipe(
       catchError(error => {
         console.error('Error downloading file:', error);
         return throwError(() => error);

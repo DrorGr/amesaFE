@@ -30,6 +30,40 @@ export interface UserLotteryStats {
   favoriteHouseId?: string;
   mostActiveMonth?: string;
   lastEntryDate?: string;
+  // Gamification fields (nullable for backward compatibility)
+  points?: number;
+  level?: number;
+  tier?: string;
+  currentStreak?: number;
+  longestStreak?: number;
+  recentAchievements?: AchievementDto[];
+}
+
+/**
+ * Achievement DTO
+ * Represents a user achievement
+ */
+export interface AchievementDto {
+  id: string;
+  name: string;
+  description: string;
+  icon?: string;
+  unlockedAt?: string; // ISO date string
+  category?: string;
+}
+
+/**
+ * User Gamification DTO
+ * Complete gamification data for a user
+ */
+export interface UserGamificationDto {
+  userId: string;
+  totalPoints: number;
+  currentLevel: number;
+  currentTier: string;
+  currentStreak: number;
+  longestStreak: number;
+  recentAchievements: AchievementDto[];
 }
 
 /**
@@ -143,3 +177,54 @@ export interface HouseRecommendation {
  * Status type for lottery tickets
  */
 export type LotteryTicketStatus = 'active' | 'winner' | 'refunded' | 'expired';
+
+/**
+ * Bulk Favorites Request
+ * Request body for bulk add/remove favorites operations
+ */
+export interface BulkFavoritesRequest {
+  houseIds: string[];
+}
+
+/**
+ * Bulk Favorites Response
+ * Response from bulk favorites operations
+ */
+export interface BulkFavoritesResponse {
+  totalRequested: number;
+  successful: number;
+  failed: number;
+  successfulHouseIds: string[];
+  errors: BulkFavoriteError[];
+}
+
+/**
+ * Bulk Favorite Error
+ * Error details for individual house in bulk operation
+ */
+export interface BulkFavoriteError {
+  houseId: string;
+  errorCode: string;
+  errorMessage: string;
+}
+
+/**
+ * Favorites Analytics DTO
+ * Analytics data for favorites feature
+ */
+export interface FavoritesAnalyticsDto {
+  totalFavorites: number;
+  uniqueUsers: number;
+  mostFavoritedHouses: MostFavoritedHouseDto[];
+  favoritesByDate: { [date: string]: number };
+}
+
+/**
+ * Most Favorited House DTO
+ * House with favorite count for analytics
+ */
+export interface MostFavoritedHouseDto {
+  houseId: string;
+  title: string;
+  favoriteCount: number;
+}

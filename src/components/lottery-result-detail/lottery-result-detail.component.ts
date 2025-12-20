@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LotteryResultsService, LotteryResult, CreatePrizeDeliveryRequest } from '../../services/lottery-results.service';
+import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-lottery-result-detail',
@@ -229,6 +231,49 @@ import { AuthService } from '../../services/auth.service';
                     </p>
                   </div>
                 </div>
+
+                <!-- Draw Participants -->
+                @if (result()!.drawId) {
+                  <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                      {{ translate('draws.detail.participants') || 'Draw Participants' }}
+                    </h3>
+                    @if (loadingParticipants()) {
+                      <div class="flex justify-center items-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span class="ml-3 text-sm text-gray-600 dark:text-gray-300">
+                          {{ translate('draws.loading') || 'Loading participants...' }}
+                        </span>
+                      </div>
+                    } @else if (participantsError()) {
+                      <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                        <p class="text-sm text-red-700 dark:text-red-300">
+                          {{ participantsError() }}
+                        </p>
+                      </div>
+                    } @else {
+                      <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-4">
+                          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {{ translate('draws.detail.participantsCount') || 'Total Participants' }}:
+                          </p>
+                          <span class="text-lg font-bold text-blue-600 dark:text-blue-400">
+                            {{ participants().length }}
+                          </span>
+                        </div>
+                        @if (participants().length > 0) {
+                          <div class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ translate('draws.detail.participantsDescription') || 'Number of users who participated in this draw' }}
+                          </div>
+                        } @else {
+                          <div class="text-sm text-gray-500 dark:text-gray-400 italic">
+                            {{ translate('draws.empty.participants') || 'No participants found' }}
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
 
                 <!-- Claim Status -->
                 <div class="mb-8">
@@ -655,6 +700,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LotteryResultDetailComponent implements OnInit {
   public lotteryResultsService = inject(LotteryResultsService);
+  private lotteryService = inject(LotteryService);
   private translationService = inject(TranslationService);
   private authService = inject(AuthService);
 
@@ -672,6 +718,9 @@ export class LotteryResultDetailComponent implements OnInit {
   private _showDeliveryModal = signal<boolean>(false);
   private _creatingDelivery = signal<boolean>(false);
   private _deliveryError = signal<string | null>(null);
+  private _participants = signal<any[]>([]);
+  private _loadingParticipants = signal<boolean>(false);
+  private _participantsError = signal<string | null>(null);
 
   // Public signals
   public result = this._result.asReadonly();
@@ -685,6 +734,9 @@ export class LotteryResultDetailComponent implements OnInit {
   public showDeliveryModal = this._showDeliveryModal.asReadonly();
   public creatingDelivery = this._creatingDelivery.asReadonly();
   public deliveryError = this._deliveryError.asReadonly();
+  public participants = this._participants.asReadonly();
+  public loadingParticipants = this._loadingParticipants.asReadonly();
+  public participantsError = this._participantsError.asReadonly();
 
   // Claim form
   public claimNotes: string = '';
@@ -719,12 +771,31 @@ export class LotteryResultDetailComponent implements OnInit {
       next: (result) => {
         this._result.set(result);
         this._loading.set(false);
+        // Load participants if drawId is available
+        if (result.drawId) {
+          this.loadParticipants(result.drawId);
+        }
       },
       error: (error) => {
         this._error.set(error.message || 'Failed to load lottery result');
         this._loading.set(false);
       }
     });
+  }
+
+  private async loadParticipants(drawId: string): Promise<void> {
+    this._loadingParticipants.set(true);
+    this._participantsError.set(null);
+
+    try {
+      const participants = await firstValueFrom(this.lotteryService.getDrawParticipants(drawId));
+      this._participants.set(participants || []);
+    } catch (error: any) {
+      console.error('Error loading draw participants:', error);
+      this._participantsError.set(error?.message || this.translate('draws.error.loadFailed'));
+    } finally {
+      this._loadingParticipants.set(false);
+    }
   }
 
   toggleQRCode(): void {

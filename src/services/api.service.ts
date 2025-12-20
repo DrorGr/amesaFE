@@ -127,11 +127,18 @@ export class ApiService {
     return this.baseUrl;
   }
 
-  get<T>(endpoint: string, params?: any): Observable<ApiResponse<T>> {
+  // Method overloads for type safety - blob responses
+  get(endpoint: string, params: { responseType: 'blob' } & Record<string, any>): Observable<Blob>;
+  // Regular JSON responses
+  get<T>(endpoint: string, params?: any): Observable<ApiResponse<T>>;
+  // Implementation
+  get<T>(endpoint: string, params?: any): Observable<ApiResponse<T> | Blob> {
     let httpParams = new HttpParams();
+    const isBlobRequest = params?.responseType === 'blob';
+    
     if (params) {
       Object.keys(params).forEach(key => {
-        if (params[key] !== null && params[key] !== undefined) {
+        if (params[key] !== null && params[key] !== undefined && key !== 'responseType') {
           httpParams = httpParams.set(key, params[key].toString());
         }
       });
@@ -140,10 +147,36 @@ export class ApiService {
     const url = this.buildUrl(endpoint);
     const headers = this.getHeaders();
 
-    return this.http.get<ApiResponse<T>>(url, {
+    const httpOptions: any = {
       headers: headers,
-      params: httpParams
-    }).pipe(
+      params: httpParams,
+      responseType: isBlobRequest ? 'blob' : 'json',
+      observe: 'body' as const
+    };
+    
+    // Support blob response type for file downloads (via params.responseType)
+    if (isBlobRequest) {
+      // For blob responses, return the blob directly, not wrapped in ApiResponse
+      return this.http.get<Blob>(url, httpOptions).pipe(
+        catchError((error: HttpErrorResponse) => {
+          // If offline or network error, queue the request
+          if (!this.offlineService.isOnline() || error.status === 0 || error.error instanceof ProgressEvent) {
+            const requestId = this.offlineService.queueRequest({
+              method: 'GET',
+              url: url,
+              headers: this.headersToRecord(headers),
+              data: params
+            });
+            console.log(`[ApiService] Request queued (offline): ${requestId}`);
+          }
+          return this.handleErrorWithRetry(error, () => 
+            this.http.get<Blob>(url, httpOptions) as unknown as Observable<Blob>
+          );
+        })
+      ) as unknown as Observable<Blob>;
+    }
+    
+    return this.http.get<ApiResponse<T>>(url, httpOptions).pipe(
       catchError((error: HttpErrorResponse) => {
         // If offline or network error, queue the request
         if (!this.offlineService.isOnline() || error.status === 0 || error.error instanceof ProgressEvent) {
@@ -158,14 +191,15 @@ export class ApiService {
         return this.handleErrorWithRetry(error, () => 
           this.http.get<ApiResponse<T>>(url, {
             headers: headers,
-            params: httpParams
-          })
+            params: httpParams,
+            observe: 'body' as const
+          }) as Observable<ApiResponse<T>>
         );
       })
-    );
+    ) as Observable<ApiResponse<T>>;
   }
 
-  post<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
+  post<T>(endpoint: string, data: any, options?: { headers?: { [key: string]: string } }): Observable<ApiResponse<T>> {
     const url = this.buildUrl(endpoint);
     const token = this.getStoredToken();
     
@@ -178,10 +212,18 @@ export class ApiService {
     // But Angular HttpClient will add it anyway, so we'll keep it for consistency
     let headers = this.getHeaders();
     
+    // Merge custom headers if provided
+    if (options?.headers) {
+      Object.keys(options.headers).forEach(key => {
+        headers = headers.set(key, options.headers![key]);
+      });
+    }
+    
     // Angular HttpClient will send null as empty body (no Content-Length header)
     // This is better than {} for endpoints that don't expect a body
     return this.http.post<ApiResponse<T>>(url, body, {
-      headers: headers
+      headers: headers,
+      observe: 'body' as const
     }).pipe(
       catchError((error: HttpErrorResponse) => {
         // If offline or network error, queue the request
@@ -196,11 +238,12 @@ export class ApiService {
         }
         return this.handleErrorWithRetry(error, () => 
           this.http.post<ApiResponse<T>>(url, body, {
-            headers: this.getHeaders()
-          })
+            headers: this.getHeaders(),
+            observe: 'body' as const
+          }) as Observable<ApiResponse<T>>
         );
       })
-    );
+    ) as Observable<ApiResponse<T>>;
   }
 
   put<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
@@ -208,7 +251,8 @@ export class ApiService {
     const headers = this.getHeaders();
 
     return this.http.put<ApiResponse<T>>(url, data, {
-      headers: headers
+      headers: headers,
+      observe: 'body' as const
     }).pipe(
       catchError((error: HttpErrorResponse) => {
         // If offline or network error, queue the request
@@ -223,20 +267,37 @@ export class ApiService {
         }
         return this.handleErrorWithRetry(error, () => 
           this.http.put<ApiResponse<T>>(url, data, {
-            headers: headers
-          })
+            headers: headers,
+            observe: 'body' as const
+          }) as Observable<ApiResponse<T>>
         );
       })
-    );
+    ) as Observable<ApiResponse<T>>;
   }
 
-  delete<T>(endpoint: string): Observable<ApiResponse<T>> {
+  delete<T>(endpoint: string, options?: { headers?: { [key: string]: string }; body?: any }): Observable<ApiResponse<T>> {
     const url = this.buildUrl(endpoint);
-    const headers = this.getHeaders();
+    let headers = this.getHeaders();
     
-    return this.http.delete<ApiResponse<T>>(url, {
-      headers: headers
-    }).pipe(
+    // Merge custom headers if provided
+    if (options?.headers) {
+      Object.keys(options.headers).forEach(key => {
+        headers = headers.set(key, options.headers![key]);
+      });
+    }
+    
+    // Angular HttpClient delete supports body via options
+    const httpOptions: any = {
+      headers: headers,
+      observe: 'body' as const
+    };
+    
+    // Add body if provided (for DELETE with body support)
+    if (options?.body !== undefined) {
+      httpOptions.body = options.body;
+    }
+    
+    return this.http.delete<ApiResponse<T>>(url, httpOptions).pipe(
       catchError((error: HttpErrorResponse) => {
         // If offline or network error, queue the request
         if (!this.offlineService.isOnline() || error.status === 0 || error.error instanceof ProgressEvent) {
@@ -249,11 +310,12 @@ export class ApiService {
         }
         return this.handleErrorWithRetry(error, () => 
           this.http.delete<ApiResponse<T>>(url, {
-            headers: this.getHeaders()
-          })
+            headers: this.getHeaders(),
+            observe: 'body' as const
+          }) as Observable<ApiResponse<T>>
         );
       })
-    );
+    ) as Observable<ApiResponse<T>>;
   }
 
   /**

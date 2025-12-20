@@ -6,6 +6,7 @@ import { TranslationService } from './translation.service';
 import { ToastService } from './toast.service';
 import { LocaleService } from './locale.service';
 import { UserPreferencesService } from './user-preferences.service';
+import { PaymentMethodPreferenceService } from './payment-method-preference.service';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -31,6 +32,7 @@ export class HouseCardService {
 
   private localeService = inject(LocaleService);
   private userPreferencesService = inject(UserPreferencesService);
+  private paymentMethodPreference = inject(PaymentMethodPreferenceService);
 
   // Formatting utilities - Uses LocaleService for locale-aware formatting
   formatPrice(price: number): string {
@@ -184,10 +186,14 @@ export class HouseCardService {
     }
     
     try {
+      // Get default payment method or use fallback
+      const defaultMethod = await this.paymentMethodPreference.getDefaultPaymentMethod();
+      const paymentMethodId = defaultMethod?.id || '00000000-0000-0000-0000-000000000000';
+      
       const result = await firstValueFrom(this.lotteryService.purchaseTicket({
         houseId: house.id,
         quantity: 1,
-        paymentMethodId: 'default' // You'll need to implement payment method selection
+        paymentMethodId: paymentMethodId
       }));
       
       if (result && result.ticketsPurchased > 0) {
@@ -240,10 +246,14 @@ export class HouseCardService {
     }
     
     try {
+      // Get default payment method or use fallback
+      const defaultMethod = await this.paymentMethodPreference.getDefaultPaymentMethod();
+      const paymentMethodId = defaultMethod?.id || '00000000-0000-0000-0000-000000000000';
+      
       const result = await firstValueFrom(this.lotteryService.quickEntryFromFavorite({
         houseId: house.id,
         quantity: 1,
-        paymentMethodId: 'default'
+        paymentMethodId: paymentMethodId
       }));
       
       if (result && result.ticketsPurchased > 0) {
