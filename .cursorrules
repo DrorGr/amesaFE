@@ -202,11 +202,11 @@ Pieces MCP provides access to Long-Term Memory (LTM-2.7) engine, allowing agents
 - **Resource Discovery**: Access saved code snippets, bookmarks, and notes
 - **Workflow Efficiency**: Faster problem-solving with historical context
 
-### Prerequisites
-- **PiecesOS**: Must be installed and running (check system tray/processes)
-- **Long-Term Memory Engine (LTM-2.7)**: Must be enabled in PiecesOS
-- **MCP Configuration**: Pieces MCP server must be configured in Cursor Settings
-- **Tool Availability**: `ask_pieces_ltm` tool is automatically available in **ALL modes** (Auto, Agent, Manual) when MCP server is configured
+### Prerequisites (Optional)
+- **PiecesOS**: Optional - Can be installed and running (check system tray/processes) if you want to use Pieces MCP
+- **Long-Term Memory Engine (LTM-2.7)**: Optional - Can be enabled in PiecesOS if you want LTM features
+- **MCP Configuration**: Optional - Pieces MCP server can be configured in Cursor Settings if desired
+- **Tool Availability**: `ask_pieces_ltm` tool is automatically available in **ALL modes** (Auto, Agent, Manual) when MCP server is configured, but it's **optional to use**
 
 **Setup Documentation**: See `MetaData/Documentation/Development/PIECES_MCP_INTEGRATION.md` for complete setup instructions.
 
@@ -282,32 +282,32 @@ Pieces MCP provides access to Long-Term Memory (LTM-2.7) engine, allowing agents
 ### Agent Workflow Integration
 
 #### Automatic Usage in All Modes
-**CRITICAL**: Pieces MCP works in **ALL modes** (Auto, Agent, Manual). The `ask_pieces_ltm` tool is automatically available when MCP server is configured.
+**Note**: Pieces MCP works in **ALL modes** (Auto, Agent, Manual). The `ask_pieces_ltm` tool is automatically available when MCP server is configured, but using it is **optional**.
 
-**Best Practice**: Use Auto Mode for seamless integration - agent will automatically use Pieces MCP when appropriate.
+**Best Practice**: Pieces MCP can be helpful for context retrieval, but agents should use standard workflow if Pieces MCP is not available or not desired.
 
-#### On Agent Creation - MANDATORY
-**CRITICAL**: When a new agent session starts, you MUST:
+#### On Agent Creation - Optional Enhancement
+**Note**: When a new agent session starts, you **can optionally** use Pieces MCP for additional context:
 
-1. **ALWAYS Check Pieces MCP First** (MANDATORY):
-   - **Attempt to use `ask_pieces_ltm` tool immediately** - it's a primary context source
-   - If tool is available, use it for all context queries below
-   - If tool is not available, log warning and continue with standard workflow
-   - **NEVER skip Pieces MCP check** - always attempt usage first
+1. **Optional: Check Pieces MCP Availability**:
+   - **Can attempt to use `ask_pieces_ltm` tool** if you want additional context from workflow history
+   - If tool is available and you think it would be helpful, you can use it
+   - If tool is not available or you prefer not to use it, continue with standard workflow
+   - **Pieces MCP is optional** - standard workflow works fine without it
 
-2. **Query Recent Frontend Context** (MANDATORY if tool available):
-   - **ALWAYS query**: "What was I working on in the frontend in the last 24 hours?"
-   - **ALWAYS query**: "What recent changes were made to Angular components?"
-   - **ALWAYS query**: "Show me recent work on the payment flow"
-   - **ALWAYS query**: "What frontend issues or bugs were recently fixed?"
-   - **ALWAYS query**: "What UI/UX improvements were recently implemented?"
-   - Use these queries to understand frontend state before starting any work
+2. **Optional: Query Recent Frontend Context** (if tool available and desired):
+   - **Can query**: "What was I working on in the frontend in the last 24 hours?" (if helpful)
+   - **Can query**: "What recent changes were made to Angular components?" (if helpful)
+   - **Can query**: "Show me recent work on the payment flow" (if helpful)
+   - **Can query**: "What frontend issues or bugs were recently fixed?" (if helpful)
+   - **Can query**: "What UI/UX improvements were recently implemented?" (if helpful)
+   - Use these queries only if you think they would provide useful context
 
-3. **Understand Current Frontend State** (MANDATORY):
-   - "What is the current deployment status of the frontend?"
-   - "What frontend features are in progress?"
-   - "What technical debt or known issues exist in the frontend?"
-   - "What recent accessibility or performance improvements were made?"
+3. **Optional: Understand Current Frontend State** (if helpful):
+   - "What is the current deployment status of the frontend?" (if Pieces MCP might have this info)
+   - "What frontend features are in progress?" (if Pieces MCP might have this info)
+   - "What technical debt or known issues exist in the frontend?" (if Pieces MCP might have this info)
+   - "What recent accessibility or performance improvements were made?" (if Pieces MCP might have this info)
 
 #### Automatic Usage Triggers for Frontend
 
@@ -343,19 +343,19 @@ Pieces MCP provides access to Long-Term Memory (LTM-2.7) engine, allowing agents
    - User asks about frontend research activities
    - Need context about conversations or interactions related to frontend work
 
-#### User Rules for `ask_pieces_ltm` Tool
+#### User Rules for `ask_pieces_ltm` Tool (Optional)
 
-**CRITICAL**: Follow these rules when using the `ask_pieces_ltm` tool:
+**Note**: These are guidelines for when you choose to use the `ask_pieces_ltm` tool (it's optional):
 
-1. **When to Use**:
-   - ✅ User is asking about frontend work completed earlier in the day
-   - ✅ User references names of specific people (e.g., in PRs, discussions)
-   - ✅ User mentions specific applications (VS Code, Chrome DevTools, GitHub, etc.)
-   - ✅ User asks about frontend research activities
+1. **When to Consider Using**:
+   - ✅ User is asking about frontend work completed earlier in the day (Pieces MCP might have this context)
+   - ✅ User references names of specific people (Pieces MCP might have conversation history)
+   - ✅ User mentions specific applications (Pieces MCP might have activity from those apps)
+   - ✅ User asks about frontend research activities (Pieces MCP might have saved research)
 
-2. **Query Requirements** (MANDATORY):
-   - **MUST specify time ranges** in queries (e.g., "today", "earlier today", "this morning", "last 24 hours")
-   - **MUST include other suggested queries** when appropriate (e.g., related frontend topics, follow-up questions)
+2. **Query Best Practices** (if using the tool):
+   - **Should specify time ranges** in queries for better results (e.g., "today", "earlier today", "this morning", "last 24 hours")
+   - **Can include other suggested queries** when appropriate (e.g., related frontend topics, follow-up questions)
 
 3. **Source Assumptions**:
    - **If keyword 'researching' is used**: Assume primary application source is **Google Chrome**
@@ -412,48 +412,48 @@ Pieces MCP provides access to Long-Term Memory (LTM-2.7) engine, allowing agents
 - ✅ **Understanding frontend architectural decisions** - Query for documented choices
 - ✅ **Finding related frontend code or documentation** - Query for saved resources
 
-**Decision Flow (ALWAYS follow):**
-1. Is `ask_pieces_ltm` tool available? → **YES**: Use it immediately → **NO**: Continue without (log warning)
-2. **Am I stuck on a frontend issue?** → **YES**: Query LTM for solutions → **NO**: Continue to next check
-3. **Do I need frontend patterns?** → **YES**: Query LTM for implementations → **NO**: Continue to next check
-4. **Could this frontend task benefit from understanding past work?** → **YES**: Query LTM for related context → **NO**: Continue
-5. Starting new frontend task? → **YES**: Query LTM for related work → **NO**: Continue
+**Optional Decision Flow** (consider Pieces MCP if you think it would help):
+1. Is `ask_pieces_ltm` tool available? → **YES**: Consider using it if helpful → **NO**: Continue with standard workflow
+2. **Am I stuck on a frontend issue?** → **YES**: Can query LTM for solutions (optional) → **NO**: Continue to next check
+3. **Do I need frontend patterns?** → **YES**: Can query LTM for implementations (optional) → **NO**: Continue to next check
+4. **Could this frontend task benefit from understanding past work?** → **YES**: Can query LTM for related context (optional) → **NO**: Continue
+5. Starting new frontend task? → **YES**: Can query LTM for related work (optional) → **NO**: Continue
 
 #### During Frontend Task Execution
 
-**Before Starting Work** (MANDATORY):
-1. **ALWAYS Query LTM First** for related previous frontend work:
-   - "Have I worked on similar frontend features/components before?"
-   - "What patterns or solutions did I use for [similar frontend task]?"
-   - "Show me previous implementations of [component type]"
-   - "How did I handle [similar requirement] in other components?"
-   - "What was my approach to [similar frontend feature]?"
+**Before Starting Work** (Optional Enhancement):
+1. **Optional: Query LTM for related previous frontend work** (if Pieces MCP is available and you think it would help):
+   - "Have I worked on similar frontend features/components before?" (if helpful)
+   - "What patterns or solutions did I use for [similar frontend task]?" (if helpful)
+   - "Show me previous implementations of [component type]" (if helpful)
+   - "How did I handle [similar requirement] in other components?" (if helpful)
+   - "What was my approach to [similar frontend feature]?" (if helpful)
 
-2. **ALWAYS Check for Existing Frontend Solutions**:
-   - "How did I solve [similar frontend problem] before?"
-   - "What approaches have been tried for [frontend issue type]?"
-   - "Are there existing patterns I should follow for [frontend feature]?"
-   - "How did I implement [similar component/service] before?"
+2. **Optional: Check for Existing Frontend Solutions** (if Pieces MCP is available):
+   - "How did I solve [similar frontend problem] before?" (if helpful)
+   - "What approaches have been tried for [frontend issue type]?" (if helpful)
+   - "Are there existing patterns I should follow for [frontend feature]?" (if helpful)
+   - "How did I implement [similar component/service] before?" (if helpful)
 
-**When Stuck on Frontend Issues** (MANDATORY):
-**CRITICAL**: When stuck on a frontend issue, ALWAYS query Pieces MCP FIRST before trying other approaches.
+**When Stuck on Frontend Issues** (Optional Enhancement):
+**Note**: When stuck on a frontend issue, you **can optionally** query Pieces MCP for solutions, but standard troubleshooting approaches work fine too.
 
-1. **ALWAYS Query LTM First** for frontend solutions:
-   - "How did I solve [similar frontend problem] before?"
-   - "Show me examples of [frontend pattern/technique] I've used"
-   - "What resources did I save about [frontend topic]?"
-   - "How did I handle [similar build/deployment issue]?"
-   - "What approaches have been tried for [frontend issue type]?"
-   - "What was my troubleshooting approach for [similar error]?"
+1. **Optional: Query LTM for frontend solutions** (if Pieces MCP is available and you think it would help):
+   - "How did I solve [similar frontend problem] before?" (if helpful)
+   - "Show me examples of [frontend pattern/technique] I've used" (if helpful)
+   - "What resources did I save about [frontend topic]?" (if helpful)
+   - "How did I handle [similar build/deployment issue]?" (if helpful)
+   - "What approaches have been tried for [frontend issue type]?" (if helpful)
+   - "What was my troubleshooting approach for [similar error]?" (if helpful)
 
-2. **ALWAYS Find Related Frontend Context**:
-   - "What documentation exists about [frontend topic]?"
-   - "Show me code snippets related to [frontend feature]"
-   - "What decisions were made about [frontend architectural choice]?"
-   - "How did I configure [Angular feature/Tailwind pattern] before?"
+2. **Optional: Find Related Frontend Context** (if Pieces MCP is available):
+   - "What documentation exists about [frontend topic]?" (if helpful)
+   - "Show me code snippets related to [frontend feature]" (if helpful)
+   - "What decisions were made about [frontend architectural choice]?" (if helpful)
+   - "How did I configure [Angular feature/Tailwind pattern] before?" (if helpful)
 
-**When Needing Frontend Patterns** (MANDATORY):
-**CRITICAL**: When you need frontend patterns or examples, ALWAYS query Pieces MCP FIRST.
+**When Needing Frontend Patterns** (Optional Enhancement):
+**Note**: When you need frontend patterns or examples, you **can optionally** query Pieces MCP, but codebase search and standard approaches work fine too.
 
 1. **Query for Frontend Implementation Patterns**:
    - "Show me examples of [Angular pattern/technique] I've used in this project"
@@ -468,40 +468,40 @@ Pieces MCP provides access to Long-Term Memory (LTM-2.7) engine, allowing agents
    - "How did I structure [similar component/service]?"
    - "Show me examples of [component/service/guard] implementations"
 
-**When Frontend Task Could Benefit from Past Work** (MANDATORY):
-**CRITICAL**: Before starting any frontend task, evaluate if understanding past work would help. If yes, ALWAYS query Pieces MCP.
+**When Frontend Task Could Benefit from Past Work** (Optional Enhancement):
+**Note**: Before starting any frontend task, you **can optionally** query Pieces MCP if you think understanding past work would help, but it's not required.
 
-1. **Query for Related Previous Frontend Work**:
-   - "Have I worked on similar [frontend feature/component] before?"
-   - "What was my approach to [similar frontend task]?"
-   - "What decisions were made about [related frontend feature]?"
-   - "How did I handle [similar requirement] in other components?"
-   - "What was my implementation strategy for [similar frontend feature]?"
+1. **Optional: Query for Related Previous Frontend Work** (if Pieces MCP is available and helpful):
+   - "Have I worked on similar [frontend feature/component] before?" (if helpful)
+   - "What was my approach to [similar frontend task]?" (if helpful)
+   - "What decisions were made about [related frontend feature]?" (if helpful)
+   - "How did I handle [similar requirement] in other components?" (if helpful)
+   - "What was my implementation strategy for [similar frontend feature]?" (if helpful)
 
-2. **Query for Frontend Context and History**:
-   - "What is the history of [frontend feature/component]?"
-   - "Why was [frontend decision/approach] chosen?"
-   - "What challenges were encountered with [related frontend feature]?"
-   - "What lessons were learned from [previous frontend implementation]?"
-   - "What architectural decisions were made for [frontend component]?"
+2. **Optional: Query for Frontend Context and History** (if Pieces MCP is available):
+   - "What is the history of [frontend feature/component]?" (if helpful)
+   - "Why was [frontend decision/approach] chosen?" (if helpful)
+   - "What challenges were encountered with [related frontend feature]?" (if helpful)
+   - "What lessons were learned from [previous frontend implementation]?" (if helpful)
+   - "What architectural decisions were made for [frontend component]?" (if helpful)
 
-**After Completing Frontend Work** (MANDATORY):
-**CRITICAL**: After completing significant frontend work, use `create_pieces_memory` to document important context.
+**After Completing Frontend Work** (Optional Enhancement):
+**Note**: After completing significant frontend work, you **can optionally** use `create_pieces_memory` to document important context for future reference, but it's not required.
 
-1. **Evaluate if Memory is Needed**:
-   - Was this a significant frontend implementation or decision?
-   - Will future agents benefit from understanding this frontend work?
-   - Does this solve a frontend problem that might recur?
-   - Is this a frontend pattern or approach worth preserving?
+1. **Optional: Evaluate if Memory Would Be Helpful**:
+   - Was this a significant frontend implementation or decision? (if so, can document)
+   - Will future agents benefit from understanding this frontend work? (if so, can document)
+   - Does this solve a frontend problem that might recur? (if so, can document)
+   - Is this a frontend pattern or approach worth preserving? (if so, can document)
 
-2. **Create Memory if Appropriate**:
-   - Use `create_pieces_memory` tool to document:
+2. **Optional: Create Memory if Desired**:
+   - Can use `create_pieces_memory` tool to document (optional):
      - What frontend work was implemented/fixed/decided
      - Why frontend decisions were made
      - What worked and what didn't
      - Relevant frontend files and resources
      - Lessons learned
-   - This helps future agent sessions understand frontend context without needing to query
+   - This can help future agent sessions understand frontend context, but it's optional
 
 3. **Memory Content Guidelines**:
    - **Summary**: Clear, concise title (1-2 sentences)
