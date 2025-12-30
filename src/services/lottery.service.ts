@@ -1096,9 +1096,10 @@ export class LotteryService {
   /**
    * Get all favorite houses (backward compatibility - no pagination)
    * @deprecated Use getFavoriteHouses() with pagination instead
+   * Note: Limited to 100 items due to API pagination limit. For more items, use getFavoriteHouses() with pagination.
    */
   getFavoriteHousesAll(): Observable<HouseDto[]> {
-    return this.getFavoriteHouses({ page: 1, limit: 1000 }).pipe(
+    return this.getFavoriteHouses({ page: 1, limit: 100 }).pipe(
       map(pagedResponse => pagedResponse.items)
     );
   }
