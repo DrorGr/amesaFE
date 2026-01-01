@@ -120,52 +120,52 @@ import { PaymentPanelService } from '../../services/payment-panel.service';
 
       <div class="relative p-6 md:p-6 flex flex-col flex-grow min-h-0 overflow-visible bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
         <div class="flex-grow flex flex-col min-h-0 overflow-visible">
-          <h3 class="text-2xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 dark:from-white dark:to-blue-400 bg-clip-text text-transparent mb-4 md:mb-3 break-words leading-tight mobile-card-title">{{ house().title }}</h3>
-          <p class="text-gray-700 dark:text-gray-200 text-lg md:text-base mb-4 md:mb-3 line-clamp-2 break-words leading-relaxed mobile-card-text">{{ translate('house.propertyOfYourOwn') }}</p>
+          <h3 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 dark:from-white dark:to-blue-400 bg-clip-text text-transparent mb-4 md:mb-3 break-words leading-tight">{{ house().title }}</h3>
+          <p class="text-gray-700 dark:text-gray-200 text-sm md:text-base mb-4 md:mb-3 line-clamp-2 break-words leading-relaxed">{{ translate('house.propertyOfYourOwn') }}</p>
           
           <div class="flex items-center justify-between mb-4 md:mb-3">
-            <div class="flex items-center text-gray-600 dark:text-gray-300 text-2xl md:text-base min-w-0 flex-1 mr-2">
-              <svg class="w-6 h-6 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center text-gray-600 dark:text-gray-300 text-sm md:text-base min-w-0 flex-1 mr-2">
+              <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
               </svg>
               <span class="truncate">{{ house().location }}</span>
             </div>
-            <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400 flex-shrink-0 mobile-card-price">
+            <div class="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400 flex-shrink-0">
               €{{ formatPrice(house().price) }}
             </div>
           </div>
 
-          <div class="flex items-center justify-between text-2xl md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3 mobile-card-details">
+          <div class="flex items-center justify-between text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3">
             <span>{{ house().bedrooms }} {{ translate('house.bed') }}{{ house().bedrooms > 1 ? 's' : '' }}</span>
             <span>{{ house().bathrooms }} {{ translate('house.bath') }}{{ house().bathrooms > 1 ? 's' : '' }}</span>
             <span>{{ formatSqft(house().sqft) }} {{ translate('house.sqft') }}</span>
           </div>
 
           <div class="mb-4 md:mb-3 space-y-2">
-            <div class="flex justify-between text-2xl md:text-base text-gray-600 dark:text-gray-300 mobile-card-details">
+            <div class="flex justify-between text-sm md:text-base text-gray-600 dark:text-gray-300">
               <span>{{ translate('house.city') }}</span>
               <span class="font-medium">{{ house().city || 'Manhattan' }}</span>
             </div>
-            <div class="flex justify-between text-2xl md:text-base text-gray-600 dark:text-gray-300 mobile-card-details">
+            <div class="flex justify-between text-sm md:text-base text-gray-600 dark:text-gray-300">
               <span>{{ translate('house.address') }}</span>
               <span class="font-medium">{{ house().address || '123 Park Ave' }}</span>
             </div>
           </div>
 
           <div class="mb-3 md:mb-2">
-            <div class="flex justify-between text-2xl md:text-base text-gray-600 dark:text-gray-300 mb-3 md:mb-2 mobile-card-details">
+            <div class="flex justify-between text-sm md:text-base text-gray-600 dark:text-gray-300 mb-3 md:mb-2">
               <span>{{ translate('house.odds') }}</span>
               <span>{{ getOdds() }}</span>
             </div>
-            <div class="text-center text-xl md:text-base text-orange-600 dark:text-orange-400 font-semibold mobile-card-tickets">
+            <div class="text-center text-sm md:text-base text-orange-600 dark:text-orange-400 font-semibold">
               {{ getTicketsAvailableText() }}
             </div>
           </div>
 
           <div class="text-center mb-4 md:mb-3">
-            <div *ngIf="getLotteryCountdownLabel()" class="text-2xl md:text-base text-gray-600 dark:text-gray-300">{{ getLotteryCountdownLabel() }}</div>
-            <div class="text-xl md:text-xl font-bold text-orange-600 dark:text-orange-400 mobile-card-time font-mono">{{ getLotteryCountdown() }}</div>
+            <div *ngIf="getLotteryCountdownLabel()" class="text-sm md:text-base text-gray-600 dark:text-gray-300">{{ getLotteryCountdownLabel() }}</div>
+            <div class="text-lg md:text-xl font-bold text-orange-600 dark:text-orange-400 font-mono">{{ getLotteryCountdown() }}</div>
           </div>
         </div>
 
@@ -179,7 +179,7 @@ import { PaymentPanelService } from '../../services/payment-panel.service';
                 (keydown.enter)="quickEntry()"
                 (keydown.space)="quickEntry(); $event.preventDefault()"
                 [disabled]="isQuickEntering || house().status !== 'active'"
-                class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 md:py-2 px-6 md:px-4 rounded-lg font-semibold transition-all duration-200 border-none cursor-pointer text-lg md:text-sm disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none"
+                class="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-3 md:py-2 px-6 md:px-4 rounded-lg font-semibold transition-all duration-200 border-none cursor-pointer text-sm md:text-sm disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none"
                 [class.bg-gray-400]="(isQuickEntering || house().status !== 'active')"
                 [class.cursor-not-allowed]="(isQuickEntering || house().status !== 'active')">
                 <ng-container *ngIf="isQuickEntering; else quickEntryBlock">
@@ -199,7 +199,7 @@ import { PaymentPanelService } from '../../services/payment-panel.service';
                 [disabled]="isPurchasing || house().status === 'ended'"
                 [class.buy-ticket-active-animation]="house().status === 'active' && !isPurchasing"
                 [class.buy-ticket-ended]="house().status === 'ended'"
-                class="w-full bg-blue-600 text-white py-5 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[64px] text-xl md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed mobile-card-button focus:outline-none relative overflow-hidden"
+                class="w-full bg-blue-600 text-white py-3 md:py-3 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 border-none cursor-pointer min-h-[48px] md:min-h-[64px] text-base md:text-base disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none relative overflow-hidden"
                 [class.hover:bg-blue-700]="house().status !== 'ended' && !isPurchasing"
                 [class.dark:hover:bg-blue-600]="house().status !== 'ended' && !isPurchasing"
                 [class.dark:bg-blue-700]="house().status !== 'ended' && !isPurchasing"
@@ -218,8 +218,8 @@ import { PaymentPanelService } from '../../services/payment-panel.service';
           </ng-container>
           <ng-template #signInBlock>
             <div class="text-center">
-              <p class="text-2xl md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3 mobile-card-text">{{ translate('house.signInToParticipate') }}</p>
-              <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400 mobile-card-price">€{{ house().ticketPrice }} {{ translate('house.perTicket') }}</div>
+              <p class="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4 md:mb-3">{{ translate('house.signInToParticipate') }}</p>
+              <div class="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400">€{{ house().ticketPrice }} {{ translate('house.perTicket') }}</div>
             </div>
           </ng-template>
         </div>
@@ -238,110 +238,7 @@ import { PaymentPanelService } from '../../services/payment-panel.service';
       box-sizing: border-box !important;
     }
     
-    @media (max-width: 767px) {
-      .mobile-card-title {
-        font-size: 2.5rem !important;
-        line-height: 1.3 !important;
-      }
-      
-      .mobile-card-text {
-        font-size: 1.75rem !important;
-        line-height: 1.5 !important;
-      }
-      
-      .mobile-card-price {
-        font-size: 2.25rem !important;
-      }
-      
-      .mobile-card-details {
-        font-size: 1.75rem !important;
-      }
-      
-      .mobile-card-button {
-        font-size: 2rem !important;
-        padding: 1.5rem 2rem !important;
-        min-height: 80px !important;
-      }
-      
-      .mobile-card-progress {
-        height: 1rem !important;
-      }
-      
-      .mobile-card-time {
-        font-size: 2rem !important;
-      }
-      
-      /* Override Tailwind text classes specifically for house cards */
-      .text-gray-600,
-      .text-gray-300 {
-        font-size: 1.75rem !important;
-      }
-      
-      .text-xl {
-        font-size: 2.25rem !important;
-      }
-      
-      .text-2xl {
-        font-size: 2.5rem !important;
-      }
-      
-      .text-base {
-        font-size: 1.75rem !important;
-      }
-      
-      .text-sm {
-        font-size: 1.5rem !important;
-      }
-      
-      /* Specific targeting for property details */
-      .flex.items-center.justify-between {
-        font-size: 1.75rem !important;
-      }
-      
-      .flex.items-center.justify-between span {
-        font-size: 1.75rem !important;
-      }
-      
-      /* Target the specific property details section */
-      .flex.items-center.justify-between.text-gray-600,
-      .flex.items-center.justify-between.text-gray-300 {
-        font-size: 1.75rem !important;
-      }
-      
-      /* Target all spans within the details section */
-      .flex.items-center.justify-between.text-gray-600 span,
-      .flex.items-center.justify-between.text-gray-300 span {
-        font-size: 1.75rem !important;
-      }
-      
-      /* Target tickets sold section */
-      .flex.justify-between.text-gray-600,
-      .flex.justify-between.text-gray-300 {
-        font-size: 1.75rem !important;
-      }
-      
-      .flex.justify-between.text-gray-600 span,
-      .flex.justify-between.text-gray-300 span {
-        font-size: 1.75rem !important;
-      }
-      
-      /* Target lottery ends section */
-      .text-center.text-gray-600,
-      .text-center.text-gray-300 {
-        font-size: 1.75rem !important;
-      }
-      
-      .text-center.text-gray-600 div,
-      .text-center.text-gray-300 div {
-        font-size: 1.75rem !important;
-      }
-      
-      /* Target sign in text */
-      .text-center p {
-        font-size: 1.75rem !important;
-      }
-      
-      /* Animation: rotates like a seesaw board, one end up while other end down, then reverses */
+    /* Animation: rotates like a seesaw board, one end up while other end down, then reverses */
       @keyframes seesaw {
         0%, 100% {
           transform: rotate(0deg);
@@ -522,7 +419,6 @@ import { PaymentPanelService } from '../../services/payment-panel.service';
         background-color: #9ca3af !important;
         opacity: 0.5 !important;
       }
-    }
   `]
 })
 export class HouseCardComponent implements OnInit, OnDestroy, AfterViewInit {

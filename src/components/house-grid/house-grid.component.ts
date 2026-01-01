@@ -12,14 +12,14 @@ import { TranslationService } from '../../services/translation.service';
     <section class="bg-white dark:bg-gray-900 py-8 pb-16 transition-colors duration-300" style="overflow: visible;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="overflow: visible;">
         <div class="text-center mb-8">
-          <h2 class="text-4xl md:text-4xl font-black text-gray-900 dark:text-white mb-6 text-balance mobile-grid-title">
+          <h2 class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-6 text-balance">
             {{ translate('hero.title') }}
           </h2>
         </div>
 
-        <div class="mobile-house-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; align-items: stretch; padding-bottom: 2rem; width: 100%;">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8 w-full">
           @for (house of houses(); track house.id) {
-            <div style="display: block; width: 100%; height: 100%;">
+            <div class="w-full h-full block">
               <app-house-card [house]="house"></app-house-card>
             </div>
           }
@@ -32,53 +32,14 @@ import { TranslationService } from '../../services/translation.service';
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
               </svg>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3 mobile-empty-title">{{ translate('lottery.entries.empty') }}</h3>
-            <p class="text-2xl text-gray-600 dark:text-gray-300 mobile-empty-text">{{ translate('lottery.entries.emptyDescription') }}</p>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">{{ translate('lottery.entries.empty') }}</h3>
+            <p class="text-xl text-gray-600 dark:text-gray-300">{{ translate('lottery.entries.emptyDescription') }}</p>
           </div>
         }
       </div>
     </section>
   `,
   styles: [`
-    @media (max-width: 767px) {
-      .mobile-grid-title {
-        font-size: 4.5rem !important;
-        line-height: 1.2 !important;
-      }
-      
-      .mobile-grid-subtitle {
-        font-size: 2.25rem !important;
-        line-height: 1.5 !important;
-      }
-      
-      .mobile-house-grid {
-        grid-template-columns: 1fr !important;
-        gap: 2rem !important;
-      }
-      
-      .mobile-empty-title {
-        font-size: 3.5rem !important;
-        line-height: 1.3 !important;
-      }
-      
-      .mobile-empty-text {
-        font-size: 2rem !important;
-        line-height: 1.5 !important;
-      }
-      
-      /* Override Tailwind text classes specifically for house grid */
-      .text-4xl {
-        font-size: 4.5rem !important;
-      }
-      
-      .text-xl {
-        font-size: 2.25rem !important;
-      }
-      
-      .text-2xl {
-        font-size: 2.5rem !important;
-      }
-    }
   `]
 })
 export class HouseGridComponent {

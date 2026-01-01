@@ -32,7 +32,7 @@ import { firstValueFrom } from 'rxjs';
           <div class="flex justify-between items-center mb-8">
             <h2 
               id="auth-modal-title"
-              class="text-4xl md:text-3xl font-black text-gray-900 dark:text-white mobile-auth-title">
+              class="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">
               {{ mode() === 'login' ? translate('auth.signIn') : translate('auth.createAccount') }}
             </h2>
             <button 
@@ -241,49 +241,6 @@ import { firstValueFrom } from 'rxjs';
   styles: [`
     :host {
       display: block;
-    }
-    
-    @media (max-width: 767px) {
-      .modal-content {
-        margin: 1rem !important;
-        max-width: calc(100vw - 2rem) !important;
-        max-height: calc(100vh - 2rem) !important;
-        overflow-y: auto !important;
-      }
-      
-      .mobile-auth-title {
-        font-size: 3.5rem !important;
-        line-height: 1.3 !important;
-      }
-      
-      .mobile-auth-button {
-        font-size: 2rem !important;
-        padding: 1.5rem 2rem !important;
-        min-height: 80px !important;
-      }
-      
-      .mobile-auth-input {
-        font-size: 1.75rem !important;
-        padding: 1.5rem !important;
-        min-height: 80px !important;
-      }
-      
-      .mobile-auth-label {
-        font-size: 1.5rem !important;
-        margin-bottom: 1rem !important;
-      }
-      
-      .mobile-social-button {
-        font-size: 2rem !important;
-        padding: 1.5rem 2rem !important;
-        min-height: 80px !important;
-      }
-      
-      .mobile-social-icon {
-        width: 2.5rem !important;
-        height: 2.5rem !important;
-        margin-right: 1.5rem !important;
-      }
     }
   `]
 })

@@ -25,10 +25,10 @@ import { TranslationService } from '../../services/translation.service';
           <!-- Content -->
           <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div class="text-white max-w-4xl">
-              <h1 class="text-3xl md:text-5xl font-black mb-4 leading-tight mobile-hero-title" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
+              <h1 class="text-3xl md:text-5xl font-black mb-4 leading-tight" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
                 {{ translate('help.heroTitle') }}
               </h1>
-              <p class="text-2xl md:text-2xl leading-relaxed mobile-hero-subtitle" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <p class="text-xl md:text-2xl leading-relaxed" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
                 {{ translate('help.heroSubtitle') }}
               </p>
             </div>
@@ -324,48 +324,6 @@ import { TranslationService } from '../../services/translation.service';
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
-    
-    @media (max-width: 767px) {
-      .mobile-hero-title {
-        font-size: 4rem !important;
-        line-height: 1.2 !important;
-      }
-      
-      .mobile-hero-subtitle {
-        font-size: 2rem !important;
-        line-height: 1.5 !important;
-      }
-      
-      .mobile-section-title {
-        font-size: 3rem !important;
-        line-height: 1.3 !important;
-      }
-      
-      .mobile-card-title {
-        font-size: 2rem !important;
-        line-height: 1.4 !important;
-      }
-      
-      .mobile-card-text {
-        font-size: 1.5rem !important;
-        line-height: 1.5 !important;
-      }
-      
-      .mobile-button {
-        font-size: 1.75rem !important;
-        padding: 1.5rem 2.5rem !important;
-        min-height: 80px !important;
-      }
-      
-      .mobile-grid {
-        grid-template-columns: 1fr !important;
-        gap: 2rem !important;
-      }
-      
-      .mobile-padding {
-        padding: 2rem !important;
-      }
-    }
   `]
 })
 export class HelpCenterPageComponent {

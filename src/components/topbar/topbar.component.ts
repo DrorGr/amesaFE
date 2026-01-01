@@ -208,7 +208,7 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
                 (keydown.space)="navigateToDashboard(); $event.preventDefault()"
                 [attr.aria-label]="translate('nav.lotteries')"
                 role="menuitem"
-                [class]="isOnDashboardPage() ? 'block w-full text-left px-8 py-6 text-3xl bg-[#2D3748] dark:bg-[#2D3748] text-white dark:text-white border border-[#374151] dark:border-[#374151] font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none' : 'block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none'">
+                [class]="isOnDashboardPage() ? 'block w-full text-left px-4 py-3 text-lg bg-[#2D3748] dark:bg-[#2D3748] text-white dark:text-white border border-[#374151] dark:border-[#374151] font-bold transition-colors duration-200 rounded-lg focus:outline-none' : 'block w-full text-left px-4 py-3 text-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 focus:outline-none'">
                 {{ translate('nav.lotteries') }}
               </button>
               
@@ -219,7 +219,7 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
                   (keydown.space)="navigateToHome(); $event.preventDefault()"
                   [attr.aria-label]="translate('nav.backHome')"
                   role="menuitem"
-                  class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none">
+                  class="block w-full text-left px-4 py-3 text-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 rounded-lg focus:outline-none">
                   {{ translate('nav.backHome') || 'Back Home' }}
                 </button>
               } @else {
@@ -229,7 +229,7 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
                   (keydown.space)="navigateToFavorites(); $event.preventDefault()"
                   [attr.aria-label]="translate('nav.favorites')"
                   role="menuitem"
-                  class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none">
+                  class="block w-full text-left px-4 py-3 text-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 focus:outline-none">
                   {{ translate('nav.favorites') }}
                 </button>
               }
@@ -241,7 +241,7 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
                   (keydown.space)="navigateToHome(); $event.preventDefault()"
                   [attr.aria-label]="translate('nav.backHome')"
                   role="menuitem"
-                  class="block w-full text-left px-8 py-6 text-3xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button rounded-lg focus:outline-none">
+                  class="block w-full text-left px-4 py-3 text-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 rounded-lg focus:outline-none">
                   {{ translate('nav.backHome') || 'Back Home' }}
                 </button>
               } @else {
@@ -251,7 +251,7 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
                   (keydown.space)="navigateToSearch(); $event.preventDefault()"
                   [attr.aria-label]="translate('nav.search')"
                   role="menuitem"
-                  class="block w-full text-left px-8 py-6 text-3xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 min-h-[72px] mobile-nav-button focus:outline-none">
+                  class="block w-full text-left px-4 py-3 text-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors duration-200 focus:outline-none">
                   {{ translate('nav.search') }}
                 </button>
               }
@@ -270,41 +270,6 @@ import { NotificationSidebarComponent } from '../notification-sidebar/notificati
   styles: [`
     :host {
       display: block;
-    }
-    
-    /* Mobile-specific styles */
-    @media (max-width: 767px) {
-      .mobile-nav-button {
-        font-size: 1.75rem !important;
-        padding: 1rem 1.5rem !important;
-        min-height: 60px !important;
-      }
-      
-      .mobile-signin-button {
-        font-size: 1.5rem !important;
-        padding: 1rem 2rem !important;
-        min-height: 50px !important;
-      }
-      
-      .mobile-logo {
-        height: 2.5rem !important;
-        width: auto !important;
-      }
-      
-      .mobile-controls {
-        transform: scale(1.5) !important;
-      }
-      
-      .mobile-hamburger {
-        padding: 1rem !important;
-        min-height: 60px !important;
-        min-width: 60px !important;
-      }
-      
-      .mobile-hamburger svg {
-        width: 2rem !important;
-        height: 2rem !important;
-      }
     }
     
     /* Ringing bell animation */

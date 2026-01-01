@@ -46,7 +46,7 @@ import { environment } from '../../environments/environment';
             <div class="flex transition-transform duration-500 ease-in-out" 
                  [style.transform]="'translateX(' + (-currentSlide * 100) + '%)'">
               @for (house of houses(); track house.id; let houseIndex = $index) {
-              <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 relative px-2 md:px-0 mobile-carousel-container">
+              <div class="w-full flex-shrink-0 flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 relative px-2 md:px-0">
                 <!-- Main House Image -->
                 <div class="flex-1 max-w-5xl flex flex-col mb-4">
                   <div class="relative overflow-hidden rounded-xl shadow-lg group">
@@ -78,7 +78,7 @@ import { environment } from '../../environments/environment';
                               decoding="async"
                               fetchpriority="high"
                               (error)="onImageError($event)"
-                              class="w-full h-64 md:h-96 object-cover object-center opacity-100 transition-opacity duration-300 mobile-carousel-image"
+                              class="w-full h-64 md:h-96 object-cover object-center opacity-100 transition-opacity duration-300"
                               (load)="onImageLoad($event)">
                           </picture>
                         } @else {
@@ -90,7 +90,7 @@ import { environment } from '../../environments/environment';
                             decoding="async"
                             fetchpriority="high"
                             (error)="onImageError($event)"
-                            class="w-full h-64 md:h-96 object-cover object-center opacity-100 transition-opacity duration-300 mobile-carousel-image"
+                            class="w-full h-64 md:h-96 object-cover object-center opacity-100 transition-opacity duration-300"
                             (load)="onImageLoad($event)"
                             onerror="this.src='/assets/AmesaNoBG.png'">
                         }
@@ -191,17 +191,16 @@ import { environment } from '../../environments/environment';
                     <!-- Mobile: Thumbnail images for house image selection -->
                     <div class="md:hidden relative w-full flex justify-center">
                       <!-- Mobile Thumbnail Images - centered (only secondary images) -->
-                      <div class="flex space-x-2 mobile-carousel-thumbnails">
+                      <div class="flex space-x-2">
                         @for (image of getSecondaryImages(house.images); track $index) {
                           <button 
                             (click)="goToSecondaryImage($index)"
-                            class="w-20 h-12 rounded overflow-hidden border-2 transition-all hover:scale-105 mobile-carousel-thumbnail"
-                            style="width: 8rem !important; height: 5rem !important;"
+                            class="w-20 h-12 rounded overflow-hidden border-2 transition-all hover:scale-105"
                             [class.border-blue-500]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
                             [class.border-gray-300]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)"
                             [class.dark:border-blue-400]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
                             [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)">
-                            <img [src]="image.url" [alt]="image.alt" loading="lazy" decoding="async" class="w-full h-full object-cover mobile-thumbnail-image" (error)="onImageError($event)">
+                            <img [src]="image.url" [alt]="image.alt" loading="lazy" decoding="async" class="w-full h-full object-cover" (error)="onImageError($event)">
                           </button>
                         }
                       </div>
@@ -213,12 +212,12 @@ import { environment } from '../../environments/environment';
                       @for (image of getSecondaryImages(house.images); track $index) {
                         <button 
                           (click)="goToSecondaryImage($index)"
-                          class="w-30 h-19 rounded overflow-hidden border-2 transition-all hover:scale-105 mobile-carousel-thumbnail"
+                          class="w-30 h-19 rounded overflow-hidden border-2 transition-all hover:scale-105"
                           [class.border-blue-500]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
                           [class.border-gray-300]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)"
                           [class.dark:border-blue-400]="currentSlide === houseIndex && currentSecondaryImageIndex === $index"
                           [class.dark:border-gray-600]="!(currentSlide === houseIndex && currentSecondaryImageIndex === $index)">
-                          <img [src]="image.url" [alt]="image.alt" loading="lazy" decoding="async" class="w-full h-full object-cover mobile-thumbnail-image" (error)="onImageError($event)">
+                          <img [src]="image.url" [alt]="image.alt" loading="lazy" decoding="async" class="w-full h-full object-cover" (error)="onImageError($event)">
                         </button>
                       }
                     </div>
@@ -246,50 +245,50 @@ import { environment } from '../../environments/environment';
                 </div>
                 
                 <!-- Property Description and Lottery Info -->
-                <div class="flex-1 max-w-2xl text-center lg:text-left flex flex-col justify-between h-auto md:h-120 mx-auto lg:mx-0 px-2 md:px-0 mobile-carousel-content">
+                <div class="flex-1 max-w-2xl text-center lg:text-left flex flex-col justify-between h-auto md:h-120 mx-auto lg:mx-0 px-2 md:px-0">
                   <div>
                     <!-- House Title -->
                     <div class="mb-4 md:mb-4">
-                      <h2 class="text-4xl md:text-4xl font-bold text-gray-900 dark:text-white text-center mobile-carousel-title">
+                      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white text-center">
                         {{ house.title }}
                       </h2>
                     </div>
                     
-                    <p class="text-gray-700 dark:text-gray-200 mb-6 md:mb-6 leading-relaxed text-xl md:text-2xl mobile-carousel-description">
+                    <p class="text-gray-700 dark:text-gray-200 mb-6 md:mb-6 leading-relaxed text-base md:text-2xl">
                       {{ translate('house.propertyOfYourOwn') }}
                     </p>
                   </div>
                   
                   <!-- Lottery Information -->
                   <div class="space-y-2 md:space-y-2 flex-grow flex flex-col justify-center">
-                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('common.price') }}</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">{{ formatPrice(house.price) }}</span>
+                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-lg md:text-2xl font-large">{{ translate('common.price') }}</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-lg md:text-3xl">{{ formatPrice(house.price) }}</span>
                     </div>
-                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('house.city') }}</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">{{ house.city || 'Manhattan' }}</span>
+                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-lg md:text-2xl font-large">{{ translate('house.city') }}</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-lg md:text-3xl">{{ house.city || 'Manhattan' }}</span>
                     </div>
-                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('house.address') }}</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">{{ house.address || '123 Park Ave' }}</span>
+                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-lg md:text-2xl font-large">{{ translate('house.address') }}</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-lg md:text-3xl">{{ house.address || '123 Park Ave' }}</span>
                     </div>
-                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('house.perTicket') }}</span>
-                      <span class="font-bold text-blue-600 dark:text-blue-400 text-xl md:text-3xl">{{ formatPrice(house.ticketPrice) }}</span>
+                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-lg md:text-2xl font-large">{{ translate('house.perTicket') }}</span>
+                      <span class="font-bold text-blue-600 dark:text-blue-400 text-lg md:text-3xl">{{ formatPrice(house.ticketPrice) }}</span>
                     </div>
-                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ translate('house.odds') }}</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-xl md:text-3xl">{{ getOdds(house) }}</span>
+                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span class="text-gray-600 dark:text-gray-400 text-lg md:text-2xl font-large">{{ translate('house.odds') }}</span>
+                      <span class="font-bold text-gray-900 dark:text-white text-lg md:text-3xl">{{ getOdds(house) }}</span>
                     </div>
-                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 mobile-carousel-info">
-                      <span *ngIf="getLotteryCountdownLabel(house)" class="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-large">{{ getLotteryCountdownLabel(house) }}</span>
-                      <span class="font-bold text-orange-600 dark:text-orange-400 text-xl md:text-3xl font-mono">{{ getLotteryCountdown(house) }}</span>
+                    <div class="flex justify-between items-center py-3 md:py-2 border-b border-gray-200 dark:border-gray-700">
+                      <span *ngIf="getLotteryCountdownLabel(house)" class="text-gray-600 dark:text-gray-400 text-lg md:text-2xl font-large">{{ getLotteryCountdownLabel(house) }}</span>
+                      <span class="font-bold text-orange-600 dark:text-orange-400 text-lg md:text-3xl font-mono">{{ getLotteryCountdown(house) }}</span>
                     </div>
                   
                     <!-- Tickets Available -->
                     <div class="mt-4 md:mt-3">
-                      <div class="text-center text-xl md:text-xl text-orange-600 dark:text-orange-400 font-semibold">
+                      <div class="text-center text-lg md:text-xl text-orange-600 dark:text-orange-400 font-semibold">
                         {{ getTicketsAvailableText(house) }}
                       </div>
                     </div>
@@ -301,11 +300,11 @@ import { environment } from '../../environments/environment';
                         @if (house.status === 'ended') {
                           <button 
                             disabled
-                            class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button cursor-not-allowed opacity-60 buy-ticket-ended">
+                            class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-4 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-xl md:text-2xl min-h-[60px] md:min-h-[72px] cursor-not-allowed opacity-60 buy-ticket-ended">
                             {{ translate('house.ended') || 'Ended' }}
                           </button>
                         } @else if (house.status === 'upcoming') {
-                          <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button relative overflow-hidden">
+                          <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-4 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-xl md:text-2xl min-h-[60px] md:min-h-[72px] relative overflow-hidden">
                             {{ translate('house.reserveTicket') || 'Reserve Ticket' }}
                           </button>
                         } @else {
@@ -315,7 +314,7 @@ import { environment } from '../../environments/environment';
                             (keydown.space)="onBuyTicketClick(house, $event); $event.preventDefault()"
                             [disabled]="isPurchasing(house.id)"
                             [class.buy-ticket-active-animation]="house.status === 'active' && !isPurchasing(house.id)"
-                            class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-6 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-2xl md:text-2xl min-h-[72px] mobile-carousel-button disabled:bg-gray-400 disabled:cursor-not-allowed relative overflow-hidden">
+                            class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-4 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-xl md:text-2xl min-h-[60px] md:min-h-[72px] disabled:bg-gray-400 disabled:cursor-not-allowed relative overflow-hidden">
                             <span class="relative z-10">
                               @if (isPurchasing(house.id)) {
                                 {{ translate('house.processing') }}
@@ -329,8 +328,8 @@ import { environment } from '../../environments/environment';
                     } @else {
                       <!-- Sign In Prompt -->
                       <div class="text-center mt-6 md:mt-4">
-                        <p class="text-2xl md:text-xl text-gray-600 dark:text-gray-300 mb-4 md:mb-3">{{ translate('house.signInToParticipate') }}</p>
-                        <div class="text-xl md:text-xl font-bold text-blue-600 dark:text-blue-400">{{ formatPrice(house.ticketPrice) }} {{ translate('house.perTicket') }}</div>
+                        <p class="text-xl md:text-xl text-gray-600 dark:text-gray-300 mb-4 md:mb-3">{{ translate('house.signInToParticipate') }}</p>
+                        <div class="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400">{{ formatPrice(house.ticketPrice) }} {{ translate('house.perTicket') }}</div>
                       </div>
                     }
                   </div>
@@ -424,175 +423,6 @@ import { environment } from '../../environments/environment';
     </section>
   `,
   styles: [`
-    /* Mobile-specific improvements for house carousel */
-    @media (max-width: 990px) {
-      .mobile-carousel-image {
-        height: 20rem !important;
-        object-fit: cover !important;
-        object-position: center !important;
-      }
-      
-      .mobile-carousel-container {
-        padding: 0.5rem !important;
-        gap: 1rem !important;
-      }
-      
-      .mobile-carousel-content {
-        padding: 0.5rem !important;
-      }
-      
-      .mobile-carousel-title {
-        font-size: 3rem !important;
-        line-height: 1.2 !important;
-        margin-bottom: 1rem !important;
-      }
-      
-      .mobile-carousel-description {
-        font-size: 1.5rem !important;
-        line-height: 1.6 !important;
-        margin-bottom: 1.5rem !important;
-      }
-      
-      .mobile-carousel-info {
-        font-size: 1.5rem !important;
-        padding: 1rem 0 !important;
-      }
-      
-      .mobile-carousel-info span {
-        font-size: 1.5rem !important;
-      }
-      
-      .mobile-carousel-button {
-        font-size: 2rem !important;
-        padding: 1.5rem 2rem !important;
-        min-height: 80px !important;
-      }
-      
-      .mobile-carousel-progress {
-        height: 1.25rem !important;
-        margin: 1rem 0 !important;
-      }
-      
-      .mobile-carousel-thumbnails {
-        gap: 0.75rem !important;
-      }
-      
-      .mobile-carousel-thumbnail {
-        width: 12rem !important;
-        height: 7rem !important;
-
-      }
-      
-      /* Override Tailwind classes directly */
-      .mobile-carousel-content .text-4xl {
-        font-size: 3rem !important;
-      }
-      
-      .mobile-carousel-content .text-xl {
-        font-size: 1.5rem !important;
-      }
-      
-      .mobile-carousel-content .text-base {
-        font-size: 1.5rem !important;
-      }
-      
-      .mobile-carousel-content .text-2xl {
-        font-size: 1.75rem !important;
-      }
-      
-      .mobile-carousel-content .text-sm {
-        font-size: 1.5rem !important;
-      }
-      
-      /* Mobile bottom navigation dots - target the specific mobile navigation section */
-      .flex.items-center.justify-between .flex.space-x-2 button {
-        width: 1rem !important;
-        height: 1rem !important;
-        min-width: 1rem !important;
-        min-height: 1rem !important;
-      }
-      
-      /* Override Tailwind w-3 h-3 classes for mobile bottom dots */
-      .flex.items-center.justify-between .flex.space-x-2 button.w-3 {
-        width: 1rem !important;
-      }
-      
-      .flex.items-center.justify-between .flex.space-x-2 button.h-3 {
-        height: 1rem !important;
-      }
-      
-      /* Mobile image navigation dots - under main image (always visible) */
-      .flex.space-x-1.mt-1 button {
-        width: 0.75rem !important;
-        height: 0.75rem !important;
-        min-width: 0.75rem !important;
-        min-height: 0.75rem !important;
-      }
-      
-      /* Override Tailwind w-2 h-2 classes for image dots */
-      .flex.space-x-1.mt-1 button.w-2 {
-        width: 0.75rem !important;
-      }
-      
-      .flex.space-x-1.mt-1 button.h-2 {
-        height: 0.75rem !important;
-      }
-      
-      /* Mobile thumbnails - target the mobile thumbnail section */
-      .mobile-carousel-thumbnails .mobile-carousel-thumbnail {
-        width: 7.5rem !important;
-        height: 4.5rem !important;
-      }
-      
-      /* Override Tailwind thumbnail classes for mobile */
-      .mobile-carousel-thumbnails .mobile-carousel-thumbnail.w-12 {
-        width: 7.5rem !important;
-      }
-      
-      .mobile-carousel-thumbnails .mobile-carousel-thumbnail.h-8 {
-        height: 4.5rem !important;
-      }
-      
-      /* Mobile thumbnail images - make them bigger and more visible */
-      .mobile-thumbnail-image {
-        width: 200% !important;
-        height: 200% !important;
-        object-fit: cover !important;
-        object-position: center !important;
-        border-radius: 0.375rem !important;
-        transform: scale(2) !important;
-        transform-origin: center !important;
-        position: relative !important;
-        z-index: 10 !important;
-      }
-      
-      /* Alternative targeting - direct img elements in mobile thumbnails */
-      .mobile-carousel-thumbnails img {
-        width: 200% !important;
-        height: 200% !important;
-        object-fit: cover !important;
-        object-position: center !important;
-        border-radius: 0.375rem !important;
-        transform: scale(2) !important;
-        transform-origin: center !important;
-        position: relative !important;
-
-      }
-      
-      /* Even more specific targeting */
-      .mobile-carousel-thumbnail img {
-        width: 200% !important;
-        height: 200% !important;
-        object-fit: cover !important;
-        object-position: center !important;
-        border-radius: 0.375rem !important;
-        transform: scale(2) !important;
-        transform-origin: center !important;
-        position: relative !important;
-        z-index: 10 !important;
-      }
-    }
-    
     /* Seesaw animation for Active status - one side goes up, other goes down, middle as pivot */
     /* Animation: rotates like a seesaw board, one end up while other end down, then reverses */
     @keyframes seesaw {

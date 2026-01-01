@@ -29,10 +29,10 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
           <!-- Left side content -->
           <div class="text-white max-w-2xl">
-            <h1 class="hero-title font-black mb-6 leading-tight text-white" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
+            <h1 class="font-black mb-6 leading-tight text-white text-4xl md:text-6xl" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
               {{ translate('hero.title') }}
             </h1>
-            <p class="hero-subtitle mb-8 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+            <p class="mb-8 text-white text-xl md:text-2xl font-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
               {{ translate('hero.subtitle') }}
             </p>
             <div class="flex flex-col sm:flex-row gap-6">
@@ -41,7 +41,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
                 (keydown.enter)="navigateToLotteries()"
                 (keydown.space)="navigateToLotteries(); $event.preventDefault()"
                 [attr.aria-label]="translate('hero.browseLotteries')"
-                class="px-12 py-6 text-3xl md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button focus:outline-none">
+                class="px-8 py-4 md:px-12 md:py-6 text-xl md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 min-h-[60px] md:min-h-[88px] shadow-lg focus:outline-none">
                 {{ translate('hero.browseLotteries') }}
               </button>
               <button 
@@ -49,7 +49,7 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
                 (keydown.enter)="navigateToHowItWorks()"
                 (keydown.space)="navigateToHowItWorks(); $event.preventDefault()"
                 [attr.aria-label]="translate('hero.howItWorks')"
-                class="px-12 py-6 text-3xl md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 min-h-[88px] shadow-lg hero-button focus:outline-none dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
+                class="px-8 py-4 md:px-12 md:py-6 text-xl md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 min-h-[60px] md:min-h-[88px] shadow-lg focus:outline-none dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
                 {{ translate('hero.howItWorks') }}
               </button>
             </div>
@@ -139,38 +139,6 @@ import { PromotionsSlidingMenuComponent } from '../promotions-sliding-menu/promo
       filter: blur(0.5px);
     }
     
-    @media (max-width: 767px) {
-      .hero-title {
-        font-size: 3.5rem !important;
-        line-height: 1.1;
-      }
-      
-      .hero-subtitle {
-        font-size: 1.5rem !important;
-        line-height: 1.5;
-      }
-      
-      .hero-button {
-        font-size: 1.75rem !important;
-        padding: 1rem 2rem !important;
-        min-height: 60px !important;
-      }
-    }
-
-    @media (min-width: 768px) {
-      .hero-title {
-        font-size: 4rem;
-        line-height: 1;
-      }
-      
-      .hero-subtitle {
-        font-size: 1.5rem;
-        line-height: 1.4;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-        font-weight: 700;
-      }
-    }
-
     /* Writing mode for vertical text */
     .writing-vertical-rl {
       writing-mode: vertical-rl;
