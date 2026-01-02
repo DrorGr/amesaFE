@@ -245,16 +245,16 @@ import { environment } from '../../../../../environments/environment';
                 </div>
                 
                 <!-- Property Description and Lottery Info -->
-                <div class="flex-1 max-w-2xl text-center lg:text-left flex flex-col justify-between h-auto md:h-120 mx-auto lg:mx-0 px-4 sm:px-6 md:px-4 lg:px-0">
+                <div class="flex-1 max-w-2xl text-center lg:text-left flex flex-col justify-between h-auto md:h-120 mx-auto lg:mx-0 px-2 sm:px-6 md:px-4 lg:px-0">
                   <div>
                     <!-- House Title -->
-                    <div class="mb-4 md:mb-4">
-                      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white text-center line-clamp-2 px-4">
+                    <div class="mb-1 md:mb-4">
+                      <h2 class="text-3xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white text-center line-clamp-2 px-2">
                         {{ house.title }}
                       </h2>
                     </div>
                     
-                    <p class="text-gray-700 dark:text-gray-200 mb-3 sm:mb-4 md:mb-6 leading-relaxed text-xs sm:text-sm md:text-2xl break-words px-4">
+                    <p class="text-gray-700 dark:text-gray-200 mb-1 sm:mb-4 md:mb-6 leading-relaxed text-sm sm:text-sm md:text-2xl break-words px-2">
                       {{ translate('house.propertyOfYourOwn') }}
                     </p>
                   </div>
@@ -262,37 +262,37 @@ import { environment } from '../../../../../environments/environment';
                   <!-- Lottery Information - Mobile: Compact Grid, Desktop: Original Layout -->
                   <div class="flex-grow flex flex-col justify-center">
                     <!-- Mobile: Compact 2-column grid layout -->
-                    <div class="md:hidden grid grid-cols-2 gap-2 px-4 mb-3">
+                    <div class="md:hidden grid grid-cols-2 gap-1.5 px-2 mb-1.5">
                       <!-- Property Value - Prominent -->
-                      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 border border-gray-200 dark:border-gray-700">
-                        <div class="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">{{ translate('common.price') }}</div>
-                        <div class="text-xs font-bold text-gray-900 dark:text-white truncate">{{ formatPrice(house.price) }}</div>
+                      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-1.5 border border-gray-200 dark:border-gray-700">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{{ translate('common.price') }}</div>
+                        <div class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ formatPrice(house.price) }}</div>
                       </div>
                       <!-- Ticket Price - Conversion Focus -->
-                      <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-2 border border-blue-200 dark:border-blue-700">
-                        <div class="text-[10px] text-blue-600 dark:text-blue-400 mb-0.5">{{ translate('house.perTicket') }}</div>
-                        <div class="text-xs font-bold text-blue-700 dark:text-blue-300 truncate">{{ formatPrice(house.ticketPrice) }}</div>
+                      <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-1.5 border border-blue-200 dark:border-blue-700">
+                        <div class="text-xs text-blue-600 dark:text-blue-400 mb-0.5">{{ translate('house.perTicket') }}</div>
+                        <div class="text-sm font-bold text-blue-700 dark:text-blue-300 truncate">{{ formatPrice(house.ticketPrice) }}</div>
                       </div>
                       <!-- Location -->
-                      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 border border-gray-200 dark:border-gray-700">
-                        <div class="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">{{ translate('house.city') }}</div>
-                        <div class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ house.city || 'Manhattan' }}</div>
+                      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-1.5 border border-gray-200 dark:border-gray-700">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{{ translate('house.city') }}</div>
+                        <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ house.city || 'Manhattan' }}</div>
                       </div>
                       <!-- Odds -->
-                      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 border border-gray-200 dark:border-gray-700">
-                        <div class="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">{{ translate('house.odds') }}</div>
-                        <div class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ getOdds(house) }}</div>
+                      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-1.5 border border-gray-200 dark:border-gray-700">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{{ translate('house.odds') }}</div>
+                        <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ getOdds(house) }}</div>
                       </div>
                     </div>
                     
                     <!-- Countdown - Full width on mobile if present -->
                     @if (getLotteryCountdown(house)) {
-                      <div class="md:hidden px-4 mb-2">
-                        <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-2 border border-orange-200 dark:border-orange-800">
-                          <div class="text-[10px] text-orange-600 dark:text-orange-400 mb-0.5 text-center">
+                      <div class="md:hidden px-2 mb-1">
+                        <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-1.5 border border-orange-200 dark:border-orange-800">
+                          <div class="text-xs text-orange-600 dark:text-orange-400 mb-0.5 text-center">
                             {{ getLotteryCountdownLabel(house) || 'Countdown' }}
                           </div>
-                          <div class="text-xs font-bold text-orange-700 dark:text-orange-300 text-center font-mono">{{ getLotteryCountdown(house) }}</div>
+                          <div class="text-sm font-bold text-orange-700 dark:text-orange-300 text-center font-mono">{{ getLotteryCountdown(house) }}</div>
                         </div>
                       </div>
                     }
@@ -326,8 +326,8 @@ import { environment } from '../../../../../environments/environment';
                     </div>
                   
                     <!-- Tickets Available -->
-                    <div class="mt-2 md:mt-3">
-                      <div class="text-center text-xs sm:text-base md:text-xl text-orange-600 dark:text-orange-400 font-semibold break-words px-4">
+                    <div class="mt-1 md:mt-3">
+                      <div class="text-center text-sm sm:text-base md:text-xl text-orange-600 dark:text-orange-400 font-semibold break-words px-2">
                         {{ getTicketsAvailableText(house) }}
                       </div>
                     </div>
@@ -339,11 +339,11 @@ import { environment } from '../../../../../environments/environment';
                         @if (house.status === 'ended') {
                           <button 
                             disabled
-                            class="w-full mt-6 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-4 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 text-xl md:text-2xl min-h-[60px] md:min-h-[72px] cursor-not-allowed opacity-60 buy-ticket-ended">
+                            class="w-full mt-3 md:mt-4 bg-gray-400 dark:bg-gray-600 text-white py-3 md:py-4 px-4 md:px-6 rounded-lg font-bold transition-all duration-200 text-lg md:text-2xl min-h-[56px] md:min-h-[72px] cursor-not-allowed opacity-60 buy-ticket-ended">
                             {{ translate('house.ended') || 'Ended' }}
                           </button>
                         } @else if (house.status === 'upcoming') {
-                          <button class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-4 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-xl md:text-2xl min-h-[60px] md:min-h-[72px] relative overflow-hidden">
+                          <button class="w-full mt-3 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 md:py-4 px-4 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-lg md:text-2xl min-h-[56px] md:min-h-[72px] relative overflow-hidden">
                             {{ translate('house.reserveTicket') || 'Reserve Ticket' }}
                           </button>
                         } @else {
@@ -353,7 +353,7 @@ import { environment } from '../../../../../environments/environment';
                             (keydown.space)="onBuyTicketClick(house, $event); $event.preventDefault()"
                             [disabled]="isPurchasing(house.id)"
                             [class.buy-ticket-active-animation]="house.status === 'active' && !isPurchasing(house.id)"
-                            class="w-full mt-6 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-4 md:py-4 px-6 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-base sm:text-lg md:text-xl lg:text-2xl min-h-[60px] md:min-h-[72px] disabled:bg-gray-400 disabled:cursor-not-allowed relative overflow-hidden">
+                            class="w-full mt-3 md:mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white py-3 md:py-4 px-4 md:px-6 rounded-lg font-bold transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 text-lg sm:text-lg md:text-xl lg:text-2xl min-h-[56px] md:min-h-[72px] disabled:bg-gray-400 disabled:cursor-not-allowed relative overflow-hidden">
                             <span class="relative z-10 flex flex-col sm:flex-row items-center gap-1 sm:gap-2 break-words">
                               @if (isPurchasing(house.id)) {
                                 {{ translate('house.processing') }}
