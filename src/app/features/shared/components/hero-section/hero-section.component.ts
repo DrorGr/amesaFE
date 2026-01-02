@@ -10,9 +10,9 @@ import { PromotionsSlidingMenuComponent } from '../../../promotions/components/p
   standalone: true,
   imports: [CommonModule, PromotionsSlidingMenuComponent],
   template: `
-    <section class="relative overflow-hidden">
+    <section class="relative overflow-hidden pt-16 md:pt-20">
       <!-- Main Hero with Winner Celebration -->
-      <div class="relative h-96 md:h-[500px]">
+      <div class="relative h-64 md:h-[500px]">
         <!-- Background Image -->
         <div class="absolute inset-0">
           <img 
@@ -29,19 +29,19 @@ import { PromotionsSlidingMenuComponent } from '../../../promotions/components/p
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-6 lg:px-8 h-full flex items-center justify-between">
           <!-- Left side content -->
           <div class="text-white max-w-2xl">
-            <h1 class="font-black mb-6 leading-tight text-white text-4xl md:text-6xl" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
+            <h1 class="font-black mb-2 md:mb-6 leading-tight text-white text-2xl md:text-6xl" style="font-family: 'Kalam', cursive; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
               {{ translate('hero.title') }}
             </h1>
-            <p class="mb-8 text-white text-xl md:text-2xl font-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+            <p class="mb-3 md:mb-8 text-white text-sm md:text-2xl font-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
               {{ translate('hero.subtitle') }}
             </p>
-            <div class="flex flex-col sm:flex-row gap-6">
+            <div class="flex flex-col sm:flex-row gap-3 md:gap-6">
               <button 
                 (click)="navigateToLotteries()"
                 (keydown.enter)="navigateToLotteries()"
                 (keydown.space)="navigateToLotteries(); $event.preventDefault()"
                 [attr.aria-label]="translate('hero.browseLotteries')"
-                class="px-8 py-4 md:px-12 md:py-6 text-xl md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 min-h-[60px] md:min-h-[88px] shadow-lg focus:outline-none">
+                class="px-6 py-2.5 md:px-12 md:py-6 text-base md:text-2xl font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 min-h-[44px] md:min-h-[88px] shadow-lg focus:outline-none">
                 {{ translate('hero.browseLotteries') }}
               </button>
               <button 
@@ -49,7 +49,7 @@ import { PromotionsSlidingMenuComponent } from '../../../promotions/components/p
                 (keydown.enter)="navigateToHowItWorks()"
                 (keydown.space)="navigateToHowItWorks(); $event.preventDefault()"
                 [attr.aria-label]="translate('hero.howItWorks')"
-                class="px-8 py-4 md:px-12 md:py-6 text-xl md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 min-h-[60px] md:min-h-[88px] shadow-lg focus:outline-none dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
+                class="px-6 py-2.5 md:px-12 md:py-6 text-base md:text-2xl font-bold text-blue-600 bg-white border-2 border-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 min-h-[44px] md:min-h-[88px] shadow-lg focus:outline-none dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
                 {{ translate('hero.howItWorks') }}
               </button>
             </div>
@@ -67,14 +67,14 @@ import { PromotionsSlidingMenuComponent } from '../../../promotions/components/p
         (keydown.enter)="expandPromotionsTab()"
         (keydown.space)="expandPromotionsTab(); $event.preventDefault()"
         [class.z-[110]]="promotionsMenuOpen()"
-        class="fixed left-2 md:left-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white w-12 h-12 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 flex items-center justify-center group promotions-p-widget border-2 border-white dark:border-gray-800 animate-widget-appear focus:outline-none"
+        class="fixed left-0 md:left-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 flex items-center justify-center group promotions-p-widget border-2 border-white dark:border-gray-800 animate-widget-appear focus:outline-none"
         [attr.aria-label]="translate('nav.promotions')">
         <span class="font-black text-lg drop-shadow-lg">P</span>
       </button>
     } @else if (!promotionsMenuOpen()) {
       <!-- Expanded Tab (Not Open) - Vertical -->
-      <div class="fixed left-2 md:left-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear">
-        <div class="flex flex-col items-center gap-2 px-4 py-6">
+      <div class="fixed left-0 md:left-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear w-12 md:w-auto">
+        <div class="flex flex-col items-center gap-1.5 md:gap-2 px-2 md:px-4 py-3 md:py-6">
           <button
             (click)="minimizePromotionsTab()"
             class="text-white hover:text-gray-200 transition-colors p-2 md:p-1 rounded-full hover:bg-white hover:bg-opacity-30 flex-shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -97,8 +97,8 @@ import { PromotionsSlidingMenuComponent } from '../../../promotions/components/p
       </div>
     } @else {
       <!-- Expanded Tab (Menu Open) - Vertical -->
-      <div class="fixed left-2 md:left-0 top-1/2 -translate-y-1/2 z-[110] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear">
-        <div class="flex flex-col items-center gap-2 px-4 py-6">
+      <div class="fixed left-0 md:left-0 top-1/2 -translate-y-1/2 z-[110] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear w-12 md:w-auto">
+        <div class="flex flex-col items-center gap-1.5 md:gap-2 px-2 md:px-4 py-3 md:py-6">
           <button
             (click)="minimizePromotionsTab()"
             class="text-white hover:text-gray-200 transition-colors p-2 md:p-1 rounded-full hover:bg-white hover:bg-opacity-30 flex-shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
