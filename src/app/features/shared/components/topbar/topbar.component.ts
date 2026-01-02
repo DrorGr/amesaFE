@@ -150,7 +150,7 @@ import { NotificationSidebarComponent } from '../../../notifications/components/
                 (keydown.enter)="handleNotificationClick()"
                 (keydown.space)="handleNotificationClick(); $event.preventDefault()"
                 [attr.aria-label]="translate('nav.notifications')"
-                class="relative p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 focus:outline-none">
+                class="relative p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 focus:outline-none h-10 w-10 flex items-center justify-center">
                 <!-- Bell Icon -->
                 <svg 
                   class="w-6 h-6 transition-transform duration-200"
@@ -180,7 +180,7 @@ import { NotificationSidebarComponent } from '../../../notifications/components/
                 (keydown.space)="toggleMobileMenu(); $event.preventDefault()"
                 [attr.aria-label]="isMobileMenuOpen ? translate('nav.closeMenu') : translate('nav.openMenu')"
                 [attr.aria-expanded]="isMobileMenuOpen"
-                class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 mobile-hamburger focus:outline-none">
+                class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 mobile-hamburger focus:outline-none h-10 w-10 flex items-center justify-center">
                 @if (!isMobileMenuOpen) {
                   <!-- Hamburger Icon -->
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

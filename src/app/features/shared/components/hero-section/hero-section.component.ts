@@ -67,13 +67,13 @@ import { PromotionsSlidingMenuComponent } from '../../../promotions/components/p
         (keydown.enter)="expandPromotionsTab()"
         (keydown.space)="expandPromotionsTab(); $event.preventDefault()"
         [class.z-[110]]="promotionsMenuOpen()"
-        class="fixed left-0 md:left-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 flex items-center justify-center group promotions-p-widget border-2 border-white dark:border-gray-800 animate-widget-appear focus:outline-none"
+        class="fixed left-0 md:left-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-2xl transition-all duration-500 ease-in-out hover:shadow-purple-500/50 flex items-center justify-center group promotions-p-widget border-2 border-white dark:border-gray-800 animate-widget-appear focus:outline-none opacity-80"
         [attr.aria-label]="translate('nav.promotions')">
         <span class="font-black text-lg drop-shadow-lg">P</span>
       </button>
     } @else if (!promotionsMenuOpen()) {
       <!-- Expanded Tab (Not Open) - Vertical -->
-      <div class="fixed left-0 md:left-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear w-12 md:w-auto">
+      <div class="fixed left-0 md:left-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear w-12 md:w-auto opacity-80">
         <div class="flex flex-col items-center gap-1.5 md:gap-2 px-2 md:px-4 py-3 md:py-6">
           <button
             (click)="minimizePromotionsTab()"
@@ -97,7 +97,7 @@ import { PromotionsSlidingMenuComponent } from '../../../promotions/components/p
       </div>
     } @else {
       <!-- Expanded Tab (Menu Open) - Vertical -->
-      <div class="fixed left-0 md:left-0 top-1/2 -translate-y-1/2 z-[110] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear w-12 md:w-auto">
+      <div class="fixed left-0 md:left-0 top-1/2 -translate-y-1/2 z-[110] bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-r-2xl shadow-2xl promotions-tab-expanded border-2 border-white dark:border-gray-800 animate-tab-appear w-12 md:w-auto opacity-80">
         <div class="flex flex-col items-center gap-1.5 md:gap-2 px-2 md:px-4 py-3 md:py-6">
           <button
             (click)="minimizePromotionsTab()"

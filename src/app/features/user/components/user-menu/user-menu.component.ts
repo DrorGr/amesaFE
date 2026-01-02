@@ -17,7 +17,7 @@ import { AccessibilityMenuComponent } from '../../../shared/components/accessibi
         <button
           (click)="openAuthModal()"
           [attr.aria-label]="translate('nav.signIn')"
-          class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md">
+          class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md h-10 flex items-center justify-center">
           {{ translate('nav.signIn') }}
         </button>
       } @else {
@@ -26,7 +26,7 @@ import { AccessibilityMenuComponent } from '../../../shared/components/accessibi
           (click)="toggleDropdown()"
           [attr.aria-label]="translateWithParams('userMenu.userMenuButton', { name: getUserFirstName() })"
           [attr.aria-expanded]="isDropdownOpen()"
-          class="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md">
+          class="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md h-10">
           <span>{{ translate('nav.welcome') }} {{ getUserFirstName() }}</span>
           <svg 
             class="w-4 h-4 transition-transform duration-200" 

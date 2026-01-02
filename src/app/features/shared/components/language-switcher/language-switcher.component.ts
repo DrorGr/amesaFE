@@ -12,7 +12,7 @@ import { MobileDetectionService } from '@core/services/mobile-detection.service'
     <div class="relative">
       <button
         (click)="toggleDropdown()"
-        class="flex items-center space-x-2 px-3 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
+        class="flex items-center space-x-2 px-3 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 h-10">
         <div class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
           <img [src]="getCurrentLanguageFlag()" [alt]="getCurrentLanguageCode()" class="w-full h-full object-cover">
         </div>
