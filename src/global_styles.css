@@ -270,8 +270,8 @@ html {
   }
   
   .mobile-footer-description {
-    font-size: 1.25rem !important;
-    line-height: 1.6 !important;
+    font-size: 0.4375rem !important; /* 7px */
+    line-height: 1.3 !important;
     max-width: 100% !important;
   }
   
@@ -288,12 +288,12 @@ html {
   
   .mobile-footer-links {
     grid-template-columns: 1fr !important;
-    gap: 2rem !important;
+    gap: 0.5rem !important;
   }
   
   .mobile-footer-links h4 {
-    font-size: 1.375rem !important;
-    margin-bottom: 1rem !important;
+    font-size: 0.4375rem !important; /* 7px */
+    margin-bottom: 0.25rem !important;
   }
   
   .mobile-footer-links ul {
@@ -301,55 +301,55 @@ html {
   }
   
   .mobile-footer-links li {
-    font-size: 1.5rem !important;
+    font-size: 0.4375rem !important; /* 7px */
   }
   
   .mobile-footer-links button,
   .mobile-footer-links a {
-    padding: 0.5rem 0 !important;
-    min-height: 44px !important;
+    padding: 0.25rem 0 !important;
+    min-height: auto !important;
     display: flex !important;
     align-items: center !important;
-    font-size: 1.5rem !important;
+    font-size: 0.4375rem !important; /* 7px */
   }
   
   /* Additional footer mobile text sizes */
   .mobile-footer-support-cause {
-    font-size: 1.5rem !important;
-    margin-bottom: 1rem !important;
+    font-size: 0.4375rem !important; /* 7px */
+    margin-bottom: 0.5rem !important;
   }
   
   .mobile-footer-support-description {
-    font-size: 1.25rem !important;
-    line-height: 1.6 !important;
+    font-size: 0.4375rem !important; /* 7px */
+    line-height: 1.4 !important;
   }
   
   .mobile-footer-section-heading {
-    font-size: 1.5rem !important;
-    margin-bottom: 1.5rem !important;
+    font-size: 0.4375rem !important; /* 7px */
+    margin-bottom: 0.25rem !important;
   }
   
   .mobile-footer-link-text {
-    font-size: 1.5rem !important;
-    line-height: 1.5 !important;
+    font-size: 0.4375rem !important; /* 7px */
+    line-height: 1.3 !important;
   }
   
   .mobile-footer-link-text button,
   .mobile-footer-link-text a {
-    font-size: 1.5rem !important;
+    font-size: 0.4375rem !important; /* 7px */
   }
   
   .mobile-footer-copyright {
-    font-size: 1.125rem !important;
+    font-size: 0.4375rem !important; /* 7px */
   }
   
   /* Override Tailwind text-sm classes specifically for footer links */
   .mobile-footer-links .text-sm {
-    font-size: 1.5rem !important;
+    font-size: 0.4375rem !important; /* 7px */
   }
   
   .mobile-footer-links .text-xs {
-    font-size: 1.25rem !important;
+    font-size: 0.4375rem !important; /* 7px */
   }
   
   /* House Carousel Mobile Improvements */
