@@ -254,41 +254,80 @@ import { environment } from '../../../../../environments/environment';
                       </h2>
                     </div>
                     
-                    <p class="text-gray-700 dark:text-gray-200 mb-6 md:mb-6 leading-relaxed text-sm sm:text-base md:text-2xl break-words px-4">
+                    <p class="text-gray-700 dark:text-gray-200 mb-3 sm:mb-4 md:mb-6 leading-relaxed text-xs sm:text-sm md:text-2xl break-words px-4">
                       {{ translate('house.propertyOfYourOwn') }}
                     </p>
                   </div>
                   
-                  <!-- Lottery Information -->
-                  <div class="space-y-1 sm:space-y-2 md:space-y-2 flex-grow flex flex-col justify-center">
-                    <div class="flex justify-between items-center py-2 sm:py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-0">
-                      <span class="text-gray-600 dark:text-gray-400 text-sm sm:text-base md:text-2xl font-large">{{ translate('common.price') }}</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-sm sm:text-base md:text-3xl">{{ formatPrice(house.price) }}</span>
+                  <!-- Lottery Information - Mobile: Compact Grid, Desktop: Original Layout -->
+                  <div class="flex-grow flex flex-col justify-center">
+                    <!-- Mobile: Compact 2-column grid layout -->
+                    <div class="md:hidden grid grid-cols-2 gap-2 px-4 mb-3">
+                      <!-- Property Value - Prominent -->
+                      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 border border-gray-200 dark:border-gray-700">
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">{{ translate('common.price') }}</div>
+                        <div class="text-xs font-bold text-gray-900 dark:text-white truncate">{{ formatPrice(house.price) }}</div>
+                      </div>
+                      <!-- Ticket Price - Conversion Focus -->
+                      <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-2 border border-blue-200 dark:border-blue-700">
+                        <div class="text-[10px] text-blue-600 dark:text-blue-400 mb-0.5">{{ translate('house.perTicket') }}</div>
+                        <div class="text-xs font-bold text-blue-700 dark:text-blue-300 truncate">{{ formatPrice(house.ticketPrice) }}</div>
+                      </div>
+                      <!-- Location -->
+                      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 border border-gray-200 dark:border-gray-700">
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">{{ translate('house.city') }}</div>
+                        <div class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ house.city || 'Manhattan' }}</div>
+                      </div>
+                      <!-- Odds -->
+                      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 border border-gray-200 dark:border-gray-700">
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">{{ translate('house.odds') }}</div>
+                        <div class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ getOdds(house) }}</div>
+                      </div>
                     </div>
-                    <div class="flex justify-between items-center py-2 sm:py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-0">
-                      <span class="text-gray-600 dark:text-gray-400 text-sm sm:text-base md:text-2xl font-large">{{ translate('house.city') }}</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-sm sm:text-base md:text-3xl">{{ house.city || 'Manhattan' }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 sm:py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-0">
-                      <span class="text-gray-600 dark:text-gray-400 text-sm sm:text-base md:text-2xl font-large">{{ translate('house.address') }}</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-sm sm:text-base md:text-3xl">{{ house.address || '123 Park Ave' }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 sm:py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-0">
-                      <span class="text-gray-600 dark:text-gray-400 text-sm sm:text-base md:text-2xl font-large">{{ translate('house.perTicket') }}</span>
-                      <span class="font-bold text-blue-600 dark:text-blue-400 text-sm sm:text-base md:text-3xl">{{ formatPrice(house.ticketPrice) }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 sm:py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-0">
-                      <span class="text-gray-600 dark:text-gray-400 text-sm sm:text-base md:text-2xl font-large">{{ translate('house.odds') }}</span>
-                      <span class="font-bold text-gray-900 dark:text-white text-sm sm:text-base md:text-3xl">{{ getOdds(house) }}</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 sm:py-3 md:py-2 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-0">
-                      <span *ngIf="getLotteryCountdownLabel(house)" class="text-gray-600 dark:text-gray-400 text-sm sm:text-base md:text-2xl font-large">{{ getLotteryCountdownLabel(house) }}</span>
-                      <span class="font-bold text-orange-600 dark:text-orange-400 text-sm sm:text-base md:text-3xl font-mono">{{ getLotteryCountdown(house) }}</span>
+                    
+                    <!-- Countdown - Full width on mobile if present -->
+                    @if (getLotteryCountdown(house)) {
+                      <div class="md:hidden px-4 mb-2">
+                        <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-2 border border-orange-200 dark:border-orange-800">
+                          <div class="text-[10px] text-orange-600 dark:text-orange-400 mb-0.5 text-center">
+                            {{ getLotteryCountdownLabel(house) || 'Countdown' }}
+                          </div>
+                          <div class="text-xs font-bold text-orange-700 dark:text-orange-300 text-center font-mono">{{ getLotteryCountdown(house) }}</div>
+                        </div>
+                      </div>
+                    }
+                    
+                    <!-- Desktop: Original vertical list layout -->
+                    <div class="hidden md:block space-y-2">
+                      <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span class="text-gray-600 dark:text-gray-400 text-2xl font-large">{{ translate('common.price') }}</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-3xl">{{ formatPrice(house.price) }}</span>
+                      </div>
+                      <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span class="text-gray-600 dark:text-gray-400 text-2xl font-large">{{ translate('house.city') }}</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-3xl">{{ house.city || 'Manhattan' }}</span>
+                      </div>
+                      <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span class="text-gray-600 dark:text-gray-400 text-2xl font-large">{{ translate('house.address') }}</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-3xl">{{ house.address || '123 Park Ave' }}</span>
+                      </div>
+                      <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span class="text-gray-600 dark:text-gray-400 text-2xl font-large">{{ translate('house.perTicket') }}</span>
+                        <span class="font-bold text-blue-600 dark:text-blue-400 text-3xl">{{ formatPrice(house.ticketPrice) }}</span>
+                      </div>
+                      <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span class="text-gray-600 dark:text-gray-400 text-2xl font-large">{{ translate('house.odds') }}</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-3xl">{{ getOdds(house) }}</span>
+                      </div>
+                      <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span *ngIf="getLotteryCountdownLabel(house)" class="text-gray-600 dark:text-gray-400 text-2xl font-large">{{ getLotteryCountdownLabel(house) }}</span>
+                        <span class="font-bold text-orange-600 dark:text-orange-400 text-3xl font-mono">{{ getLotteryCountdown(house) }}</span>
+                      </div>
                     </div>
                   
                     <!-- Tickets Available -->
-                    <div class="mt-4 md:mt-3">
-                      <div class="text-center text-base sm:text-lg md:text-xl text-orange-600 dark:text-orange-400 font-semibold break-words px-4">
+                    <div class="mt-2 md:mt-3">
+                      <div class="text-center text-xs sm:text-base md:text-xl text-orange-600 dark:text-orange-400 font-semibold break-words px-4">
                         {{ getTicketsAvailableText(house) }}
                       </div>
                     </div>
