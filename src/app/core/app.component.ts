@@ -51,43 +51,43 @@ import { PaymentPanelService } from '../features/payment/services/payment-panel.
         <router-outlet></router-outlet>
       </div>
       
-      <footer id="footer" role="contentinfo" class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-8">
+      <footer id="footer" role="contentinfo" class="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-white py-3 sm:py-5 md:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Logo, Description and Social Media -->
-          <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-6 mobile-footer-header">
-            <div class="flex items-center gap-6 mobile-footer-logo-section">
+          <div class="mb-2 sm:mb-3 md:mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-4 md:gap-6 mobile-footer-header">
+            <div class="flex items-center gap-2 sm:gap-4 md:gap-6 mobile-footer-logo-section">
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="h-36 w-auto mobile-footer-logo">
-              <p class="text-gray-300 text-2xl leading-relaxed mobile-footer-description">
+                class="h-12 sm:h-20 md:h-36 w-auto mobile-footer-logo">
+              <p class="text-gray-300 text-xs sm:text-base md:text-2xl leading-relaxed mobile-footer-description">
                 {{ translate('footer.description') }}
               </p>
             </div>
             <!-- Social Media Links -->
-            <div class="flex items-center space-x-4 mobile-footer-social">
+            <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4 mobile-footer-social">
               <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors duration-200">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
                 </svg>
               </a>
               <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors duration-200">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M22.23 0H1.77C.8 0 0 .77 0 1.72v20.56C0 23.23.8 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.72V1.72C24 .77 23.2 0 22.23 0zM7.27 20.1H3.65V9.24h3.62V20.1zM5.47 7.76h-.03c-1.22 0-2-.83-2-1.87 0-1.06.8-1.87 2.05-1.87 1.24 0 2 .8 2.02 1.87 0 1.04-.78 1.87-2.05 1.87zM20.34 20.1h-3.63v-5.8c0-1.45-.52-2.45-1.83-2.45-1 0-1.6.67-1.87 1.32-.1.23-.11.55-.11.88v6.05H9.28s.05-9.82 0-10.84h3.63v1.54a3.6 3.6 0 0 1 3.26-1.8c2.37 0 4.15 1.55 4.15 4.9v6.2h.02z"/>
                 </svg>
               </a>
               <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors duration-200">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 19c-3.866 0-7-3.134-7-7s3.134-7 7-7 7 3.134 7 7-3.134 7-7 7z"/>
                 </svg>
               </a>
               <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors duration-200">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                 </svg>
               </a>
               <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors duration-200">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                 </svg>
               </a>
@@ -96,7 +96,7 @@ import { PaymentPanelService } from '../features/payment/services/payment-panel.
           
           
           <!-- Footer Links Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 mobile-footer-links">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 md:gap-6 mb-2 sm:mb-4 md:mb-6 mobile-footer-links">
             <!-- Community -->
             <div>
               <h4 class="font-semibold mb-1.5 sm:mb-2 md:mb-3 text-white text-[10px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.community') }}</h4>
