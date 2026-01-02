@@ -78,6 +78,10 @@ compare-*.txt
 commit-*.txt
 full-diff-*.txt
 key-differences.txt
+hero-section-*.txt
+
+# Archive folder for temporary files
+.archive/
 
 # ============================================
 # AWS/INFRASTRUCTURE TEMPORARY FILES
@@ -161,6 +165,9 @@ MetaData/
 
 # Backend folder (shouldn't be in FE repo)
 backend/
+
+# Duplicate image files
+image copy*.png
 
 # Backup files
 *.bak

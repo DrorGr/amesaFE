@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Observable, BehaviorSubject, of, catchError, map, tap, timeout } from 'rxjs';
-import { ApiService } from './api.service';
-import { LoggingService } from './logging.service';
+import { ApiService } from '../app/core/services/api.service';
+import { LoggingService } from '../app/core/services/logging.service';
 
 export type Language = 'en' | 'es' | 'fr' | 'pl';
 
