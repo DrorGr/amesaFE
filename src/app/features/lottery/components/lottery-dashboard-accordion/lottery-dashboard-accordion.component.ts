@@ -75,7 +75,7 @@ enum ErrorType {
     ])
   ],
   template: `
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm fixed top-20 left-0 right-0 z-[99]">
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm fixed top-16 md:top-20 left-0 right-0 z-[99]">
       <button
         (click)="toggleAccordion()"
         (keydown.enter)="toggleAccordion()"
