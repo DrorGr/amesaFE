@@ -102,16 +102,31 @@ export class VerificationGateComponent implements OnInit {
     }
 
     try {
+      // Check identity document status (may fail if documents aren't kept)
       const status = await firstValueFrom(this.verificationService.getVerificationStatus());
-      this.isVerified.set(status?.verificationStatus === 'verified');
+      const identityVerified = status?.verificationStatus === 'verified';
+      
+      // ALSO check user profile verification status (this is the source of truth for manual verification)
+      const userDto = this.authService.getCurrentUserDto()();
+      const userVerificationStatus = userDto?.verificationStatus;
+      const userFullyVerified = userVerificationStatus === 'IdentityVerified' || userVerificationStatus === 'FullyVerified';
+      
+      // User is verified if EITHER identity document is verified OR user profile shows verified
+      this.isVerified.set(identityVerified || userFullyVerified);
     } catch (error: any) {
+      // If identity endpoint fails, check user profile as fallback
+      const userDto = this.authService.getCurrentUserDto()();
+      const userVerificationStatus = userDto?.verificationStatus;
+      const userFullyVerified = userVerificationStatus === 'IdentityVerified' || userVerificationStatus === 'FullyVerified';
+      
       // Only log non-500 errors (500 errors are backend issues, not frontend bugs)
       // Suppress 500 errors to reduce console noise
       if (error?.status !== 500 && error?.error?.statusCode !== 500) {
         console.warn('Error checking verification status:', error);
       }
-      // Default to not verified on any error
-      this.isVerified.set(false);
+      
+      // Use user profile status as fallback
+      this.isVerified.set(userFullyVerified);
     } finally {
       this.isLoading.set(false);
     }
@@ -136,10 +151,17 @@ export class VerificationGateComponent implements OnInit {
       return true;
     }
     
-    if (this.isVerificationRequired() && !this.isVerified()) {
-      this.toastService.error(this.translate('auth.verificationRequired'), 4000);
-      this.blocked.emit();
-      return true;
+    if (this.isVerificationRequired()) {
+      // Check both the component's verified state AND user profile as fallback
+      const userDto = this.authService.getCurrentUserDto()();
+      const userVerificationStatus = userDto?.verificationStatus;
+      const userFullyVerified = userVerificationStatus === 'IdentityVerified' || userVerificationStatus === 'FullyVerified';
+      
+      if (!this.isVerified() && !userFullyVerified) {
+        this.toastService.error(this.translate('auth.verificationRequired'), 4000);
+        this.blocked.emit();
+        return true;
+      }
     }
     
     return false;
