@@ -59,8 +59,8 @@ import { PaymentPanelService } from '../features/payment/services/payment-panel.
               <img 
                 src="assets/AmesaNoBG.png" 
                 alt="Amesa" 
-                class="h-8 sm:h-20 md:h-36 w-auto mobile-footer-logo">
-              <p class="text-gray-300 text-[9px] sm:text-base md:text-2xl leading-tight sm:leading-relaxed mobile-footer-description">
+                class="h-6 sm:h-20 md:h-36 w-auto mobile-footer-logo">
+              <p class="text-gray-300 text-[7px] sm:text-base md:text-2xl leading-tight sm:leading-relaxed mobile-footer-description">
                 {{ translate('footer.description') }}
               </p>
             </div>
@@ -99,8 +99,8 @@ import { PaymentPanelService } from '../features/payment/services/payment-panel.
           <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-1.5 sm:gap-3 md:gap-6 mb-1 sm:mb-4 md:mb-6 mobile-footer-links">
             <!-- Community -->
             <div>
-              <h4 class="font-semibold mb-0.5 sm:mb-2 md:mb-3 text-white text-[9px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.community') }}</h4>
-              <ul class="space-y-0 sm:space-y-1 md:space-y-2 text-gray-300 text-[9px] sm:text-xs md:text-sm mobile-footer-link-text">
+              <h4 class="font-semibold mb-0.5 sm:mb-2 md:mb-3 text-white text-[7px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.community') }}</h4>
+              <ul class="space-y-0 sm:space-y-1 md:space-y-2 text-gray-300 text-[7px] sm:text-xs md:text-sm mobile-footer-link-text">
                 <li><button (click)="navigateToAbout()" (keydown.enter)="navigateToAbout()" (keydown.space)="navigateToAbout(); $event.preventDefault()" [attr.aria-label]="translate('footer.about')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left focus:outline-none rounded">{{ translate('footer.about') }}</button></li>
                 <li><button (click)="navigateToSponsorship()" (keydown.enter)="navigateToSponsorship()" (keydown.space)="navigateToSponsorship(); $event.preventDefault()" [attr.aria-label]="translate('footer.makeSponsorship')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left focus:outline-none rounded">{{ translate('footer.makeSponsorship') }}</button></li>
                 <li><button (click)="navigateToResponsibleGambling()" (keydown.enter)="navigateToResponsibleGambling()" (keydown.space)="navigateToResponsibleGambling(); $event.preventDefault()" [attr.aria-label]="translate('footer.responsibleGaming')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left focus:outline-none rounded">{{ translate('footer.responsibleGaming') }}</button></li>
@@ -109,8 +109,8 @@ import { PaymentPanelService } from '../features/payment/services/payment-panel.
             
             <!-- Support -->
             <div>
-              <h4 class="font-semibold mb-0.5 sm:mb-2 md:mb-3 text-white text-[9px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.support') }}</h4>
-              <ul class="space-y-0 sm:space-y-1 md:space-y-2 text-gray-300 text-[9px] sm:text-xs md:text-sm mobile-footer-link-text">
+              <h4 class="font-semibold mb-0.5 sm:mb-2 md:mb-3 text-white text-[7px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.support') }}</h4>
+              <ul class="space-y-0 sm:space-y-1 md:space-y-2 text-gray-300 text-[7px] sm:text-xs md:text-sm mobile-footer-link-text">
                 <li><button (click)="navigateToHelp()" (keydown.enter)="navigateToHelp()" (keydown.space)="navigateToHelp(); $event.preventDefault()" [attr.aria-label]="translate('footer.helpCenter')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-left focus:outline-none rounded">{{ translate('footer.helpCenter') }}</button></li>
                 <li><a href="#" [attr.aria-label]="translate('footer.liveChat')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none rounded">{{ translate('footer.liveChat') }}</a></li>
                 <li><a href="#" [attr.aria-label]="translate('footer.contactUs')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none rounded">{{ translate('footer.contactUs') }}</a></li>
@@ -122,8 +122,8 @@ import { PaymentPanelService } from '../features/payment/services/payment-panel.
             
             <!-- Legal -->
             <div>
-              <h4 class="font-semibold mb-0.5 sm:mb-2 md:mb-3 text-white text-[9px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.legal') }}</h4>
-              <ul class="space-y-0 sm:space-y-1 md:space-y-2 text-gray-300 text-[9px] sm:text-xs md:text-sm mobile-footer-link-text">
+              <h4 class="font-semibold mb-0.5 sm:mb-2 md:mb-3 text-white text-[7px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.legal') }}</h4>
+              <ul class="space-y-0 sm:space-y-1 md:space-y-2 text-gray-300 text-[7px] sm:text-xs md:text-sm mobile-footer-link-text">
                 <li><a href="#" [attr.aria-label]="translate('footer.regulations')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none rounded">{{ translate('footer.regulations') }}</a></li>
                 <li><a href="#" [attr.aria-label]="translate('footer.termsConditions')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none rounded">{{ translate('footer.termsConditions') }}</a></li>
                 <li><a href="#" [attr.aria-label]="translate('footer.privacyPolicy')" class="hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block focus:outline-none rounded">{{ translate('footer.privacyPolicy') }}</a></li>
@@ -135,17 +135,17 @@ import { PaymentPanelService } from '../features/payment/services/payment-panel.
             
                 <!-- Legal Partners -->
                 <div>
-                  <h4 class="font-semibold mb-0.5 sm:mb-2 md:mb-3 text-white text-[9px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.legalPartners') }}</h4>
+                  <h4 class="font-semibold mb-0.5 sm:mb-2 md:mb-3 text-white text-[7px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.legalPartners') }}</h4>
                   <div class="space-y-0.5 sm:space-y-2 md:space-y-3">
                     <div>
-                      <div class="text-gray-400 text-[9px] sm:text-xs mb-0 sm:mb-1 mobile-footer-link-text">{{ translate('partners.legalPartner') }}</div>
-                      <a href="https://ziebapartners.com" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-[9px] sm:text-xs md:text-sm mobile-footer-link-text">
+                      <div class="text-gray-400 text-[7px] sm:text-xs mb-0 sm:mb-1 mobile-footer-link-text">{{ translate('partners.legalPartner') }}</div>
+                      <a href="https://ziebapartners.com" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform inline-block text-[7px] sm:text-xs md:text-sm mobile-footer-link-text">
                         Zeiba & Partners
                       </a>
                     </div>
                     <div>
-                      <div class="text-gray-400 text-[9px] sm:text-xs mb-0 sm:mb-1 mobile-footer-link-text">{{ translate('partners.accountingPartner') }}</div>
-                      <a href="https://pik.tax/kontakt" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform block sm:inline-block text-[9px] sm:text-xs md:text-sm lg:text-base break-words whitespace-normal mobile-footer-link-text">
+                      <div class="text-gray-400 text-[7px] sm:text-xs mb-0 sm:mb-1 mobile-footer-link-text">{{ translate('partners.accountingPartner') }}</div>
+                      <a href="https://pik.tax/kontakt" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-blue-400 transition-colors duration-200 hover:translate-x-1 transform block sm:inline-block text-[7px] sm:text-xs md:text-sm lg:text-base break-words whitespace-normal mobile-footer-link-text">
                         PiK Podatki i Księgowość Sp. z o.o
                       </a>
                     </div>
@@ -154,24 +154,24 @@ import { PaymentPanelService } from '../features/payment/services/payment-panel.
             
             <!-- App Download -->
             <div>
-              <h4 class="font-semibold mb-0.5 sm:mb-2 md:mb-3 text-white text-[9px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.comingSoon') }}</h4>
+              <h4 class="font-semibold mb-0.5 sm:mb-2 md:mb-3 text-white text-[7px] sm:text-xs md:text-sm lg:text-base mobile-footer-section-heading">{{ translate('footer.comingSoon') }}</h4>
               <div class="flex flex-col space-y-0.5 sm:space-y-1.5 md:space-y-2">
                 <div class="bg-gray-600 rounded-lg px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 md:py-3 flex items-center space-x-1 sm:space-x-2 md:space-x-3 opacity-60 cursor-not-allowed">
-                  <svg class="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-3 h-3 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                   </svg>
                   <div class="text-left">
-                    <div class="text-[9px] sm:text-xs text-gray-300">Coming soon on</div>
-                    <div class="text-[9px] sm:text-xs md:text-sm font-semibold text-white">App Store</div>
+                    <div class="text-[7px] sm:text-xs text-gray-300">Coming soon on</div>
+                    <div class="text-[7px] sm:text-xs md:text-sm font-semibold text-white">App Store</div>
                   </div>
                 </div>
                 <div class="bg-gray-600 rounded-lg px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 md:py-3 flex items-center space-x-1 sm:space-x-2 md:space-x-3 opacity-60 cursor-not-allowed">
-                  <svg class="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-3 h-3 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.92 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
                   </svg>
                   <div class="text-left">
-                    <div class="text-[9px] sm:text-xs text-gray-300">Coming soon on</div>
-                    <div class="text-[9px] sm:text-xs md:text-sm font-semibold text-white">Google Play</div>
+                    <div class="text-[7px] sm:text-xs text-gray-300">Coming soon on</div>
+                    <div class="text-[7px] sm:text-xs md:text-sm font-semibold text-white">Google Play</div>
                   </div>
                 </div>
               </div>
