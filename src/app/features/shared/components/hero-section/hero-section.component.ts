@@ -107,11 +107,11 @@ import { PromotionsSlidingMenuComponent } from '../../../promotions/components/p
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
-          <div class="flex flex-col items-center gap-2">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <div class="flex flex-col items-center gap-1.5 md:gap-2">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2m0 0V5.5A2.5 2.5 0 1013.5 8H12m-2 0h2m0 0v13m0-13l-3-3m3 3l3-3"></path>
             </svg>
-            <span class="font-black text-xs writing-vertical-rl transform rotate-180 drop-shadow-lg">
+            <span class="font-black text-[10px] md:text-xs writing-vertical-rl transform rotate-180 drop-shadow-lg">
               {{ translate('nav.promotions') }}
             </span>
           </div>
