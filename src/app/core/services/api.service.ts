@@ -31,7 +31,7 @@ export interface PagedResponse<T> {
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = environment.backendUrl || '/api/v1';
+  private baseUrl: string;
   private tokenSubject = new BehaviorSubject<string | null>(this.getStoredToken());
   public token$ = this.tokenSubject.asObservable();
   private tokenRefreshCallback: (() => Observable<unknown>) | null = null;
@@ -40,6 +40,9 @@ export class ApiService {
   private offlineService = inject(OfflineService);
 
   constructor(private http: HttpClient) {
+    // Initialize baseUrl from environment
+    const envUrl = environment.backendUrl || '/api/v1';
+    
     // Check if we're in a test environment
     const isTestEnvironment = typeof window !== 'undefined' && 
                              ((window as any).__karma__ !== undefined ||
@@ -56,29 +59,19 @@ export class ApiService {
       if (isDevelopment) {
         // Use relative URL for proxy routing in development
         this.baseUrl = '/api/v1';
-      } else if (!this.baseUrl.startsWith('http')) {
-        // Fix: If baseUrl is relative in production, use the current hostname
-        const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-        if (hostname) {
-          const protocol = window.location.protocol;
-          console.warn('[API Service] Relative baseUrl detected in production, using current hostname:', hostname);
-          this.baseUrl = `${protocol}//${hostname}/api/v1`;
-        } else {
-          // Fallback to environment URL or CloudFront
-          this.baseUrl = environment.backendUrl || 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
-        }
-      }
-      // If baseUrl already includes localhost in non-dev environment, that's an error
-      else if (this.baseUrl.includes('localhost') && !isDevelopment) {
-        console.error('[API Service] ERROR: Invalid baseUrl detected! Fixing...');
+      } else {
+        // Production: Always use current hostname to support both CloudFront and custom domain
         const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
         if (hostname) {
           const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:';
+          // Use current hostname to ensure it works on both CloudFront and custom domain
           this.baseUrl = `${protocol}//${hostname}/api/v1`;
+          console.log('[API Service] Using current hostname for baseUrl:', this.baseUrl);
         } else {
-          this.baseUrl = 'https://amesa-group.net/api/v1';
+          // Fallback to environment URL
+          this.baseUrl = envUrl.startsWith('http') ? envUrl : `https://${envUrl}/api/v1`;
+          console.warn('[API Service] Using environment backendUrl:', this.baseUrl);
         }
-        console.log('[API Service] Fixed baseUrl to:', this.baseUrl);
       }
     }
   }
