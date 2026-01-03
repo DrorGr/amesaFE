@@ -56,15 +56,28 @@ export class ApiService {
       if (isDevelopment) {
         // Use relative URL for proxy routing in development
         this.baseUrl = '/api/v1';
-      } else if (!this.baseUrl.startsWith('http') && typeof window !== 'undefined' && window.location.hostname.includes('cloudfront.net')) {
-        // Fix: If baseUrl is relative and we're on CloudFront (production), use absolute URL
-        console.warn('[API Service] Relative baseUrl detected on CloudFront, using production URL');
-        this.baseUrl = 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
+      } else if (!this.baseUrl.startsWith('http')) {
+        // Fix: If baseUrl is relative in production, use the current hostname
+        const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+        if (hostname) {
+          const protocol = window.location.protocol;
+          console.warn('[API Service] Relative baseUrl detected in production, using current hostname:', hostname);
+          this.baseUrl = `${protocol}//${hostname}/api/v1`;
+        } else {
+          // Fallback to environment URL or CloudFront
+          this.baseUrl = environment.backendUrl || 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
+        }
       }
       // If baseUrl already includes localhost in non-dev environment, that's an error
       else if (this.baseUrl.includes('localhost') && !isDevelopment) {
         console.error('[API Service] ERROR: Invalid baseUrl detected! Fixing...');
-        this.baseUrl = 'https://dpqbvdgnenckf.cloudfront.net/api/v1';
+        const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+        if (hostname) {
+          const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:';
+          this.baseUrl = `${protocol}//${hostname}/api/v1`;
+        } else {
+          this.baseUrl = 'https://amesa-group.net/api/v1';
+        }
         console.log('[API Service] Fixed baseUrl to:', this.baseUrl);
       }
     }
