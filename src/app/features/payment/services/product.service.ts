@@ -31,7 +31,8 @@ export interface ProductValidationRequest {
 }
 
 export interface ProductValidationResponse {
-  isValid: boolean;
+  /** When omitted, treat as valid only if `errors` is empty and `calculatedPrice` > 0. */
+  isValid?: boolean;
   errors: string[];
   calculatedPrice: number;
 }

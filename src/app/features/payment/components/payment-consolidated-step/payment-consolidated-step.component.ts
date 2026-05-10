@@ -22,6 +22,7 @@ import { ToastService } from '@core/services/toast.service';
 import { PaymentFlowState, PaymentMethod, PaymentSuccessEvent, QuantitySelectedEvent } from '@core/interfaces/payment-flow.interface';
 import { StripePaymentElement } from '@stripe/stripe-js';
 import { PAYMENT_PANEL_CONFIG } from '../../../../../config/payment-panel.config';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-payment-consolidated-step',
@@ -301,7 +302,7 @@ import { PAYMENT_PANEL_CONFIG } from '../../../../../config/payment-panel.config
           </div>
 
           <!-- Pay Button -->
-          <div class="pay-button-section">
+          <div class="pay-button-section space-y-3">
             <button
               type="button"
               (click)="onPay()"
@@ -317,6 +318,16 @@ import { PAYMENT_PANEL_CONFIG } from '../../../../../config/payment-panel.config
                 {{ translate('payment.stripe.pay') || 'Pay' }} {{ localeService.formatCurrency(calculatedPrice(), flowState().currency) }}
               }
             </button>
+            @if (sandboxPayVisible) {
+              <button
+                type="button"
+                (click)="onSandboxPay()"
+                [disabled]="!canProceed() || isProcessing() || priceCalculating()"
+                [attr.aria-label]="translate('payment.sandbox.pay') || 'Sandbox pay (demo)'"
+                class="w-full py-3 px-6 bg-green-600 dark:bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 dark:hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 border border-green-700 dark:border-green-500">
+                {{ translate('payment.sandbox.pay') || 'Sandbox pay' }}
+              </button>
+            }
           </div>
         </div>
       }
@@ -407,8 +418,13 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
   quantity = signal<number>(1);
   calculatedPrice = signal<number>(0);
   validationErrors = signal<string[]>([]);
+  /** True after the latest product validate API response allows purchase (aligned with server `isValid` / errors). */
+  purchaseValidatedOk = signal<boolean>(false);
   quantityError = signal<string | null>(null);
   priceCalculating = signal<boolean>(false);
+
+  /** Gated in `environment` — never enabled in production build (`environment.prod.ts`). */
+  readonly sandboxPayVisible = environment.enableSandboxPayment === true;
   
   selectedMethod = signal<PaymentMethod>(PaymentMethod.Stripe);
   isProcessing = signal<boolean>(false);
@@ -493,11 +509,11 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
   });
 
   canProceed = computed(() => {
-    return this.calculatedPrice() > 0 && 
-           this.quantity() >= 1 && 
+    return this.calculatedPrice() > 0 &&
+           this.purchaseValidatedOk() &&
+           this.quantity() >= 1 &&
            this.quantity() <= this.maxQuantity() &&
            !this.productSoldOut() &&
-           this.validationErrors().length === 0 &&
            !this.quantityError();
   });
 
@@ -659,6 +675,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
   private async loadProduct() {
     this.productLoading.set(true);
     this.quantityError.set(null);
+    this.purchaseValidatedOk.set(false);
     
     try {
       const product = await firstValueFrom(this.productService.getProduct(this.flowState().productId));
@@ -776,6 +793,13 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
         
         this.calculatedPrice.set(validation.calculatedPrice);
         this.validationErrors.set(validation.errors || []);
+        const errs = validation.errors ?? [];
+        const priceNum = Number(validation.calculatedPrice);
+        const serverOk = validation.isValid !== false && errs.length === 0 && priceNum > 0;
+        this.purchaseValidatedOk.set(serverOk);
+        if (serverOk) {
+          this.clearPaymentErrors();
+        }
         
         // HIGH-3: Invalidate Stripe payment intent if price changed significantly
         if (this.stripeClientSecret() && this.selectedMethod() === PaymentMethod.Stripe) {
@@ -799,6 +823,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
         const errorMsg = err?.message || this.translate('payment.quantity.priceError') || 'Unable to calculate price. Please try again.';
         this.quantityError.set(errorMsg);
         this.validationErrors.set([errorMsg]);
+        this.purchaseValidatedOk.set(false);
         // Don't set calculatedPrice - keep Pay button disabled
         this.toastService.error(errorMsg, 5000);
       }
@@ -847,6 +872,12 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
 
   // Stripe integration
   private async initializeStripe() {
+    if (this.productLoading()) {
+      return;
+    }
+    if (this.calculatedPrice() <= 0 || this.priceCalculating()) {
+      return;
+    }
     if (!this.canProceed()) {
       this.stripeError.set(this.translate('payment.stripe.invalidState') || 'Please complete quantity selection first');
       return;
@@ -994,6 +1025,12 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
 
   // Crypto integration
   private async initializeCrypto() {
+    if (this.productLoading()) {
+      return;
+    }
+    if (this.calculatedPrice() <= 0 || this.priceCalculating()) {
+      return;
+    }
     if (!this.canProceed()) {
       this.cryptoError.set(this.translate('payment.crypto.invalidState') || 'Please complete quantity selection first');
       return;
@@ -1277,6 +1314,62 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
         this.toastService.error(errorMsg);
         this.errorOccurred.emit(errorMsg);
       }
+    }
+  }
+
+  /**
+   * Dev/stage only: skips Stripe/Crypto and runs the same ticket purchase + success UI as a completed card payment.
+   */
+  async onSandboxPay(): Promise<void> {
+    if (!this.sandboxPayVisible || this.isProcessing()) {
+      return;
+    }
+    if (!this.canProceed() || this.priceCalculating()) {
+      this.toastService.warning(
+        this.translate('payment.sandbox.notReady') || 'Wait for price to finish updating, then try again.',
+        4000
+      );
+      return;
+    }
+
+    this.quantityAtPaymentStart.set(this.quantity());
+    this.isProcessing.set(true);
+    this.clearPaymentErrors();
+
+    try {
+      const validation = await firstValueFrom(
+        this.productService.validateProduct({
+          productId: this.flowState().productId,
+          quantity: this.quantity()
+        })
+      );
+
+      if (validation.errors && validation.errors.length > 0) {
+        this.isProcessing.set(false);
+        this.quantityAtPaymentStart.set(null);
+        this.quantityError.set(validation.errors[0]);
+        this.toastService.error(validation.errors[0]);
+        return;
+      }
+
+      if (this.quantity() !== this.quantityAtPaymentStart()) {
+        this.isProcessing.set(false);
+        this.quantityAtPaymentStart.set(null);
+        this.toastService.warning(
+          this.translate('payment.quantity.changedDuringValidation') || 'Quantity was changed. Please try again.',
+          4000
+        );
+        return;
+      }
+
+      const sandboxPaymentId = `sandbox_${crypto.randomUUID?.() ?? String(Date.now())}`;
+      await this.createTickets(sandboxPaymentId, PaymentMethod.Stripe);
+    } catch (err: any) {
+      this.isProcessing.set(false);
+      this.quantityAtPaymentStart.set(null);
+      const errorMsg = err?.message || this.translate('payment.sandbox.failed') || 'Sandbox payment could not complete';
+      this.toastService.error(errorMsg);
+      this.errorOccurred.emit(errorMsg);
     }
   }
 
