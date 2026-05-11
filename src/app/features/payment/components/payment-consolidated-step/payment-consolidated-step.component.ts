@@ -323,9 +323,9 @@ import { environment } from '../../../../../environments/environment';
                 type="button"
                 (click)="onSandboxPay()"
                 [disabled]="!canProceed() || isProcessing() || priceCalculating()"
-                [attr.aria-label]="translate('payment.sandbox.pay') || 'Sandbox pay (demo)'"
+                [attr.aria-label]="translateOr('payment.sandbox.pay', 'Sandbox pay (demo)')"
                 class="w-full py-3 px-6 bg-green-600 dark:bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 dark:hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 border border-green-700 dark:border-green-500">
-                {{ translate('payment.sandbox.pay') || 'Sandbox pay' }}
+                {{ translateOr('payment.sandbox.pay', 'Sandbox pay') }}
               </button>
             }
           </div>
@@ -590,15 +590,41 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       }
     });
 
-    // Effect to auto-initialize Stripe when price is ready
+    // Effect to auto-initialize Stripe when price + validation are ready (purchaseValidatedOk avoids bogus errors on tab switch)
     effect(() => {
       const price = this.calculatedPrice();
       const method = this.selectedMethod();
       const hasClientSecret = this.stripeClientSecret();
-      
-      if (price > 0 && method === PaymentMethod.Stripe && !hasClientSecret && !this.stripeLoading() && !this.isDestroyed) {
-        // Auto-initialize Stripe when price is calculated
+      const validated = this.purchaseValidatedOk();
+
+      if (
+        price > 0 &&
+        validated &&
+        method === PaymentMethod.Stripe &&
+        !hasClientSecret &&
+        !this.stripeLoading() &&
+        !this.isDestroyed
+      ) {
         this.initializeStripe();
+      }
+    });
+
+    // Crypto: same timing as Stripe — wait for validated price so tab switches do not show false errors
+    effect(() => {
+      const price = this.calculatedPrice();
+      const method = this.selectedMethod();
+      const hasCharge = this.cryptoCharge() != null;
+      const validated = this.purchaseValidatedOk();
+
+      if (
+        price > 0 &&
+        validated &&
+        method === PaymentMethod.Crypto &&
+        !hasCharge &&
+        !this.cryptoLoading() &&
+        !this.isDestroyed
+      ) {
+        this.initializeCrypto();
       }
     });
 
@@ -669,6 +695,11 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
   // Helper methods
   translate(key: string): string {
     return this.translationService.translate(key);
+  }
+
+  /** Use when the backend may omit the key — avoids showing raw i18n keys in the template. */
+  translateOr(key: string, fallback: string): string {
+    return this.translationService.translateOr(key, fallback);
   }
 
   // Product loading
@@ -852,17 +883,13 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       this.stopCryptoPolling();
       // MEDIUM-12: Stop crypto expiry countdown when switching away from Crypto
       this.stopCryptoExpiryCountdown();
+      this.cryptoCharge.set(null);
     }
     
     this.selectedMethod.set(method);
     this.clearPaymentErrors();
-    
-    // Initialize new method
-    if (method === PaymentMethod.Stripe) {
-      this.initializeStripe();
-    } else if (method === PaymentMethod.Crypto) {
-      this.initializeCrypto();
-    }
+    // Do not call initializeStripe/initializeCrypto here — they race with price validation and set
+    // bogus "complete quantity selection" errors. Effects below run init when purchaseValidatedOk + price are ready.
   }
 
   private clearPaymentErrors() {
@@ -879,7 +906,23 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       return;
     }
     if (!this.canProceed()) {
-      this.stripeError.set(this.translate('payment.stripe.invalidState') || 'Please complete quantity selection first');
+      // Validation still in flight — wait for effect to call again; never blame "quantity" prematurely
+      if (
+        this.calculatedPrice() > 0 &&
+        !this.quantityError() &&
+        !this.productSoldOut() &&
+        this.quantity() >= 1 &&
+        !this.purchaseValidatedOk()
+      ) {
+        return;
+      }
+      if (this.quantityError()) {
+        this.stripeError.set(this.quantityError()!);
+        return;
+      }
+      this.stripeError.set(
+        this.translateOr('payment.stripe.invalidState', 'Please complete quantity selection first')
+      );
       return;
     }
     
@@ -1032,7 +1075,22 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       return;
     }
     if (!this.canProceed()) {
-      this.cryptoError.set(this.translate('payment.crypto.invalidState') || 'Please complete quantity selection first');
+      if (
+        this.calculatedPrice() > 0 &&
+        !this.quantityError() &&
+        !this.productSoldOut() &&
+        this.quantity() >= 1 &&
+        !this.purchaseValidatedOk()
+      ) {
+        return;
+      }
+      if (this.quantityError()) {
+        this.cryptoError.set(this.quantityError()!);
+        return;
+      }
+      this.cryptoError.set(
+        this.translateOr('payment.crypto.invalidState', 'Please complete quantity selection first')
+      );
       return;
     }
     
@@ -1326,7 +1384,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     }
     if (!this.canProceed() || this.priceCalculating()) {
       this.toastService.warning(
-        this.translate('payment.sandbox.notReady') || 'Wait for price to finish updating, then try again.',
+        this.translateOr('payment.sandbox.notReady', 'Wait for price to finish updating, then try again.'),
         4000
       );
       return;
@@ -1367,7 +1425,9 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     } catch (err: any) {
       this.isProcessing.set(false);
       this.quantityAtPaymentStart.set(null);
-      const errorMsg = err?.message || this.translate('payment.sandbox.failed') || 'Sandbox payment could not complete';
+      const errorMsg =
+        err?.message ||
+        this.translateOr('payment.sandbox.failed', 'Sandbox payment could not complete');
       this.toastService.error(errorMsg);
       this.errorOccurred.emit(errorMsg);
     }

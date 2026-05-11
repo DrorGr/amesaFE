@@ -133,6 +133,19 @@ export class TranslationService {
   }
 
   /**
+   * Translation or explicit fallback when the key is missing from the API payload.
+   * (Unlike {@link translate}, does not return the raw key — use when UI must never show `foo.bar` keys.)
+   */
+  translateOr(key: string, fallback: string): string {
+    const translations = this.currentTranslations();
+    const translation = translations[key];
+    if (translation === undefined || translation === null || translation === '') {
+      return fallback;
+    }
+    return translation;
+  }
+
+  /**
    * Get translation with parameter substitution
    * Replaces {paramName} placeholders in translation strings with actual values
    * @param key - Translation key
