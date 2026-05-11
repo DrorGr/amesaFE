@@ -631,16 +631,13 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       }
     });
 
-    // Effect to auto-initialize Stripe when price + validation are ready (purchaseValidatedOk avoids bogus errors on tab switch)
+    // Effect to auto-initialize Stripe when checkout is allowed (includes auth/me + identity — avoids racing profile load)
     effect(() => {
-      const price = this.calculatedPrice();
       const method = this.selectedMethod();
       const hasClientSecret = this.stripeClientSecret();
-      const validated = this.purchaseValidatedOk();
 
       if (
-        price > 0 &&
-        validated &&
+        this.canProceed() &&
         method === PaymentMethod.Stripe &&
         !hasClientSecret &&
         !this.stripeLoading() &&
@@ -650,16 +647,13 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       }
     });
 
-    // Crypto: same timing as Stripe — wait for validated price so tab switches do not show false errors
+    // Crypto: same timing as Stripe
     effect(() => {
-      const price = this.calculatedPrice();
       const method = this.selectedMethod();
       const hasCharge = this.cryptoCharge() != null;
-      const validated = this.purchaseValidatedOk();
 
       if (
-        price > 0 &&
-        validated &&
+        this.canProceed() &&
         method === PaymentMethod.Crypto &&
         !hasCharge &&
         !this.cryptoLoading() &&
@@ -965,6 +959,10 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     if (this.calculatedPrice() <= 0 || this.priceCalculating()) {
       return;
     }
+    // Wait for GET auth/me — otherwise !canProceed() looks like "invalid quantity" and sets the wrong stripeError
+    if (this.userProfileLoading()) {
+      return;
+    }
     if (!this.canProceed()) {
       // Validation still in flight — wait for effect to call again; never blame "quantity" prematurely
       if (
@@ -1144,6 +1142,9 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       return;
     }
     if (this.calculatedPrice() <= 0 || this.priceCalculating()) {
+      return;
+    }
+    if (this.userProfileLoading()) {
       return;
     }
     if (!this.canProceed()) {
