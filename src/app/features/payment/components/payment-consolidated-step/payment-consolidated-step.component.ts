@@ -19,6 +19,7 @@ import { PaymentMethodPreferenceService } from '../../services/payment-method-pr
 import { TranslationService } from '@core/services/translation.service';
 import { LocaleService } from '@core/services/locale.service';
 import { ToastService } from '@core/services/toast.service';
+import { UserProfileService } from '@core/services/user-profile.service';
 import { PaymentFlowState, PaymentMethod, PaymentSuccessEvent, QuantitySelectedEvent } from '@core/interfaces/payment-flow.interface';
 import { StripePaymentElement } from '@stripe/stripe-js';
 import { PAYMENT_PANEL_CONFIG } from '../../../../../config/payment-panel.config';
@@ -301,6 +302,23 @@ import { environment } from '../../../../../environments/environment';
             </div>
           </div>
 
+          <!-- Identity verification (matches LotteryService ticket purchase rules) -->
+          @if (showIdentityVerificationBanner()) {
+            <div
+              class="rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 px-4 py-3 text-sm text-amber-900 dark:text-amber-100"
+              role="status">
+              <p class="font-semibold mb-1">
+                {{ translateOr('payment.identity.requiredTitle', 'Identity verification required') }}
+              </p>
+              <p class="text-amber-800 dark:text-amber-200">
+                {{ translateOr(
+                  'payment.identity.requiredForPurchase',
+                  'Complete identity verification in your account settings before you can purchase lottery tickets.'
+                ) }}
+              </p>
+            </div>
+          }
+
           <!-- Pay Button -->
           <div class="pay-button-section space-y-3">
             <button
@@ -397,6 +415,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
   private translationService = inject(TranslationService);
   localeService = inject(LocaleService); // Public for template access
   private toastService = inject(ToastService);
+  private userProfileService = inject(UserProfileService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
@@ -422,6 +441,10 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
   purchaseValidatedOk = signal<boolean>(false);
   quantityError = signal<string | null>(null);
   priceCalculating = signal<boolean>(false);
+
+  /** From GET auth/me — matches backend Users.VerificationStatus for lottery purchase. */
+  userProfileLoading = signal<boolean>(true);
+  userVerificationStatus = signal<string>('');
 
   /** Gated in `environment` — never enabled in production build (`environment.prod.ts`). */
   readonly sandboxPayVisible = environment.enableSandboxPayment === true;
@@ -509,12 +532,30 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
   });
 
   canProceed = computed(() => {
-    return this.calculatedPrice() > 0 &&
-           this.purchaseValidatedOk() &&
-           this.quantity() >= 1 &&
-           this.quantity() <= this.maxQuantity() &&
-           !this.productSoldOut() &&
-           !this.quantityError();
+    if (this.userProfileLoading()) {
+      return false;
+    }
+    const v = (this.userVerificationStatus() || '').toLowerCase();
+    if (v !== 'identityverified' && v !== 'fullyverified') {
+      return false;
+    }
+    return (
+      this.calculatedPrice() > 0 &&
+      this.purchaseValidatedOk() &&
+      this.quantity() >= 1 &&
+      this.quantity() <= this.maxQuantity() &&
+      !this.productSoldOut() &&
+      !this.quantityError()
+    );
+  });
+
+  /** Shown when profile is loaded but user is not allowed to purchase tickets yet (same rule as lottery API). */
+  showIdentityVerificationBanner = computed(() => {
+    if (this.productLoading() || this.isPaymentSuccess() || this.userProfileLoading()) {
+      return false;
+    }
+    const v = (this.userVerificationStatus() || '').toLowerCase();
+    return v !== 'identityverified' && v !== 'fullyverified';
   });
 
   houseTitle = computed(() => this.flowState().houseTitle);
@@ -641,8 +682,26 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     // Check for 3DS return
     await this.check3DSReturn();
     
-    // Load product (price calculation effect will trigger Stripe initialization)
-    await this.loadProduct();
+    await Promise.all([this.loadProduct(), this.loadUserPurchaseEligibility()]);
+  }
+
+  /** Loads Users.VerificationStatus via auth/me so Pay/Sandbox match houses/.../tickets/purchase rules. */
+  private async loadUserPurchaseEligibility(): Promise<void> {
+    this.userProfileLoading.set(true);
+    try {
+      const user = await firstValueFrom(this.userProfileService.getCurrentUser());
+      if (!this.isDestroyed) {
+        this.userVerificationStatus.set(user.verificationStatus ?? '');
+      }
+    } catch {
+      if (!this.isDestroyed) {
+        this.userVerificationStatus.set('');
+      }
+    } finally {
+      if (!this.isDestroyed) {
+        this.userProfileLoading.set(false);
+      }
+    }
   }
 
   ngAfterViewInit() {
@@ -707,6 +766,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     this.productLoading.set(true);
     this.quantityError.set(null);
     this.purchaseValidatedOk.set(false);
+    this.stripeRetryCount = 0;
     
     try {
       const product = await firstValueFrom(this.productService.getProduct(this.flowState().productId));
@@ -925,6 +985,16 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       );
       return;
     }
+
+    // Only count failures when createPaymentIntent runs — retries must not burn attempts on early exits above
+    if (this.stripeRetryCount >= this.MAX_STRIPE_RETRIES) {
+      const msg = this.translateOr(
+        'payment.stripe.maxRetriesReached',
+        'Maximum retry attempts reached. Please refresh the page or contact support.'
+      );
+      this.stripeError.set(msg);
+      return;
+    }
     
     // Stop any existing expiry countdown before initializing new payment
     this.stopExpiryCountdown();
@@ -955,7 +1025,19 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
         this.startExpiryCountdown(new Date(paymentIntent.expiresAt));
       }
     } catch (err: any) {
-      this.stripeError.set(err?.message || this.translate('payment.stripe.createError') || 'Failed to initialize payment');
+      this.stripeRetryCount++;
+      const atLimit = this.stripeRetryCount >= this.MAX_STRIPE_RETRIES;
+      const detail =
+        err?.message ||
+        this.translate('payment.stripe.createError') ||
+        'Failed to initialize payment';
+      const msg = atLimit
+        ? this.translateOr(
+            'payment.stripe.maxRetriesReached',
+            'Maximum retry attempts reached. Please refresh the page or contact support.'
+          )
+        : detail;
+      this.stripeError.set(msg);
       this.errorOccurred.emit(this.stripeError()!);
       this.toastService.error(this.stripeError()!);
     } finally {
@@ -1007,16 +1089,6 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
   }
 
   retryStripeInitialization() {
-    // MEDIUM-6: Add retry limit with exponential backoff
-    if (this.stripeRetryCount >= this.MAX_STRIPE_RETRIES) {
-      const errorMsg = this.translate('payment.stripe.maxRetriesReached') || 
-        'Maximum retry attempts reached. Please refresh the page or contact support.';
-      this.stripeError.set(errorMsg);
-      this.toastService.error(errorMsg, 6000);
-      return;
-    }
-    
-    this.stripeRetryCount++;
     this.initializeStripe();
   }
 
@@ -1625,56 +1697,63 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     } catch (err: any) {
       // Payment succeeded but ticket creation failed
       this.ticketCreationStatus.set('failed');
-      
-      // Check if it's a retryable error (network, timeout) vs permanent error
-      const isRetryable = err?.status === 0 || // Network error
-                         err?.status >= 500 || // Server error
-                         err?.code === 'ECONNABORTED' || // Timeout
-                         err?.message?.toLowerCase().includes('timeout') ||
-                         err?.message?.toLowerCase().includes('network');
-      
-      if (isRetryable) {
-        // Show retry option for retryable errors
-        this.ticketCreationStatus.set('failed');
-        const errorMessage = this.translate('payment.ticketCreation.retryable') || 
-          'Ticket creation failed. Please retry.';
-        this.toastService.error(errorMessage, 5000);
-        
-        // Store payment info for retry
-        this.pendingTicketCreation = {
-          paymentId,
-          method,
-          houseId: this.flowState().houseId,
-          quantity: this.quantity()
-        };
+
+      const apiErr = err?.error as { error?: { code?: string; message?: string } } | undefined;
+      const errCode = apiErr?.error?.code ?? '';
+      const idVerificationBlocked =
+        err?.status === 401 &&
+        (errCode === 'ID_VERIFICATION_REQUIRED' ||
+          String(apiErr?.error?.message ?? '').includes('ID_VERIFICATION_REQUIRED'));
+
+      if (idVerificationBlocked) {
+        const msg = this.translateOr(
+          'payment.identity.requiredForPurchase',
+          'Complete identity verification in your account settings before you can purchase lottery tickets.'
+        );
+        this.toastService.warning(msg, 8000);
+        void this.loadUserPurchaseEligibility();
       } else {
-        // Permanent error - still allow retry but show different message
-        this.ticketCreationStatus.set('failed');
-        const errorMessage = this.translate('payment.ticketCreation.failed') || 
-          'Payment succeeded but ticket creation failed. Please retry.';
-        this.toastService.warning(errorMessage, 6000);
-        
-        // Store payment info for retry (user can still retry even for permanent errors)
-        this.pendingTicketCreation = {
-          paymentId,
-          method,
-          houseId: this.flowState().houseId,
-          quantity: this.quantity()
-        };
+        const isRetryable =
+          err?.status === 0 ||
+          err?.status >= 500 ||
+          err?.code === 'ECONNABORTED' ||
+          err?.message?.toLowerCase().includes('timeout') ||
+          err?.message?.toLowerCase().includes('network');
+
+        if (isRetryable) {
+          const errorMessage =
+            this.translate('payment.ticketCreation.retryable') ||
+            'Ticket creation failed. Please retry.';
+          this.toastService.error(errorMessage, 5000);
+          this.pendingTicketCreation = {
+            paymentId,
+            method,
+            houseId: this.flowState().houseId,
+            quantity: this.quantity()
+          };
+        } else {
+          const errorMessage =
+            this.translate('payment.ticketCreation.failed') ||
+            'Payment succeeded but ticket creation failed. Please retry.';
+          this.toastService.warning(errorMessage, 6000);
+          this.pendingTicketCreation = {
+            paymentId,
+            method,
+            houseId: this.flowState().houseId,
+            quantity: this.quantity()
+          };
+        }
       }
-      
-      // Still emit success event (payment succeeded)
+
       const successEvent: PaymentSuccessEvent = {
         paymentIntentId: method === PaymentMethod.Stripe ? paymentId : undefined,
         chargeId: method === PaymentMethod.Crypto ? paymentId : undefined,
         method,
-        transactionId: err?.transactionId // Include transaction ID if available
+        transactionId: err?.transactionId
       };
-      
+
       this.paymentSuccessState.set(successEvent);
       this.paymentSuccess.emit(successEvent);
-      
-      // HIGH-2: Release quantity lock on payment success
       this.quantityAtPaymentStart.set(null);
     }
   }
