@@ -5,5 +5,6 @@ export const environment = {
   frontendUrl: 'https://amesa-group.net',
   logLevel: 'error',
   recaptchaSiteKey: '', // Set your Google reCAPTCHA v3 site key here (from AWS Secrets Manager or config)
-  enableSandboxPayment: false
+  // Demo: bypass Stripe/Crypto in payment modal via "Sandbox pay". Set back to false after the demo.
+  enableSandboxPayment: true
 };
