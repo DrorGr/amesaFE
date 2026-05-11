@@ -685,7 +685,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     try {
       const user = await firstValueFrom(this.userProfileService.getCurrentUser());
       if (!this.isDestroyed) {
-        this.userVerificationStatus.set(user.verificationStatus ?? '');
+        this.userVerificationStatus.set((user.verificationStatus ?? '').trim());
       }
     } catch {
       if (!this.isDestroyed) {
