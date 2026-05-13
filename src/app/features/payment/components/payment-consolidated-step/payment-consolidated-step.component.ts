@@ -543,8 +543,6 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       this.calculatedPrice() > 0 &&
       this.purchaseValidatedOk() &&
       this.quantity() >= 1 &&
-      this.quantity() <= this.maxQuantity() &&
-      !this.productSoldOut() &&
       !this.quantityError()
     );
   });
