@@ -1492,7 +1492,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       }
 
       const sandboxPaymentId = `sandbox_${crypto.randomUUID?.() ?? String(Date.now())}`;
-      await this.createTickets(sandboxPaymentId, PaymentMethod.Stripe);
+      await this.createTickets(sandboxPaymentId, PaymentMethod.Stripe, true);
     } catch (err: any) {
       this.isProcessing.set(false);
       this.quantityAtPaymentStart.set(null);
@@ -1650,7 +1650,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     await this.createTickets(chargeId, PaymentMethod.Crypto);
   }
 
-  private async createTickets(paymentId: string, method: PaymentMethod) {
+  private async createTickets(paymentId: string, method: PaymentMethod, sandbox = false) {
     this.ticketCreationStatus.set('creating');
     
     try {
@@ -1659,17 +1659,23 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
         throw new Error('House ID is required');
       }
       
-      // Get default payment method or use fallback
-      const defaultMethod = await this.paymentMethodPreference.getDefaultPaymentMethod();
+      // Sandbox deliberately skips saved payment methods and the Payment service.
+      const defaultMethod = sandbox ? null : await this.paymentMethodPreference.getDefaultPaymentMethod();
       const paymentMethodId = defaultMethod?.id || '00000000-0000-0000-0000-000000000000';
       
-      await firstValueFrom(
-        this.lotteryService.purchaseTicket({
+      const purchase$ = sandbox
+        ? this.lotteryService.sandboxPurchaseTicket({
+            houseId,
+            quantity: this.quantity(),
+            paymentMethodId: paymentMethodId
+          })
+        : this.lotteryService.purchaseTicket({
           houseId,
           quantity: this.quantity(),
           paymentMethodId: paymentMethodId
-        })
-      );
+        });
+
+      await firstValueFrom(purchase$);
       
       this.ticketCreationStatus.set('success');
       

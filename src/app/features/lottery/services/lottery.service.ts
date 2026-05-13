@@ -805,6 +805,57 @@ export class LotteryService {
     );
   }
 
+  // Demo/sandbox ticket purchase. Backend skips Payment service but keeps lottery/verification/inventory checks.
+  sandboxPurchaseTicket(purchaseRequest: PurchaseTicketRequest): Observable<{
+    ticketsPurchased: number;
+    totalCost: number;
+    originalCost: number;
+    discountAmount: number;
+    promotionCode?: string;
+    ticketNumbers: string[];
+    transactionId: string;
+  }> {
+    const requestBody: any = {
+      quantity: purchaseRequest.quantity,
+      paymentMethodId: purchaseRequest.paymentMethodId && purchaseRequest.paymentMethodId !== 'default'
+        ? purchaseRequest.paymentMethodId
+        : '00000000-0000-0000-0000-000000000000'
+    };
+
+    if (purchaseRequest.promotionCode && purchaseRequest.promotionCode.trim()) {
+      requestBody.promotionCode = purchaseRequest.promotionCode.trim();
+    }
+
+    return this.apiService.post(`houses/${purchaseRequest.houseId}/tickets/sandbox-purchase`, requestBody).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          const data = response.data as any;
+
+          this.safeInvalidateCache('activeEntries');
+          this.safeInvalidateCache('userStats');
+          this.safeInvalidateCache('gamificationData');
+          this.safeInvalidateCache('housesList');
+          this.safeInvalidateCache(`house:${purchaseRequest.houseId}`);
+
+          return {
+            ticketsPurchased: data.ticketsPurchased,
+            totalCost: data.totalCost,
+            originalCost: data.originalCost || data.totalCost,
+            discountAmount: data.discountAmount || 0,
+            promotionCode: data.promotionCode,
+            ticketNumbers: data.ticketNumbers || [],
+            transactionId: data.transactionId || ''
+          };
+        }
+        throw new Error('Failed to purchase sandbox tickets');
+      }),
+      catchError(error => {
+        console.error('Error purchasing sandbox tickets:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   // Get user's tickets
   // Endpoint: GET /api/v1/tickets
   getUserTicketsFromApi(): Observable<LotteryTicketDto[]> {
