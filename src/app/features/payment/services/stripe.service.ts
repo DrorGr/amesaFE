@@ -15,6 +15,27 @@ export interface CreatePaymentIntentRequest {
   metadata?: Record<string, string>;
 }
 
+export interface CreateCheckoutSessionRequest {
+  amount: number;
+  currency: string;
+  paymentMethodId?: string;
+  productId?: string;
+  quantity?: number;
+  idempotencyKey?: string;
+  description?: string;
+  returnUrl?: string;
+  metadata?: Record<string, string>;
+}
+
+export interface CheckoutSessionResponse {
+  clientSecret: string;
+  checkoutSessionId: string;
+  status: string;
+  amount: number;
+  currency: string;
+  expiresAt?: Date;
+}
+
 export interface PaymentIntentResponse {
   clientSecret: string;
   paymentIntentId: string;
@@ -59,6 +80,8 @@ export class StripeService {
   private publishableKey: string | null = null;
   private publishableKeyPromise: Promise<string> | null = null;
   private elements: StripeElements | null = null;
+  private checkout: any = null;
+  private checkoutSessionId: string | null = null;
 
   constructor(private apiService: ApiService) {
     // Load publishable key from backend
@@ -95,21 +118,6 @@ export class StripeService {
       throw new Error('Client secret is required to create payment element');
     }
 
-    // Create elements instance with client secret
-    this.elements = stripe.elements({
-      clientSecret: clientSecret,
-      appearance: {
-        theme: 'stripe'
-      }
-    });
-
-    // Use type assertion to work around Stripe type definitions
-    // The 'payment' element type is valid but not in the type definitions
-    const createElement = this.elements.create as any;
-    const paymentElement = createElement('payment', {
-      layout: 'tabs'
-    }) as StripePaymentElement;
-
     // Wait for the container element to exist
     const container = document.getElementById(containerId);
     if (!container) {
@@ -123,8 +131,19 @@ export class StripeService {
     // Small delay to ensure DOM is ready
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    // Mount the payment element
     try {
+      this.checkout = null;
+      this.elements = null;
+      const initCheckoutElementsSdk = (stripe as any).initCheckoutElementsSdk;
+      if (typeof initCheckoutElementsSdk !== 'function') {
+        throw new Error('Stripe Checkout Elements SDK is not available in this Stripe.js version');
+      }
+
+      this.checkout = await initCheckoutElementsSdk.call(stripe, {
+        clientSecret: Promise.resolve(clientSecret)
+      });
+
+      const paymentElement = this.checkout.createPaymentElement() as StripePaymentElement;
       paymentElement.mount(`#${containerId}`);
       
       // Wait a bit to ensure the element is fully mounted and initialized
@@ -135,6 +154,31 @@ export class StripeService {
       console.error('Error mounting Stripe Payment Element:', error);
       throw new Error(`Failed to mount payment element: ${error.message || 'Unknown error'}`);
     }
+  }
+
+  createCheckoutSession(request: CreateCheckoutSessionRequest): Observable<CheckoutSessionResponse> {
+    return this.apiService.post<CheckoutSessionResponse>('payments/stripe/create-checkout-session', request).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          this.checkoutSessionId = response.data.checkoutSessionId;
+          return response.data;
+        }
+        if (response.error?.code === 'RATE_LIMIT_EXCEEDED') {
+          const err: any = new Error(response.error.message || 'Too many payment requests');
+          err.status = 429;
+          err.error = response.error;
+          throw err;
+        }
+        throw new Error(response.error?.message || response.message || 'Failed to create checkout session');
+      }),
+      catchError(error => {
+        if (error.status === 429 || error.error?.code === 'RATE_LIMIT_EXCEEDED') {
+          return throwError(() => error);
+        }
+        console.error('Error creating checkout session:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   createPaymentIntent(request: CreatePaymentIntentRequest): Observable<PaymentIntentResponse> {
@@ -193,10 +237,41 @@ export class StripeService {
     requiresAction?: boolean;
     nextAction?: { type: string; redirectToUrl?: string };
     paymentIntentId?: string;
+    checkoutSessionId?: string;
   }> {
     const stripe = await this.stripe;
     if (!stripe) {
       return { success: false, error: 'Stripe failed to load' };
+    }
+
+    if (this.checkout) {
+      try {
+        const loadActionsResult = await this.checkout.loadActions();
+        if (loadActionsResult?.error || loadActionsResult?.type === 'error') {
+          const loadError = loadActionsResult.error ?? loadActionsResult;
+          return { success: false, error: loadError.message || 'Payment failed' };
+        }
+
+        const actions = loadActionsResult?.actions;
+        if (!actions?.confirm) {
+          return { success: false, error: 'Stripe checkout confirmation is not available.' };
+        }
+
+        const confirmResult = await actions.confirm();
+        const error = confirmResult?.error ?? (confirmResult?.type === 'error' ? confirmResult : null);
+        if (error) {
+          return { success: false, error: error.message || 'Payment failed' };
+        }
+
+        return {
+          success: true,
+          checkoutSessionId: this.checkoutSessionId || undefined
+        };
+      } catch (error: unknown) {
+        const err = error as { message?: string; type?: string };
+        console.error('Error confirming checkout session:', error);
+        return { success: false, error: err.message || 'Payment failed. Please ensure the payment form is fully loaded.' };
+      }
     }
 
     if (!this.elements) {

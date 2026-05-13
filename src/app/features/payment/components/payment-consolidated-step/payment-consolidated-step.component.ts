@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 import { firstValueFrom, interval, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { StripeService, PaymentIntentResponse } from '../../services/stripe.service';
+import { StripeService } from '../../services/stripe.service';
 import { CryptoPaymentService, CoinbaseChargeResponse } from '../../services/crypto-payment.service';
 import { ProductService, ProductDto } from '../../services/product.service';
 import { LotteryService } from '../../../lottery/services/lottery.service';
@@ -50,8 +50,8 @@ import { environment } from '../../../../../environments/environment';
         </div>
       }
 
-      <!-- Main Content (when product loaded and not in success state) -->
-      @if (!productLoading() && !isPaymentSuccess()) {
+      <!-- Main Content (when product loaded and not in terminal state) -->
+      @if (!productLoading() && !isPaymentSuccess() && ticketCreationStatus() !== 'failed') {
         <div class="space-y-6">
           <!-- Quantity Selector Section -->
           <div class="quantity-section">
@@ -350,6 +350,33 @@ import { environment } from '../../../../../environments/environment';
         </div>
       }
 
+      <!-- Ticket Creation Failure Message -->
+      @if (!productLoading() && !isPaymentSuccess() && ticketCreationStatus() === 'failed') {
+        <div class="ticket-failure-section text-center py-8">
+          <div class="mb-4">
+            <svg class="mx-auto h-16 w-16 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            {{ translateOr('payment.ticketCreation.failedTitle', 'Ticket creation failed') }}
+          </h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            {{ translateOr(
+              'payment.ticketCreation.failedDescription',
+              'We could not create your tickets. Please retry ticket creation.'
+            ) }}
+          </p>
+          <button
+            type="button"
+            (click)="retryTicketCreation()"
+            [disabled]="ticketCreationStatus() === 'creating'"
+            class="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500">
+            {{ translate('payment.ticketCreation.retry') || 'Retry Ticket Creation' }}
+          </button>
+        </div>
+      }
+
       <!-- Success Message -->
       @if (isPaymentSuccess()) {
         <div class="success-section text-center py-8">
@@ -458,6 +485,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
   stripeLoading = signal<boolean>(false);
   stripeError = signal<string | null>(null);
   stripeClientSecret = signal<string | null>(null);
+  stripeCheckoutSessionId = signal<string | null>(null);
   stripePaymentElement: StripePaymentElement | null = null;
   stripePaymentElementId = `stripe-payment-element-${Math.random().toString(36).substring(2, 11)}`;
   expiryCountdown = signal<number>(0);
@@ -982,7 +1010,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       return;
     }
 
-    // Only count failures when createPaymentIntent runs — retries must not burn attempts on early exits above
+    // Only count failures when Checkout Session creation runs — retries must not burn attempts on early exits above
     if (this.stripeRetryCount >= this.MAX_STRIPE_RETRIES) {
       const msg = this.translateOr(
         'payment.stripe.maxRetriesReached',
@@ -1000,25 +1028,27 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     
     try {
       const idempotencyKey = this.paymentService.generateIdempotencyKey();
-      const paymentIntent = await firstValueFrom(
-        this.stripeService.createPaymentIntent({
+      const checkoutSession = await firstValueFrom(
+        this.stripeService.createCheckoutSession({
           amount: this.calculatedPrice(),
           currency: this.flowState().currency || 'USD',
           productId: this.flowState().productId,
           quantity: this.quantity(),
-          idempotencyKey
+          idempotencyKey,
+          returnUrl: window.location.href.split('?')[0]
         })
       );
       
-      this.stripeClientSecret.set(paymentIntent.clientSecret);
+      this.stripeClientSecret.set(checkoutSession.clientSecret);
+      this.stripeCheckoutSessionId.set(checkoutSession.checkoutSessionId);
       
       // MEDIUM-10: Reset retry count on successful initialization
       this.stripeRetryCount = 0;
       
       // Start expiry countdown if expiresAt is provided
-      if (paymentIntent.expiresAt) {
-        this.stripePaymentIntentExpiresAt.set(new Date(paymentIntent.expiresAt));
-        this.startExpiryCountdown(new Date(paymentIntent.expiresAt));
+      if (checkoutSession.expiresAt) {
+        this.stripePaymentIntentExpiresAt.set(new Date(checkoutSession.expiresAt));
+        this.startExpiryCountdown(new Date(checkoutSession.expiresAt));
       }
     } catch (err: any) {
       this.stripeRetryCount++;
@@ -1082,6 +1112,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     }
     
     this.stripeClientSecret.set(null);
+    this.stripeCheckoutSessionId.set(null);
   }
 
   retryStripeInitialization() {
@@ -1513,13 +1544,13 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       // Final product availability check before payment submission
       await this.validateProductAvailability();
       
-      // Check if payment intent is expired
+      // Check if checkout session is expired
       const expiresAt = this.stripePaymentIntentExpiresAt();
       if (expiresAt && this.stripeService.isPaymentIntentExpired(expiresAt)) {
         throw new Error(this.translate('payment.stripe.expired') || 'Payment session expired');
       }
       
-      // Use StripeService.confirmPayment which handles elements.submit() and confirmation
+      // Use StripeService.confirmPayment which confirms the Checkout Session via Checkout actions
       // Retry on network errors
       const result = await this.retryWithBackoff(async () => {
         return await this.stripeService.confirmPayment(this.stripeClientSecret()!);
@@ -1529,7 +1560,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
         throw new Error(result.error || this.translate('payment.stripe.paymentFailed') || 'Payment failed');
       }
       
-      // Check if 3DS redirect is required
+      // Check if 3DS redirect is required (legacy PaymentIntent fallback)
       if (result.requiresAction && result.nextAction?.redirectToUrl) {
         // Store state for 3DS return
         const paymentIntentId = result.paymentIntentId || this.extractPaymentIntentId(this.stripeClientSecret()!);
@@ -1542,9 +1573,9 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       }
       
       // Payment succeeded
-      const paymentIntentId = result.paymentIntentId || this.extractPaymentIntentId(this.stripeClientSecret()!);
-      if (!paymentIntentId) {
-        throw new Error('Invalid payment intent ID');
+      const paymentId = result.checkoutSessionId || result.paymentIntentId || this.stripeCheckoutSessionId();
+      if (!paymentId) {
+        throw new Error('Invalid Stripe checkout session ID');
       }
       
       // MEDIUM-7: Clean up 3DS state on successful payment (no 3DS redirect)
@@ -1554,7 +1585,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
         // Ignore sessionStorage errors
       }
       
-      await this.handleStripePaymentSuccess(paymentIntentId);
+      await this.handleStripePaymentSuccess(paymentId);
     } catch (err: any) {
       if (err.type === 'card_error' || err.code === 'card_declined') {
         const errorMsg = this.translate('payment.stripe.declined') || 'Card declined. Please try another card.';
@@ -1738,8 +1769,10 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
           };
         } else {
           const errorMessage =
-            this.translate('payment.ticketCreation.failed') ||
-            'Payment succeeded but ticket creation failed. Please retry.';
+            this.translateOr(
+              'payment.ticketCreation.failedDescription',
+              'We could not create your tickets. Please retry ticket creation.'
+            );
           this.toastService.warning(errorMessage, 6000);
           this.pendingTicketCreation = {
             paymentId,
@@ -1750,15 +1783,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
         }
       }
 
-      const successEvent: PaymentSuccessEvent = {
-        paymentIntentId: method === PaymentMethod.Stripe ? paymentId : undefined,
-        chargeId: method === PaymentMethod.Crypto ? paymentId : undefined,
-        method,
-        transactionId: err?.transactionId
-      };
-
-      this.paymentSuccessState.set(successEvent);
-      this.paymentSuccess.emit(successEvent);
+      this.isProcessing.set(false);
       this.quantityAtPaymentStart.set(null);
     }
   }
