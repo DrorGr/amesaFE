@@ -15,7 +15,6 @@ import { CryptoPaymentService, CoinbaseChargeResponse } from '../../services/cry
 import { ProductService, ProductDto } from '../../services/product.service';
 import { LotteryService } from '../../../lottery/services/lottery.service';
 import { PaymentService } from '../../services/payment.service';
-import { PaymentMethodPreferenceService } from '../../services/payment-method-preference.service';
 import { TranslationService } from '@core/services/translation.service';
 import { LocaleService } from '@core/services/locale.service';
 import { ToastService } from '@core/services/toast.service';
@@ -438,7 +437,6 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
   private productService = inject(ProductService);
   private lotteryService = inject(LotteryService);
   private paymentService = inject(PaymentService);
-  private paymentMethodPreference = inject(PaymentMethodPreferenceService);
   private translationService = inject(TranslationService);
   localeService = inject(LocaleService); // Public for template access
   private toastService = inject(ToastService);
@@ -1639,8 +1637,17 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       return;
     }
     
-    // Create tickets only if validation passed
-    await this.createTickets(paymentIntentId, PaymentMethod.Stripe);
+    // Checkout Sessions are fulfilled by the Payment service webhook/product handler.
+    // Do not call the legacy Lottery purchase endpoint here; it creates a second payment attempt.
+    this.ticketCreationStatus.set('pending');
+
+    const successEvent: PaymentSuccessEvent = {
+      paymentIntentId,
+      method: PaymentMethod.Stripe
+    };
+
+    this.paymentSuccessState.set(successEvent);
+    this.paymentSuccess.emit(successEvent);
   }
 
   private async handleCryptoPaymentSuccess(chargeId: string) {
@@ -1690,9 +1697,9 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
         throw new Error('House ID is required');
       }
       
-      // Sandbox deliberately skips saved payment methods and the Payment service.
-      const defaultMethod = sandbox ? null : await this.paymentMethodPreference.getDefaultPaymentMethod();
-      const paymentMethodId = defaultMethod?.id || '00000000-0000-0000-0000-000000000000';
+      // This path runs only after an external payment is already complete, or for sandbox.
+      // Avoid the saved-payment-method lookup; it belongs to the old card flow.
+      const paymentMethodId = '00000000-0000-0000-0000-000000000000';
       
       const purchase$ = sandbox
         ? this.lotteryService.sandboxPurchaseTicket({
