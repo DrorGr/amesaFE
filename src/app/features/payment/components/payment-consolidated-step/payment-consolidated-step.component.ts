@@ -1689,11 +1689,17 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     await this.createTickets(chargeId, PaymentMethod.Crypto);
   }
 
-  private async createTickets(paymentId: string, method: PaymentMethod, sandbox = false) {
+  private async createTickets(
+    paymentId: string,
+    method: PaymentMethod,
+    sandbox = false,
+    requestedQuantity = this.quantity(),
+    requestedHouseId = this.flowState().houseId
+  ) {
     this.ticketCreationStatus.set('creating');
     
     try {
-      const houseId = this.flowState().houseId;
+      const houseId = requestedHouseId;
       if (!houseId) {
         throw new Error('House ID is required');
       }
@@ -1705,12 +1711,12 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       const purchase$ = sandbox
         ? this.lotteryService.sandboxPurchaseTicket({
             houseId,
-            quantity: this.quantity(),
+            quantity: requestedQuantity,
             paymentMethodId: paymentMethodId
           })
         : this.lotteryService.purchaseTicket({
           houseId,
-          quantity: this.quantity(),
+          quantity: requestedQuantity,
           paymentMethodId: paymentMethodId
         });
 
@@ -1820,7 +1826,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     this.ticketCreationRetryCount.update(count => count + 1);
     
     try {
-      await this.createTickets(paymentId, method, sandbox === true);
+      await this.createTickets(paymentId, method, sandbox === true, quantity, houseId);
       // Reset retry count on success
       this.ticketCreationRetryCount.set(0);
     } catch (err: any) {
