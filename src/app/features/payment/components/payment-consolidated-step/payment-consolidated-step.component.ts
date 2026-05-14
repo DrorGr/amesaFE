@@ -508,6 +508,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
     method: PaymentMethod;
     houseId?: string;
     quantity: number;
+    sandbox?: boolean;
   } | null = null;
   private ticketCreationRetryCount = signal<number>(0);
   private readonly MAX_TICKET_CREATION_RETRIES = 3;
@@ -1772,7 +1773,8 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
             paymentId,
             method,
             houseId: this.flowState().houseId,
-            quantity: this.quantity()
+            quantity: this.quantity(),
+            sandbox
           };
         } else {
           const errorMessage =
@@ -1785,7 +1787,8 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
             paymentId,
             method,
             houseId: this.flowState().houseId,
-            quantity: this.quantity()
+            quantity: this.quantity(),
+            sandbox
           };
         }
       }
@@ -1812,12 +1815,12 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       return;
     }
     
-    const { paymentId, method, houseId, quantity } = this.pendingTicketCreation;
+    const { paymentId, method, houseId, quantity, sandbox } = this.pendingTicketCreation;
     this.pendingTicketCreation = null;
     this.ticketCreationRetryCount.update(count => count + 1);
     
     try {
-      await this.createTickets(paymentId, method);
+      await this.createTickets(paymentId, method, sandbox === true);
       // Reset retry count on success
       this.ticketCreationRetryCount.set(0);
     } catch (err: any) {
@@ -1831,7 +1834,7 @@ export class PaymentConsolidatedStepComponent implements OnInit, AfterViewInit, 
       this.toastService.error(errorMessage, 6000);
       // Restore pending state for another retry (if under limit)
       if (this.ticketCreationRetryCount() < this.MAX_TICKET_CREATION_RETRIES) {
-        this.pendingTicketCreation = { paymentId, method, houseId, quantity };
+        this.pendingTicketCreation = { paymentId, method, houseId, quantity, sandbox };
       } else {
         // Max retries reached - clear pending state
         this.pendingTicketCreation = null;
