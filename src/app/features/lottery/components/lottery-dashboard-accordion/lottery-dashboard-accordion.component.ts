@@ -57,13 +57,13 @@ enum ErrorType {
       })),
       state('true', style({
         height: '*',
-        maxHeight: '2000px',
+        maxHeight: 'var(--dashboard-accordion-max-height)',
         opacity: 1,
-        overflow: 'visible',
-        paddingTop: '1rem',
+        overflow: 'hidden',
+        paddingTop: '0px',
         paddingBottom: '0px',
-        paddingLeft: '1rem',
-        paddingRight: '1rem',
+        paddingLeft: '0px',
+        paddingRight: '0px',
         borderTopWidth: '1px'
       })),
       transition('false => true', [
@@ -145,7 +145,7 @@ enum ErrorType {
           style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
         </div>
         
-        <div aria-live="polite" aria-atomic="true" class="px-4" [attr.aria-busy]="isLoading()">
+        <div aria-live="polite" aria-atomic="true" class="dashboard-accordion-scroll px-4 pt-4 pb-4" [attr.aria-busy]="isLoading()">
           @if (!currentUser()) {
             <!-- Not logged in - show login prompt -->
             <div class="py-8 text-center">
@@ -279,10 +279,30 @@ enum ErrorType {
   styles: [`
     :host {
       display: block;
+      /* top-16 (4rem) + toggle button (~3rem) */
+      --dashboard-accordion-max-height: calc(100dvh - 7rem);
     }
-    
+
+    @media (min-width: 768px) {
+      :host {
+        /* md:top-20 (5rem) + toggle button (~3rem) */
+        --dashboard-accordion-max-height: calc(100dvh - 8rem);
+      }
+    }
+
     #dashboard-accordion-content {
-      /* Animation controls visibility via maxHeight and overflow */
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dashboard-accordion-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: var(--dashboard-accordion-max-height);
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
     }
   `]
 })
