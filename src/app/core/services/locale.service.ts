@@ -24,7 +24,9 @@ export class LocaleService {
     'en': 'en-US',
     'es': 'es-ES',
     'fr': 'fr-FR',
-    'pl': 'pl-PL'
+    'pl': 'pl-PL',
+    'de': 'de-DE',
+    'ru': 'ru-RU'
   };
 
   // Currency codes for each language
@@ -32,7 +34,9 @@ export class LocaleService {
     'en': 'USD',
     'es': 'EUR',
     'fr': 'EUR',
-    'pl': 'PLN'
+    'pl': 'PLN',
+    'de': 'EUR',
+    'ru': 'EUR'
   };
 
   constructor() {
