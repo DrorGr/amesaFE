@@ -172,7 +172,7 @@ import { TranslationService } from '@core/services/translation.service';
       color: var(--text-secondary, #666);
     }
 
-    @media (prefers-color-scheme: dark) {
+    :host-context(html.dark) {
       .gamification-panel {
         --gamification-panel-bg: #1f2937;
         --gamification-panel-border: #374151;

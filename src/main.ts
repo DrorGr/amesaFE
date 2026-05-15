@@ -80,9 +80,7 @@ function initializeServices(
     const prefs = userPreferencesService.getPreferences();
     
     // Initialize theme from user preferences (synchronous)
-    if (prefs.appearance?.theme) {
-      themeService.updateThemeFromPreferences(prefs.appearance.theme);
-    }
+    themeService.updateThemeFromPreferences(prefs.appearance?.theme ?? 'dark');
     
     // Initialize accessibility from user preferences (synchronous)
     if (prefs.accessibility) {

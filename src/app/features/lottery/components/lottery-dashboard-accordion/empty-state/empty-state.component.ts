@@ -54,7 +54,7 @@ import { TranslationService } from '@core/services/translation.service';
       border: 1px solid var(--welcome-border, #bae6fd);
     }
 
-    @media (prefers-color-scheme: dark) {
+    :host-context(html.dark) {
       .empty-state {
         color: #9ca3af;
       }

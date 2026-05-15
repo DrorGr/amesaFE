@@ -103,7 +103,7 @@ import { TranslationService } from '@core/services/translation.service';
       text-align: center;
     }
 
-    @media (prefers-color-scheme: dark) {
+    :host-context(html.dark) {
       .quick-actions-title {
         color: #f9fafb;
       }

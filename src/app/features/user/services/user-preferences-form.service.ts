@@ -47,7 +47,7 @@ export class UserPreferencesFormService {
   initializeForm(): void {
     this.preferencesForm = this.fb.group({
       // Appearance
-      theme: ['auto'],
+      theme: ['dark'],
       fontSize: ['medium'],
       uiDensity: ['comfortable'],
       showAnimations: [true],

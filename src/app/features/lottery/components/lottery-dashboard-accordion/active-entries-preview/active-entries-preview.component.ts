@@ -97,7 +97,7 @@ import {
       color: var(--text-secondary, #666);
     }
 
-    @media (prefers-color-scheme: dark) {
+    :host-context(html.dark) {
       .active-entries-title {
         color: #f9fafb;
       }
@@ -105,6 +105,14 @@ import {
       .active-entries-summary,
       .empty-state {
         color: #9ca3af;
+      }
+
+      .view-all-link {
+        color: #93c5fd;
+      }
+
+      .view-all-link:hover {
+        color: #bfdbfe;
       }
     }
   `]

@@ -128,7 +128,7 @@ import { TranslationService } from '@core/services/translation.service';
       color: var(--text-primary, #333);
     }
 
-    @media (prefers-color-scheme: dark) {
+    :host-context(html.dark) {
       .financial-summary {
         --financial-summary-bg: #1f2937;
         --financial-summary-border: #374151;

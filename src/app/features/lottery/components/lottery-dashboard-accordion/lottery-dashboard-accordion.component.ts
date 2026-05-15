@@ -75,7 +75,7 @@ enum ErrorType {
     ])
   ],
   template: `
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm fixed top-16 md:top-20 left-0 right-0 z-[99]">
+    <div class="dashboard-accordion-shell bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700/80 shadow-sm dark:shadow-black/40 fixed top-16 md:top-20 left-0 right-0 z-[99]">
       <button
         (click)="toggleAccordion()"
         (keydown.enter)="toggleAccordion()"
@@ -85,16 +85,16 @@ enum ErrorType {
         [attr.aria-expanded]="isExpanded()"
         [attr.aria-controls]="'dashboard-accordion-content'"
         [id]="'dashboard-accordion-toggle'"
-        class="w-full px-4 py-3 flex items-center justify-center relative hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        class="w-full px-4 py-3 flex items-center justify-center relative hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
         <div class="flex items-center gap-3 absolute left-4">
           @if (currentUser() && activeEntriesCount() > 0) {
-            <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-semibold">
+            <span class="bg-blue-600 dark:bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-semibold ring-1 ring-blue-400/30">
               {{ activeEntriesCount() }}
             </span>
           }
         </div>
         <div class="flex items-center justify-center flex-1 relative">
-          <span class="text-gray-700 dark:text-gray-300 font-semibold text-center">
+          <span class="text-gray-800 dark:text-gray-100 font-semibold text-center">
             {{ translate('nav.lotteries') }}
           </span>
           <!-- Small close button at center middle (only when expanded) -->
@@ -104,9 +104,9 @@ enum ErrorType {
               (keydown.enter)="toggleAccordion(); $event.stopPropagation()"
               (keydown.space)="toggleAccordion(); $event.preventDefault(); $event.stopPropagation()"
               [attr.aria-label]="'Close dashboard'"
-              class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 p-1.5 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none z-10 shadow-sm">
+              class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 p-1.5 rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 transition-colors focus:outline-none z-10 shadow-md dark:shadow-black/50">
               <svg 
-                class="w-3 h-3 text-gray-600 dark:text-gray-400" 
+                class="w-3 h-3 text-gray-700 dark:text-gray-200" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -118,7 +118,7 @@ enum ErrorType {
         </div>
         <svg 
           [class.rotate-180]="isExpanded()" 
-          class="w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform duration-300 ease-in-out absolute right-4" 
+          class="w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-300 ease-in-out absolute right-4" 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -134,8 +134,7 @@ enum ErrorType {
         [attr.aria-busy]="isLoading()"
         role="region"
         [attr.aria-label]="translate('lottery.dashboard.title')"
-        class="overflow-hidden border-t border-gray-200 dark:border-gray-700"
-        >
+        class="overflow-hidden border-t border-gray-200 dark:border-gray-700/80 bg-white dark:bg-gray-900">
         <!-- Screen reader announcement region -->
         <div 
           #screenReaderAnnouncement
@@ -235,7 +234,7 @@ enum ErrorType {
                 [disabled]="isLoading()"
                 [attr.aria-label]="'Refresh dashboard data'"
                 [attr.aria-busy]="isLoading()"
-                class="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                class="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg border border-transparent dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed">
                 🔄 {{ translate('common.refresh') || 'Refresh' }}
               </button>
             </div>
@@ -303,6 +302,28 @@ enum ErrorType {
       overflow-x: hidden;
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
+      scrollbar-gutter: stable;
+    }
+
+    :host-context(html.dark) .dashboard-accordion-scroll {
+      scrollbar-color: #4b5563 #111827;
+    }
+
+    :host-context(html.dark) .dashboard-accordion-scroll::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    :host-context(html.dark) .dashboard-accordion-scroll::-webkit-scrollbar-track {
+      background: #111827;
+    }
+
+    :host-context(html.dark) .dashboard-accordion-scroll::-webkit-scrollbar-thumb {
+      background: #4b5563;
+      border-radius: 999px;
+    }
+
+    :host-context(html.dark) .dashboard-accordion-scroll::-webkit-scrollbar-thumb:hover {
+      background: #6b7280;
     }
   `]
 })

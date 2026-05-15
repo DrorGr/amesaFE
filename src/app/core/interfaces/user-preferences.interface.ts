@@ -206,7 +206,7 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
   syncEnabled: true,
   
   appearance: {
-    theme: 'auto',
+    theme: 'dark',
     primaryColor: '#3B82F6',
     accentColor: '#10B981',
     fontSize: 'medium',

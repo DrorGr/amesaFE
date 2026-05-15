@@ -283,7 +283,7 @@ import { ConsolidatedHouseEntry } from '../consolidated-house-entry.model';
       font-family: ui-monospace, monospace;
     }
 
-    @media (prefers-color-scheme: dark) {
+    :host-context(html.dark) {
       .entry-card {
         --entry-card-bg: #1f2937;
         --entry-card-border: #374151;
@@ -299,6 +299,19 @@ import { ConsolidatedHouseEntry } from '../consolidated-house-entry.model';
       .entry-card-count {
         background: #1e3a8a;
         color: #bfdbfe;
+      }
+
+      .entry-card.clickable:hover {
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+      }
+
+      .status-expired {
+        background: #374151;
+        color: #d1d5db;
+      }
+
+      .entry-card-tickets-summary {
+        color: #93c5fd;
       }
     }
   `]

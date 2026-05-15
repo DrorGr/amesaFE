@@ -15,9 +15,9 @@ export class ThemeService {
   private logger = inject(LoggingService);
 
   // Theme state
-  private currentThemeSignal = signal<'light' | 'dark'>('light');
+  private currentThemeSignal = signal<'light' | 'dark'>('dark');
   private systemThemeSignal = signal<'light' | 'dark'>('light');
-  private userThemeModeSignal = signal<ThemeMode>('auto');
+  private userThemeModeSignal = signal<ThemeMode>('dark');
 
   // Public computed properties
   public currentTheme = computed(() => this.currentThemeSignal());
@@ -404,12 +404,13 @@ export class ThemeService {
     if (!isPlatformBrowser(this.platformId)) return;
 
     const storedTheme = localStorage.getItem('amesa_current_theme') as 'light' | 'dark' | null;
-    if (storedTheme && (storedTheme === 'light' || storedTheme === 'dark')) {
-      // Apply stored theme immediately for faster perceived performance
-      document.documentElement.classList.add(storedTheme);
-      this.currentThemeSignal.set(storedTheme);
-      this.applyCSSProperties(storedTheme);
-    }
+    const resolvedTheme =
+      storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : 'dark';
+
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(resolvedTheme);
+    this.currentThemeSignal.set(resolvedTheme);
+    this.applyCSSProperties(resolvedTheme);
   }
 
   /**

@@ -115,12 +115,36 @@ import { CommonModule } from '@angular/common';
     }
 
     /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
+    :host-context(html.dark) {
       .stat-card {
         --stat-card-bg: #1f2937;
         --stat-card-border: #374151;
         --stat-card-label-color: #9ca3af;
         --stat-card-value-color: #f9fafb;
+      }
+
+      .stat-card.primary {
+        --stat-card-bg: rgba(59, 130, 246, 0.12);
+        --stat-card-border: #3b82f6;
+        --stat-card-value-color: #93c5fd;
+      }
+
+      .stat-card.success {
+        --stat-card-bg: rgba(16, 185, 129, 0.12);
+        --stat-card-border: #10b981;
+        --stat-card-value-color: #6ee7b7;
+      }
+
+      .stat-card.warning {
+        --stat-card-bg: rgba(245, 158, 11, 0.12);
+        --stat-card-border: #f59e0b;
+        --stat-card-value-color: #fcd34d;
+      }
+
+      .stat-card.info {
+        --stat-card-bg: rgba(6, 182, 212, 0.12);
+        --stat-card-border: #06b6d4;
+        --stat-card-value-color: #67e8f9;
       }
     }
   `]
