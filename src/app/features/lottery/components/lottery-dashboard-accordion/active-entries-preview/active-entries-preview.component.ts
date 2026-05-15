@@ -104,7 +104,7 @@ import {
 
       .active-entries-summary,
       .empty-state {
-        color: #9ca3af;
+        color: #e5e7eb;
       }
 
       .view-all-link {

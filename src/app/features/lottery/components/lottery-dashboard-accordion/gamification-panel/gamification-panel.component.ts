@@ -194,6 +194,14 @@ import { TranslationService } from '@core/services/translation.service';
       .achievement-name {
         color: #f9fafb;
       }
+
+      .gamification-stat-label,
+      .achievements-title,
+      .achievement-description,
+      .achievement-date,
+      .gamification-empty {
+        color: #e5e7eb;
+      }
     }
   `]
 })

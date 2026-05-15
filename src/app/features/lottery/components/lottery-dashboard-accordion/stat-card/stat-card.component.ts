@@ -119,7 +119,7 @@ import { CommonModule } from '@angular/common';
       .stat-card {
         --stat-card-bg: #1f2937;
         --stat-card-border: #374151;
-        --stat-card-label-color: #9ca3af;
+        --stat-card-label-color: #e5e7eb;
         --stat-card-value-color: #f9fafb;
       }
 

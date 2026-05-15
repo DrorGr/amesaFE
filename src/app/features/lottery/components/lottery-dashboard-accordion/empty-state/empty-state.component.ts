@@ -55,8 +55,9 @@ import { TranslationService } from '@core/services/translation.service';
     }
 
     :host-context(html.dark) {
-      .empty-state {
-        color: #9ca3af;
+      .empty-state,
+      .empty-state-message {
+        color: #e5e7eb;
       }
 
       .empty-state-title {

@@ -288,7 +288,7 @@ import { ConsolidatedHouseEntry } from '../consolidated-house-entry.model';
         --entry-card-bg: #1f2937;
         --entry-card-border: #374151;
         --entry-card-title-color: #f9fafb;
-        --entry-card-label-color: #9ca3af;
+        --entry-card-label-color: #e5e7eb;
         --entry-card-value-color: #f9fafb;
       }
 

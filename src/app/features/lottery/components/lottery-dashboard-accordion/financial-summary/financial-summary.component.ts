@@ -145,6 +145,11 @@ import { TranslationService } from '@core/services/translation.service';
       .financial-date-value {
         color: #f9fafb;
       }
+
+      .financial-label,
+      .financial-date-label {
+        color: #e5e7eb;
+      }
     }
   `]
 })

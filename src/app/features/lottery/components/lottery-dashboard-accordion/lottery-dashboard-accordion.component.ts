@@ -148,7 +148,7 @@ enum ErrorType {
           @if (!currentUser()) {
             <!-- Not logged in - show login prompt -->
             <div class="py-8 text-center">
-              <p class="text-gray-600 dark:text-gray-400 mb-4">
+              <p class="text-gray-600 dark:text-gray-200 mb-4">
                 {{ translate('lottery.dashboard.loginRequired') || 'Please log in to view your lottery dashboard' }}
               </p>
               <button
@@ -324,6 +324,10 @@ enum ErrorType {
 
     :host-context(html.dark) .dashboard-accordion-scroll::-webkit-scrollbar-thumb:hover {
       background: #6b7280;
+    }
+
+    :host-context(html.dark) .dashboard-accordion-scroll {
+      color: #f3f4f6;
     }
   `]
 })
