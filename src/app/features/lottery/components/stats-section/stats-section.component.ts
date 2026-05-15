@@ -22,10 +22,10 @@ import { MobileDetectionService } from '@core/services/mobile-detection.service'
       <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-3 md:mb-16">
         <div class="text-center">
           <h2 id="stats-section-title" class="text-xl md:text-4xl font-black bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-1 md:mb-3">
-            Live Statistics
+            {{ translate('stats.section.title') }}
           </h2>
           <p class="text-gray-700 dark:text-gray-300 text-xs md:text-lg font-medium">
-            Real-time lottery performance metrics
+            {{ translate('stats.section.subtitle') }}
           </p>
           <div class="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mt-2 md:mt-4 rounded-full" aria-hidden="true"></div>
         </div>
