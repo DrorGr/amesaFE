@@ -3,7 +3,7 @@ import { Observable, BehaviorSubject, of, catchError, map, tap } from 'rxjs';
 import { ApiService } from './api.service';
 import { LoggingService } from './logging.service';
 
-export type Language = 'en' | 'es' | 'fr' | 'pl';
+export type Language = 'en' | 'es' | 'fr' | 'pl' | 'de' | 'ru';
 
 export interface Translations {
   readonly [key: string]: string;
@@ -110,6 +110,24 @@ export class TranslationService {
       isActive: true,
       isDefault: false,
       displayOrder: 4
+    },
+    {
+      code: 'de',
+      name: 'German',
+      nativeName: 'Deutsch',
+      flagUrl: 'https://flagcdn.com/w40/de.png',
+      isActive: true,
+      isDefault: false,
+      displayOrder: 5
+    },
+    {
+      code: 'ru',
+      name: 'Russian',
+      nativeName: 'Русский',
+      flagUrl: 'https://flagcdn.com/w40/ru.png',
+      isActive: true,
+      isDefault: false,
+      displayOrder: 6
     }
   ];
 

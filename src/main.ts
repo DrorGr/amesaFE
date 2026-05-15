@@ -31,19 +31,19 @@ function initializeTranslations(translationService: TranslationService) {
     // 2. Browser/system language (navigator.language)
     // 3. Default to 'en' if none of the above are available
 
-    let initialLanguage: 'en' | 'es' | 'fr' | 'pl' = 'en';
-    const supportedLanguages: ('en' | 'es' | 'fr' | 'pl')[] = ['en', 'es', 'fr', 'pl'];
+    let initialLanguage: 'en' | 'es' | 'fr' | 'pl' | 'de' | 'ru' = 'en';
+    const supportedLanguages: ('en' | 'es' | 'fr' | 'pl' | 'de' | 'ru')[] = ['en', 'es', 'fr', 'pl', 'de', 'ru'];
 
     // Priority 1: Check localStorage directly (fastest, no network)
     if (typeof localStorage !== 'undefined') {
-      const storedLanguage = localStorage.getItem('amesa_language') as 'en' | 'es' | 'fr' | 'pl' | null;
+      const storedLanguage = localStorage.getItem('amesa_language') as 'en' | 'es' | 'fr' | 'pl' | 'de' | 'ru' | null;
       if (storedLanguage && supportedLanguages.includes(storedLanguage)) {
         initialLanguage = storedLanguage;
       } else if (typeof navigator !== 'undefined' && navigator.language) {
         // Priority 2: Check browser/system language
         const browserLang = navigator.language.toLowerCase().split('-')[0] as string;
-        if (supportedLanguages.includes(browserLang as 'en' | 'es' | 'fr' | 'pl')) {
-          initialLanguage = browserLang as 'en' | 'es' | 'fr' | 'pl';
+        if (supportedLanguages.includes(browserLang as 'en' | 'es' | 'fr' | 'pl' | 'de' | 'ru')) {
+          initialLanguage = browserLang as 'en' | 'es' | 'fr' | 'pl' | 'de' | 'ru';
         }
       }
     }

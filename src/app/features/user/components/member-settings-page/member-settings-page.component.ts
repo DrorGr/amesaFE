@@ -110,7 +110,7 @@ interface StarReward {
                   }
                 </h2>
                 <p class="text-gray-600 dark:text-gray-400 capitalize">
-                  {{ translate('member.accountType') }}: {{ translate('member.' + userProfile().accountType) }}
+                  {{ translate('member.accountType') }}: {{ accountTypeLabel() }}
                 </p>
                 <p class="text-sm text-gray-500 dark:text-gray-500">
                   {{ translate('member.memberSince') }}: {{ userProfile().joinDate }}
@@ -804,6 +804,13 @@ export class MemberSettingsPageComponent implements OnInit, OnDestroy {
 
   translate(key: string): string {
     return this.memberSettingsService.translate(key);
+  }
+
+  accountTypeLabel(): string {
+    const type = this.userProfile().accountType;
+    const key = `member.accountType.${type}`;
+    const label = this.translate(key);
+    return label !== key ? label : type;
   }
 
   setActiveTab(tabId: string) {
