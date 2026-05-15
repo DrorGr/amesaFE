@@ -9,7 +9,7 @@ import { LotteryService } from '../../services/lottery.service';
 import { TranslationService } from '@core/services/translation.service';
 import { LocaleService } from '@core/services/locale.service';
 import { LoggingService } from '@core/services/logging.service';
-import { LotteryTicketDto } from '@core/models/house.model';
+import { ConsolidatedHouseEntry } from './consolidated-house-entry.model';
 import { UserGamificationDto } from '@core/interfaces/lottery.interface';
 import { LOTTERY_TRANSLATION_KEYS } from '@shared/constants/lottery-translation-keys';
 import { DashboardStatsGridComponent } from './dashboard-stats-grid/dashboard-stats-grid.component';
@@ -608,8 +608,7 @@ export class LotteryDashboardAccordionComponent implements OnInit, OnDestroy {
     });
   }
 
-  onEntryClick(entry: LotteryTicketDto): void {
-    // Navigate to house details page
+  onEntryClick(entry: ConsolidatedHouseEntry): void {
     this.router.navigate(['/houses', entry.houseId]);
   }
 

@@ -35,7 +35,17 @@ export const LOTTERY_TRANSLATION_KEYS = {
     statusWinner: 'lottery.entries.statusWinner',
     statusRefunded: 'lottery.entries.statusRefunded',
     isWinner: 'lottery.entries.isWinner',
-    notWinner: 'lottery.entries.notWinner'
+    notWinner: 'lottery.entries.notWinner',
+    ticketCount: 'lottery.entries.ticketCount',
+    viewTicketNumbers: 'lottery.entries.viewTicketNumbers',
+    totalSpent: 'lottery.entries.totalSpent',
+    drawDate: 'lottery.entries.drawDate',
+    bedrooms: 'lottery.entries.bedrooms',
+    bathrooms: 'lottery.entries.bathrooms',
+    squareFeet: 'lottery.entries.squareFeet',
+    summary: 'lottery.entries.summary',
+    houseSingular: 'lottery.entries.houseSingular',
+    housePlural: 'lottery.entries.housePlural'
   },
 
   // Dashboard

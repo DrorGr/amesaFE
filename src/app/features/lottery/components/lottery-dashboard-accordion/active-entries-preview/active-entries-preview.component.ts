@@ -1,14 +1,15 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EntryCardComponent } from '../entry-card/entry-card.component';
 import { LotteryTicketDto } from '@core/models/house.model';
 import { TranslationService } from '@core/services/translation.service';
+import { LotteryService } from '../../../services/lottery.service';
+import {
+  ConsolidatedHouseEntry,
+  consolidateActiveEntries
+} from '../consolidated-house-entry.model';
 
-/**
- * ActiveEntriesPreviewComponent
- * Displays active entries with EntryCardComponent and View All link
- */
 @Component({
   selector: 'app-active-entries-preview',
   standalone: true,
@@ -17,22 +18,25 @@ import { TranslationService } from '@core/services/translation.service';
     <div class="active-entries-preview" role="region" [attr.aria-label]="getTranslation('lottery.statistics.activeEntries')">
       <div class="active-entries-header">
         <h3 class="active-entries-title">{{ getTranslation('lottery.statistics.activeEntries') }}</h3>
-        <a 
-          *ngIf="entries.length > previewLimit"
-          routerLink="/entries"
-          class="view-all-link"
-          [attr.aria-label]="getTranslation('lottery.dashboard.viewAll') + ' ' + getTranslation('lottery.statistics.activeEntries')"
-        >
-          {{ getTranslation('lottery.dashboard.viewAll') }} ({{ entries.length }})
-        </a>
+        @if (entries.length > 0) {
+          <span class="active-entries-summary">{{ entriesSummaryLabel }}</span>
+        }
+        @if (consolidatedEntries().length > previewLimit) {
+          <a
+            routerLink="/entries"
+            class="view-all-link"
+            [attr.aria-label]="getTranslation('lottery.dashboard.viewAll') + ' ' + getTranslation('lottery.statistics.activeEntries')">
+            {{ getTranslation('lottery.dashboard.viewAll') }} ({{ entries.length }})
+          </a>
+        }
       </div>
-      <div class="active-entries-list" *ngIf="entries.length > 0; else emptyState">
+      <div class="active-entries-list" *ngIf="displayedGroups().length > 0; else emptyState">
         <app-entry-card
-          *ngFor="let entry of displayedEntries; trackBy: trackByTicketId"
-          [entry]="entry"
+          *ngFor="let group of displayedGroups(); trackBy: trackByHouseId"
+          [group]="group"
           [clickable]="true"
-          (clicked)="onEntryClick($event)"
-        ></app-entry-card>
+          (clicked)="onEntryClick($event)">
+        </app-entry-card>
       </div>
       <ng-template #emptyState>
         <div class="empty-state">
@@ -48,8 +52,10 @@ import { TranslationService } from '@core/services/translation.service';
 
     .active-entries-header {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
+      gap: 0.5rem;
       margin-bottom: 1rem;
     }
 
@@ -58,6 +64,12 @@ import { TranslationService } from '@core/services/translation.service';
       font-weight: 600;
       margin: 0;
       color: var(--text-primary, #333);
+    }
+
+    .active-entries-summary {
+      font-size: 0.8125rem;
+      color: var(--text-secondary, #666);
+      margin-left: auto;
     }
 
     .view-all-link {
@@ -90,6 +102,7 @@ import { TranslationService } from '@core/services/translation.service';
         color: #f9fafb;
       }
 
+      .active-entries-summary,
       .empty-state {
         color: #9ca3af;
       }
@@ -98,25 +111,43 @@ import { TranslationService } from '@core/services/translation.service';
 })
 export class ActiveEntriesPreviewComponent {
   @Input() entries: LotteryTicketDto[] = [];
-  @Input() previewLimit: number = 5;
-  @Output() entryClicked = new EventEmitter<LotteryTicketDto>();
+  @Input() previewLimit = 5;
+  @Output() entryClicked = new EventEmitter<ConsolidatedHouseEntry>();
 
-  constructor(private translationService: TranslationService) {}
+  private translationService = inject(TranslationService);
+  private lotteryService = inject(LotteryService);
 
-  get displayedEntries(): LotteryTicketDto[] {
-    return this.entries.slice(0, this.previewLimit);
+  consolidatedEntries = computed(() =>
+    consolidateActiveEntries(this.entries, (houseId) => this.lotteryService.getHouseByIdLegacy(houseId))
+  );
+
+  displayedGroups = computed(() => this.consolidatedEntries().slice(0, this.previewLimit));
+
+  get entriesSummaryLabel(): string {
+    const houseCount = this.consolidatedEntries().length;
+    const ticketCount = this.entries.length;
+    const template =
+      this.getTranslation('lottery.entries.summary') ||
+      '{tickets} tickets · {houses} {housesLabel}';
+    const housesLabel =
+      houseCount === 1
+        ? this.getTranslation('lottery.entries.houseSingular') || 'lottery'
+        : this.getTranslation('lottery.entries.housePlural') || 'lotteries';
+    return template
+      .replace('{tickets}', String(ticketCount))
+      .replace('{houses}', String(houseCount))
+      .replace('{housesLabel}', housesLabel);
   }
 
-  onEntryClick(entry: LotteryTicketDto): void {
-    this.entryClicked.emit(entry);
+  onEntryClick(group: ConsolidatedHouseEntry): void {
+    this.entryClicked.emit(group);
   }
 
-  trackByTicketId(index: number, entry: LotteryTicketDto): string {
-    return entry.ticketNumber || index.toString();
+  trackByHouseId(_index: number, group: ConsolidatedHouseEntry): string {
+    return group.houseId;
   }
 
   getTranslation(key: string): string {
     return this.translationService.translate(key);
   }
 }
-

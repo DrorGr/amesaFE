@@ -76,6 +76,15 @@ export interface LotteryTicketDto {
   purchaseDate: Date;
   isWinner: boolean;
   createdAt: Date;
+  houseLocation?: string;
+  houseBedrooms?: number;
+  houseBathrooms?: number;
+  houseSquareFeet?: number;
+  housePropertyType?: string;
+  houseTicketPrice?: number;
+  houseDrawDate?: Date;
+  houseLotteryEndDate?: Date;
+  houseImageUrl?: string;
 }
 
 import { UserLotteryData } from '../interfaces/lottery.interface';
